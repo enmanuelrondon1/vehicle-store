@@ -1,19 +1,19 @@
 // src/app/favorites/page.tsx
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useState } from "react"; // Eliminamos useEffect ya que no lo usamos
 import { useLanguage } from "@/context/LanguajeContext";
-import { useFavorites } from "@/context/FavoritesContext"; // Importamos el hook del contexto
+import { useFavorites } from "@/context/FavoritesContext"; // Usamos el contexto global
 import vehicles from "@/data/vehicles.json";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2, Heart, Car, Calendar, Gauge, MapPin } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import Image from "next/image";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Vehicle {
   id: string;
@@ -180,22 +180,6 @@ const VehicleCard: React.FC<{
 
 VehicleCard.displayName = "VehicleCard";
 
-const LoadingSkeleton: React.FC = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    {Array.from({ length: 8 }).map((_, i) => (
-      <Card key={i} className="overflow-hidden">
-        <Skeleton className="w-full h-48" />
-        <div className="p-5 space-y-3">
-          <Skeleton className="h-6 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
-          <Skeleton className="h-4 w-2/3" />
-          <Skeleton className="h-8 w-full" />
-        </div>
-      </Card>
-    ))}
-  </div>
-);
-
 const EmptyState: React.FC<{ language: string }> = ({ language }) => (
   <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
     <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-6 mb-6">
@@ -221,7 +205,7 @@ const EmptyState: React.FC<{ language: string }> = ({ language }) => (
 
 const Favorites: React.FC = () => {
   const { language } = useLanguage();
-  const { favorites, removeFavorite, toggleFavorite } = useFavorites(); // Usamos el hook del contexto global
+  const { favorites, removeFavorite } = useFavorites(); // Solo necesitamos removeFavorite
 
   const favoriteVehicles = useMemo(() => {
     return (vehicles as { items: Vehicle[] }).items.filter((v) => favorites.has(v.id));
@@ -232,7 +216,7 @@ const Favorites: React.FC = () => {
   }, [removeFavorite]);
 
   const handleClearAll = useCallback(() => {
-    favorites.forEach((id: string) => removeFavorite(id)); // Usamos removeFavorite para limpiar todos los favoritos
+    favorites.forEach((id: string) => removeFavorite(id));
     toast(
       language === "es"
         ? "Todos los favoritos han sido eliminados."
