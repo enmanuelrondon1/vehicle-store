@@ -1,3 +1,4 @@
+// src/components/sections/Catalog/VehicleCard.tsx
 "use client";
 
 import React from "react";
@@ -31,12 +32,16 @@ interface Vehicle {
 interface VehicleCardProps {
   vehicle: Vehicle;
   onToggleFavorite: (id: string) => void;
+  onVehicleClick: (id: string) => void;
   isFavorite: boolean;
 }
 
-const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onToggleFavorite, isFavorite }) => {
+const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onToggleFavorite, onVehicleClick, isFavorite }) => {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-200">
+    <Card
+      className="overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer"
+      onClick={() => onVehicleClick(vehicle.id)} // Navegación al hacer clic en cualquier parte de la tarjeta
+    >
       <CardContent className="p-0">
         <div className="relative w-full h-48">
           <Image
@@ -50,7 +55,10 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onToggleFavorite, is
               size="sm"
               variant={isFavorite ? "default" : "secondary"}
               className="h-8 w-8 p-0 rounded-full bg-white/90 hover:bg-white"
-              onClick={() => onToggleFavorite(vehicle.id)}
+              onClick={(e) => {
+                e.stopPropagation(); // Evita que el clic en el botón de favoritos dispare la navegación
+                onToggleFavorite(vehicle.id);
+              }}
             >
               <svg
                 className={`h-4 w-4 ${isFavorite ? "text-red-500 fill-red-500" : "text-gray-600"}`}
@@ -121,12 +129,25 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onToggleFavorite, is
               <p className="text-xs text-gray-500">{vehicle.condition.es}</p>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="h-8 w-8 p-0">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 w-8 p-0"
+                onClick={(e) => e.stopPropagation()} // Evita que el clic en el botón de teléfono dispare la navegación
+              >
                 <svg className="h-4 w-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
                 </svg>
               </Button>
-              <Button size="sm">Ver más</Button>
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation(); // Evita que el clic en "Ver más" dispare otro evento de navegación
+                  onVehicleClick(vehicle.id);
+                }}
+              >
+                Ver más
+              </Button>
             </div>
           </div>
         </CardContent>
