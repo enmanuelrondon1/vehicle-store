@@ -9,7 +9,7 @@ import Image from "next/image";
 
 const FeaturedVehicles = () => {
   const { translations } = useLanguage();
-  const { favorites, setFavorites } = useFavorites();
+  const { favorites, toggleFavorite } = useFavorites();
 
   const vehiclesByCategory = [
     vehicleData.items.find((item) => item.category?.es === "vehículos"),
@@ -80,16 +80,8 @@ const FeaturedVehicles = () => {
     setTimeout(() => setIsPaused(false), 5000);
   };
 
-  const toggleFavorite = (vehicleId: string) => {
-    setFavorites((prevFavorites) => {
-      const newFavorites = new Set(prevFavorites);
-      if (newFavorites.has(vehicleId)) {
-        newFavorites.delete(vehicleId);
-      } else {
-        newFavorites.add(vehicleId);
-      }
-      return newFavorites;
-    });
+  const handleToggleFavorite = (vehicleId: string) => {
+    toggleFavorite(vehicleId);
   };
 
   return (
@@ -127,7 +119,7 @@ const FeaturedVehicles = () => {
                 <div className="bg-white dark:bg-[#1F2937] rounded-lg shadow-lg overflow-hidden border border-[#E5E7EB] dark:border-[#374151] hover:shadow-xl transition-shadow duration-300">
                   <div className="relative">
                     <Image
-                      src={vehicle!.images[0].trimEnd()} // Añadimos trimEnd() aquí
+                      src={vehicle!.images[0].trimEnd()}
                       alt={`${vehicle!.brand} ${vehicle!.model}`}
                       width={400}
                       height={160}
@@ -136,7 +128,7 @@ const FeaturedVehicles = () => {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        toggleFavorite(vehicle!.id);
+                        handleToggleFavorite(vehicle!.id);
                       }}
                       className="absolute top-2 right-2 text-gray-500 dark:text-gray-400 hover:text-[#F97316] dark:hover:text-[#F97316]"
                       aria-label={
@@ -210,7 +202,7 @@ const FeaturedVehicles = () => {
               <div className="bg-white dark:bg-[#1F2937] rounded-lg shadow-lg overflow-hidden border border-[#E5E7EB] dark:border-[#374151] hover:shadow-xl transition-shadow duration-300">
                 <div className="relative">
                   <Image
-                    src={vehicle!.images[0].trimEnd()} // Añadimos trimEnd() aquí
+                    src={vehicle!.images[0].trimEnd()}
                     alt={`${vehicle!.brand} ${vehicle!.model}`}
                     width={400}
                     height={160}
@@ -219,7 +211,7 @@ const FeaturedVehicles = () => {
                   <button
                     onClick={(e) => {
                       e.preventDefault();
-                      toggleFavorite(vehicle!.id);
+                      handleToggleFavorite(vehicle!.id);
                     }}
                     className="absolute top-2 right-2 text-gray-500 dark:text-gray-400 hover:text-[#F97316] dark:hover:text-[#F97316]"
                     aria-label={
