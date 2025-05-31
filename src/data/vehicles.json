@@ -1,0 +1,1926 @@
+{
+  "items": [
+    {
+      "id": "4d45e877-5917-43b5-b88b-a02ed5054b88",
+      "category": {
+        "es": "vehículos",
+        "en": "vehicles"
+      },
+      "brand": "Toyota",
+      "model": "Corolla",
+      "year": 2018,
+      "price": 275560,
+      "mileage": 82888,
+      "color": {
+        "es": "Naranja",
+        "en": "Orange"
+      },
+      "engine": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "transmission": {
+        "es": "Doble embrague",
+        "en": "Dual-clutch"
+      },
+      "condition": {
+        "es": "Nuevo",
+        "en": "New"
+      },
+      "location": "León",
+      "features": {
+        "es": [
+          "Faros LED",
+          "Asientos de cuero",
+          "Bluetooth"
+        ],
+        "en": [
+          "LED headlights",
+          "Leather seats",
+          "Bluetooth"
+        ]
+      },
+      "fuelType": {
+        "es": "Gas",
+        "en": "Gas"
+      },
+      "doors": 5,
+      "seats": 7,
+      "dimensions": {
+        "largo": 4.57,
+        "ancho": 1.8,
+        "alto": 1.43
+      },
+      "weight": 1588,
+      "images": [
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1746058915/pngegg_qcrl7w.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1746484374/pngegg_1_vxbulp.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1746484559/corolla_jzzpny.jpg",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1746484559/corolla1_qiwsio.jpg"
+      ],
+      "sellerContact": {
+        "name": "Ana Torres",
+        "phone": "+52 1 317-6489-2155",
+        "email": "contacto69@ejemplo.com"
+      },
+      "postedDate": "2025-04-27",
+      "disponibilidad": {
+        "es": "Reservado",
+        "en": "Reserved"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Vehículo en excelente estado, ideal para la ciudad y carretera.",
+        "en": "Vehicle in excellent condition, ideal for city and highway."
+      },
+      "rating": 3.7
+    },
+    {
+      "id": "830aa767-acb8-413a-b2a8-18fceed79f84",
+      "category": {
+        "es": "vehículos",
+        "en": "vehicles"
+      },
+      "brand": "Honda",
+      "model": "Civic",
+      "year": 2015,
+      "price": 317355,
+      "mileage": 103788,
+      "color": {
+        "es": "Gris",
+        "en": "Gray"
+      },
+      "engine": {
+        "es": "Diesel",
+        "en": "Diesel"
+      },
+      "transmission": {
+        "es": "Manual",
+        "en": "Manual"
+      },
+      "condition": {
+        "es": "Seminuevo",
+        "en": "Used"
+      },
+      "location": "Ciudad de México",
+      "features": {
+        "es": [
+          "Bluetooth",
+          "Aire acondicionado",
+          "Asientos de cuero",
+          "Cámara de reversa",
+          "Sensores de estacionamiento",
+          "Faros LED"
+        ],
+        "en": [
+          "Bluetooth",
+          "Air conditioning",
+          "Leather seats",
+          "Rear camera",
+          "Parking sensors",
+          "LED headlights"
+        ]
+      },
+      "fuelType": {
+        "es": "Gasolina",
+        "en": "Gasoline"
+      },
+      "doors": 2,
+      "seats": 3,
+      "dimensions": {
+        "largo": 4.87,
+        "ancho": 1.89,
+        "alto": 1.51
+      },
+      "weight": 1580,
+      "images": [
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1746485706/civic-sedan_lltv2v.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1746485707/pngegg_4_vockwg.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1746485707/pngegg_3_z59o8m.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1746485707/pngegg_5_c9ly0e.png"
+      ],
+      "sellerContact": {
+        "name": "Sofía Díaz",
+        "phone": "+52 1 744-5150-5163",
+        "email": "contacto55@ejemplo.com"
+      },
+      "postedDate": "2025-04-30",
+      "disponibilidad": {
+        "es": "Reservado",
+        "en": "Reserved"
+      },
+      "warranty": {
+        "es": "36 meses",
+        "en": "36 months"
+      },
+      "description": {
+        "es": "Vehículo en excelente estado, ideal para la ciudad y carretera.",
+        "en": "Vehicle in excellent condition, ideal for city and highway."
+      },
+      "rating": 4.1
+    },
+    {
+      "id": "5598fec7-7e12-4602-a8b1-e9272b8e9cf1",
+      "category": {
+        "es": "vehículos",
+        "en": "vehicles"
+      },
+      "brand": "Ford",
+      "model": "Focus",
+      "year": 2018,
+      "price": 588765,
+      "mileage": 50903,
+      "color": {
+        "es": "Negro",
+        "en": "Black"
+      },
+      "engine": {
+        "es": "8.0L",
+        "en": "8.0L"
+      },
+      "transmission": {
+        "es": "Doble embrague",
+        "en": "Dual-clutch"
+      },
+      "condition": {
+        "es": "Seminuevo",
+        "en": "Used"
+      },
+      "location": "Ciudad de México",
+      "features": {
+        "es": [
+          "Techo solar",
+          "Control de tracción",
+          "Bluetooth"
+        ],
+        "en": [
+          "Sunroof",
+          "Traction control",
+          "Bluetooth"
+        ]
+      },
+      "fuelType": {
+        "es": "Diesel",
+        "en": "Diesel"
+      },
+      "doors": 5,
+      "seats": 2,
+      "dimensions": {
+        "largo": 4.23,
+        "ancho": 1.71,
+        "alto": 1.41
+      },
+      "weight": 1374,
+      "images": [
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1747861353/unnamed_38_autluc.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1747861354/unnamed_37_zcvibc.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1747861353/unnamed_39_wzrspq.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1747861353/unnamed_40_evobr7.png"
+      ],
+      "sellerContact": {
+        "name": "Carlos Sánchez",
+        "phone": "+52 1 182-4852-4914",
+        "email": "contacto23@ejemplo.com"
+      },
+      "postedDate": "2025-04-12",
+      "disponibilidad": {
+        "es": "Vendido",
+        "en": "Sold"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Vehículo en excelente estado, ideal para la ciudad y carretera.",
+        "en": "Vehicle in excellent condition, ideal for city and highway."
+      },
+      "rating": 1.3
+    },
+    {
+      "id": "6ab78ee5-2cd3-4740-a9ee-19ff4449cafe",
+      "category": {
+        "es": "vehículos",
+        "en": "vehicles"
+      },
+      "brand": "Chevrolet",
+      "model": "Cruze",
+      "year": 2019,
+      "price": 350615,
+      "mileage": 56332,
+      "color": {
+        "es": "Verde",
+        "en": "Green"
+      },
+      "engine": {
+        "es": "1.6L",
+        "en": "1.6L"
+      },
+      "transmission": {
+        "es": "Automática",
+        "en": "Automatic"
+      },
+      "condition": {
+        "es": "Seminuevo",
+        "en": "Used"
+      },
+      "location": "León",
+      "features": {
+        "es": [
+          "Control de tracción",
+          "GPS",
+          "Asientos de cuero"
+        ],
+        "en": [
+          "Traction control",
+          "GPS",
+          "Leather seats"
+        ]
+      },
+      "fuelType": {
+        "es": "Eléctrico",
+        "en": "Electric"
+      },
+      "doors": 5,
+      "seats": 4,
+      "dimensions": {
+        "largo": 4.42,
+        "ancho": 1.73,
+        "alto": 1.45
+      },
+      "weight": 1558,
+      "images": [
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1747777525/Gemini_Generated_Image_jdsfzdjdsfzdjdsf_jugqg8.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1747778017/Gemini_Generated_Image_pz93jhpz93jhpz93_avlozf.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1747777521/Gemini_Generated_Image_ej3s8sej3s8sej3s_1_ng893r.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1747777520/Gemini_Generated_Image_kq9exnkq9exnkq9e_ykyoff.png"
+      ],
+      "sellerContact": {
+        "name": "Carlos Sánchez",
+        "phone": "+52 1 717-7491-9809",
+        "email": "contacto32@ejemplo.com"
+      },
+      "postedDate": "2025-04-04",
+      "disponibilidad": {
+        "es": "Disponible",
+        "en": "Available"
+      },
+      "warranty": {
+        "es": "24 meses",
+        "en": "24 months"
+      },
+      "description": {
+        "es": "Vehículo en excelente estado, ideal para la ciudad y carretera.",
+        "en": "Vehicle in excellent condition, ideal for city and highway."
+      },
+      "rating": 3.7
+    },
+    {
+      "id": "f234a0b5-db0b-4e51-bc51-df49a7896ce0",
+      "category": {
+        "es": "vehículos",
+        "en": "vehicles"
+      },
+      "brand": "Nissan",
+      "model": "Sentra",
+      "year": 2022,
+      "price": 239263,
+      "mileage": 92082,
+      "color": {
+        "es": "Naranja",
+        "en": "Orange"
+      },
+      "engine": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "transmission": {
+        "es": "CVT",
+        "en": "CVT"
+      },
+      "condition": {
+        "es": "Seminuevo",
+        "en": "Used"
+      },
+      "location": "León",
+      "features": {
+        "es": [
+          "Aire acondicionado",
+          "Control de tracción",
+          "Bluetooth",
+          "Cámara de reversa",
+          "Frenos ABS"
+        ],
+        "en": [
+          "Air conditioning",
+          "Traction control",
+          "Bluetooth",
+          "Backup camera",
+          "ABS brakes"
+        ]
+      },
+      "fuelType": {
+        "es": "Diesel",
+        "en": "Diesel"
+      },
+      "doors": 4,
+      "seats": 7,
+      "dimensions": {
+        "largo": 4.89,
+        "ancho": 1.73,
+        "alto": 1.49
+      },
+      "weight": 1240,
+      "images": [
+        "https://example.com/images/veh ículos_4_1.jpg",
+        "https://example.com/images/veh ículos_4_2.jpg",
+        "https://example.com/images/veh ículos_4_3.jpg",
+        "https://example.com/images/veh ículos_4_4.jpg"
+      ],
+      "sellerContact": {
+        "name": "Ana Torres",
+        "phone": "+52 1 194-9380-8457",
+        "email": "contacto37@ejemplo.com"
+      },
+      "postedDate": "2025-04-08",
+      "disponibilidad": {
+        "es": "Reservado",
+        "en": "Reserved"
+      },
+      "warranty": {
+        "es": "12 meses",
+        "en": "12 months"
+      },
+      "description": {
+        "es": "Vehículo en excelente estado, ideal para la ciudad y carretera.",
+        "en": "Vehicle in excellent condition, ideal for city and highway."
+      },
+      "rating": 4.8
+    },
+    {
+      "id": "c749c742-2da7-460d-b4b0-1fbfa1559c63",
+      "category": {
+        "es": "vehículos",
+        "en": "vehicles"
+      },
+      "brand": "Volkswagen",
+      "model": "Golf",
+      "year": 2017,
+      "price": 338530,
+      "mileage": 38925,
+      "color": {
+        "es": "Negro",
+        "en": "Black"
+      },
+      "engine": {
+        "es": "Eléctrico",
+        "en": "Electric"
+      },
+      "transmission": {
+        "es": "Doble embrague",
+        "en": "Dual-clutch"
+      },
+      "condition": {
+        "es": "Nuevo",
+        "en": "New"
+      },
+      "location": "Monterrey",
+      "features": {
+        "es": [
+          "Sensores de estacionamiento",
+          "Asientos de cuero",
+          "Frenos ABS",
+          "GPS",
+          "Control de tracción",
+          "Bluetooth"
+        ],
+        "en": [
+          "Parking sensors",
+          "Leather seats",
+          "ABS brakes",
+          "GPS",
+          "Traction control",
+          "Bluetooth"
+        ]
+      },
+      "fuelType": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "doors": 3,
+      "seats": 7,
+      "dimensions": {
+        "largo": 4.28,
+        "ancho": 1.75,
+        "alto": 1.55
+      },
+      "weight": 1180,
+      "images": [
+        "https://example.com/images/veh ículos_5_1.jpg",
+        "https://example.com/images/veh ículos_5_2.jpg",
+        "https://example.com/images/veh ículos_5_3.jpg"
+      ],
+      "sellerContact": {
+        "name": "Sofía Díaz",
+        "phone": "+52 1 566-7741-5060",
+        "email": "contacto4@ejemplo.com"
+      },
+      "postedDate": "2025-04-09",
+      "disponibilidad": {
+        "es": "Disponible",
+        "en": "Available"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Vehículo en excelente estado, ideal para la ciudad y carretera.",
+        "en": "Vehicle in excellent condition, ideal for city and highway."
+      },
+      "rating": 0.9
+    },
+    {
+      "id": "6f0de893-c320-4761-9549-4d5ccd1488df",
+      "category": {
+        "es": "motos",
+        "en": "motorcycles"
+      },
+      "brand": "Yamaha",
+      "model": "YZF-R3",
+      "year": 2021,
+      "price": 104638,
+      "mileage": 126664,
+      "color": {
+        "es": "Amarillo",
+        "en": "Yellow"
+      },
+      "engine": {
+        "es": "Eléctrico",
+        "en": "Electric"
+      },
+      "transmission": {
+        "es": "Automática",
+        "en": "Automatic"
+      },
+      "condition": {
+        "es": "Usado",
+        "en": "Used"
+      },
+      "location": "Puebla",
+      "features": {
+        "es": [
+          "Aire acondicionado",
+          "Faros LED",
+          "Sensores de estacionamiento"
+        ],
+        "en": [
+          "Air conditioning",
+          "LED headlights",
+          "Parking sensors"
+        ]
+      },
+      "fuelType": {
+        "es": "Eléctrico",
+        "en": "Electric"
+      },
+      "doors": 0,
+      "seats": 2,
+      "dimensions": {
+        "largo": 2.09,
+        "ancho": 0.85,
+        "alto": 1.26
+      },
+      "weight": 152,
+      "images": [
+        "https://example.com/images/motos_0_1.jpg",
+        "https://example.com/images/motos_0_2.jpg",
+        "https://example.com/images/motos_0_3.jpg",
+        "https://example.com/images/motos_0_4.jpg"
+      ],
+      "sellerContact": {
+        "name": "Sofía Díaz",
+        "phone": "+52 1 648-4638-2910",
+        "email": "contacto66@ejemplo.com"
+      },
+      "postedDate": "2025-04-25",
+      "disponibilidad": {
+        "es": "Vendido",
+        "en": "Sold"
+      },
+      "warranty": {
+        "es": "12 meses",
+        "en": "12 months"
+      },
+      "description": {
+        "es": "Moto ágil y potente, perfecta para recorridos urbanos y aventuras.",
+        "en": "Agile and powerful motorcycle, perfect for urban rides and adventures."
+      },
+      "rating": 0.8
+    },
+    {
+      "id": "f758fbd5-ab38-43ea-a9fd-b855f3ff2a0f",
+      "category": {
+        "es": "motos",
+        "en": "motorcycles"
+      },
+      "brand": "Honda",
+      "model": "CBR500R",
+      "year": 2021,
+      "price": 92476,
+      "mileage": 120342,
+      "color": {
+        "es": "Negro",
+        "en": "Black"
+      },
+      "engine": {
+        "es": "6.7L",
+        "en": "6.7L"
+      },
+      "transmission": {
+        "es": "CVT",
+        "en": "CVT"
+      },
+      "condition": {
+        "es": "Usado",
+        "en": "Used"
+      },
+      "location": "Ciudad de México",
+      "features": {
+        "es": [
+          "Frenos ABS",
+          "GPS",
+          "Techo solar",
+          "Control de tracción",
+          "Faros LED"
+        ],
+        "en": [
+          "ABS brakes",
+          "GPS",
+          "Sunroof",
+          "Traction control",
+          "LED headlights"
+        ]
+      },
+      "fuelType": {
+        "es": "Diesel",
+        "en": "Diesel"
+      },
+      "doors": 0,
+      "seats": 2,
+      "dimensions": {
+        "largo": 2.21,
+        "ancho": 0.79,
+        "alto": 1.24
+      },
+      "weight": 173,
+      "images": [
+        "https://example.com/images/motos_1_1.jpg",
+        "https://example.com/images/motos_1_2.jpg",
+        "https://example.com/images/motos_1_3.jpg",
+        "https://example.com/images/motos_1_4.jpg"
+      ],
+      "sellerContact": {
+        "name": "Juan Pérez",
+        "phone": "+52 1 672-7464-2425",
+        "email": "contacto37@ejemplo.com"
+      },
+      "postedDate": "2025-03-30",
+      "disponibilidad": {
+        "es": "Vendido",
+        "en": "Sold"
+      },
+      "warranty": {
+        "es": "24 meses",
+        "en": "24 months"
+      },
+      "description": {
+        "es": "Moto ágil y potente, perfecta para recorridos urbanos y aventuras.",
+        "en": "Agile and powerful motorcycle, perfect for urban rides and adventures."
+      },
+      "rating": 1
+    },
+    {
+      "id": "fecda244-5731-430e-80e6-f95ca628680a",
+      "category": {
+        "es": "motos",
+        "en": "motorcycles"
+      },
+      "brand": "Suzuki",
+      "model": "GSX-R600",
+      "year": 2023,
+      "price": 154674,
+      "mileage": 126756,
+      "color": {
+        "es": "Negro",
+        "en": "Black"
+      },
+      "engine": {
+        "es": "4.0L",
+        "en": "4.0L"
+      },
+      "transmission": {
+        "es": "CVT",
+        "en": "CVT"
+      },
+      "condition": {
+        "es": "Seminuevo",
+        "en": "Used"
+      },
+      "location": "Querétaro",
+      "features": {
+        "es": [
+          "Cámara de reversa",
+          "Techo solar",
+          "Frenos ABS",
+          "Asientos de cuero",
+          "GPS",
+          "Faros LED"
+        ],
+        "en": [
+          "Rear camera",
+          "Sunroof",
+          "ABS brakes",
+          "Leather seats",
+          "GPS",
+          "LED headlights"
+        ]
+      },
+      "fuelType": {
+        "es": "Diesel",
+        "en": "Diesel"
+      },
+      "doors": 0,
+      "seats": 2,
+      "dimensions": {
+        "largo": 2.01,
+        "ancho": 0.9,
+        "alto": 1.27
+      },
+      "weight": 247,
+      "images": [
+        "https://example.com/images/motos_2_1.jpg",
+        "https://example.com/images/motos_2_2.jpg",
+        "https://example.com/images/motos_2_3.jpg"
+      ],
+      "sellerContact": {
+        "name": "Ana Torres",
+        "phone": "+52 1 958-2922-1825",
+        "email": "contacto3@ejemplo.com"
+      },
+      "postedDate": "2025-04-17",
+      "disponibilidad": {
+        "es": "Reservado",
+        "en": "Reserved"
+      },
+      "warranty": {
+        "es": "24 meses",
+        "en": "24 months"
+      },
+      "description": {
+        "es": "Moto ágil y potente, perfecta para recorridos urbanos y aventuras.",
+        "en": "Agile and powerful motorcycle, perfect for urban rides and adventures."
+      },
+      "rating": 4.2
+    },
+    {
+      "id": "16697223-3f95-445c-a96a-81875a6f32c1",
+      "category": {
+        "es": "motos",
+        "en": "motorcycles"
+      },
+      "brand": "Kawasaki",
+      "model": "Ninja 400",
+      "year": 2016,
+      "price": 132436,
+      "mileage": 110187,
+      "color": {
+        "es": "Azul",
+        "en": "Blue"
+      },
+      "engine": {
+        "es": "3.0L",
+        "en": "3.0L"
+      },
+      "transmission": {
+        "es": "CVT",
+        "en": "CVT"
+      },
+      "condition": {
+        "es": "Seminuevo",
+        "en": "Used"
+      },
+      "location": "Querétaro",
+      "features": {
+        "es": [
+          "Techo solar",
+          "Frenos ABS",
+          "Control de tracción"
+        ],
+        "en": [
+          "Sunroof",
+          "ABS brakes",
+          "Traction control"
+        ]
+      },
+      "fuelType": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "doors": 0,
+      "seats": 2,
+      "dimensions": {
+        "largo": 2.13,
+        "ancho": 0.89,
+        "alto": 1.06
+      },
+      "weight": 121,
+      "images": [
+        "https://example.com/images/motos_3_1.jpg",
+        "https://example.com/images/motos_3_2.jpg"
+      ],
+      "sellerContact": {
+        "name": "Ana Torres",
+        "phone": "+52 1 288-4263-3932",
+        "email": "contacto94@ejemplo.com"
+      },
+      "postedDate": "2025-03-30",
+      "disponibilidad": {
+        "es": "Reservado",
+        "en": "Reserved"
+      },
+      "warranty": {
+        "es": "24 meses",
+        "en": "24 months"
+      },
+      "description": {
+        "es": "Moto ágil y potente, perfecta para recorridos urbanos y aventuras.",
+        "en": "Agile and powerful motorcycle, perfect for urban rides and adventures."
+      },
+      "rating": 2.3
+    },
+    {
+      "id": "f7541cbb-b9b0-4a64-9241-dcac2ad3faa5",
+      "category": {
+        "es": "motos",
+        "en": "motorcycles"
+      },
+      "brand": "Ducati",
+      "model": "Monster 821",
+      "year": 2020,
+      "price": 207882,
+      "mileage": 25758,
+      "color": {
+        "es": "Rojo",
+        "en": "Red"
+      },
+      "engine": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "transmission": {
+        "es": "CVT",
+        "en": "CVT"
+      },
+      "condition": {
+        "es": "Usado",
+        "en": "Used"
+      },
+      "location": "Monterrey",
+      "features": {
+        "es": [
+          "Asientos de cuero",
+          "Faros LED",
+          "Aire acondicionado",
+          "Cámara de reversa",
+          "Sensores de estacionamiento",
+          "Techo solar"
+        ],
+        "en": [
+          "Leather seats",
+          "LED headlights",
+          "Air conditioning",
+          "Rear camera",
+          "Parking sensors",
+          "Sunroof"
+        ]
+      },
+      "fuelType": {
+        "es": "Eléctrico",
+        "en": "Electric"
+      },
+      "doors": 0,
+      "seats": 2,
+      "dimensions": {
+        "largo": 2.23,
+        "ancho": 0.7,
+        "alto": 1.27
+      },
+      "weight": 154,
+      "images": [
+        "https://example.com/images/motos_4_1.jpg",
+        "https://example.com/images/motos_4_2.jpg",
+        "https://example.com/images/motos_4_3.jpg"
+      ],
+      "sellerContact": {
+        "name": "Carlos Sánchez",
+        "phone": "+52 1 446-8470-5261",
+        "email": "contacto94@ejemplo.com"
+      },
+      "postedDate": "2025-04-01",
+      "disponibilidad": {
+        "es": "Vendido",
+        "en": "Sold"
+      },
+      "warranty": {
+        "es": "36 meses",
+        "en": "36 months"
+      },
+      "description": {
+        "es": "Moto ágil y potente, perfecta para recorridos urbanos y aventuras.",
+        "en": "Agile and powerful motorcycle, perfect for urban rides and adventures."
+      },
+      "rating": 1.4
+    },
+    {
+      "id": "48f7bd13-a4ef-45d7-b54c-4a8dd1c84950",
+      "category": {
+        "es": "motos",
+        "en": "motorcycles"
+      },
+      "brand": "BMW",
+      "model": "G310R",
+      "year": 2022,
+      "price": 62990,
+      "mileage": 22898,
+      "color": {
+        "es": "Blanco",
+        "en": "White"
+      },
+      "engine": {
+        "es": "6.7L",
+        "en": "6.7L"
+      },
+      "transmission": {
+        "es": "Manual",
+        "en": "Manual"
+      },
+      "condition": {
+        "es": "Seminuevo",
+        "en": "Used"
+      },
+      "location": "Ciudad de México",
+      "features": {
+        "es": [
+          "Control de tracción",
+          "Bluetooth",
+          "Cámara de reversa",
+          "Aire acondicionado",
+          "Asientos de cuero",
+          "Sensores de estacionamiento"
+        ],
+        "en": [
+          "Traction control",
+          "Bluetooth",
+          "Backup camera",
+          "Air conditioning",
+          "Leather seats",
+          "Parking sensors"
+        ]
+      },
+      "fuelType": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "doors": 0,
+      "seats": 2,
+      "dimensions": {
+        "largo": 2.11,
+        "ancho": 0.75,
+        "alto": 1.12
+      },
+      "weight": 120,
+      "images": [
+        "https://example.com/images/motos_5_1.jpg ",
+        "https://example.com/images/motos_5_2.jpg ",
+        "https://example.com/images/motos_5_3.jpg ",
+        "https://example.com/images/motos_5_4.jpg "
+      ],
+      "sellerContact": {
+        "name": "Luis Gómez",
+        "phone": "+52 1 799-5512-9387",
+        "email": "contacto97@ejemplo.com"
+      },
+      "postedDate": "2025-05-20",
+      "disponibilidad": {
+        "es": "Reservado",
+        "en": "Reserved"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Moto ágil y potente, perfecta para recorridos urbanos y aventuras.",
+        "en": "Agile and powerful motorcycle, perfect for urban rides and adventures."
+      },
+      "rating": 2.1
+    },
+    {
+      "id": "2bc453b6-bb1e-4eca-a1c7-54d3187b81bf",
+      "category": {
+        "es": "camiones",
+        "en": "trucks"
+      },
+      "brand": "Volvo",
+      "model": "FH16",
+      "year": 2024,
+      "price": 2441920,
+      "mileage": 12451,
+      "color": {
+        "es": "Azul",
+        "en": "Blue"
+      },
+      "engine": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "transmission": {
+        "es": "CVT",
+        "en": "CVT"
+      },
+      "condition": {
+        "es": "Nuevo",
+        "en": "New"
+      },
+      "location": "Querétaro",
+      "features": {
+        "es": [
+          "Techo solar",
+          "Control de tracción",
+          "Sensores de estacionamiento",
+          "Bluetooth"
+        ],
+        "en": [
+          "Sunroof",
+          "Traction control",
+          "Parking sensors",
+          "Bluetooth"
+        ]
+      },
+      "fuelType": {
+        "es": "Eléctrico",
+        "en": "Electric"
+      },
+      "doors": 3,
+      "seats": 5,
+      "dimensions": {
+        "largo": 10.39,
+        "ancho": 2.42,
+        "alto": 2.87
+      },
+      "weight": 7120,
+      "loadCapacity": 19801,
+      "images": [
+        "https://example.com/images/camiones_0_1.jpg ",
+        "https://example.com/images/camiones_0_2.jpg "
+      ],
+      "sellerContact": {
+        "name": "Sofía Díaz",
+        "phone": "+52 1 252-7733-9873",
+        "email": "contacto27@ejemplo.com"
+      },
+      "postedDate": "2025-05-23",
+      "disponibilidad": {
+        "es": "Reservado",
+        "en": "Reserved"
+      },
+      "warranty": {
+        "es": "24 meses",
+        "en": "24 months"
+      },
+      "description": {
+        "es": "Camión robusto, listo para trabajo pesado y transporte de carga.",
+        "en": "Robust truck, ready for heavy-duty work and cargo transport."
+      },
+      "rating": 4.1
+    },
+    {
+      "id": "cdad8f13-75a0-4d7f-9feb-161a27cfa893",
+      "category": {
+        "es": "camiones",
+        "en": "trucks"
+      },
+      "brand": "Scania",
+      "model": "R500",
+      "year": 2024,
+      "price": 1859545,
+      "mileage": 120069,
+      "color": {
+        "es": "Azul",
+        "en": "Blue"
+      },
+      "engine": {
+        "es": "2.5L",
+        "en": "2.5L"
+      },
+      "transmission": {
+        "es": "Manual",
+        "en": "Manual"
+      },
+      "condition": {
+        "es": "Usado",
+        "en": "Used"
+      },
+      "location": "Puebla",
+      "features": {
+        "es": [
+          "Control de tracción",
+          "Cámara de reversa",
+          "Sensores de estacionamiento",
+          "Aire acondicionado"
+        ],
+        "en": [
+          "Traction control",
+          "Backup camera",
+          "Parking sensors",
+          "Air conditioning"
+        ]
+      },
+      "fuelType": {
+        "es": "Eléctrico",
+        "en": "Electric"
+      },
+      "doors": 3,
+      "seats": 7,
+      "dimensions": {
+        "largo": 10.97,
+        "ancho": 2.38,
+        "alto": 3.46
+      },
+      "weight": 11285,
+      "loadCapacity": 11129,
+      "images": [
+        "https://example.com/images/camiones_1_1.jpg ",
+        "https://example.com/images/camiones_1_2.jpg ",
+        "https://example.com/images/camiones_1_3.jpg "
+      ],
+      "sellerContact": {
+        "name": "Sofía Díaz",
+        "phone": "+52 1 534-6174-4213",
+        "email": "contacto11@ejemplo.com"
+      },
+      "postedDate": "2025-03-28",
+      "disponibilidad": {
+        "es": "Disponible",
+        "en": "Available"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Camión robusto, listo para trabajo pesado y transporte de carga.",
+        "en": "Robust truck, ready for heavy-duty work and cargo transport."
+      },
+      "rating": 1.2
+    },
+    {
+      "id": "52d4165e-4ec1-4de6-97cd-d15ed845d0ba",
+      "category": {
+        "es": "camiones",
+        "en": "trucks"
+      },
+      "brand": "Mercedes-Benz",
+      "model": "Actros",
+      "year": 2021,
+      "price": 2001294,
+      "mileage": 102517,
+      "color": {
+        "es": "Azul",
+        "en": "Blue"
+      },
+      "engine": {
+        "es": "8.0L",
+        "en": "8.0L"
+      },
+      "transmission": {
+        "es": "Manual",
+        "en": "Manual"
+      },
+      "condition": {
+        "es": "Nuevo",
+        "en": "New"
+      },
+      "location": "Puebla",
+      "features": {
+        "es": [
+          "Cámara de reversa",
+          "Techo solar",
+          "Control de tracción",
+          "Asientos de cuero"
+        ],
+        "en": [
+          "Backup camera",
+          "Sunroof",
+          "Traction control",
+          "Leather seats"
+        ]
+      },
+      "fuelType": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "doors": 5,
+      "seats": 7,
+      "dimensions": {
+        "largo": 7.97,
+        "ancho": 2.33,
+        "alto": 2.63
+      },
+      "weight": 14039,
+      "loadCapacity": 22761,
+      "images": [
+        "https://example.com/images/camiones_2_1.jpg ",
+        "https://example.com/images/camiones_2_2.jpg ",
+        "https://example.com/images/camiones_2_3.jpg "
+      ],
+      "sellerContact": {
+        "name": "María López",
+        "phone": "+52 1 793-9759-3861",
+        "email": "contacto32@ejemplo.com"
+      },
+      "postedDate": "2025-04-12",
+      "disponibilidad": {
+        "es": "Disponible",
+        "en": "Available"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Camión robusto, listo para trabajo pesado y transporte de carga.",
+        "en": "Robust truck, ready for heavy-duty work and cargo transport."
+      },
+      "rating": 4.9
+    },
+    {
+      "id": "b8d426da-a16e-49fb-9bce-774b2a8010fd",
+      "category": {
+        "es": "camiones",
+        "en": "trucks"
+      },
+      "brand": "MAN",
+      "model": "TGX",
+      "year": 2016,
+      "price": 1448738,
+      "mileage": 1046,
+      "color": {
+        "es": "Gris",
+        "en": "Gray"
+      },
+      "engine": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "transmission": {
+        "es": "CVT",
+        "en": "CVT"
+      },
+      "condition": {
+        "es": "Seminuevo",
+        "en": "Used"
+      },
+      "location": "Puebla",
+      "features": {
+        "es": [
+          "Faros LED",
+          "Asientos de cuero",
+          "Control de tracción"
+        ],
+        "en": [
+          "LED headlights",
+          "Leather seats",
+          "Traction control"
+        ]
+      },
+      "fuelType": {
+        "es": "Gas",
+        "en": "Gas"
+      },
+      "doors": 3,
+      "seats": 3,
+      "dimensions": {
+        "largo": 8.62,
+        "ancho": 2.33,
+        "alto": 3.94
+      },
+      "weight": 14962,
+      "loadCapacity": 8289,
+      "images": [
+        "https://example.com/images/camiones_3_1.jpg "
+      ],
+      "sellerContact": {
+        "name": "Carlos Sánchez",
+        "phone": "+52 1 115-1981-5594",
+        "email": "contacto16@ejemplo.com"
+      },
+      "postedDate": "2025-04-11",
+      "disponibilidad": {
+        "es": "Disponible",
+        "en": "Available"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Camión robusto, listo para trabajo pesado y transporte de carga.",
+        "en": "Robust truck, ready for heavy-duty work and cargo transport."
+      },
+      "rating": 4.5
+    },
+    {
+      "id": "3581fa62-3caa-4e4f-8432-021020acb5f4",
+      "category": {
+        "es": "camiones",
+        "en": "trucks"
+      },
+      "brand": "Iveco",
+      "model": "Stralis",
+      "year": 2016,
+      "price": 2158893,
+      "mileage": 4763,
+      "color": {
+        "es": "Verde",
+        "en": "Green"
+      },
+      "engine": {
+        "es": "5.0L",
+        "en": "5.0L"
+      },
+      "transmission": {
+        "es": "Automática",
+        "en": "Automatic"
+      },
+      "condition": {
+        "es": "Usado",
+        "en": "Used"
+      },
+      "location": "Monterrey",
+      "features": {
+        "es": [
+          "Sensores de estacionamiento",
+          "Techo solar",
+          "Aire acondicionado"
+        ],
+        "en": [
+          "Parking sensors",
+          "Sunroof",
+          "Air conditioning"
+        ]
+      },
+      "fuelType": {
+        "es": "Diesel",
+        "en": "Diesel"
+      },
+      "doors": 3,
+      "seats": 6,
+      "dimensions": {
+        "largo": 9.33,
+        "ancho": 2.58,
+        "alto": 2.76
+      },
+      "weight": 11488,
+      "loadCapacity": 11570,
+      "images": [
+        "https://example.com/images/camiones_4_1.jpg",
+        "https://example.com/images/camiones_4_2.jpg",
+        "https://example.com/images/camiones_4_3.jpg",
+        "https://example.com/images/camiones_4_4.jpg"
+      ],
+      "sellerContact": {
+        "name": "Juan Pérez",
+        "phone": "+52 1 660-8170-8217",
+        "email": "contacto98@ejemplo.com"
+      },
+      "postedDate": "2025-04-01",
+      "disponibilidad": {
+        "es": "Reservado",
+        "en": "Reserved"
+      },
+      "warranty": {
+        "es": "12 meses",
+        "en": "12 months"
+      },
+      "description": {
+        "es": "Camión robusto, listo para trabajo pesado y transporte de carga.",
+        "en": "Robust truck, ready for heavy-duty work and cargo transport."
+      },
+      "rating": 3.6
+    },
+    {
+      "id": "070ce8a5-8ed6-4fed-8fa9-c91a471562ef",
+      "category": {
+        "es": "camiones",
+        "en": "trucks"
+      },
+      "brand": "Freightliner",
+      "model": "Cascadia",
+      "year": 2018,
+      "price": 1314163,
+      "mileage": 15781,
+      "color": {
+        "es": "Gris",
+        "en": "Gray"
+      },
+      "engine": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "transmission": {
+        "es": "Manual",
+        "en": "Manual"
+      },
+      "condition": {
+        "es": "Usado",
+        "en": "Used"
+      },
+      "location": "León",
+      "features": {
+        "es": [
+          "Faros LED",
+          "Cámara de reversa",
+          "Aire acondicionado"
+        ],
+        "en": [
+          "LED headlights",
+          "Rear camera",
+          "Air conditioning"
+        ]
+      },
+      "fuelType": {
+        "es": "Gasolina",
+        "en": "Gasoline"
+      },
+      "doors": 2,
+      "seats": 5,
+      "dimensions": {
+        "largo": 9.05,
+        "ancho": 2.46,
+        "alto": 3.68
+      },
+      "weight": 8351,
+      "loadCapacity": 14335,
+      "images": [
+        "https://example.com/images/camiones_5_1.jpg",
+        "https://example.com/images/camiones_5_2.jpg",
+        "https://example.com/images/camiones_5_3.jpg",
+        "https://example.com/images/camiones_5_4.jpg"
+      ],
+      "sellerContact": {
+        "name": "Juan Pérez",
+        "phone": "+52 1 109-3476-6268",
+        "email": "contacto12@ejemplo.com"
+      },
+      "postedDate": "2025-04-24",
+      "disponibilidad": {
+        "es": "Reservado",
+        "en": "Reserved"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Camión robusto, listo para trabajo pesado y transporte de carga.",
+        "en": "Robust truck, ready for heavy-duty work and cargo transport."
+      },
+      "rating": 2.5
+    },
+    {
+      "id": "35100187-485e-4607-994f-031d780c2804",
+      "category": {
+        "es": "maquinaria pesada",
+        "en": "heavy machinery"
+      },
+      "brand": "Caterpillar",
+      "model": "320D",
+      "year": 2016,
+      "price": 2787679,
+      "mileage": 1792,
+      "color": {
+        "es": "Naranja",
+        "en": "Orange"
+      },
+      "engine": {
+        "es": "4.0L",
+        "en": "4.0L"
+      },
+      "transmission": {
+        "es": "Manual",
+        "en": "Manual"
+      },
+      "condition": {
+        "es": "Nuevo",
+        "en": "New"
+      },
+      "location": "Querétaro",
+      "features": {
+        "es": [
+          "GPS",
+          "Sensores de estacionamiento",
+          "Cámara de reversa",
+          "Bluetooth"
+        ],
+        "en": [
+          "GPS",
+          "Parking sensors",
+          "Rear camera",
+          "Bluetooth"
+        ]
+      },
+      "fuelType": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "doors": 0,
+      "seats": 1,
+      "dimensions": {
+        "largo": 5.63,
+        "ancho": 3.72,
+        "alto": 3.16
+      },
+      "weight": 14101,
+      "loadCapacity": 17316,
+      "images": [
+        "https://example.com/images/maquinaria pesada_0_1.jpg"
+      ],
+      "sellerContact": {
+        "name": "María López",
+        "phone": "+52 1 793-2479-4987",
+        "email": "contacto65@ejemplo.com"
+      },
+      "postedDate": "2025-04-04",
+      "disponibilidad": {
+        "es": "Reservado",
+        "en": "Reserved"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Maquinaria pesada eficiente, óptima para construcción y grandes proyectos.",
+        "en": "Efficient heavy machinery, optimal for construction and large projects."
+      },
+      "rating": 4.5
+    },
+    {
+      "id": "94dc517d-03d2-4103-b44f-dc18f3e8a700",
+      "category": {
+        "es": "maquinaria pesada",
+        "en": "heavy machinery"
+      },
+      "brand": "Komatsu",
+      "model": "PC200",
+      "year": 2018,
+      "price": 2957577,
+      "mileage": 2052,
+      "color": {
+        "es": "Naranja",
+        "en": "Orange"
+      },
+      "engine": {
+        "es": "1.6L",
+        "en": "1.6L"
+      },
+      "transmission": {
+        "es": "Doble embrague",
+        "en": "Dual-clutch"
+      },
+      "condition": {
+        "es": "Usado",
+        "en": "Used"
+      },
+      "location": "León",
+      "features": {
+        "es": [
+          "Bluetooth",
+          "Frenos ABS",
+          "Sensores de estacionamiento",
+          "Aire acondicionado"
+        ],
+        "en": [
+          "Bluetooth",
+          "ABS brakes",
+          "Parking sensors",
+          "Air conditioning"
+        ]
+      },
+      "fuelType": {
+        "es": "Eléctrico",
+        "en": "Electric"
+      },
+      "doors": 0,
+      "seats": 2,
+      "dimensions": {
+        "largo": 11.18,
+        "ancho": 3.1,
+        "alto": 2.92
+      },
+      "weight": 35019,
+      "loadCapacity": 18565,
+      "images": [
+        "https://example.com/images/maquinaria pesada_1_1.jpg",
+        "https://example.com/images/maquinaria pesada_1_2.jpg"
+      ],
+      "sellerContact": {
+        "name": "Sofía Díaz",
+        "phone": "+52 1 761-1485-2246",
+        "email": "contacto2@ejemplo.com"
+      },
+      "postedDate": "2025-05-10",
+      "disponibilidad": {
+        "es": "Vendido",
+        "en": "Sold"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Maquinaria pesada eficiente, óptima para construcción y grandes proyectos.",
+        "en": "Efficient heavy machinery, optimal for construction and large projects."
+      },
+      "rating": 4.3
+    },
+    {
+      "id": "f6eb91f6-6d96-40c9-a9e6-c2a67e710194",
+      "category": {
+        "es": "maquinaria pesada",
+        "en": "heavy machinery"
+      },
+      "brand": "JCB",
+      "model": "3CX",
+      "year": 2016,
+      "price": 3586361,
+      "mileage": 6680,
+      "color": {
+        "es": "Blanco",
+        "en": "White"
+      },
+      "engine": {
+        "es": "Diesel",
+        "en": "Diesel"
+      },
+      "transmission": {
+        "es": "Doble embrague",
+        "en": "Dual-clutch"
+      },
+      "condition": {
+        "es": "Nuevo",
+        "en": "New"
+      },
+      "location": "Puebla",
+      "features": {
+        "es": [
+          "Sensores de estacionamiento",
+          "Cámara de reversa",
+          "Bluetooth",
+          "Aire acondicionado",
+          "Asientos de cuero"
+        ],
+        "en": [
+          "Parking sensors",
+          "Rear camera",
+          "Bluetooth",
+          "Air conditioning",
+          "Leather seats"
+        ]
+      },
+      "fuelType": {
+        "es": "Diesel",
+        "en": "Diesel"
+      },
+      "doors": 0,
+      "seats": 1,
+      "dimensions": {
+        "largo": 8.18,
+        "ancho": 2.21,
+        "alto": 4.14
+      },
+      "weight": 31159,
+      "loadCapacity": 14272,
+      "images": [
+        "https://example.com/images/maquinaria pesada_2_1.jpg"
+      ],
+      "sellerContact": {
+        "name": "Sofía Díaz",
+        "phone": "+52 1 174-7045-5086",
+        "email": "contacto36@ejemplo.com"
+      },
+      "postedDate": "2025-04-23",
+      "disponibilidad": {
+        "es": "Reservado",
+        "en": "Reserved"
+      },
+      "warranty": {
+        "es": "12 meses",
+        "en": "12 months"
+      },
+      "description": {
+        "es": "Maquinaria pesada eficiente, óptima para construcción y grandes proyectos.",
+        "en": "Efficient heavy machinery, optimal for construction and large projects."
+      },
+      "rating": 2.1
+    },
+    {
+      "id": "d674b611-9eec-426e-98ba-cf4a24cfec69",
+      "category": {
+        "es": "maquinaria pesada",
+        "en": "heavy machinery"
+      },
+      "brand": "Hitachi",
+      "model": "ZX200",
+      "year": 2015,
+      "price": 4467296,
+      "mileage": 6844,
+      "color": {
+        "es": "Naranja",
+        "en": "Orange"
+      },
+      "engine": {
+        "es": "4.0L",
+        "en": "4.0L"
+      },
+      "transmission": {
+        "es": "Automática",
+        "en": "Automatic"
+      },
+      "condition": {
+        "es": "Seminuevo",
+        "en": "Used"
+      },
+      "location": "Monterrey",
+      "features": {
+        "es": [
+          "Frenos ABS",
+          "Asientos de cuero",
+          "Cámara de reversa",
+          "Techo solar"
+        ],
+        "en": [
+          "ABS brakes",
+          "Leather seats",
+          "Rear camera",
+          "Sunroof"
+        ]
+      },
+      "fuelType": {
+        "es": "Diesel",
+        "en": "Diesel"
+      },
+      "doors": 0,
+      "seats": 1,
+      "dimensions": {
+        "largo": 7.33,
+        "ancho": 3.1,
+        "alto": 4.2
+      },
+      "weight": 9775,
+      "loadCapacity": 11598,
+      "images": [
+        "https://example.com/images/maquinaria pesada_3_1.jpg",
+        "https://example.com/images/maquinaria pesada_3_2.jpg"
+      ],
+      "sellerContact": {
+        "name": "Sofía Díaz",
+        "phone": "+52 1 812-6965-3987",
+        "email": "contacto70@ejemplo.com"
+      },
+      "postedDate": "2025-05-15",
+      "disponibilidad": {
+        "es": "Vendido",
+        "en": "Sold"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Maquinaria pesada eficiente, óptima para construcción y grandes proyectos.",
+        "en": "Efficient heavy machinery, optimal for construction and large projects."
+      },
+      "rating": 1
+    },
+    {
+      "id": "33c656d6-2216-4467-9b4f-297935962a6e",
+      "category": {
+        "es": "maquinaria pesada",
+        "en": "heavy machinery"
+      },
+      "brand": "Liebherr",
+      "model": "R924",
+      "year": 2018,
+      "price": 1790146,
+      "mileage": 6708,
+      "color": {
+        "es": "Negro",
+        "en": "Black"
+      },
+      "engine": {
+        "es": "1.6L",
+        "en": "1.6L"
+      },
+      "transmission": {
+        "es": "Manual",
+        "en": "Manual"
+      },
+      "condition": {
+        "es": "Seminuevo",
+        "en": "Used"
+      },
+      "location": "Querétaro",
+      "features": {
+        "es": [
+          "Aire acondicionado",
+          "Control de tracción",
+          "Sensores de estacionamiento",
+          "Techo solar",
+          "Frenos ABS",
+          "Cámara de reversa"
+        ],
+        "en": [
+          "Air conditioning",
+          "Traction control",
+          "Parking sensors",
+          "Sunroof",
+          "ABS brakes",
+          "Rear camera"
+        ]
+      },
+      "fuelType": {
+        "es": "Eléctrico",
+        "en": "Electric"
+      },
+      "doors": 0,
+      "seats": 2,
+      "dimensions": {
+        "largo": 7.49,
+        "ancho": 3.62,
+        "alto": 3.45
+      },
+      "weight": 8690,
+      "loadCapacity": 13908,
+      "images": [
+        "https://example.com/images/maquinaria pesada_4_1.jpg",
+        "https://example.com/images/maquinaria pesada_4_2.jpg"
+      ],
+      "sellerContact": {
+        "name": "Juan Pérez",
+        "phone": "+52 1 845-5405-7800",
+        "email": "contacto48@ejemplo.com"
+      },
+      "postedDate": "2025-04-05",
+      "disponibilidad": {
+        "es": "Disponible",
+        "en": "Available"
+      },
+      "warranty": {
+        "es": "36 meses",
+        "en": "36 months"
+      },
+      "description": {
+        "es": "Maquinaria pesada eficiente, óptima para construcción y grandes proyectos.",
+        "en": "Efficient heavy machinery, optimal for construction and large projects."
+      },
+      "rating": 2.1
+    },
+    {
+      "id": "48090422-8330-4d98-a0cf-4a1fab42c78e",
+      "category": {
+        "es": "maquinaria pesada",
+        "en": "heavy machinery"
+      },
+      "brand": "Volvo CE",
+      "model": "EC220E",
+      "year": 2016,
+      "price": 5199726,
+      "mileage": 6549,
+      "color": {
+        "es": "Naranja",
+        "en": "Orange"
+      },
+      "engine": {
+        "es": "4.0L",
+        "en": "4.0L"
+      },
+      "transmission": {
+        "es": "Manual",
+        "en": "Manual"
+      },
+      "condition": {
+        "es": "Nuevo",
+        "en": "New"
+      },
+      "location": "Guadalajara",
+      "features": {
+        "es": [
+          "Bluetooth",
+          "GPS",
+          "Techo solar",
+          "Cámara de reversa"
+        ],
+        "en": [
+          "Bluetooth",
+          "GPS",
+          "Sunroof",
+          "Rear camera"
+        ]
+      },
+      "fuelType": {
+        "es": "Híbrido",
+        "en": "Hybrid"
+      },
+      "doors": 0,
+      "seats": 2,
+      "dimensions": {
+        "largo": 6.78,
+        "ancho": 3.29,
+        "alto": 3.25
+      },
+      "weight": 25345,
+      "loadCapacity": 15954,
+      "images": [
+        "https://example.com/images/maquinaria pesada_5_1.jpg",
+        "https://example.com/images/maquinaria pesada_5_2.jpg",
+        "https://example.com/images/maquinaria pesada_5_3.jpg",
+        "https://example.com/images/maquinaria pesada_5_4.jpg"
+      ],
+      "sellerContact": {
+        "name": "Carlos Sánchez",
+        "phone": "+52 1 894-2687-9047",
+        "email": "contacto10@ejemplo.com"
+      },
+      "postedDate": "2025-04-24",
+      "disponibilidad": {
+        "es": "Vendido",
+        "en": "Sold"
+      },
+      "warranty": {
+        "es": "Sin garantía",
+        "en": "No warranty"
+      },
+      "description": {
+        "es": "Maquinaria pesada eficiente, óptima para construcción y grandes proyectos.",
+        "en": "Efficient heavy machinery, optimal for construction and large projects."
+      },
+      "rating": 3.9
+    }
+  ]
+}
