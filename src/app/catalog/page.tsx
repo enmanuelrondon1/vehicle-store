@@ -1,6 +1,6 @@
 import CatalogPages from "@/components/sections/Catalog/CatalogPages";
 
-export function CatalogPage() {
+export default function CatalogPage() {
   return (
     <div className="mt-4">
       <CatalogPages />
@@ -8,4 +8,3 @@ export function CatalogPage() {
   );
 }
 
-export default CatalogPage;
