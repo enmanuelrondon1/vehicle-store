@@ -29,16 +29,8 @@
       },
       "location": "León",
       "features": {
-        "es": [
-          "Faros LED",
-          "Asientos de cuero",
-          "Bluetooth"
-        ],
-        "en": [
-          "LED headlights",
-          "Leather seats",
-          "Bluetooth"
-        ]
+        "es": ["Faros LED", "Asientos de cuero", "Bluetooth"],
+        "en": ["LED headlights", "Leather seats", "Bluetooth"]
       },
       "fuelType": {
         "es": "Gas",
@@ -191,16 +183,8 @@
       },
       "location": "Ciudad de México",
       "features": {
-        "es": [
-          "Techo solar",
-          "Control de tracción",
-          "Bluetooth"
-        ],
-        "en": [
-          "Sunroof",
-          "Traction control",
-          "Bluetooth"
-        ]
+        "es": ["Techo solar", "Control de tracción", "Bluetooth"],
+        "en": ["Sunroof", "Traction control", "Bluetooth"]
       },
       "fuelType": {
         "es": "Diesel",
@@ -269,16 +253,8 @@
       },
       "location": "León",
       "features": {
-        "es": [
-          "Control de tracción",
-          "GPS",
-          "Asientos de cuero"
-        ],
-        "en": [
-          "Traction control",
-          "GPS",
-          "Leather seats"
-        ]
+        "es": ["Control de tracción", "GPS", "Asientos de cuero"],
+        "en": ["Traction control", "GPS", "Leather seats"]
       },
       "fuelType": {
         "es": "Eléctrico",
@@ -375,10 +351,10 @@
       },
       "weight": 1240,
       "images": [
-        "https://example.com/images/veh ículos_4_1.jpg",
-        "https://example.com/images/veh ículos_4_2.jpg",
-        "https://example.com/images/veh ículos_4_3.jpg",
-        "https://example.com/images/veh ículos_4_4.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748803755/unnamed_46_qx5djo.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748803754/unnamed_47_prvigj.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748803754/unnamed_49_n5pdkc.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748803754/unnamed_48_vtfjo9.png"
       ],
       "sellerContact": {
         "name": "Ana Torres",
@@ -459,9 +435,10 @@
       },
       "weight": 1180,
       "images": [
-        "https://example.com/images/veh ículos_5_1.jpg",
-        "https://example.com/images/veh ículos_5_2.jpg",
-        "https://example.com/images/veh ículos_5_3.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804302/unnamed_50_qtdriu.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804301/unnamed_52_ay9n2f.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804300/unnamed_51_zmeaci.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804298/unnamed_53_rzpncq.png"
       ],
       "sellerContact": {
         "name": "Sofía Díaz",
@@ -517,11 +494,7 @@
           "Faros LED",
           "Sensores de estacionamiento"
         ],
-        "en": [
-          "Air conditioning",
-          "LED headlights",
-          "Parking sensors"
-        ]
+        "en": ["Air conditioning", "LED headlights", "Parking sensors"]
       },
       "fuelType": {
         "es": "Eléctrico",
@@ -536,10 +509,10 @@
       },
       "weight": 152,
       "images": [
-        "https://example.com/images/motos_0_1.jpg",
-        "https://example.com/images/motos_0_2.jpg",
-        "https://example.com/images/motos_0_3.jpg",
-        "https://example.com/images/motos_0_4.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804719/unnamed_59_v9dflx.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804719/unnamed_61_ttt8hd.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804718/unnamed_58_f9tqvw.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804716/unnamed_60_zsn8ax.png"
       ],
       "sellerContact": {
         "name": "Sofía Díaz",
@@ -618,10 +591,10 @@
       },
       "weight": 173,
       "images": [
-        "https://example.com/images/motos_1_1.jpg",
-        "https://example.com/images/motos_1_2.jpg",
-        "https://example.com/images/motos_1_3.jpg",
-        "https://example.com/images/motos_1_4.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804719/unnamed_55_jckgwr.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804719/unnamed_56_d1qsol.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804716/unnamed_57_oqnx72.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748804980/unnamed_54_nj3o6p.png"
       ],
       "sellerContact": {
         "name": "Juan Pérez",
@@ -702,9 +675,10 @@
       },
       "weight": 247,
       "images": [
-        "https://example.com/images/motos_2_1.jpg",
-        "https://example.com/images/motos_2_2.jpg",
-        "https://example.com/images/motos_2_3.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805219/unnamed_66_liklws.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805219/unnamed_65_ezgbhx.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805219/unnamed_67_aop04a.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805217/unnamed_68_bwxqrb.png"
       ],
       "sellerContact": {
         "name": "Ana Torres",
@@ -755,16 +729,8 @@
       },
       "location": "Querétaro",
       "features": {
-        "es": [
-          "Techo solar",
-          "Frenos ABS",
-          "Control de tracción"
-        ],
-        "en": [
-          "Sunroof",
-          "ABS brakes",
-          "Traction control"
-        ]
+        "es": ["Techo solar", "Frenos ABS", "Control de tracción"],
+        "en": ["Sunroof", "ABS brakes", "Traction control"]
       },
       "fuelType": {
         "es": "Híbrido",
@@ -779,8 +745,10 @@
       },
       "weight": 121,
       "images": [
-        "https://example.com/images/motos_3_1.jpg",
-        "https://example.com/images/motos_3_2.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805220/unnamed_64_oxopnw.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805229/Gemini_Generated_Image_yuio78yuio78yuio_ikfqyg.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805220/unnamed_63_ojoek4.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805221/unnamed_62_mlfttl.png"
       ],
       "sellerContact": {
         "name": "Ana Torres",
@@ -861,9 +829,10 @@
       },
       "weight": 154,
       "images": [
-        "https://example.com/images/motos_4_1.jpg",
-        "https://example.com/images/motos_4_2.jpg",
-        "https://example.com/images/motos_4_3.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805936/unnamed_71_vy01hz.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805936/unnamed_69_rrcbmi.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805936/unnamed_70_jzlf3g.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805932/unnamed_72_gjeuwi.png"
       ],
       "sellerContact": {
         "name": "Carlos Sánchez",
@@ -944,10 +913,10 @@
       },
       "weight": 120,
       "images": [
-        "https://example.com/images/motos_5_1.jpg ",
-        "https://example.com/images/motos_5_2.jpg ",
-        "https://example.com/images/motos_5_3.jpg ",
-        "https://example.com/images/motos_5_4.jpg "
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805935/unnamed_74_wroipk.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805932/unnamed_76_wn6kf1.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805935/unnamed_73_owyqxj.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748805937/unnamed_75_khdvwe.png"
       ],
       "sellerContact": {
         "name": "Luis Gómez",
@@ -1004,12 +973,7 @@
           "Sensores de estacionamiento",
           "Bluetooth"
         ],
-        "en": [
-          "Sunroof",
-          "Traction control",
-          "Parking sensors",
-          "Bluetooth"
-        ]
+        "en": ["Sunroof", "Traction control", "Parking sensors", "Bluetooth"]
       },
       "fuelType": {
         "es": "Eléctrico",
@@ -1025,8 +989,10 @@
       "weight": 7120,
       "loadCapacity": 19801,
       "images": [
-        "https://example.com/images/camiones_0_1.jpg ",
-        "https://example.com/images/camiones_0_2.jpg "
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748807656/Gemini_Generated_Image_3giepf3giepf3gie_iffxv8.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748807656/Gemini_Generated_Image_3giepg3giepg3gie_vogqhy.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748807643/Gemini_Generated_Image_6xrnxr6xrnxr6xrn_mcn7ud.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748807642/Gemini_Generated_Image_82nxv282nxv282nx_pr56ye.png"
       ],
       "sellerContact": {
         "name": "Sofía Díaz",
@@ -1104,9 +1070,10 @@
       "weight": 11285,
       "loadCapacity": 11129,
       "images": [
-        "https://example.com/images/camiones_1_1.jpg ",
-        "https://example.com/images/camiones_1_2.jpg ",
-        "https://example.com/images/camiones_1_3.jpg "
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748807655/Gemini_Generated_Image_lnwg0flnwg0flnwg_lpcjls.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748807641/unnamed_78_g8bv2m.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748807642/unnamed_77_clqfis.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748807640/unnamed_79_vmrlpd.png"
       ],
       "sellerContact": {
         "name": "Sofía Díaz",
@@ -1163,12 +1130,7 @@
           "Control de tracción",
           "Asientos de cuero"
         ],
-        "en": [
-          "Backup camera",
-          "Sunroof",
-          "Traction control",
-          "Leather seats"
-        ]
+        "en": ["Backup camera", "Sunroof", "Traction control", "Leather seats"]
       },
       "fuelType": {
         "es": "Híbrido",
@@ -1184,9 +1146,10 @@
       "weight": 14039,
       "loadCapacity": 22761,
       "images": [
-        "https://example.com/images/camiones_2_1.jpg ",
-        "https://example.com/images/camiones_2_2.jpg ",
-        "https://example.com/images/camiones_2_3.jpg "
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748808323/unnamed_81_tfbyhg.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748808323/unnamed_80_qpbgyi.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748808322/unnamed_82_wf2rzg.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748808312/unnamed_83_cuhz63.png"
       ],
       "sellerContact": {
         "name": "María López",
@@ -1237,16 +1200,8 @@
       },
       "location": "Puebla",
       "features": {
-        "es": [
-          "Faros LED",
-          "Asientos de cuero",
-          "Control de tracción"
-        ],
-        "en": [
-          "LED headlights",
-          "Leather seats",
-          "Traction control"
-        ]
+        "es": ["Faros LED", "Asientos de cuero", "Control de tracción"],
+        "en": ["LED headlights", "Leather seats", "Traction control"]
       },
       "fuelType": {
         "es": "Gas",
@@ -1262,7 +1217,10 @@
       "weight": 14962,
       "loadCapacity": 8289,
       "images": [
-        "https://example.com/images/camiones_3_1.jpg "
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748808311/unnamed_84_zaqtcq.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748808310/unnamed_85_znpup6.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748808310/unnamed_87_n2yyii.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748808310/unnamed_86_xz6hhh.png"
       ],
       "sellerContact": {
         "name": "Carlos Sánchez",
@@ -1318,11 +1276,7 @@
           "Techo solar",
           "Aire acondicionado"
         ],
-        "en": [
-          "Parking sensors",
-          "Sunroof",
-          "Air conditioning"
-        ]
+        "en": ["Parking sensors", "Sunroof", "Air conditioning"]
       },
       "fuelType": {
         "es": "Diesel",
@@ -1338,10 +1292,10 @@
       "weight": 11488,
       "loadCapacity": 11570,
       "images": [
-        "https://example.com/images/camiones_4_1.jpg",
-        "https://example.com/images/camiones_4_2.jpg",
-        "https://example.com/images/camiones_4_3.jpg",
-        "https://example.com/images/camiones_4_4.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748809169/unnamed_89_bwy28n.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748809171/unnamed_91_d0ekgs.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748809171/unnamed_88_oxomx3.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748809170/unnamed_90_byf4ej.png"
       ],
       "sellerContact": {
         "name": "Juan Pérez",
@@ -1392,16 +1346,8 @@
       },
       "location": "León",
       "features": {
-        "es": [
-          "Faros LED",
-          "Cámara de reversa",
-          "Aire acondicionado"
-        ],
-        "en": [
-          "LED headlights",
-          "Rear camera",
-          "Air conditioning"
-        ]
+        "es": ["Faros LED", "Cámara de reversa", "Aire acondicionado"],
+        "en": ["LED headlights", "Rear camera", "Air conditioning"]
       },
       "fuelType": {
         "es": "Gasolina",
@@ -1417,10 +1363,10 @@
       "weight": 8351,
       "loadCapacity": 14335,
       "images": [
-        "https://example.com/images/camiones_5_1.jpg",
-        "https://example.com/images/camiones_5_2.jpg",
-        "https://example.com/images/camiones_5_3.jpg",
-        "https://example.com/images/camiones_5_4.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748809185/Gemini_Generated_Image_5xximu5xximu5xxi_ebffyz.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748809183/Gemini_Generated_Image_x6yldix6yldix6yl_e6c9sj.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748809182/e_puedes_neypmc.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748809168/unnamed_92_k3mg31.png"
       ],
       "sellerContact": {
         "name": "Juan Pérez",
@@ -1477,12 +1423,7 @@
           "Cámara de reversa",
           "Bluetooth"
         ],
-        "en": [
-          "GPS",
-          "Parking sensors",
-          "Rear camera",
-          "Bluetooth"
-        ]
+        "en": ["GPS", "Parking sensors", "Rear camera", "Bluetooth"]
       },
       "fuelType": {
         "es": "Híbrido",
@@ -1498,7 +1439,10 @@
       "weight": 14101,
       "loadCapacity": 17316,
       "images": [
-        "https://example.com/images/maquinaria pesada_0_1.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748810333/unnamed_97_qrthxe.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748810337/unnamed_100_aztrdv.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748810333/unnamed_99_xskvmd.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748810332/unnamed_98_hmctua.png"
       ],
       "sellerContact": {
         "name": "María López",
@@ -1532,8 +1476,8 @@
       "price": 2957577,
       "mileage": 2052,
       "color": {
-        "es": "Naranja",
-        "en": "Orange"
+        "es": "Blanco",
+        "en": "White"
       },
       "engine": {
         "es": "1.6L",
@@ -1555,12 +1499,7 @@
           "Sensores de estacionamiento",
           "Aire acondicionado"
         ],
-        "en": [
-          "Bluetooth",
-          "ABS brakes",
-          "Parking sensors",
-          "Air conditioning"
-        ]
+        "en": ["Bluetooth", "ABS brakes", "Parking sensors", "Air conditioning"]
       },
       "fuelType": {
         "es": "Eléctrico",
@@ -1576,8 +1515,10 @@
       "weight": 35019,
       "loadCapacity": 18565,
       "images": [
-        "https://example.com/images/maquinaria pesada_1_1.jpg",
-        "https://example.com/images/maquinaria pesada_1_2.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748810094/unnamed_94_wgsviy.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748810094/unnamed_96_dyvoru.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748810094/unnamed_93_vcgjal.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748810091/unnamed_95_czdcti.png"
       ],
       "sellerContact": {
         "name": "Sofía Díaz",
@@ -1657,7 +1598,10 @@
       "weight": 31159,
       "loadCapacity": 14272,
       "images": [
-        "https://example.com/images/maquinaria pesada_2_1.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811231/unnamed_-_2025-06-01T164314.572_t6gxck.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811231/unnamed_-_2025-06-01T164307.157_e5gkpc.png",
+     "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811229/unnamed_-_2025-06-01T164325.223_y4lg7k.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811223/unnamed_-_2025-06-01T164333.392_bbj6v4.png"
       ],
       "sellerContact": {
         "name": "Sofía Díaz",
@@ -1714,12 +1658,7 @@
           "Cámara de reversa",
           "Techo solar"
         ],
-        "en": [
-          "ABS brakes",
-          "Leather seats",
-          "Rear camera",
-          "Sunroof"
-        ]
+        "en": ["ABS brakes", "Leather seats", "Rear camera", "Sunroof"]
       },
       "fuelType": {
         "es": "Diesel",
@@ -1735,8 +1674,10 @@
       "weight": 9775,
       "loadCapacity": 11598,
       "images": [
-        "https://example.com/images/maquinaria pesada_3_1.jpg",
-        "https://example.com/images/maquinaria pesada_3_2.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811237/unnamed_-_2025-06-01T164546.426_zhpb38.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811221/unnamed_-_2025-06-01T164517.239_dlr9dl.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811221/unnamed_-_2025-06-01T164538.022_q8rs1v.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811219/unnamed_-_2025-06-01T164530.361_luzwws.png"
       ],
       "sellerContact": {
         "name": "Sofía Díaz",
@@ -1818,8 +1759,10 @@
       "weight": 8690,
       "loadCapacity": 13908,
       "images": [
-        "https://example.com/images/maquinaria pesada_4_1.jpg",
-        "https://example.com/images/maquinaria pesada_4_2.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811811/unnamed_-_2025-06-01T170104.877_w5yzqq.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811803/unnamed_-_2025-06-01T170113.156_lpnpxn.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811802/unnamed_-_2025-06-01T170129.342_r5tt6l.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811804/unnamed_-_2025-06-01T170138.998_dosoba.png"
       ],
       "sellerContact": {
         "name": "Juan Pérez",
@@ -1870,18 +1813,8 @@
       },
       "location": "Guadalajara",
       "features": {
-        "es": [
-          "Bluetooth",
-          "GPS",
-          "Techo solar",
-          "Cámara de reversa"
-        ],
-        "en": [
-          "Bluetooth",
-          "GPS",
-          "Sunroof",
-          "Rear camera"
-        ]
+        "es": ["Bluetooth", "GPS", "Techo solar", "Cámara de reversa"],
+        "en": ["Bluetooth", "GPS", "Sunroof", "Rear camera"]
       },
       "fuelType": {
         "es": "Híbrido",
@@ -1897,10 +1830,10 @@
       "weight": 25345,
       "loadCapacity": 15954,
       "images": [
-        "https://example.com/images/maquinaria pesada_5_1.jpg",
-        "https://example.com/images/maquinaria pesada_5_2.jpg",
-        "https://example.com/images/maquinaria pesada_5_3.jpg",
-        "https://example.com/images/maquinaria pesada_5_4.jpg"
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811811/unnamed_-_2025-06-01T170236.410_hnsp9l.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811796/unnamed_-_2025-06-01T170202.237_hd7nod.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811795/unnamed_-_2025-06-01T170213.895_veagm2.png",
+        "https://res.cloudinary.com/dcdawwvx2/image/upload/v1748811794/unnamed_-_2025-06-01T170227.986_o6yuys.png"
       ],
       "sellerContact": {
         "name": "Carlos Sánchez",
