@@ -1,1 +1,1 @@
-export * from './VehicleDetail'
+export * from "./VehicleDetail"

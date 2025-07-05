@@ -1,0 +1,168 @@
+/* VehicleRegistrationForm.css */
+.form-container {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #f0f4f8, #e0e7ff, #e0e7ff);
+}
+
+.form-container.dark {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.form-header h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #3b82f6, #9333ea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 1rem;
+}
+
+.form-header.dark h1 {
+  background: linear-gradient(90deg, #60a5fa, #c084fc);
+}
+
+.form-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.form-steps .step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.form-steps .step .step-circle {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.form-steps .step.active .step-circle {
+  background: linear-gradient(90deg, #3b82f6, #9333ea);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-steps .step.completed .step-circle {
+  background: linear-gradient(90deg, #3b82f6, #9333ea);
+  color: white;
+}
+
+.form-steps .step.dark .step-circle {
+  background: #4b5563;
+  color: #d1d5db;
+}
+
+.form-steps .step.dark.active .step-circle {
+  background: linear-gradient(90deg, #60a5fa, #c084fc);
+  color: white;
+}
+
+.form-steps .step-label {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.form-steps .step.dark .step-label {
+  color: #d1d5db;
+}
+
+.form-steps .step-connector {
+  position: absolute;
+  top: 1.5rem;
+  left: 50%;
+  width: calc(100% - 3rem);
+  height: 2px;
+  background: #e5e7eb;
+  transform: translateX(-50%);
+}
+
+.form-steps .step.dark .step-connector {
+  background: #4b5563;
+}
+
+.form-steps .step.active .step-connector {
+  background: linear-gradient(90deg, #3b82f6, #9333ea);
+}
+
+.form-steps .step.dark.active .step-connector {
+  background: linear-gradient(90deg, #60a5fa, #c084fc);
+}
+
+.form-content {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-content.dark {
+  background: #2d3748;
+  color: #e2e8f0;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.form-buttons button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.3s ease;
+}
+
+.form-buttons .prev-btn {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.form-buttons .prev-btn:hover {
+  background: #d1d5db;
+}
+
+.form-buttons .next-btn {
+  background: linear-gradient(90deg, #3b82f6, #9333ea);
+  color: white;
+}
+
+.form-buttons .next-btn:hover {
+  background: linear-gradient(90deg, #2563eb, #7e22ce);
+}
+
+.form-buttons .dark .prev-btn {
+  background: #4b5563;
+  color: #e2e8f0;
+}
+
+.form-buttons .dark .prev-btn:hover {
+  background: #6b7280;
+}
+
+.form-buttons .dark .next-btn {
+  background: linear-gradient(90deg, #60a5fa, #c084fc);
+}
+
+.form-buttons .dark .next-btn:hover {
+  background: linear-gradient(90deg, #3b82f6, #9333ea);
+}

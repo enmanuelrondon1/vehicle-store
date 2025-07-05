@@ -1,12 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
-import { Navbar } from "@/components/shared/Navbar";
+import ClientLayout from "@/components/ClientLayout";
 import { DarkModeProvider } from "@/context/DarkModeContext";
-import { ClerkProvider } from "@clerk/nextjs";
-import { LanguageProvider } from "../context/LanguajeContext";
-import { FavoritesProvider } from "@/context/FavoritesContext";
-import Footer from "../components/sections/Footer/Footer";
 
 export const metadata: Metadata = {
   title: "VehicleStore",
@@ -35,10 +31,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/car-svgrepo-com.svg", // Ruta relativa al archivo en public/
-    // Opcional: Añade soporte para múltiples tamaños
-    // shortcut: "/sport-car.png", // 16x16
-    // apple: "/sport-car.png", // Para dispositivos Apple
   },
+};
+
+export const viewport: Viewport = {
   themeColor: "#1E3A8A",
 };
 
@@ -48,22 +44,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="es" suppressHydrationWarning>
-        <body
-          className={`${GeistSans.variable} ${GeistMono.variable} antialiased min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 pt-16 `}
-        >
-          <LanguageProvider>
-            <DarkModeProvider>
-              <FavoritesProvider>
-                <Navbar />
-                {children}
-                <Footer />
-              </FavoritesProvider>
-            </DarkModeProvider>
-          </LanguageProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="es" suppressHydrationWarning>
+      <body
+        className={`${GeistSans.variable} ${GeistMono.variable} antialiased min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 pt-16`}
+      >
+        <DarkModeProvider>
+          <ClientLayout>{children}</ClientLayout>
+        </DarkModeProvider>
+      </body>
+    </html>
   );
 }

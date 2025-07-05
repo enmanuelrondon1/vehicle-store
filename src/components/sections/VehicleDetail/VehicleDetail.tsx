@@ -1,535 +1,1144 @@
-// src/components/sections/VehicleDetail/VehicleDetail.tsx
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useLanguage } from "@/context/LanguajeContext";
-import vehicles from "@/data/vehicles.json";
-import { useFavorites } from "@/context/FavoritesContext";
-import RelatedVehicles from "@/components/sections/RelatedVehicles/RelatedVehicles";
-import { Heart } from "lucide-react";
-import Image from "next/image";
-import ContactForm from "@/components/shared/ContactForm/ContactForm";
-import WhatsAppButton from "@/components/shared/WhatsAppButton/WhatsAppButton";
+import type React from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
 
+// Extiende el tipo Session para incluir accessToken
+declare module "next-auth" {
+  interface Session {
+    accessToken?: string;
+  }
+}
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  Heart,
+  Share2,
+  Phone,
+  Mail,
+  MapPin,
+  Calendar,
+  Car,
+  Eye,
+  Star,
+  Shield,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Maximize2,
+  Flag,
+  MessageCircle,
+} from "lucide-react";
+
+// Importa tu contexto de dark mode
+import { useDarkMode } from "@/context/DarkModeContext";
+import Image from "next/image";
+
+// Mapeos de traducción
+const CONDITION_MAP = {
+  new: "Nuevo",
+  used: "Usado",
+  certified: "Certificado",
+  excellent: "Excelente",
+  good: "Bueno",
+  fair: "Regular",
+} as const;
+
+const FUEL_TYPE_MAP = {
+  gasoline: "Gasolina",
+  diesel: "Diésel",
+  hybrid: "Híbrido",
+  electric: "Eléctrico",
+  gas: "Gas",
+} as const;
+
+const TRANSMISSION_MAP = {
+  manual: "Manual",
+  automatic: "Automática",
+  cvt: "CVT",
+} as const;
+
+const WARRANTY_MAP = {
+  "dealer-warranty": "Garantía del concesionario",
+  "manufacturer-warranty": "Garantía del fabricante",
+  "extended-warranty": "Garantía extendida",
+  "no-warranty": "Sin garantía",
+} as const;
+
+// const AVAILABILITY_MAP = {
+//   available: "Disponible",
+//   sold: "Vendido",
+//   reserved: "Reservado",
+// } as const;
+
+// Tipos
 interface Vehicle {
-  id: string;
-  category: { es: string; en: string };
+  _id: string;
+  category: string;
+  subcategory?: string;
   brand: string;
   model: string;
   year: number;
   price: number;
   mileage: number;
-  color: { es: string; en: string };
-  engine: { es: string; en: string };
-  transmission: { es: string; en: string };
-  condition: { es: string; en: string };
+  color: string;
+  engine?: string;
+  transmission: keyof typeof TRANSMISSION_MAP;
+  condition: keyof typeof CONDITION_MAP;
   location: string;
-  features: { es: string[]; en: string[] };
-  fuelType: { es: string; en: string };
-  doors: number;
-  seats: number;
-  dimensions: {
-    largo: number;
-    ancho: number;
-    alto: number;
-  };
-  weight: number;
+  features: string[];
+  fuelType: keyof typeof FUEL_TYPE_MAP;
   loadCapacity?: number;
-  images: string[];
   sellerContact: {
     name: string;
-    phone: string;
     email: string;
+    phone: string;
   };
+  availability: "available" | "sold" | "reserved";
+  warranty: keyof typeof WARRANTY_MAP;
+  description: string;
+  images: string[];
+  selectedBank: string;
+  referenceNumber: string;
   postedDate: string;
-  disponibilidad: { es: string; en: string };
-  warranty: { es: string; en: string };
-  description: { es: string; en: string };
+  createdAt: string;
+  updatedAt: string;
+  paymentProof: string;
+  views?: number;
+  isFeatured?: boolean;
 }
 
-interface VehicleDetailProps {
-  onBack?: () => void;
-}
+// Función helper para traducir valores
+const translateValue = (value: string, map: Record<string, string>): string => {
+  return map[value] || value;
+};
 
-const VehicleDetail: React.FC<VehicleDetailProps> = ({ onBack }) => {
-  const { id } = useParams();
-  const router = useRouter();
-  const { language, translations } = useLanguage();
-  const { favorites, toggleFavorite } = useFavorites();
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [showContact, setShowContact] = useState(false);
+// Componente de galería de imágenes
+const ImageGallery = ({
+  images,
+  vehicleName,
+  isDarkMode,
+}: {
+  images: string[];
+  vehicleName: string;
+  isDarkMode: boolean;
+}) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [imageErrors, setImageErrors] = useState<boolean[]>(
+    new Array(images.length).fill(false)
+  );
 
-  const vehicleId = Array.isArray(id) ? id[0] : id;
+  const handleImageError = (index: number) => {
+    setImageErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = true;
+      return newErrors;
+    });
+  };
 
-  const vehicle = useMemo(() => {
-    if (!vehicleId) return null;
-    return (vehicles as { items: Vehicle[] }).items.find(
-      (v) => v.id === vehicleId
-    );
-  }, [vehicleId]);
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
 
-  const isFavorite = vehicle ? favorites.has(vehicle.id) : false;
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
 
-  if (!vehicle) {
+  const validImages = images.filter((_, index) => !imageErrors[index]);
+
+  if (validImages.length === 0) {
     return (
-      <div className="container mx-auto py-8 px-4">
+      <div
+        className={`aspect-video rounded-xl ${
+          isDarkMode ? "bg-gray-800" : "bg-gray-200"
+        } flex items-center justify-center`}
+      >
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-            {language === "es" ? "Vehículo no encontrado" : "Vehicle not found"}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {language === "es"
-              ? "El vehículo que buscas no existe o ha sido eliminado."
-              : "The vehicle you are looking for does not exist or has been removed."}
+          <Car
+            className={`w-16 h-16 mx-auto mb-4 ${
+              isDarkMode ? "text-gray-600" : "text-gray-400"
+            }`}
+          />
+          <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+            No hay imágenes disponibles
           </p>
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors"
-            >
-              {language === "es" ? "Volver al catálogo" : "Back to catalog"}
-            </button>
-          )}
         </div>
       </div>
     );
   }
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("es-MX", {
+  return (
+    <>
+      <div className="relative">
+        <div className="relative aspect-video rounded-xl overflow-hidden group">
+          <Image
+            src={
+              imageErrors[currentImageIndex]
+                ? "/placeholder.svg?height=400&width=600"
+                : images[currentImageIndex]
+            }
+            alt={`${vehicleName} - Imagen ${currentImageIndex + 1}`}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+            onError={() => handleImageError(currentImageIndex)}
+          />
+          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute inset-0 flex items-center justify-between p-4">
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="w-12 h-12 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="w-12 h-12 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
+            </div>
+            <button
+              onClick={() => setIsFullscreen(true)}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+            >
+              <Maximize2 className="w-5 h-5" />
+            </button>
+          </div>
+          {images.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+              {currentImageIndex + 1} / {images.length}
+            </div>
+          )}
+        </div>
+        {images.length > 1 && (
+          <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+            {images.map((image, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                  currentImageIndex === index
+                    ? "border-blue-500 scale-105"
+                    : isDarkMode
+                    ? "border-gray-700 hover:border-gray-600"
+                    : "border-gray-300 hover:border-gray-400"
+                }`}
+              >
+                <Image
+                  src={
+                    imageErrors[index]
+                      ? "/placeholder.svg?height=64&width=80"
+                      : image
+                  }
+                  alt={`Miniatura ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  width={80}
+                  height={64}
+                  onError={() => handleImageError(index)}
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {isFullscreen && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+          <div className="relative max-w-7xl max-h-full">
+            <Image
+              src={
+                imageErrors[currentImageIndex]
+                  ? "/placeholder.svg?height=600&width=800"
+                  : images[currentImageIndex]
+              }
+              alt={`${vehicleName} - Imagen ${currentImageIndex + 1}`}
+              className="max-w-full max-h-full object-contain"
+              onError={() => handleImageError(currentImageIndex)}
+            />
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+// Componente de información de contacto
+const ContactInfo = ({
+  sellerContact,
+  vehicleName,
+  price,
+  isDarkMode,
+}: {
+  sellerContact: Vehicle["sellerContact"];
+  vehicleName: string;
+  price: number;
+  isDarkMode: boolean;
+}) => {
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("es-ES", {
       style: "currency",
-      currency: "MXN",
+      currency: "USD",
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price);
+
+  const handleCall = () => {
+    window.open(`tel:${sellerContact.phone}`, "_self");
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat(language === "es" ? "es-MX" : "en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }).format(date);
+  const handleEmail = () => {
+    const subject = encodeURIComponent(`Interés en ${vehicleName}`);
+    const body = encodeURIComponent(
+      `Hola ${
+        sellerContact.name
+      },\n\nEstoy interesado en tu ${vehicleName} por ${formatPrice(
+        price
+      )}.\n\n¿Podrías darme más información?\n\nGracias.`
+    );
+    window.open(
+      `mailto:${sellerContact.email}?subject=${subject}&body=${body}`,
+      "_self"
+    );
   };
 
-  const getAvailabilityColor = (availability: string) => {
-    const availabilityLower = availability.toLowerCase();
-    if (
-      availabilityLower.includes("disponible") ||
-      availabilityLower.includes("available")
-    ) {
-      return "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100";
-    } else if (
-      availabilityLower.includes("reservado") ||
-      availabilityLower.includes("reserved")
-    ) {
-      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100";
-    } else if (
-      availabilityLower.includes("vendido") ||
-      availabilityLower.includes("sold")
-    ) {
-      return "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100";
-    }
-    return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+  const handleWhatsApp = () => {
+    const message = encodeURIComponent(
+      `Hola ${
+        sellerContact.name
+      }, estoy interesado en tu ${vehicleName} por ${formatPrice(
+        price
+      )}. ¿Podrías darme más información?`
+    );
+    window.open(
+      `https://wa.me/${sellerContact.phone.replace(/\D/g, "")}?text=${message}`,
+      "_blank"
+    );
   };
 
   return (
-    <div className="container mx-auto py-6 px-4 relative">
-      <div className="flex items-center mb-6">
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
+    <div
+      className={`p-6 rounded-xl border ${
+        isDarkMode
+          ? "bg-gray-800/50 border-gray-700"
+          : "bg-white/50 border-gray-200"
+      } backdrop-blur-sm`}
+    >
+      <h3
+        className={`text-xl font-bold mb-4 ${
+          isDarkMode ? "text-white" : "text-gray-900"
+        }`}
+      >
+        Información de Contacto
+      </h3>
+
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-12 h-12 rounded-full ${
+              isDarkMode ? "bg-gray-700" : "bg-gray-200"
+            } flex items-center justify-center`}
           >
-            <svg
-              className="w-5 h-5 mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            {language === "es" ? "Volver" : "Back"}
-          </button>
-        )}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-            {vehicle.brand} {vehicle.model} {vehicle.year}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {vehicle.category[language]}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <div className="relative aspect-video bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
-            <Image
-              src={
-                vehicle.images[selectedImageIndex] || "/placeholder-vehicle.jpg"
-              }
-              alt={`${vehicle.brand} ${vehicle.model}`}
-              fill
-              className="object-cover"
-              onError={(e) => {
-                e.currentTarget.src = "/placeholder-vehicle.jpg";
-              }}
-            />
-          </div>
-
-          {vehicle.images.length > 1 && (
-            <div className="flex space-x-2 overflow-x-auto">
-              {vehicle.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImageIndex(index)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                    selectedImageIndex === index
-                      ? "border-blue-500"
-                      : "border-gray-300 dark:border-gray-600"
-                  }`}
-                >
-                  <Image
-                    src={image}
-                    alt={`${vehicle.brand} ${vehicle.model} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    width={100}
-                    height={100}
-                    onError={(e) => {
-                      e.currentTarget.src = "/placeholder-vehicle.jpg";
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-              {formatPrice(vehicle.price)}
-            </div>
             <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${getAvailabilityColor(
-                vehicle.disponibilidad[language]
-              )}`}
+              className={`text-lg font-bold ${
+                isDarkMode ? "text-white" : "text-gray-800"
+              }`}
             >
-              {vehicle.disponibilidad[language]}
+              {sellerContact.name.charAt(0).toUpperCase()}
             </span>
-            <button
-              onClick={() => toggleFavorite(vehicle.id)}
-              className="ml-4 p-2 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-              aria-label={
-                language === "es" ? "Agregar a favoritos" : "Add to favorites"
-              }
-            >
-              <Heart
-                className={`w-6 h-6 ${
-                  isFavorite ? "fill-red-500 stroke-red-500" : "stroke-current"
-                }`}
-              />
-            </button>
           </div>
-
           <div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-100">
-              {language === "es" ? "Descripción" : "Description"}
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300">
-              {vehicle.description[language]}
+            <p
+              className={`font-semibold ${
+                isDarkMode ? "text-white" : "text-gray-900"
+              }`}
+            >
+              {sellerContact.name}
+            </p>
+            <p
+              className={`text-sm ${
+                isDarkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              Vendedor
             </p>
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {language === "es" ? "Kilometraje" : "Mileage"}
-              </div>
-              <div className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                {vehicle.mileage.toLocaleString()} km
-              </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {translations.condition}
-              </div>
-              <div className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                {vehicle.condition[language]}
-              </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {translations.fuelType}
-              </div>
-              <div className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                {vehicle.fuelType[language]}
-              </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {translations.transmission}
-              </div>
-              <div className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                {vehicle.transmission[language]}
-              </div>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 gap-3">
           <button
-            onClick={() => setShowContact(!showContact)}
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors font-semibold"
+            onClick={handleCall}
+            className="flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
           >
-            {language === "es"
-              ? showContact
-                ? "Ocultar contacto"
-                : "Mostrar contacto del vendedor"
-              : showContact
-              ? "Hide contact"
-              : "Show seller contact"}
+            <Phone className="w-5 h-5" />
+            <div className="text-left">
+              <p className="font-semibold">Llamar</p>
+              <p className="text-sm opacity-90">{sellerContact.phone}</p>
+            </div>
           </button>
 
-          {showContact && (
-            <div className="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
-              <h4 className="font-semibold mb-2 text-gray-800 dark:text-gray-100">
-                {language === "es"
-                  ? "Información del vendedor"
-                  : "Seller information"}
-              </h4>
-              <div className="space-y-1 text-gray-700 dark:text-gray-300">
-                <p>
-                  <strong>{language === "es" ? "Nombre:" : "Name:"}</strong>{" "}
-                  {vehicle.sellerContact.name}
-                </p>
-                <p>
-                  <strong>{language === "es" ? "Teléfono:" : "Phone:"}</strong>{" "}
-                  {vehicle.sellerContact.phone}
-                </p>
-                <p>
-                  <strong>Email:</strong> {vehicle.sellerContact.email}
-                </p>
-              </div>
+          <button
+            onClick={handleWhatsApp}
+            className="flex items-center gap-3 p-3 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors"
+          >
+            <MessageCircle className="w-5 h-5" />
+            <div className="text-left">
+              <p className="font-semibold">WhatsApp</p>
+              <p className="text-sm opacity-90">Enviar mensaje</p>
             </div>
-          )}
+          </button>
 
-          {/* Añadimos el formulario de contacto */}
-          <ContactForm
-            sellerEmail={vehicle.sellerContact.email}
-            vehicleBrand={vehicle.brand}
-            vehicleModel={vehicle.model}
+          <button
+            onClick={handleEmail}
+            className="flex items-center gap-3 p-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+          >
+            <Mail className="w-5 h-5" />
+            <div className="text-left">
+              <p className="font-semibold">Email</p>
+              <p className="text-sm opacity-90">{sellerContact.email}</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componente principal
+const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
+  const { isDarkMode } = useDarkMode();
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  const fetchVehicle = useCallback(async () => {
+    try {
+      setError(null);
+      setIsLoading(true);
+
+      console.log("🚀 Obteniendo vehículo con ID:", vehicleId);
+
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (session?.accessToken) {
+        headers.Authorization = `Bearer ${session.accessToken}`;
+      }
+
+      const response = await fetch(`/api/admin/vehicles/${vehicleId}`, {
+        method: "GET",
+        headers,
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Vehículo no encontrado");
+        }
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("📦 Vehículo obtenido:", data);
+
+      const vehicleData = data.vehicle || data.data || data;
+
+      if (!vehicleData || !vehicleData._id) {
+        throw new Error("Datos del vehículo inválidos");
+      }
+
+      setVehicle(vehicleData);
+
+      try {
+        await fetch(`/api/admin/vehicles/${vehicleId}`, {
+          method: "POST",
+          headers,
+        });
+      } catch (viewError) {
+        console.warn("No se pudo incrementar las vistas:", viewError);
+      }
+    } catch (error) {
+      console.error("❌ Error obteniendo vehículo:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Error desconocido";
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [vehicleId, session]);
+
+  useEffect(() => {
+    if (session !== undefined) {
+      fetchVehicle();
+    }
+  }, [session, fetchVehicle]);
+
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("es-ES", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+
+  const formatMileage = (mileage: number) =>
+    new Intl.NumberFormat("es-ES").format(mileage);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("es-ES", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: `${vehicle?.brand} ${vehicle?.model} ${vehicle?.year}`,
+      text: `Mira este ${vehicle?.brand} ${vehicle?.model} por ${formatPrice(
+        vehicle?.price || 0
+      )}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (error) {
+        console.log("Error sharing:", error);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert("Enlace copiado al portapapeles");
+    }
+  };
+
+  const handleFavorite = () => {
+    setIsFavorited(!isFavorited);
+  };
+
+  const handleReport = () => {
+    alert("Funcionalidad de reporte en desarrollo");
+  };
+
+  const backgroundStyle = {
+    background: isDarkMode
+      ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)"
+      : "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)",
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen py-8 px-4" style={backgroundStyle}>
+        <div className="max-w-7xl mx-auto">
+          <div
+            className={`h-8 w-32 ${
+              isDarkMode ? "bg-gray-700" : "bg-gray-200"
+            } animate-pulse rounded mb-8`}
           />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <div
+                className={`aspect-video ${
+                  isDarkMode ? "bg-gray-800" : "bg-gray-200"
+                } animate-pulse rounded-xl mb-6`}
+              />
+              <div
+                className={`h-64 ${
+                  isDarkMode ? "bg-gray-800" : "bg-gray-200"
+                } animate-pulse rounded-xl`}
+              />
+            </div>
+            <div className="space-y-6">
+              <div
+                className={`h-48 ${
+                  isDarkMode ? "bg-gray-800" : "bg-gray-200"
+                } animate-pulse rounded-xl`}
+              />
+              <div
+                className={`h-32 ${
+                  isDarkMode ? "bg-gray-800" : "bg-gray-200"
+                } animate-pulse rounded-xl`}
+              />
+            </div>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">
-          {language === "es"
-            ? "Especificaciones completas"
-            : "Complete specifications"}
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
-              {language === "es" ? "Información básica" : "Basic information"}
-            </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Marca:" : "Brand:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.brand}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Modelo:" : "Model:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.model}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Año:" : "Year:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.year}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Color:" : "Color:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.color[language]}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Ubicación:" : "Location:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.location}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
-              {language === "es"
-                ? "Especificaciones técnicas"
-                : "Technical specifications"}
-            </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Motor:" : "Engine:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.engine[language]}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Puertas:" : "Doors:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.doors || "N/A"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Asientos:" : "Seats:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.seats}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Peso:" : "Weight:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.weight.toLocaleString()} kg
-                </span>
-              </div>
-              {vehicle.loadCapacity && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {language === "es" ? "Cap. carga:" : "Load capacity:"}
-                  </span>
-                  <span className="font-medium text-gray-800 dark:text-gray-200">
-                    {vehicle.loadCapacity.toLocaleString()} kg
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
-              {language === "es"
-                ? "Dimensiones y garantía"
-                : "Dimensions and warranty"}
-            </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Largo:" : "Length:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.dimensions.largo} m
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Ancho:" : "Width:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.dimensions.ancho} m
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Alto:" : "Height:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.dimensions.alto} m
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Garantía:" : "Warranty:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {vehicle.warranty[language]}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {language === "es" ? "Publicado:" : "Posted:"}
-                </span>
-                <span className="font-medium text-gray-800 dark:text-gray-200">
-                  {formatDate(vehicle.postedDate)}
-                </span>
-              </div>
+  if (error || !vehicle) {
+    return (
+      <div className="min-h-screen py-8 px-4" style={backgroundStyle}>
+        <div className="max-w-2xl mx-auto text-center">
+          <div
+            className={`p-8 rounded-2xl backdrop-blur-sm ${
+              isDarkMode
+                ? "bg-gray-800/30 border-gray-700"
+                : "bg-white/30 border-gray-200"
+            } border shadow-2xl`}
+          >
+            <div className="text-6xl mb-6">😔</div>
+            <h2
+              className={`text-3xl font-bold mb-4 ${
+                isDarkMode ? "text-gray-100" : "text-gray-800"
+              }`}
+            >
+              {error === "Vehículo no encontrado"
+                ? "Vehículo no encontrado"
+                : "Error al cargar"}
+            </h2>
+            <p
+              className={`mb-8 text-lg ${
+                isDarkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              {error || "No se pudo cargar la información del vehículo"}
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => router.back()}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg rounded-lg transition-all duration-300"
+              >
+                <ArrowLeft className="w-5 h-5 mr-2 inline" />
+                Volver
+              </button>
+              <button
+                onClick={fetchVehicle}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 text-lg rounded-lg transition-all duration-300"
+              >
+                Reintentar
+              </button>
             </div>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {vehicle.features[language].length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
-              {language === "es" ? "Características" : "Features"}
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {vehicle.features[language].map((feature, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <svg
-                    className="w-5 h-5 text-green-500 dark:text-green-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {feature}
-                  </span>
+  const translatedCondition = translateValue(vehicle.condition, CONDITION_MAP);
+  const translatedFuelType = translateValue(vehicle.fuelType, FUEL_TYPE_MAP);
+  const translatedTransmission = translateValue(
+    vehicle.transmission,
+    TRANSMISSION_MAP
+  );
+  const translatedWarranty = translateValue(vehicle.warranty, WARRANTY_MAP);
+
+  return (
+    <div className="min-h-screen py-8 px-4" style={backgroundStyle}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => router.back()}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              isDarkMode
+                ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                : "bg-white hover:bg-gray-50 text-gray-700"
+            } border ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver
+          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleFavorite}
+              className={`p-2 rounded-lg transition-colors ${
+                isFavorited
+                  ? "bg-red-100 text-red-600"
+                  : isDarkMode
+                  ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                  : "bg-white hover:bg-gray-50 text-gray-700"
+              } border ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}
+            >
+              <Heart
+                className={`w-5 h-5 ${isFavorited ? "fill-current" : ""}`}
+              />
+            </button>
+            <button
+              onClick={handleShare}
+              className={`p-2 rounded-lg transition-colors ${
+                isDarkMode
+                  ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                  : "bg-white hover:bg-gray-50 text-gray-700"
+              } border ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}
+            >
+              <Share2 className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleReport}
+              className={`p-2 rounded-lg transition-colors ${
+                isDarkMode
+                  ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                  : "bg-white hover:bg-gray-50 text-gray-700"
+              } border ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}
+            >
+              <Flag className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <h1
+                  className={`text-4xl font-bold ${
+                    isDarkMode ? "text-white" : "text-gray-900"
+                  }`}
+                >
+                  {vehicle.brand} {vehicle.model} {vehicle.year}
+                </h1>
+                {vehicle.isFeatured && (
+                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                    <Star className="w-4 h-4" />
+                    Destacado
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  {formatPrice(vehicle.price)}
+                </p>
+              </div>
+              <div className="flex items-center gap-6 text-gray-500 mb-6">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  <span>{vehicle.year}</span>
                 </div>
-              ))}
+                <div className="flex items-center gap-2">
+                  <Car className="w-5 h-5" />
+                  <span>{formatMileage(vehicle.mileage)} km</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  <span>{vehicle.location}</span>
+                </div>
+                {vehicle.views && (
+                  <div className="flex items-center gap-2">
+                    <Eye className="w-5 h-5" />
+                    <span>{vehicle.views} vistas</span>
+                  </div>
+                )}
+              </div>
             </div>
-            <RelatedVehicles
-              currentVehicle={vehicle}
-              onVehicleClick={(id) => router.push(`/vehicle/${id}`)}
-              vehicles={(vehicles as { items: Vehicle[] }).items}
-              onToggleFavorite={toggleFavorite}
-              favorites={favorites}
+            <ImageGallery
+              images={vehicle.images}
+              vehicleName={`${vehicle.brand} ${vehicle.model}`}
+              isDarkMode={isDarkMode}
             />
+            <div
+              className={`p-6 rounded-xl border ${
+                isDarkMode
+                  ? "bg-gray-800/50 border-gray-700"
+                  : "bg-white/50 border-gray-200"
+              } backdrop-blur-sm`}
+            >
+              <h3
+                className={`text-2xl font-bold mb-6 ${
+                  isDarkMode ? "text-white" : "text-gray-900"
+                }`}
+              >
+                Especificaciones Técnicas
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      Marca
+                    </span>
+                    <span
+                      className={`${
+                        isDarkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {vehicle.brand}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      Modelo
+                    </span>
+                    <span
+                      className={`${
+                        isDarkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {vehicle.model}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      Año
+                    </span>
+                    <span
+                      className={`${
+                        isDarkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {vehicle.year}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      Condición
+                    </span>
+                    <span
+                      className={`${
+                        isDarkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {translatedCondition}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      Color
+                    </span>
+                    <span
+                      className={`${
+                        isDarkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {vehicle.color}
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      Kilometraje
+                    </span>
+                    <span
+                      className={`${
+                        isDarkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {formatMileage(vehicle.mileage)} km
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      Transmisión
+                    </span>
+                    <span
+                      className={`${
+                        isDarkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {translatedTransmission}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      Combustible
+                    </span>
+                    <span
+                      className={`${
+                        isDarkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {translatedFuelType}
+                    </span>
+                  </div>
+                  {vehicle.engine && (
+                    <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                      <span
+                        className={`font-medium ${
+                          isDarkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        Motor
+                      </span>
+                      <span
+                        className={`${
+                          isDarkMode ? "text-white" : "text-gray-900"
+                        }`}
+                      >
+                        {vehicle.engine}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      Garantía
+                    </span>
+                    <span
+                      className={`${
+                        isDarkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {translatedWarranty}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {vehicle.features.length > 0 && (
+              <div
+                className={`p-6 rounded-xl border ${
+                  isDarkMode
+                    ? "bg-gray-800/50 border-gray-700"
+                    : "bg-white/50 border-gray-200"
+                } backdrop-blur-sm`}
+              >
+                <h3
+                  className={`text-2xl font-bold mb-6 ${
+                    isDarkMode ? "text-white" : "text-gray-900"
+                  }`}
+                >
+                  Características
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {vehicle.features.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 p-3 rounded-lg bg-gray-100 dark:bg-gray-700"
+                    >
+                      <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      <span
+                        className={`${
+                          isDarkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {vehicle.description && (
+              <div
+                className={`p-6 rounded-xl border ${
+                  isDarkMode
+                    ? "bg-gray-800/50 border-gray-700"
+                    : "bg-white/50 border-gray-200"
+                } backdrop-blur-sm`}
+              >
+                <h3
+                  className={`text-2xl font-bold mb-4 ${
+                    isDarkMode ? "text-white" : "text-gray-900"
+                  }`}
+                >
+                  Descripción
+                </h3>
+                <p
+                  className={`text-lg leading-relaxed ${
+                    isDarkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  {vehicle.description}
+                </p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-
-      {/* Añadimos el botón de WhatsApp fijo en la parte inferior */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <WhatsAppButton
-          phoneNumber={vehicle.sellerContact.phone}
-          vehicleBrand={vehicle.brand}
-          vehicleModel={vehicle.model}
-        />
+          <div className="space-y-6">
+            <ContactInfo
+              sellerContact={vehicle.sellerContact}
+              vehicleName={`${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
+              price={vehicle.price}
+              isDarkMode={isDarkMode}
+            />
+            <div
+              className={`p-6 rounded-xl border ${
+                isDarkMode
+                  ? "bg-gray-800/50 border-gray-700"
+                  : "bg-white/50 border-gray-200"
+              } backdrop-blur-sm`}
+            >
+              <h3
+                className={`text-xl font-bold mb-4 ${
+                  isDarkMode ? "text-white" : "text-gray-900"
+                }`}
+              >
+                Información Adicional
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span
+                    className={`${
+                      isDarkMode ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    Categoría
+                  </span>
+                  <span
+                    className={`font-medium ${
+                      isDarkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    {vehicle.category}
+                  </span>
+                </div>
+                {vehicle.subcategory && (
+                  <div className="flex justify-between items-center">
+                    <span
+                      className={`${
+                        isDarkMode ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
+                      Subcategoría
+                    </span>
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      {vehicle.subcategory}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center">
+                  <span
+                    className={`${
+                      isDarkMode ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    Publicado
+                  </span>
+                  <span
+                    className={`font-medium ${
+                      isDarkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    {formatDate(vehicle.createdAt)}
+                  </span>
+                </div>
+                {vehicle.views && (
+                  <div className="flex justify-between items-center">
+                    <span
+                      className={`${
+                        isDarkMode ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
+                      Visitas
+                    </span>
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      {vehicle.views}
+                    </span>
+                  </div>
+                )}
+                {vehicle.loadCapacity && (
+                  <div className="flex justify-between items-center">
+                    <span
+                      className={`${
+                        isDarkMode ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
+                      Capacidad de carga
+                    </span>
+                    <span
+                      className={`font-medium ${
+                        isDarkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      {vehicle.loadCapacity} kg
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            {vehicle.warranty !== "no-warranty" && (
+              <div
+                className={`p-6 rounded-xl border ${
+                  isDarkMode
+                    ? "bg-gray-800/50 border-gray-700"
+                    : "bg-white/50 border-gray-200"
+                } backdrop-blur-sm`}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <Shield className="w-6 h-6 text-green-500" />
+                  <h3
+                    className={`text-xl font-bold ${
+                      isDarkMode ? "text-white" : "text-gray-900"
+                    }`}
+                  >
+                    Garantía Incluida
+                  </h3>
+                </div>
+                <p
+                  className={`${
+                    isDarkMode ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  Este vehículo incluye {translatedWarranty.toLowerCase()}.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
