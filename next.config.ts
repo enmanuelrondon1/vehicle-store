@@ -43,6 +43,7 @@ const nextConfig: NextConfig = {
         url: false,
         querystring: false,
         timers: false,
+        'timers/promises': false,  // ⭐ AÑADIDO - Este es el módulo que falta
         assert: false,
         constants: false,
         zlib: false,

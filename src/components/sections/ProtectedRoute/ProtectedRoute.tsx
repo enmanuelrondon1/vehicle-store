@@ -7,37 +7,33 @@ interface ProtectedRouteProps {
   children: ReactNode;
   fallback?: ReactNode;
   redirectTo?: string;
+  requireAdmin?: boolean; // Nuevo prop para requerir rol de admin
 }
 
 const ProtectedRoute = ({ 
   children, 
   fallback = <LoadingSpinner />, 
-  redirectTo = '/login' 
+  redirectTo = '/login',
+  requireAdmin = false // Por defecto, no requiere admin
 }: ProtectedRouteProps) => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // Envolver handleRedirect en useCallback para evitar recreaciones innecesarias
   const handleRedirect = useCallback(() => {
     if (!isRedirecting) {
       setIsRedirecting(true);
       const currentPath = window.location.pathname;
       const callbackUrl = encodeURIComponent(currentPath);
-      
-      // Usar replace para evitar que el usuario pueda volver atrás
       router.replace(`${redirectTo}?callbackUrl=${callbackUrl}`);
     }
   }, [isRedirecting, router, redirectTo]);
 
   useEffect(() => {
-    // Deshabilitar caché del navegador para esta página
     if (typeof window !== 'undefined') {
-      // Prevenir caché con headers
       const preventCache = () => {
         if ('serviceWorker' in navigator) {
-          // Si hay service worker, forzar actualización
           navigator.serviceWorker.getRegistrations().then(registrations => {
             registrations.forEach(registration => {
               registration.update();
@@ -45,22 +41,18 @@ const ProtectedRoute = ({
           });
         }
       };
-      
       preventCache();
 
-      // Manejar evento de visibilidad de la página
       const handleVisibilityChange = () => {
         if (document.visibilityState === 'visible') {
-          // Cuando la página se vuelve visible, revalidar autenticación
-          if (status === 'unauthenticated') {
+          if (status === 'unauthenticated' || (requireAdmin && session?.user.role !== 'admin')) {
             handleRedirect();
           }
         }
       };
 
-      // Manejar evento de focus (cuando el usuario vuelve a la pestaña)
       const handleFocus = () => {
-        if (status === 'unauthenticated') {
+        if (status === 'unauthenticated' || (requireAdmin && session?.user.role !== 'admin')) {
           handleRedirect();
         }
       };
@@ -68,26 +60,22 @@ const ProtectedRoute = ({
       document.addEventListener('visibilitychange', handleVisibilityChange);
       window.addEventListener('focus', handleFocus);
 
-      // Cleanup
       return () => {
         document.removeEventListener('visibilitychange', handleVisibilityChange);
         window.removeEventListener('focus', handleFocus);
       };
     }
-  }, [status, handleRedirect]); // Agregar handleRedirect como dependencia
+  }, [status, session, handleRedirect, requireAdmin]);
 
-  // Manejar el botón "atrás" del navegador con pushState
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Forzar un pushState inicial para prevenir el "atrás" inicial
       window.history.pushState(null, '', window.location.href);
 
       const handlePopState = (event: PopStateEvent) => {
-        if (status === 'unauthenticated') {
+        if (status === 'unauthenticated' || (requireAdmin && session?.user.role !== 'admin')) {
           event.preventDefault();
           handleRedirect();
         } else {
-          // Forzar otro pushState para bloquear el "atrás"
           window.history.pushState(null, '', window.location.href);
         }
       };
@@ -98,37 +86,35 @@ const ProtectedRoute = ({
         window.removeEventListener('popstate', handlePopState);
       };
     }
-  }, [status, handleRedirect]); // Agregar handleRedirect como dependencia
+  }, [status, session, handleRedirect, requireAdmin]);
 
   useEffect(() => {
     if (status === 'loading') {
-      // Aún cargando la sesión
       return;
     }
 
     if (status === 'unauthenticated') {
-      // No autenticado, redirigir
       handleRedirect();
       return;
     }
 
     if (status === 'authenticated' && session?.user) {
-      // Usuario autenticado, permitir acceso
+      if (requireAdmin && session.user.role !== 'admin') {
+        handleRedirect();
+        return;
+      }
       setIsAuthorized(true);
       setIsRedirecting(false);
     }
-  }, [status, session, handleRedirect]); // Agregar handleRedirect como dependencia
+  }, [status, session, handleRedirect, requireAdmin]);
 
-  // Mientras está cargando o redirigiendo
   if (status === 'loading' || isRedirecting || !isAuthorized) {
     return <>{fallback}</>;
   }
 
-  // Usuario autenticado, mostrar contenido
   return <>{children}</>;
 };
 
-// Componente de loading por defecto
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
     <div className="text-center space-y-4">

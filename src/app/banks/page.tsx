@@ -1,5 +1,5 @@
 
-import BankSelection from "../../components/sections/PostAd/BankSelection";
+import BankSelection from "../../components/sections/PostAd/components/BankSelection";
 
 export default function BanksPage() {
   return <BankSelection/>;

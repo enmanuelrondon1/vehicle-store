@@ -1,205 +1,46 @@
-// // src/services/vehicleService.ts
-
-// import { MongoClient, Db, Collection, ObjectId, Filter, WithId } from 'mongodb';
-// import { VehicleDataBackend as VehicleData, ApiResponseBackend as ApiResponse } from '@/types/types';
-// import { ValidationUtils } from '../lib/validation';
-
-// // Tipo específico para VehicleData con ObjectId real (para operaciones de MongoDB)
-// interface VehicleDataMongo extends VehicleData {}
-
-// // Definimos un tipo más específico para el filtro de MongoDB
-// interface VehicleFilter extends Filter<VehicleDataMongo> {
-//   _id?: ObjectId;
-// }
-
-// export class VehicleService {
-//   private db: Db;
-//   private collection: Collection<VehicleDataMongo>;
-
-//   constructor(db: Db) {
-//     this.db = db;
-//     this.collection = db.collection<VehicleDataMongo>('vehicles');
-//   }
-
-//   async createVehicle(vehicleData: Omit<VehicleData, '_id' | 'postedDate' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<VehicleData>> {
-//     try {
-//       const now = new Date();
-//       const dataToInsert: VehicleDataMongo = {
-//         ...vehicleData,
-//         postedDate: now,
-//         createdAt: now,
-//         updatedAt: now
-//       };
-
-//       console.log("Insertando vehículo en DB:", dataToInsert);
-//       const result = await this.collection.insertOne(dataToInsert);
-
-//       if (!result.acknowledged || !result.insertedId) {
-//         console.error("Error: No se generó insertedId");
-//         return {
-//           success: false,
-//           error: 'No se pudo crear el vehículo'
-//         };
-//       }
-
-//       const insertedVehicle = {
-//         ...dataToInsert,
-//         _id: result.insertedId
-//       };
-
-//       console.log("Vehículo insertado con ID:", insertedVehicle._id.toString());
-
-//       // Convertir para el frontend usando la función utilitaria existente
-//       const { convertToFrontend } = await import('@/types/types');
-
-//       return {
-//         success: true,
-//         data: convertToFrontend(insertedVehicle),
-//         message: 'Vehículo creado exitosamente'
-//       };
-//     } catch (error) {
-//       console.error('Error creating vehicle:', error);
-//       return {
-//         success: false,
-//         error: 'Error interno del servidor al crear el vehículo'
-//       };
-//     }
-//   }
-
-//   async getVehicleById(id: string): Promise<ApiResponse<VehicleData>> {
-//     try {
-//       if (!ValidationUtils.isValidObjectId(id)) {
-//         return {
-//           success: false,
-//           error: 'ID de vehículo inválido'
-//         };
-//       }
-
-//       const filter: VehicleFilter = { _id: new ObjectId(id) };
-//       const vehicle = await this.collection.findOne(filter);
-
-//       if (!vehicle) {
-//         return {
-//           success: false,
-//           error: 'Vehículo no encontrado'
-//         };
-//       }
-
-//       // Convertir para el frontend usando la función utilitaria existente
-//       const { convertToFrontend } = await import('@/types/types');
-
-//       return {
-//         success: true,
-//         data: convertToFrontend(vehicle)
-//       };
-//     } catch (error) {
-//       console.error('Error getting vehicle:', error);
-//       return {
-//         success: false,
-//         error: 'Error interno del servidor al obtener el vehículo'
-//       };
-//     }
-//   }
-
-//   async updateVehicle(id: string, updateData: Partial<VehicleData>): Promise<ApiResponse<VehicleData>> {
-//     try {
-//       if (!ValidationUtils.isValidObjectId(id)) {
-//         return {
-//           success: false,
-//           error: 'ID de vehículo inválido'
-//         };
-//       }
-
-//       const dataToUpdate: Partial<VehicleDataMongo> = {
-//         ...updateData,
-//         updatedAt: new Date()
-//       };
-
-//       // Remover _id del objeto de actualización si existe
-//       delete dataToUpdate._id;
-
-//       const filter: VehicleFilter = { _id: new ObjectId(id) };
-//       const result = await this.collection.findOneAndUpdate(
-//         filter,
-//         { $set: dataToUpdate },
-//         { returnDocument: 'after' }
-//       );
-
-//       if (!result) {
-//         return {
-//           success: false,
-//           error: 'Vehículo no encontrado'
-//         };
-//       }
-
-//       // Convertir para el frontend usando la función utilitaria existente
-//       const { convertToFrontend } = await import('@/types/types');
-
-//       return {
-//         success: true,
-//         data: convertToFrontend(result),
-//         message: 'Vehículo actualizado exitosamente'
-//       };
-//     } catch (error) {
-//       console.error('Error updating vehicle:', error);
-//       return {
-//         success: false,
-//         error: 'Error interno del servidor al actualizar el vehículo'
-//       };
-//     }
-//   }
-
-//   async deleteVehicle(id: string): Promise<ApiResponse<null>> {
-//     try {
-//       if (!ValidationUtils.isValidObjectId(id)) {
-//         return {
-//           success: false,
-//           error: 'ID de vehículo inválido'
-//         };
-//       }
-
-//       const filter: VehicleFilter = { _id: new ObjectId(id) };
-//       const result = await this.collection.deleteOne(filter);
-
-//       if (result.deletedCount === 0) {
-//         return {
-//           success: false,
-//           error: 'Vehículo no encontrado'
-//         };
-//       }
-
-//       return {
-//         success: true,
-//         data: null,
-//         message: 'Vehículo eliminado exitosamente'
-//       };
-//     } catch (error) {
-//       console.error('Error deleting vehicle:', error);
-//       return {
-//         success: false,
-//         error: 'Error interno del servidor al eliminar el vehículo'
-//       };
-//     }
-//   }
-// }
 
 // src/services/vehicleService.ts
-import { Db, Collection, ObjectId, Filter } from "mongodb";
+import { Db, Collection, ObjectId } from "mongodb";
 import {
   VehicleDataBackend as VehicleData,
-  ApiResponseFrontend as ApiResponse, // Cambiar a ApiResponseFrontend
+  ApiResponseFrontend as ApiResponse,
   VehicleDataFrontend,
+  ApprovalStatus,
 } from "@/types/types";
 import { ValidationUtils } from "../lib/validation";
 
-// Tipo específico para VehicleData con ObjectId real y views opcional (para operaciones de MongoDB)
-interface VehicleDataMongo extends VehicleData {
-  views?: number;
-}
-
-// Definimos un tipo más específico para el filtro de MongoDB
-interface VehicleFilter extends Filter<VehicleDataMongo> {
+// Tipo específico para MongoDB con ObjectId real
+interface VehicleDataMongo {
   _id?: ObjectId;
+  category: VehicleData['category'];
+  subcategory?: string;
+  brand: string;
+  model: string;
+  year: number;
+  price: number;
+  mileage: number;
+  color: string;
+  engine: string;
+  transmission: VehicleData['transmission'];
+  condition: VehicleData['condition'];
+  location: string;
+  features: string[];
+  fuelType: VehicleData['fuelType'];
+  doors: number;
+  seats: number;
+  weight?: number;
+  loadCapacity?: number;
+  sellerContact: VehicleData['sellerContact'];
+  postedDate: Date;
+  warranty: VehicleData['warranty'];
+  description: string;
+  images: string[];
+  vin?: string;
+  paymentProof?: string;
+  status: ApprovalStatus;
+  createdAt?: Date;
+  updatedAt?: Date;
+  views?: number;
 }
 
 export class VehicleService {
@@ -211,6 +52,92 @@ export class VehicleService {
     this.collection = db.collection<VehicleDataMongo>("vehicles");
   }
 
+  // Función helper para convertir VehicleData a VehicleDataMongo
+  private convertToMongo(vehicleData: Omit<VehicleData, "_id" | "postedDate" | "createdAt" | "updatedAt">): Omit<VehicleDataMongo, "_id" | "postedDate" | "createdAt" | "updatedAt"> {
+    return {
+      category: vehicleData.category,
+      subcategory: vehicleData.subcategory,
+      brand: vehicleData.brand,
+      model: vehicleData.model,
+      year: vehicleData.year,
+      price: vehicleData.price,
+      mileage: vehicleData.mileage,
+      color: vehicleData.color,
+      engine: vehicleData.engine,
+      transmission: vehicleData.transmission,
+      condition: vehicleData.condition,
+      location: vehicleData.location,
+      features: vehicleData.features,
+      fuelType: vehicleData.fuelType,
+      doors: vehicleData.doors,
+      seats: vehicleData.seats,
+      weight: vehicleData.weight,
+      loadCapacity: vehicleData.loadCapacity,
+      sellerContact: vehicleData.sellerContact,
+      warranty: vehicleData.warranty,
+      description: vehicleData.description,
+      images: vehicleData.images,
+      vin: vehicleData.vin,
+      paymentProof: vehicleData.paymentProof,
+      status: vehicleData.status || ApprovalStatus.PENDING, // Usar status, con valor por defecto
+      views: 0,
+    };
+  }
+
+  // Función helper para convertir VehicleDataMongo a VehicleData
+  private convertFromMongo(mongoData: VehicleDataMongo): VehicleData {
+    return {
+      _id: mongoData._id?.toString(),
+      category: mongoData.category,
+      subcategory: mongoData.subcategory,
+      brand: mongoData.brand,
+      model: mongoData.model,
+      year: mongoData.year,
+      price: mongoData.price,
+      mileage: mongoData.mileage,
+      color: mongoData.color,
+      engine: mongoData.engine,
+      transmission: mongoData.transmission,
+      condition: mongoData.condition,
+      location: mongoData.location,
+      features: mongoData.features,
+      fuelType: mongoData.fuelType,
+      doors: mongoData.doors,
+      seats: mongoData.seats,
+      weight: mongoData.weight,
+      loadCapacity: mongoData.loadCapacity,
+      sellerContact: mongoData.sellerContact,
+      postedDate: mongoData.postedDate,
+      warranty: mongoData.warranty,
+      description: mongoData.description,
+      images: mongoData.images,
+      vin: mongoData.vin,
+      paymentProof: mongoData.paymentProof,
+      status: mongoData.status,
+      createdAt: mongoData.createdAt,
+      updatedAt: mongoData.updatedAt,
+    };
+  }
+
+  // Función helper para convertir datos de actualización parciales
+  private convertUpdateDataToMongo(updateData: Partial<VehicleData>): Partial<VehicleDataMongo> {
+    const dataWithoutId = { ...updateData };
+    delete dataWithoutId._id;
+    
+    // Solo incluir campos que realmente están presentes en updateData
+    const mongoData: Partial<VehicleDataMongo> = {};
+    
+    // Mapear solo los campos que están definidos
+    (Object.keys(dataWithoutId) as (keyof typeof dataWithoutId)[]).forEach((key) => {
+      const value = dataWithoutId[key];
+      if (value !== undefined) {
+        (mongoData as Record<string, unknown>)[key] = value;
+      }
+    });
+    
+    return mongoData;
+  }
+
   async createVehicle(
     vehicleData: Omit<
       VehicleData,
@@ -219,12 +146,15 @@ export class VehicleService {
   ): Promise<ApiResponse<VehicleDataFrontend>> {
     try {
       const now = new Date();
+      const mongoData = this.convertToMongo(vehicleData);
+      
       const dataToInsert: VehicleDataMongo = {
-        ...vehicleData,
+        ...mongoData,
         postedDate: now,
         createdAt: now,
         updatedAt: now,
-        views: 0, // Inicializar views en 0 al crear un vehículo
+        views: 0,
+        status: ApprovalStatus.PENDING,
       };
 
       console.log("Insertando vehículo en DB:", dataToInsert);
@@ -238,18 +168,19 @@ export class VehicleService {
         };
       }
 
-      const insertedVehicle = {
+      const insertedVehicle: VehicleDataMongo = {
         ...dataToInsert,
         _id: result.insertedId,
       };
 
-      console.log("Vehículo insertado con ID:", insertedVehicle._id.toString());
+      console.log("Vehículo insertado con ID:", insertedVehicle._id!.toString());
 
       const { convertToFrontend } = await import("@/types/types");
+      const backendData = this.convertFromMongo(insertedVehicle);
 
       return {
         success: true,
-        data: convertToFrontend(insertedVehicle),
+        data: convertToFrontend(backendData),
         message: "Vehículo creado exitosamente",
       };
     } catch (error) {
@@ -261,40 +192,47 @@ export class VehicleService {
     }
   }
 
-  async getVehicleById(id: string): Promise<ApiResponse<VehicleDataFrontend>> {
-    try {
-      if (!ValidationUtils.isValidObjectId(id)) {
-        return {
-          success: false,
-          error: "ID de vehículo inválido",
-        };
-      }
-
-      const filter: VehicleFilter = { _id: new ObjectId(id) };
-      const vehicle = await this.collection.findOne(filter);
-
-      if (!vehicle) {
-        return {
-          success: false,
-          error: "Vehículo no encontrado",
-        };
-      }
-
-      const { convertToFrontend } = await import("@/types/types");
-
-      return {
-        success: true,
-        data: convertToFrontend(vehicle),
-      };
-    } catch (error) {
-      console.error("Error getting vehicle:", error);
+  async getVehicleById(id: string, approvalStatus?: ApprovalStatus): Promise<ApiResponse<VehicleDataFrontend>> {
+  try {
+    if (!ValidationUtils.isValidObjectId(id)) {
       return {
         success: false,
-        error: "Error interno del servidor al obtener el vehículo",
+        error: "ID de vehículo inválido",
       };
     }
-  }
 
+    // Construir el filtro base
+    const filter: { _id: ObjectId; status?: ApprovalStatus } = { _id: new ObjectId(id) };
+    
+    // Agregar filtro de status si se proporciona
+    if (approvalStatus) {
+      filter.status = approvalStatus;
+    }
+
+    const vehicle = await this.collection.findOne(filter);
+
+    if (!vehicle) {
+      return {
+        success: false,
+        error: "Vehículo no encontrado",
+      };
+    }
+
+    const { convertToFrontend } = await import("@/types/types");
+    const backendData = this.convertFromMongo(vehicle);
+
+    return {
+      success: true,
+      data: convertToFrontend(backendData),
+    };
+  } catch (error) {
+    console.error("Error getting vehicle:", error);
+    return {
+      success: false,
+      error: "Error interno del servidor al obtener el vehículo",
+    };
+  }
+}
   async updateVehicle(
     id: string,
     updateData: Partial<VehicleData>
@@ -307,17 +245,12 @@ export class VehicleService {
         };
       }
 
-      const dataToUpdate: Partial<VehicleDataMongo> = {
-        ...updateData,
-        updatedAt: new Date(),
-      };
+      const mongoUpdateData = this.convertUpdateDataToMongo(updateData);
+      mongoUpdateData.updatedAt = new Date();
 
-      delete dataToUpdate._id;
-
-      const filter: VehicleFilter = { _id: new ObjectId(id) };
       const result = await this.collection.findOneAndUpdate(
-        filter,
-        { $set: dataToUpdate },
+        { _id: new ObjectId(id) },
+        { $set: mongoUpdateData },
         { returnDocument: "after" }
       );
 
@@ -329,10 +262,11 @@ export class VehicleService {
       }
 
       const { convertToFrontend } = await import("@/types/types");
+      const backendData = this.convertFromMongo(result);
 
       return {
         success: true,
-        data: convertToFrontend(result),
+        data: convertToFrontend(backendData),
         message: "Vehículo actualizado exitosamente",
       };
     } catch (error) {
@@ -353,8 +287,7 @@ export class VehicleService {
         };
       }
 
-      const filter: VehicleFilter = { _id: new ObjectId(id) };
-      const result = await this.collection.deleteOne(filter);
+      const result = await this.collection.deleteOne({ _id: new ObjectId(id) });
 
       if (result.deletedCount === 0) {
         return {
@@ -386,9 +319,8 @@ export class VehicleService {
         };
       }
 
-      const filter: VehicleFilter = { _id: new ObjectId(id) };
       const updateResult = await this.collection.findOneAndUpdate(
-        filter,
+        { _id: new ObjectId(id) },
         { $inc: { views: 1 } },
         { returnDocument: "after", upsert: false }
       );
@@ -401,10 +333,11 @@ export class VehicleService {
       }
 
       const { convertToFrontend } = await import("@/types/types");
+      const backendData = this.convertFromMongo(updateResult);
 
       return {
         success: true,
-        data: convertToFrontend(updateResult),
+        data: convertToFrontend(backendData),
         message: "Vistas incrementadas exitosamente",
       };
     } catch (error) {

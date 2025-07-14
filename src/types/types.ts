@@ -1,22 +1,15 @@
-//src/types/types.ts
+// src/types/types.ts - Solo para el cliente
 import { z } from "zod";
-import { ObjectId } from "mongodb";
-import { VehicleCategory } from "./types";
-import { TransmissionType } from "./types";
-import { VehicleCondition } from "./types";
-import { FuelType } from "./types";
-import { AvailabilityStatus } from "./types";
-import { WarrantyType } from "./types";
+import { VehicleCategory, VehicleCondition, TransmissionType, FuelType, WarrantyType, ApprovalStatus } from "./shared";
 
-// Importar enums compartidos
 export {
   VehicleCategory,
   VehicleCondition,
   TransmissionType,
   FuelType,
-  AvailabilityStatus,
   WarrantyType,
-} from "@/types/shared";
+  ApprovalStatus, // Añadido para exportar
+} from "./shared";
 
 export interface SellerContactBackend {
   name: string;
@@ -25,7 +18,7 @@ export interface SellerContactBackend {
 }
 
 export interface VehicleDataBackend {
-  _id?: ObjectId;
+  _id?: string;
   category: VehicleCategory;
   subcategory?: string;
   brand: string;
@@ -46,17 +39,16 @@ export interface VehicleDataBackend {
   loadCapacity?: number;
   sellerContact: SellerContactBackend;
   postedDate: Date;
-  availability: AvailabilityStatus;
   warranty: WarrantyType;
   description: string;
   images: string[];
   vin?: string;
-  paymentProof?: string; // Nuevo campo para el comprobante de pago
+  paymentProof?: string;
+  status: ApprovalStatus;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-// Tipo genérico para las respuestas de la API
 export interface ApiResponseBackend<T = VehicleDataBackend> {
   success: boolean;
   data?: T;
@@ -65,7 +57,6 @@ export interface ApiResponseBackend<T = VehicleDataBackend> {
   validationErrors?: Record<string, string[]>;
 }
 
-// Agregar al final del archivo types.ts
 export interface FormErrors {
   [key: string]: string;
 }
@@ -74,22 +65,13 @@ export interface ValidationError {
   field: string;
   message: string;
 }
-// Agregar al final de tu archivo types.ts
 
-// Tipo genérico para las respuestas de la API del frontend
 export interface ApiResponseFrontend<T = VehicleDataFrontend> {
   success: boolean;
   data?: T;
   error?: string;
   message?: string;
   validationErrors?: Record<string, string[]>;
-}
-
-
-
-export interface ValidationError {
-  field: string;
-  message: string;
 }
 
 export const SellerContactBackendSchema = z.object({
@@ -115,7 +97,7 @@ export const SellerContactBackendSchema = z.object({
 });
 
 export const VehicleDataBackendSchema = z.object({
-  _id: z.instanceof(ObjectId).optional(),
+  _id: z.string().optional(),
   category: z.nativeEnum(VehicleCategory, {
     errorMap: () => ({ message: "Categoría de vehículo inválida" }),
   }),
@@ -191,9 +173,6 @@ export const VehicleDataBackendSchema = z.object({
     .max(50000, "La capacidad de carga parece excesiva")
     .optional(),
   sellerContact: SellerContactBackendSchema,
-  availability: z
-    .nativeEnum(AvailabilityStatus)
-    .default(AvailabilityStatus.PENDING),
   warranty: z.nativeEnum(WarrantyType).default(WarrantyType.NO_WARRANTY),
   description: z
     .string()
@@ -214,7 +193,8 @@ export const VehicleDataBackendSchema = z.object({
   paymentProof: z
     .string()
     .url("La URL del comprobante debe ser válida")
-    .optional(), // Nuevo campo para la URL del comprobante
+    .optional(),
+  status: z.nativeEnum(ApprovalStatus).default(ApprovalStatus.PENDING),
   postedDate: z.date(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
@@ -225,24 +205,30 @@ export const CreateVehicleBackendSchema = VehicleDataBackendSchema.omit({
   postedDate: true,
   createdAt: true,
   updatedAt: true,
+  status: true,
 });
 
 export const UpdateVehicleBackendSchema =
   VehicleDataBackendSchema.partial().extend({
-    _id: z.instanceof(ObjectId),
+    _id: z.string(),
+    status: z.nativeEnum(ApprovalStatus).optional(),
   });
 
-// Tipo para los datos del frontend (con _id como string)
-export interface VehicleDataFrontend extends Omit<VehicleDataBackend, '_id' | 'postedDate' | 'createdAt' | 'updatedAt'> {
+export interface VehicleDataFrontend
+  extends Omit<
+    VehicleDataBackend,
+    "_id" | "postedDate" | "createdAt" | "updatedAt"
+  > {
   _id?: string;
   postedDate: string;
   createdAt?: string;
   updatedAt?: string;
+  status: ApprovalStatus;
+  views?: number; // Añadido para el frontend
 }
 
-// Tipo para datos genéricos con fechas que pueden ser string o Date
 export interface VehicleDataGeneric {
-  _id?: string | ObjectId;
+  _id?: string;
   category: VehicleCategory;
   subcategory?: string;
   brand: string;
@@ -263,20 +249,23 @@ export interface VehicleDataGeneric {
   loadCapacity?: number;
   sellerContact: SellerContactBackend;
   postedDate: string | Date;
-  availability: AvailabilityStatus;
   warranty: WarrantyType;
   description: string;
   images: string[];
   vin?: string;
   paymentProof?: string;
+  status: ApprovalStatus;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  views?: number; // Añadido para el frontend
 }
 
-export const convertToBackend = (frontendData: VehicleDataGeneric): VehicleDataBackend => {
+export const convertToBackend = (
+  frontendData: VehicleDataGeneric
+): VehicleDataBackend => {
   return {
     ...frontendData,
-    _id: frontendData._id ? new ObjectId(frontendData._id) : undefined,
+    _id: frontendData._id || undefined,
     postedDate: new Date(frontendData.postedDate),
     createdAt: frontendData.createdAt
       ? new Date(frontendData.createdAt)
@@ -284,19 +273,75 @@ export const convertToBackend = (frontendData: VehicleDataGeneric): VehicleDataB
     updatedAt: frontendData.updatedAt
       ? new Date(frontendData.updatedAt)
       : undefined,
+    status: frontendData.status || ApprovalStatus.PENDING,
   };
 };
 
-export const convertToFrontend = (backendData: VehicleDataBackend): VehicleDataFrontend => {
+export const convertToFrontend = (
+  backendData: VehicleDataBackend
+): VehicleDataFrontend => {
   if (!backendData) {
-    throw new Error('Backend data is required');
+    throw new Error("Backend data is required");
   }
 
   return {
     ...backendData,
     _id: backendData._id?.toString(),
-    postedDate: backendData.postedDate?.toISOString?.() || backendData.postedDate.toString(),
-    createdAt: backendData.createdAt?.toISOString?.() || backendData.createdAt?.toString(),
-    updatedAt: backendData.updatedAt?.toISOString?.() || backendData.updatedAt?.toString(),
+    postedDate:
+      backendData.postedDate?.toISOString?.() ||
+      backendData.postedDate.toString(),
+    createdAt:
+      backendData.createdAt?.toISOString?.() ||
+      backendData.createdAt?.toString(),
+    updatedAt:
+      backendData.updatedAt?.toISOString?.() ||
+      backendData.updatedAt?.toString(),
+    status: backendData.status || ApprovalStatus.PENDING,
   };
 };
+
+export const isValidObjectId = (id: string): boolean => {
+  return /^[0-9a-fA-F]{24}$/.test(id);
+};
+
+export interface User {
+  _id?: string;
+  email: string;
+  name?: string;
+  password?: string;
+  role: "user" | "admin";
+}
+
+// Reemplaza la interfaz Vehicle actual (líneas finales del archivo) con esta versión actualizada:
+
+export interface Vehicle {
+  _id: string;
+  brand: string;
+  model: string;
+  year: number;
+  price: number;
+  status: ApprovalStatus;
+  mileage: number;
+  color: string;
+  engine: string;
+  transmission: TransmissionType;
+  condition: VehicleCondition;
+  location: string;
+  features: string[];
+  fuelType: FuelType;
+  doors: number;
+  seats: number;
+  description: string;
+  images: string[];
+  category: VehicleCategory;
+  subcategory?: string;  // ← Propiedad agregada
+  warranty: WarrantyType;
+  sellerContact: SellerContactBackend;
+  postedDate: string;
+  createdAt?: string;
+  updatedAt?: string;
+  
+  // Propiedades adicionales:
+  isFeatured?: boolean;  // Indica si el vehículo es destacado
+  views?: number;        // Número de vistas del vehículo
+}

@@ -1,4 +1,4 @@
-// Enums seguros para usar tanto en frontend como backend
+// src/types/shared.ts
 export enum VehicleCategory {
   CAR = 'car',
   TRUCK = 'truck',
@@ -12,7 +12,6 @@ export enum VehicleCondition {
   NEW = 'new',
   USED = 'used',
   CERTIFIED = 'certified'
-  // Eliminado DAMAGED
 }
 
 export enum TransmissionType {
@@ -32,11 +31,10 @@ export enum FuelType {
   HYDROGEN = 'hydrogen'
 }
 
-export enum AvailabilityStatus {
-  AVAILABLE = 'available',
-  PENDING = 'pending',
-  SOLD = 'sold',
-  RESERVED = 'reserved'
+export enum ApprovalStatus {
+  PENDING = "pending",
+  APPROVED = "approved",
+  REJECTED = "rejected"
 }
 
 export enum WarrantyType {
@@ -46,7 +44,6 @@ export enum WarrantyType {
   EXTENDED_WARRANTY = 'extended-warranty'
 }
 
-// Constantes útiles
 export const VEHICLE_CATEGORIES_LABELS = {
   [VehicleCategory.CAR]: 'Automóvil',
   [VehicleCategory.TRUCK]: 'Camión',
@@ -60,7 +57,6 @@ export const VEHICLE_CONDITIONS_LABELS = {
   [VehicleCondition.NEW]: 'Nuevo',
   [VehicleCondition.USED]: 'Usado',
   [VehicleCondition.CERTIFIED]: 'Certificado'
-  // Eliminado DAMAGED
 } as const;
 
 export const TRANSMISSION_TYPES_LABELS = {

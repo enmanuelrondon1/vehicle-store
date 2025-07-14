@@ -3,13 +3,6 @@
 import type React from "react";
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-
-// Extiende el tipo Session para incluir accessToken
-declare module "next-auth" {
-  interface Session {
-    accessToken?: string;
-  }
-}
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -31,52 +24,65 @@ import {
   Flag,
   MessageCircle,
 } from "lucide-react";
-
-// Importa tu contexto de dark mode
 import { useDarkMode } from "@/context/DarkModeContext";
 import Image from "next/image";
+import {
+  VehicleCategory,
+  VehicleCondition,
+  TransmissionType,
+  FuelType,
+  WarrantyType,
+  ApprovalStatus,
+} from "@/types/types";
+
+// Extiende el tipo Session para incluir accessToken
+declare module "next-auth" {
+  interface Session {
+    accessToken?: string;
+  }
+}
 
 // Mapeos de traducción
 const CONDITION_MAP = {
-  new: "Nuevo",
-  used: "Usado",
-  certified: "Certificado",
-  excellent: "Excelente",
-  good: "Bueno",
-  fair: "Regular",
+  [VehicleCondition.NEW]: "Nuevo",
+  [VehicleCondition.USED]: "Usado",
+  [VehicleCondition.CERTIFIED]: "Certificado",
 } as const;
 
 const FUEL_TYPE_MAP = {
-  gasoline: "Gasolina",
-  diesel: "Diésel",
-  hybrid: "Híbrido",
-  electric: "Eléctrico",
-  gas: "Gas",
+  [FuelType.GASOLINE]: "Gasolina",
+  [FuelType.DIESEL]: "Diésel",
+  [FuelType.HYBRID]: "Híbrido",
+  [FuelType.ELECTRIC]: "Eléctrico",
+  [FuelType.PLUG_IN_HYBRID]: "Híbrido enchufable",
+  [FuelType.GAS]: "Gas",
+  [FuelType.HYDROGEN]: "Hidrógeno",
 } as const;
 
 const TRANSMISSION_MAP = {
-  manual: "Manual",
-  automatic: "Automática",
-  cvt: "CVT",
+  [TransmissionType.MANUAL]: "Manual",
+  [TransmissionType.AUTOMATIC]: "Automática",
+  [TransmissionType.CVT]: "CVT",
+  [TransmissionType.DUAL_CLUTCH]: "Doble embrague",
 } as const;
 
 const WARRANTY_MAP = {
-  "dealer-warranty": "Garantía del concesionario",
-  "manufacturer-warranty": "Garantía del fabricante",
-  "extended-warranty": "Garantía extendida",
-  "no-warranty": "Sin garantía",
+  [WarrantyType.NO_WARRANTY]: "Sin garantía",
+  [WarrantyType.DEALER_WARRANTY]: "Garantía del concesionario",
+  [WarrantyType.MANUFACTURER_WARRANTY]: "Garantía del fabricante",
+  [WarrantyType.EXTENDED_WARRANTY]: "Garantía extendida",
 } as const;
 
-// const AVAILABILITY_MAP = {
-//   available: "Disponible",
-//   sold: "Vendido",
-//   reserved: "Reservado",
-// } as const;
+const STATUS_MAP = {
+  [ApprovalStatus.PENDING]: "Pendiente",
+  [ApprovalStatus.APPROVED]: "Aprobado",
+  [ApprovalStatus.REJECTED]: "Rechazado",
+} as const;
 
 // Tipos
 interface Vehicle {
   _id: string;
-  category: string;
+  category: VehicleCategory;
   subcategory?: string;
   brand: string;
   model: string;
@@ -85,33 +91,36 @@ interface Vehicle {
   mileage: number;
   color: string;
   engine?: string;
-  transmission: keyof typeof TRANSMISSION_MAP;
-  condition: keyof typeof CONDITION_MAP;
+  transmission: TransmissionType;
+  condition: VehicleCondition;
   location: string;
   features: string[];
-  fuelType: keyof typeof FUEL_TYPE_MAP;
+  fuelType: FuelType;
   loadCapacity?: number;
   sellerContact: {
     name: string;
     email: string;
     phone: string;
   };
-  availability: "available" | "sold" | "reserved";
-  warranty: keyof typeof WARRANTY_MAP;
+  status: ApprovalStatus; // Reemplazado: availability por status
+  warranty: WarrantyType;
   description: string;
   images: string[];
-  selectedBank: string;
-  referenceNumber: string;
+  selectedBank?: string;
+  referenceNumber?: string;
   postedDate: string;
   createdAt: string;
   updatedAt: string;
-  paymentProof: string;
+  paymentProof?: string;
   views?: number;
   isFeatured?: boolean;
 }
 
 // Función helper para traducir valores
-const translateValue = (value: string, map: Record<string, string>): string => {
+const translateValue = <T extends string>(
+  value: T,
+  map: Record<T, string>
+): string => {
   return map[value] || value;
 };
 
@@ -458,14 +467,45 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
         headers.Authorization = `Bearer ${session.accessToken}`;
       }
 
-      const response = await fetch(`/api/admin/vehicles/${vehicleId}`, {
-        method: "GET",
-        headers,
-      });
+      let response;
+      let apiUrl;
+
+      if (session?.user?.role === "admin") {
+        apiUrl = `/api/admin/vehicles/${vehicleId}`;
+        response = await fetch(apiUrl, {
+          method: "GET",
+          headers,
+        });
+      } else {
+        apiUrl = `/api/vehicles/${vehicleId}`;
+        response = await fetch(apiUrl, {
+          method: "GET",
+          headers,
+        });
+      }
+
+      console.log(`📡 Llamando a: ${apiUrl}`);
+
+      if (!response.ok && response.status === 403) {
+        console.log(
+          "⚠️ Acceso denegado a ruta admin, intentando ruta pública..."
+        );
+
+        apiUrl = `/api/vehicles/${vehicleId}`;
+        response = await fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+      }
 
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error("Vehículo no encontrado");
+        }
+        if (response.status === 403) {
+          throw new Error("No tienes permisos para acceder a este vehículo");
         }
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
@@ -482,9 +522,16 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
       setVehicle(vehicleData);
 
       try {
-        await fetch(`/api/admin/vehicles/${vehicleId}`, {
+        const viewUrl =
+          session?.user?.role === "admin"
+            ? `/api/admin/vehicles/${vehicleId}/views`
+            : `/api/vehicles/${vehicleId}/views`;
+
+        await fetch(viewUrl, {
           method: "POST",
-          headers,
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
       } catch (viewError) {
         console.warn("No se pudo incrementar las vistas:", viewError);
@@ -498,6 +545,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
       setIsLoading(false);
     }
   }, [vehicleId, session]);
+  
 
   useEffect(() => {
     if (session !== undefined) {
@@ -655,6 +703,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     TRANSMISSION_MAP
   );
   const translatedWarranty = translateValue(vehicle.warranty, WARRANTY_MAP);
+  const translatedStatus = translateValue(vehicle.status, STATUS_MAP);
 
   return (
     <div className="min-h-screen py-8 px-4" style={backgroundStyle}>
@@ -1062,6 +1111,22 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
                       isDarkMode ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
+                    Estado
+                  </span>
+                  <span
+                    className={`font-medium ${
+                      isDarkMode ? "text-gray-300" : "text-gray-700"
+                    }`}
+                  >
+                    {translatedStatus}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span
+                    className={`${
+                      isDarkMode ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
                     Publicado
                   </span>
                   <span
@@ -1110,7 +1175,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
                 )}
               </div>
             </div>
-            {vehicle.warranty !== "no-warranty" && (
+            {vehicle.warranty !== WarrantyType.NO_WARRANTY && (
               <div
                 className={`p-6 rounded-xl border ${
                   isDarkMode

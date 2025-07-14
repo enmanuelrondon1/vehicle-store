@@ -105,6 +105,48 @@ export interface Translation {
   secureDesc: string;
   getDirectionsDesc: string;
   bestPriceDesc: string;
+  loginRequired?: string; 
+  loginMessage?: string;
+  quickAndFree?: string;
+  loginButton?: string;
+  cancel?: string;
+  noAccount?: string;
+  signUp?: string;    
+  platformTrusted?: string;
+  learnMore?: string;
+  myVehicles?: string;
+  myFavorites?: string;
+  myProfile?: string;
+  mySettings?: string;
+  myOrders?: string;
+  myMessages?: string;
+  myNotifications?: string;
+  myWishlist?: string;
+  myReviews?: string;
+  mySubscriptions?: string;
+  myHistory?: string;
+  myAccount?: string;
+  myDashboard?: string;
+  mySupport?: string;
+  myHelp?: string;
+  myFeedback?: string;
+  myTickets?: string;
+  myInvoices?: string;
+  myPayments?: string;
+  mySubscriptionsDesc?: string;
+  myHistoryDesc?: string;
+  myAccountDesc?: string;
+  myDashboardDesc?: string;
+  mySupportDesc?: string;
+  myHelpDesc?: string;
+  myFeedbackDesc?: string;
+  myTicketsDesc?: string;
+  myInvoicesDesc?: string;
+  myPaymentsDesc?: string;
+  myWishlistDesc?: string;
+  myReviewsDesc?: string;
+  myVehiclesDesc?: string;
+  myFavoritesDesc?: string;
 }
 
 const translations: Record<Language, Translation> = {
@@ -210,6 +252,48 @@ const translations: Record<Language, Translation> = {
     secureDesc: "Trusted platform with user verification and 24/7 support.",
     getDirectionsDesc: "Get directions to your preferred vehicle location easily.",
     bestPriceDesc: "Valuation tools to get the best price for your vehicle.",
+    loginRequired: "Login required",
+    loginMessage: "Please login to access this page",
+    quickAndFree: "Quick and Free",
+    loginButton: "Login",
+    cancel: "Cancel",
+    noAccount: "Don't have an account?",    
+    signUp: "Sign Up",  
+    platformTrusted: "Trusted Platform",
+    learnMore: "Learn More",
+    myVehicles: "My Vehicles",
+    myFavorites: "My Favorites",
+    myProfile: "My Profile",
+    mySettings: "My Settings",
+    myOrders: "My Orders",
+    myMessages: "My Messages",
+    myNotifications: "My Notifications",
+    myWishlist: "My Wishlist",
+    myReviews: "My Reviews",
+    mySubscriptions: "My Subscriptions",
+    myHistory: "My History",
+    myAccount: "My Account",
+    myDashboard: "My Dashboard",
+    mySupport: "My Support",
+    myHelp: "My Help",
+    myFeedback: "My Feedback",
+    myTickets: "My Tickets",
+    myInvoices: "My Invoices",
+    myPayments: "My Payments",
+    mySubscriptionsDesc: "Manage your subscriptions and billing details",
+    myHistoryDesc: "View your recent transactions",
+    myAccountDesc: "Manage your account settings and preferences",
+    myDashboardDesc: "Access your account dashboard",
+    mySupportDesc: "Get help with your account",
+    myHelpDesc: "Get help with your account",
+    myFeedbackDesc: "Give us feedback on your experience",
+    myTicketsDesc: "View your tickets and manage your account",
+    myInvoicesDesc: "View your invoices and manage your account",
+    myPaymentsDesc: "View your payments and manage your account",
+    myWishlistDesc: "View your wishlist and manage your account",
+    myReviewsDesc: "View your reviews and manage your account",
+    myVehiclesDesc: "View your vehicles and manage your account",
+    myFavoritesDesc: "View your favorites and manage your account", 
   },
   es: {
     greeting: "Hola",
@@ -313,6 +397,48 @@ const translations: Record<Language, Translation> = {
     secureDesc: "Plataforma confiable con verificación de usuarios y soporte 24/7.",
     getDirectionsDesc: "Obtén direcciones fácilmente a la ubicación de tu vehículo preferido.",
     bestPriceDesc: "Herramientas de valuación para obtener el mejor precio por tu vehículo.",
+    loginRequired: "Se requiere iniciar sesión",
+    loginMessage: "Por favor, inicia sesión para acceder a esta página",
+    quickAndFree: "Rápido y Gratis",
+    loginButton: "Iniciar Sesión",
+    cancel: "Cancelar",
+    noAccount: "¿No tienes una cuenta?",
+    signUp: "Regístrate",
+    platformTrusted: "Plataforma Confiable",
+    learnMore: "Aprende Más",
+    myVehicles: "Mis Vehículos",
+    myFavorites: "Mis Favoritos",
+    myProfile: "Mi Perfil", 
+    mySettings: "Mis Ajustes",
+    myOrders: "Mis Pedidos",
+    myMessages: "Mis Mensajes",
+    myNotifications: "Mis Notificaciones",
+    myWishlist: "Mis Deseos",
+    myReviews: "Mis Reseñas",
+    mySubscriptions: "Mis Suscripciones",
+    myHistory: "Mi Historial",
+    myAccount: "Mi Cuenta",
+    myDashboard: "Mi Panel de Control",
+    mySupport: "Mi Apoyo",
+    myHelp: "Mi Ayuda",
+    myFeedback: "Mi Comentario",
+    myTickets: "Mis Boletos",
+    myInvoices: "Mis Facturas",
+    myPayments: "Mis Pagos",
+    mySubscriptionsDesc: "Gestiona tus suscripciones y detalles de facturación",
+    myHistoryDesc: "Ver tus transacciones recientes",
+    myAccountDesc: "Gestiona tus ajustes de cuenta y preferencias",
+    myDashboardDesc: "Accede al panel de control de tu cuenta",
+    mySupportDesc: "Obtén ayuda con tu cuenta",
+    myHelpDesc: "Obtén ayuda con tu cuenta",
+    myFeedbackDesc: "Envíanos tus comentarios sobre tu experiencia",
+    myTicketsDesc: "Ver tus boletos y gestiona tu cuenta",
+    myInvoicesDesc: "Ver tus facturas y gestiona tu cuenta",
+    myPaymentsDesc: "Ver tus pagos y gestiona tu cuenta",
+    myWishlistDesc: "Ver tus deseos y gestiona tu cuenta",
+    myReviewsDesc: "Ver tus reseñas y gestiona tu cuenta",
+    myVehiclesDesc: "Ver tus vehículos y gestiona tu cuenta",
+    myFavoritesDesc: "Ver tus favoritos y gestiona tu cuenta",    
   },
 };
 

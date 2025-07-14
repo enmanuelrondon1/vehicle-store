@@ -1,3 +1,4 @@
+// src/app/hooks/useAuth.ts
 'use client';
 
 import { useSession } from 'next-auth/react';
@@ -64,8 +65,13 @@ export const useAuth = () => {
 
     const validateAuth = () => {
       // Solo validar para rutas protegidas
-      if (isUnauthenticated && window.location.pathname.startsWith('/postAd')) {
-        console.log('🔄 Revalidando autenticación...');
+      const protectedRoutes = ['/postAd', '/AdminPanel', '/upload-payment-proof'];
+      const isProtectedRoute = protectedRoutes.some(route => 
+        window.location.pathname.startsWith(route)
+      );
+
+      if (isUnauthenticated && isProtectedRoute) {
+        console.log('🔄 Revalidando autenticación para ruta protegida...');
         setIsValidating(true);
         validateSession();
       }
@@ -82,6 +88,7 @@ export const useAuth = () => {
     };
 
     const handlePopState = () => {
+      // Validar especialmente cuando se usa el botón atrás
       validateAuth();
     };
 
@@ -122,7 +129,7 @@ export const useAuth = () => {
       }
       return true;
     },
-    [isAuthenticated, isLoading, isValidating, redirectToLogin, status] // Agregado 'status' aquí
+    [isAuthenticated, isLoading, isValidating, redirectToLogin, status]
   );
 
   return {

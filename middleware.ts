@@ -1,3 +1,4 @@
+// middleware.ts
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -5,13 +6,26 @@ import type { NextRequest } from "next/server";
 export default withAuth(
   function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
-    const token = (req as any).nextauth?.token; // Cambio aquí
+    const token = (req as any).nextauth?.token;
+
+    // Excluir rutas de migración
+    if (pathname === "/api/migrate-status" || pathname === "/api/migrate-views") {
+      return NextResponse.next();
+    }
 
     console.log("🔒 Middleware ejecutándose para:", pathname);
     console.log("🔑 Token presente:", !!token);
     console.log("👤 Usuario:", token?.email || "No autenticado");
+    console.log("🔑 Token completo:", token);
 
-    // Resto del código sin cambios
+    if (
+      (pathname.startsWith("/AdminPanel") || pathname.startsWith("/api/admin")) &&
+      token?.role !== "admin"
+    ) {
+      console.log("❌ Acceso denegado - No es administrador:", pathname);
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
     const response = NextResponse.next();
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     response.headers.set('Pragma', 'no-cache');
@@ -31,7 +45,12 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
-        const protectedPaths = ['/postAd', '/profile', '/dashboard'];
+        // Excluir rutas de migración
+        if (pathname === "/api/migrate-status" || pathname === "/api/migrate-views") {
+          return true;
+        }
+
+        const protectedPaths = ['/postAd', '/profile', '/dashboard', '/AdminPanel', '/api/admin'];
         const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
 
         console.log("🛡️ Verificando autorización:", {
@@ -39,11 +58,20 @@ export default withAuth(
           isProtectedPath,
           hasToken: !!token,
           userEmail: token?.email,
+          userRole: token?.role,
           userAgent: req.headers.get('user-agent')?.substring(0, 50) + '...'
         });
 
         if (isProtectedPath && !token) {
           console.log("❌ Acceso denegado - No hay token para ruta protegida:", pathname);
+          return false;
+        }
+
+        if (
+          (pathname.startsWith("/AdminPanel") || pathname.startsWith("/api/admin")) &&
+          token?.role !== "admin"
+        ) {
+          console.log("❌ Acceso denegado - No es administrador:", pathname);
           return false;
         }
 
@@ -67,6 +95,8 @@ export const config = {
     '/postAd/:path*',
     '/profile/:path*',
     '/dashboard/:path*',
+    '/AdminPanel/:path*',
+    '/api/admin/:path*',
     '/api/protected/:path*'
   ]
 };

@@ -2,15 +2,13 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 
-export async function GET() { // Permitimos GET para probar en el navegador
+export async function POST() {
   try {
     const client = await clientPromise;
     const db = client.db("vehicle_store");
-    const result = await db.collection("vehicles").updateMany(
-      {},
-      { $set: { views: 0 } },
-      { upsert: false }
-    );
+    const result = await db
+      .collection("vehicles")
+      .updateMany({}, { $set: { views: 0 } }, { upsert: false });
 
     return NextResponse.json({
       success: true,
@@ -20,8 +18,17 @@ export async function GET() { // Permitimos GET para probar en el navegador
   } catch (error) {
     console.error("Error al migrar views:", error);
     return NextResponse.json(
-      { success: false, error: "Error interno al migrar los views" },
+      { success: false, error: String(error) },
       { status: 500 }
     );
   }
+}
+
+// Solo para pruebas locales
+export async function GET() {
+  return NextResponse.json({
+    success: false,
+    error:
+      "Este endpoint solo acepta solicitudes POST. Usa `curl -X POST http://localhost:3000/api/migrate-views`.",
+  });
 }

@@ -1,3 +1,4 @@
+// src/components/shared/Navbar/Navbar.tsx
 "use client";
 import React, { memo, useCallback } from "react";
 import Link from "next/link";

@@ -20,8 +20,9 @@ import {
   FUEL_TYPES_LABELS,
 } from "@/types/shared";
 import { VehicleDataBackend } from "@/types/types";
-import BasicInfoStep from "./BasicInfoStep";
+// import BasicInfoStep from "./components/BasicInfoStep";
 import { useDarkMode } from "@/context/DarkModeContext";
+import BasicInfoStep from "./BasicInfoStep";
 
 interface FormErrors {
   [key: string]: string;
