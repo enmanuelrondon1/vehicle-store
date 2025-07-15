@@ -56,7 +56,7 @@ export const generateVehiclePdf = async (vehicle: VehicleDataFrontend): Promise<
 
   try {
     // Generar QR Code que enlaza al anuncio
-    const vehicleUrl = `${window.location.origin}/vehicles/${vehicle._id}`;
+    const vehicleUrl = `${window.location.origin}/vehicle/${vehicle._id}`;
     const qrCodeDataUrl = await QRCode.toDataURL(vehicleUrl, { width: 200 });
     doc.addImage(qrCodeDataUrl, 'PNG', 150, 55, 40, 40);
     doc.setFontSize(8);
