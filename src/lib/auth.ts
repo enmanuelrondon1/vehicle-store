@@ -3,6 +3,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth/next";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 // Extiende los tipos de NextAuth para incluir 'role' en User y Session
 declare module "next-auth" {
@@ -108,4 +111,21 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
+};
+
+/**
+ * Higher-Order Function para proteger rutas de API que requieren rol de administrador.
+ * @param handler El handler de la ruta de API a proteger.
+ * @returns Un nuevo handler que primero verifica la autenticación y autorización.
+ */
+export const withAdminAuth = (handler: (req?: NextRequest) => Promise<NextResponse>) => {
+  return async (req: NextRequest) => {
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user?.role !== 'admin') {
+      return NextResponse.json({ success: false, error: 'Acceso no autorizado' }, { status: 403 });
+    }
+
+    return handler(req);
+  };
 };

@@ -1,5 +1,5 @@
 // src/lib/mongodb.ts 
-import { MongoClient } from "mongodb";
+import { MongoClient, Db } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
   throw new Error(
@@ -32,3 +32,8 @@ if (process.env.NODE_ENV === "development") {
 }
 
 export default clientPromise;
+
+export async function getDb(): Promise<Db> {
+  const client = await clientPromise;
+  return client.db("vehicle_store");
+}

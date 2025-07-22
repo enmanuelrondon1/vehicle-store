@@ -166,57 +166,47 @@ export const useVehicleForm = () => {
     if (!validateCurrentStep()) return
 
     setIsSubmitting(true)
+    setErrors({})
+
     try {
-      const dataToSend = {
+      // 1. Preparar todos los datos en un solo objeto
+      const vehiclePayload = {
         ...formData,
         features: formData.features || [],
         images: formData.images || [],
         status: ApprovalStatus.PENDING,
         warranty: formData.warranty || "NO_WARRANTY",
-        postedDate: new Date().toISOString(),
         selectedBank: selectedBank?.name,
         referenceNumber,
       }
 
-      const vehicleRes = await fetch("/api/post-ad", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataToSend),
-      })
-
-      if (!vehicleRes.ok) throw new Error(`Error ${vehicleRes.status}: ${await vehicleRes.text()}`)
-
-      const vehicleData = await vehicleRes.json()
-
-      if (!vehicleData.success || !vehicleData.data) {
-        setSubmissionStatus("error")
-        setErrors(
-          vehicleData.validationErrors || {
-            general: vehicleData.error || vehicleData.message || "Error desconocido",
-          },
-        )
-        return
+      // 2. Crear un único FormData para enviar todo junto
+      const submissionFormData = new FormData();
+      submissionFormData.append("vehicleData", JSON.stringify(vehiclePayload));
+      
+      if (paymentProof) {
+        submissionFormData.append("paymentProof", paymentProof);
       }
 
-      const paymentFormData = new FormData()
-      paymentFormData.append("vehicleId", vehicleData.data._id)
-      paymentFormData.append("file", paymentProof!)
-
-      const uploadRes = await fetch("/api/upload-payment-proof", {
+      // 3. Hacer una única llamada a la API
+      const response = await fetch("/api/post-ad", {
         method: "POST",
-        body: paymentFormData,
+        body: submissionFormData, // No se necesita 'Content-Type', el navegador lo pone por nosotros
       })
 
-      if (!uploadRes.ok) throw new Error(`Error al subir el comprobante: ${await uploadRes.text()}`)
+      const result = await response.json();
 
-      const uploadData = await uploadRes.json()
-      if (!uploadData.success) throw new Error(uploadData.error || "Error al subir el comprobante")
+      if (!response.ok || !result.success) {
+        setSubmissionStatus("error")
+        setErrors(result.validationErrors || { general: result.error || "Ocurrió un error desconocido." });
+        return
+      }
 
       setSubmissionStatus("success")
       setFormData((prev) => ({
         ...prev,
-        _id: vehicleData.data._id,
-        paymentProof: uploadData.url || uploadData.secure_url,
+        _id: result.data._id,
+        paymentProof: result.data.paymentProof,
       }))
       setCurrentStep(7)
       localStorage.removeItem("vehicleFormData")

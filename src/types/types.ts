@@ -47,6 +47,7 @@ export interface VehicleDataBackend {
   status: ApprovalStatus;
   createdAt?: Date;
   updatedAt?: Date;
+  views?: number;
 }
 
 export interface ApiResponseBackend<T = VehicleDataBackend> {
@@ -198,6 +199,7 @@ export const VehicleDataBackendSchema = z.object({
   postedDate: z.date(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
+  views: z.number().min(0).default(0).optional(),
 });
 
 export const CreateVehicleBackendSchema = VehicleDataBackendSchema.omit({
@@ -297,6 +299,7 @@ export const convertToFrontend = (
       backendData.updatedAt?.toISOString?.() ||
       backendData.updatedAt?.toString(),
     status: backendData.status || ApprovalStatus.PENDING,
+    views: backendData.views,
   };
 };
 

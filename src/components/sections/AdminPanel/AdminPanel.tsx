@@ -3,7 +3,7 @@
 // src/components/sections/AdminPanel.tsx
 "use client";
 
-import { useState, Fragment } from "react";
+import { useState, Fragment, useEffect } from "react";
 import Image from "next/image";
 import { Menu, Transition } from "@headlessui/react";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
@@ -60,13 +59,13 @@ import {
 import { generateVehiclePdf } from "@/lib/pdfGenerator";
 import { useDarkMode } from "@/context/DarkModeContext";
 import { useAdminPanelEnhanced } from "@/hooks/use-admin-panel-enhanced";
-import type { VehicleDataFrontend } from "@/types/types";
-import { PdfViewer } from "./components/pdf-viewer/pdf-viewer";
-import { AdminStats } from "./components/AdminStats/AdminStats";
+import type { VehicleDataFrontend, ApprovalStatus as ApprovalStatusType } from "@/types/types";import { PdfViewer } from "./components/pdf-viewer/pdf-viewer";
+import { AnalyticsDashboard } from "./components/AnalyticsDashboard/AnalyticsDashboard";
+// import { NotificationBell } from "@/components/ui/NotificationBell";
 import { AdminFilters } from "./components/AdminFilters/AdminFilters";
 import { VehicleGridView } from "./components/VehicleGridView/VehicleGridView";
 import { AdminPagination } from "./components/AdminPagination/AdminPagination";
-import { ApprovalStatus } from "@/types/shared";
+import { NotificationBell } from "./components/NotificationBell/NotificationBell";
 
 // Interfaces para las nuevas funcionalidades
 interface VehicleComment {
@@ -86,6 +85,20 @@ interface VehicleHistoryEntry {
   oldValue?: string;
   newValue?: string;
 }
+
+interface AnalyticsData {
+  generalStats: { totalVehicles: number; averagePrice: number; totalViews: number; };
+  statusCounts: { [key: string]: number };
+  monthlyPublications: { _id: { year: number; month: number; }; count: number; }[];
+  avgPriceByCategory: { _id: string; averagePrice: number; count: number; }[];
+}
+
+// Mapeo explícito
+const ApprovalStatus = {
+  PENDING: "pending" as ApprovalStatusType,
+  APPROVED: "approved" as ApprovalStatusType,
+  REJECTED: "rejected" as ApprovalStatusType,
+};
 
 export const AdminPanel = () => {
   const { isDarkMode } = useDarkMode();
@@ -108,6 +121,7 @@ export const AdminPanel = () => {
     handleStatusChange,
     fetchVehicles,
     deleteVehicle,
+    setAllVehicles, // Importamos la función para actualizar el estado
   } = useAdminPanelEnhanced();
 
   const [selectedVehicle, setSelectedVehicle] =
@@ -130,6 +144,53 @@ export const AdminPanel = () => {
   const [vehicleHistory, setVehicleHistory] = useState<VehicleHistoryEntry[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [vehicleFromNotification, setVehicleFromNotification] = useState<VehicleDataFrontend | null>(null);
+
+  // Estado para los datos de analytics
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
+
+  // Fetch de datos de analytics
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setIsLoadingAnalytics(true);
+        const response = await fetch('/api/admin/analytics');
+        const result = await response.json();
+        if (result.success) {
+          setAnalyticsData(result.data);
+        } else {
+          console.error("Error fetching analytics:", result.error);
+        }
+      } catch (error) {
+        console.error("Error fetching analytics:", error);
+      } finally {
+        setIsLoadingAnalytics(false);
+      }
+    };
+    fetchAnalytics();
+  }, []);
+
+  // Efecto para abrir el diálogo de detalles desde una notificación
+  useEffect(() => {
+    if (vehicleFromNotification) {
+      // 1. Abrimos el modal de detalles inmediatamente
+      setSelectedVehicle(vehicleFromNotification);
+ 
+      // 2. Añadimos el nuevo vehículo a la lista SOLO SI NO EXISTE para evitar duplicados
+      setAllVehicles(prevVehicles => {
+        const vehicleExists = prevVehicles.some(v => v._id === vehicleFromNotification._id);
+        if (vehicleExists) {
+          return prevVehicles; // Si ya existe, no hacemos nada, solo devolvemos la lista actual
+        }
+        // Si no existe, lo añadimos al principio
+        return [vehicleFromNotification, ...prevVehicles];
+      });
+ 
+      // Reseteamos el disparador
+      setVehicleFromNotification(null);
+    }
+  }, [vehicleFromNotification, setAllVehicles]);
 
   if (status === "loading" || isLoading) {
     return (
@@ -362,7 +423,7 @@ export const AdminPanel = () => {
     }
   };
 
-  const handleBulkAction = async (action: ApprovalStatus) => {
+  const handleBulkAction = async (action: ApprovalStatusType) => {
     if (selectedVehicles.size === 0) return;
 
     try {
@@ -721,6 +782,7 @@ export const AdminPanel = () => {
         {vehicles.map((vehicle) => (
           <Card
             key={vehicle._id}
+            id={vehicle._id} // Añadimos el ID para el anclaje
             className={`${
               isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
             } hover:shadow-lg transition-all duration-200 ${
@@ -838,78 +900,15 @@ export const AdminPanel = () => {
                     )}
 
                     {/* Acciones rápidas - Desktop */}
-                    <div className="hidden sm:flex flex-wrap gap-2 pt-4 border-t">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedVehicle(vehicle)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Ver detalles
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>
-                              {vehicle.brand} {vehicle.model} ({vehicle.year})
-                            </DialogTitle>
-                          </DialogHeader>
-                          {selectedVehicle && (
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {vehicle.images.map((image, index) => (
-                                  <div
-                                    key={index}
-                                    className="relative aspect-video"
-                                  >
-                                    <Image
-                                      src={image || "/placeholder.svg"}
-                                      alt={`${vehicle.brand} ${vehicle.model} - ${
-                                        index + 1
-                                      }`}
-                                      fill
-                                      className="object-cover rounded-lg"
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                  <h4 className="font-semibold mb-2">
-                                    Especificaciones:
-                                  </h4>
-                                  <ul className="space-y-1 text-sm">
-                                    <li>Categoría: {vehicle.category}</li>
-                                    <li>Subcategoría: {vehicle.subcategory}</li>
-                                    <li>Motor: {vehicle.engine}</li>
-                                    <li>Puertas: {vehicle.doors}</li>
-                                    <li>Asientos: {vehicle.seats}</li>
-                                    <li>Condición: {vehicle.condition}</li>
-                                  </ul>
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold mb-2">
-                                    Características:
-                                  </h4>
-                                  <div className="flex flex-wrap gap-1">
-                                    {vehicle.features.map((feature, index) => (
-                                      <Badge
-                                        key={index}
-                                        variant="secondary"
-                                        className="text-xs"
-                                      >
-                                        {feature}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </DialogContent>
-                      </Dialog>
+                    <div className="hidden sm:flex flex-wrap items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedVehicle(vehicle)}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Ver detalles
+                      </Button>
 
                       {/* Botones de estado mejorados */}
                       {vehicle.status !== "approved" && (
@@ -996,7 +995,8 @@ export const AdminPanel = () => {
                   Gestiona los anuncios de vehículos y comprobantes de pago
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+              <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+                <NotificationBell onNotificationClick={setVehicleFromNotification} />
                 <Button onClick={exportData} variant="outline" size="sm" className="text-xs sm:text-sm">
                   <Download className="w-4 h-4 mr-2" />
                   <span className="hidden xs:inline">Exportar</span>
@@ -1021,7 +1021,11 @@ export const AdminPanel = () => {
         </Card>
 
         {/* Estadísticas */}
-        <AdminStats vehicles={allVehicles} isDarkMode={isDarkMode} />
+        {isLoadingAnalytics ? (
+          <Card className="p-6 text-center text-gray-500">Cargando analíticas...</Card>
+        ) : (
+          <AnalyticsDashboard data={analyticsData} isDarkMode={isDarkMode} />
+        )}
 
         {/* Filtros */}
         <AdminFilters
@@ -1067,6 +1071,62 @@ export const AdminPanel = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Dialog para ver detalles del vehículo (Refactorizado y único) */}
+      <Dialog open={!!selectedVehicle} onOpenChange={(open) => !open && setSelectedVehicle(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedVehicle?.brand} {selectedVehicle?.model} ({selectedVehicle?.year})
+            </DialogTitle>
+          </DialogHeader>
+          {selectedVehicle && (
+            <ScrollArea className="pr-6 -mr-6 h-[70vh]">
+              <div className="space-y-6 p-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {selectedVehicle.images.map((image, index) => (
+                    <div key={index} className="relative aspect-video">
+                      <Image
+                        src={image || "/placeholder.svg"}
+                        alt={`${selectedVehicle.brand} ${selectedVehicle.model} - ${index + 1}`}
+                        fill
+                        className="object-cover rounded-lg"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-2 border-b pb-2">Especificaciones</h4>
+                    <ul className="space-y-1 text-sm">
+                      <li><strong>Categoría:</strong> {selectedVehicle.category}</li>
+                      <li><strong>Subcategoría:</strong> {selectedVehicle.subcategory}</li>
+                      <li><strong>Motor:</strong> {selectedVehicle.engine}</li>
+                      <li><strong>Puertas:</strong> {selectedVehicle.doors}</li>
+                      <li><strong>Asientos:</strong> {selectedVehicle.seats}</li>
+                      <li><strong>Condición:</strong> {selectedVehicle.condition}</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2 border-b pb-2">Características</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedVehicle.features.map((feature, index) => (
+                        <Badge key={index} variant="secondary">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-2 border-b pb-2">Descripción</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{selectedVehicle.description}</p>
+                </div>
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog para rechazar con razón */}
       <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>

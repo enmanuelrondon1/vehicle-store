@@ -1,8 +1,8 @@
+// src/components/sections/VehicleDetail/VehicleDetail.tsx
 "use client";
 
 import type React from "react";
-import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -102,7 +102,7 @@ interface Vehicle {
     email: string;
     phone: string;
   };
-  status: ApprovalStatus; // Reemplazado: availability por status
+  status: ApprovalStatus;
   warranty: WarrantyType;
   description: string;
   images: string[];
@@ -183,18 +183,20 @@ const ImageGallery = ({
     <>
       <div className="relative">
         <div className="relative aspect-video rounded-xl overflow-hidden group">
-          <Image
-            src={
-              imageErrors[currentImageIndex]
-                ? "/placeholder.svg?height=400&width=600"
-                : images[currentImageIndex]
-            }
-            alt={`${vehicleName} - Imagen ${currentImageIndex + 1}`}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
-            onError={() => handleImageError(currentImageIndex)}
-          />
+          <div className="relative w-full h-full">
+            <Image
+              src={
+                imageErrors[currentImageIndex]
+                  ? "/placeholder.svg?height=400&width=600"
+                  : images[currentImageIndex]
+              }
+              alt={`${vehicleName} - Imagen ${currentImageIndex + 1}`}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+              onError={() => handleImageError(currentImageIndex)}
+            />
+          </div>
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <div className="absolute inset-0 flex items-center justify-between p-4">
               {images.length > 1 && (
@@ -233,12 +235,10 @@ const ImageGallery = ({
               <button
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                className={`relative w-20 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
                   currentImageIndex === index
                     ? "border-blue-500 scale-105"
-                    : isDarkMode
-                    ? "border-gray-700 hover:border-gray-600"
-                    : "border-gray-300 hover:border-gray-400"
+                    : "border-transparent hover:border-gray-300"
                 }`}
               >
                 <Image
@@ -249,8 +249,7 @@ const ImageGallery = ({
                   }
                   alt={`Miniatura ${index + 1}`}
                   className="w-full h-full object-cover"
-                  width={80}
-                  height={64}
+                  fill
                   onError={() => handleImageError(index)}
                 />
               </button>
@@ -258,41 +257,62 @@ const ImageGallery = ({
           </div>
         )}
       </div>
+
+      {/* Fullscreen Modal - CORREGIDO */}
       {isFullscreen && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-          <div className="relative max-w-7xl max-h-full">
-            <Image
-              src={
-                imageErrors[currentImageIndex]
-                  ? "/placeholder.svg?height=600&width=800"
-                  : images[currentImageIndex]
-              }
-              alt={`${vehicleName} - Imagen ${currentImageIndex + 1}`}
-              className="max-w-full max-h-full object-contain"
-              onError={() => handleImageError(currentImageIndex)}
-            />
+        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center">
+          {/* Contenedor principal del modal */}
+          <div className="relative w-full h-full flex items-center justify-center p-4">
+            {/* Contenedor de la imagen */}
+            <div className="relative max-w-[95vw] max-h-[90vh] flex items-center justify-center">
+              <Image
+                src={
+                  imageErrors[currentImageIndex]
+                    ? "/placeholder.svg?height=600&width=800"
+                    : images[currentImageIndex]
+                }
+                alt={`${vehicleName} - Imagen ${currentImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                onError={() => handleImageError(currentImageIndex)}
+              />
+            </div>
+
+            {/* Botón cerrar */}
             <button
               onClick={() => setIsFullscreen(false)}
-              className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+              className="absolute top-6 right-6 w-12 h-12 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors z-10 backdrop-blur-sm"
             >
               <X className="w-6 h-6" />
             </button>
+
+            {/* Navegación - solo si hay más de una imagen */}
             {images.length > 1 && (
               <>
                 <button
                   onClick={prevImage}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                  className="absolute left-6 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors z-10 backdrop-blur-sm"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
                   onClick={nextImage}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+                  className="absolute right-6 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors z-10 backdrop-blur-sm"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
+
+                {/* Contador de imágenes */}
+                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm">
+                  {currentImageIndex + 1} / {images.length}
+                </div>
               </>
             )}
+
+            {/* Cerrar al hacer clic en el fondo */}
+            <div
+              className="absolute inset-0 -z-10"
+              onClick={() => setIsFullscreen(false)}
+            />
           </div>
         </div>
       )}
@@ -444,7 +464,7 @@ const ContactInfo = ({
 // Componente principal
 const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
   const { isDarkMode } = useDarkMode();
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
   const router = useRouter();
 
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
@@ -457,84 +477,40 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
       setError(null);
       setIsLoading(true);
 
-      console.log("🚀 Obteniendo vehículo con ID:", vehicleId);
-
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-
-      if (session?.accessToken) {
-        headers.Authorization = `Bearer ${session.accessToken}`;
-      }
-
-      let response;
-      let apiUrl;
-
-      if (session?.user?.role === "admin") {
-        apiUrl = `/api/admin/vehicles/${vehicleId}`;
-        response = await fetch(apiUrl, {
-          method: "GET",
-          headers,
-        });
-      } else {
-        apiUrl = `/api/vehicles/${vehicleId}`;
-        response = await fetch(apiUrl, {
-          method: "GET",
-          headers,
-        });
-      }
-
-      console.log(`📡 Llamando a: ${apiUrl}`);
-
-      if (!response.ok && response.status === 403) {
-        console.log(
-          "⚠️ Acceso denegado a ruta admin, intentando ruta pública..."
-        );
-
-        apiUrl = `/api/vehicles/${vehicleId}`;
-        response = await fetch(apiUrl, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-      }
+      // 1. Llamar a la nueva ruta unificada y pública
+      const apiUrl = `/api/vehicles/${vehicleId}`;
+      const response = await fetch(apiUrl, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error("Vehículo no encontrado");
-        }
-        if (response.status === 403) {
-          throw new Error("No tienes permisos para acceder a este vehículo");
-        }
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({ error: `Error ${response.status}` }));
+        throw new Error(errorData.error || `Error ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log("📦 Vehículo obtenido:", data);
-
-      const vehicleData = data.vehicle || data.data || data;
-
-      if (!vehicleData || !vehicleData._id) {
-        throw new Error("Datos del vehículo inválidos");
+      const result = await response.json();
+      if (!result.success || !result.data) {
+        throw new Error(result.error || "No se pudieron obtener los datos del vehículo.");
       }
 
+      const vehicleData = result.data;
       setVehicle(vehicleData);
 
+      // 2. Incrementar vistas después de obtener el vehículo.
+      // Esto se hace en un 'try/catch' separado para que un fallo aquí
+      // no impida que el usuario vea la página del vehículo.
       try {
-        const viewUrl =
-          session?.user?.role === "admin"
-            ? `/api/admin/vehicles/${vehicleId}/views`
-            : `/api/vehicles/${vehicleId}/views`;
-
-        await fetch(viewUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const viewResponse = await fetch(`/api/vehicles/${vehicleId}/views`, { method: 'POST' });
+        if (viewResponse.ok) {
+          const updatedData = await viewResponse.json();
+          if (updatedData.success && typeof updatedData.data?.views === 'number') {
+            // Actualizar el estado con el conteo de vistas devuelto por la API
+            setVehicle(prev => prev ? { ...prev, views: updatedData.data.views } : null);
+          }
+        }
       } catch (viewError) {
-        console.warn("No se pudo incrementar las vistas:", viewError);
+        console.warn("No se pudo incrementar la vista, pero la página se muestra:", viewError);
       }
     } catch (error) {
       console.error("❌ Error obteniendo vehículo:", error);
@@ -544,14 +520,11 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [vehicleId, session]);
-  
+  }, [vehicleId]);
 
   useEffect(() => {
-    if (session !== undefined) {
-      fetchVehicle();
-    }
-  }, [session, fetchVehicle]);
+    fetchVehicle();
+  }, [fetchVehicle]);
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("es-ES", {
@@ -794,7 +767,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
                   <MapPin className="w-5 h-5" />
                   <span>{vehicle.location}</span>
                 </div>
-                {vehicle.views && (
+                {vehicle.views !== undefined && (
                   <div className="flex items-center gap-2">
                     <Eye className="w-5 h-5" />
                     <span>{vehicle.views} vistas</span>
@@ -1137,7 +1110,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
                     {formatDate(vehicle.createdAt)}
                   </span>
                 </div>
-                {vehicle.views && (
+                {vehicle.views !== undefined && (
                   <div className="flex justify-between items-center">
                     <span
                       className={`${

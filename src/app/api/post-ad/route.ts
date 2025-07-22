@@ -1,6 +1,7 @@
 // src/app/api/post-ad/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
+import { pusherServer } from "@/lib/pusher";
 import { VehicleService } from "@/services/vehicleService";
 import { ApiResponseFrontend, VehicleDataBackend, ApprovalStatus } from "@/types/types";
 import { z } from "zod";
@@ -193,6 +194,28 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
       if (response.success && response.data) {
         console.log("Respuesta exitosa con _id:", response.data._id);
+
+        // Notificar a los administradores en tiempo real con el objeto completo
+        try {
+          // response.data ya está en formato VehicleDataFrontend gracias al servicio
+          const frontendVehicle = response.data;
+
+          const notificationPayload = {
+            message: `Nuevo vehículo: ${frontendVehicle.brand} ${frontendVehicle.model}`,
+            vehicleId: frontendVehicle._id,
+            timestamp: new Date().toISOString(),
+            vehicleData: frontendVehicle, // ¡Añadimos el objeto completo!
+          };
+
+          await pusherServer.trigger(
+            'private-admin-notifications',
+            'new-vehicle',
+            notificationPayload
+          );
+        } catch (pusherError) {
+          console.error('Error sending Pusher notification:', pusherError);
+        }
+
         return NextResponse.json(response, { status: 201 });
       } else {
         console.error("Error del servicio:", response.error);

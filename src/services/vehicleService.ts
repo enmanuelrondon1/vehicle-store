@@ -8,6 +8,8 @@ import {
   ApprovalStatus,
 } from "@/types/types";
 import { ValidationUtils } from "../lib/validation";
+import { pusherServer } from "@/lib/pusher";
+// import { pusherServer } from "@/lib/pusher";
 
 // Tipo específico para MongoDB con ObjectId real
 interface VehicleDataMongo {
@@ -42,6 +44,40 @@ interface VehicleDataMongo {
   updatedAt?: Date;
   views?: number;
 }
+
+// Tipos para los datos de analytics
+interface GeneralStats {
+  totalVehicles: number;
+  averagePrice: number;
+  totalViews: number;
+}
+
+interface StatusCount {
+  _id: ApprovalStatus;
+  count: number;
+}
+
+interface MonthlyPublication {
+  _id: {
+    year: number;
+    month: number;
+  };
+  count: number;
+}
+
+interface AvgPriceByCategory {
+  _id: string; // category name
+  averagePrice: number;
+  count: number;
+}
+
+interface AnalyticsData {
+  generalStats: GeneralStats;
+  statusCounts: Record<string, number>;
+  monthlyPublications: MonthlyPublication[];
+  avgPriceByCategory: AvgPriceByCategory[];
+}
+
 
 export class VehicleService {
   private db: Db;
@@ -116,6 +152,7 @@ export class VehicleService {
       status: mongoData.status,
       createdAt: mongoData.createdAt,
       updatedAt: mongoData.updatedAt,
+      views: mongoData.views,
     };
   }
 
@@ -264,6 +301,16 @@ export class VehicleService {
       const { convertToFrontend } = await import("@/types/types");
       const backendData = this.convertFromMongo(result);
 
+      // Disparar notificación de cambio de estado si aplica
+      if (updateData.status) {
+        await pusherServer.trigger('private-admin-notifications', 'status-update', {
+          message: `El estado de "${backendData.brand} ${backendData.model}" ha cambiado a ${updateData.status}.`,
+          vehicleId: id,
+          status: updateData.status,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       return {
         success: true,
         data: convertToFrontend(backendData),
@@ -348,4 +395,83 @@ export class VehicleService {
       };
     }
   }
+
+ async getAnalyticsData(): Promise<AnalyticsData | null> {
+  try {
+    const now = new Date();
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
+    const result = await this.collection.aggregate([
+      {
+        $facet: {
+          // 1. Estadísticas generales
+          generalStats: [
+            {
+              $group: {
+                _id: null,
+                totalVehicles: { $sum: 1 },
+                averagePrice: { $avg: '$price' },
+                totalViews: { $sum: '$views' }
+              }
+            }
+          ],
+          // 2. Conteo de vehículos por estado
+          statusCounts: [
+            { $group: { _id: '$status', count: { $sum: 1 } } }
+          ],
+          // 3. Publicaciones por mes (últimos 6 meses)
+          monthlyPublications: [
+            { $match: { createdAt: { $gte: sixMonthsAgo } } },
+            {
+              $group: {
+                _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { '_id.year': 1, '_id.month': 1 } }
+          ],
+          // 4. Precio promedio por categoría
+          avgPriceByCategory: [
+            {
+              $group: {
+                _id: '$category',
+                averagePrice: { $avg: '$price' },
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { count: -1 } }
+          ]
+        }
+      }
+    ]).toArray();
+
+    if (!result[0]) {
+      return null;
+    }
+
+    const analytics = result[0] as {
+      generalStats: GeneralStats[];
+      statusCounts: StatusCount[];
+      monthlyPublications: MonthlyPublication[];
+      avgPriceByCategory: AvgPriceByCategory[];
+    };
+
+    // Procesar y dar formato a los datos
+    const formattedData: AnalyticsData = {
+      generalStats: analytics.generalStats[0] || { totalVehicles: 0, averagePrice: 0, totalViews: 0 },
+      statusCounts: analytics.statusCounts.reduce((acc: Record<string, number>, item: StatusCount) => {
+        acc[item._id] = item.count;
+        return acc;
+      }, {}),
+      monthlyPublications: analytics.monthlyPublications,
+      avgPriceByCategory: analytics.avgPriceByCategory,
+    };
+
+    return formattedData;
+
+  } catch (error) {
+    console.error("Error obteniendo datos de analytics:", error);
+    throw error;
+  }
+}
 }

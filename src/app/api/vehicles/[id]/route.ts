@@ -3,59 +3,33 @@ import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { VehicleService } from "@/services/vehicleService";
 import { ApprovalStatus } from "@/types/types";
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await the params since they're now a Promise in Next.js 15
     const { id } = await params;
-    console.log("GET /api/vehicles/[id] - Iniciando... ID:", id);
 
-    let client;
-    try {
-      client = await clientPromise;
-      console.log("Conexión a MongoDB exitosa");
-    } catch (dbError) {
-      console.error("Error de conexión a MongoDB:", dbError);
-      return NextResponse.json(
-        { success: false, error: "Error de conexión a la base de datos" },
-        { status: 500 }
-      );
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Vehicle ID is required' }, { status: 400 });
     }
 
-    try {
-      const db = client.db("vehicle_store");
-      const vehicleService = new VehicleService(db);
-      console.log("Obteniendo vehículo con ID:", id);
+    const session = await getServerSession(authOptions);
+    const isAdmin = session?.user?.role === 'admin';
 
-      const result = await vehicleService.getVehicleById(id, ApprovalStatus.APPROVED);
+    const client = await clientPromise;
+    const db = client.db("vehicle_store");
+    const vehicleService = new VehicleService(db);
 
-      if (!result.success) {
-        console.log("Vehículo no encontrado o error:", result.error);
-        return NextResponse.json(
-          { success: false, error: result.error },
-          { status: result.error === "Vehículo no encontrado" ? 404 : 400 }
-        );
-      }
+    // Un admin puede ver cualquier vehículo, un usuario normal solo los aprobados.
+    const statusFilter = isAdmin ? undefined : ApprovalStatus.APPROVED;
+    const response = await vehicleService.getVehicleById(id, statusFilter);
 
-      console.log("Vehículo obtenido:", result.data);
-
-      return NextResponse.json(
-        {
-          success: true,
-          data: result.data,
-          message: "Vehículo obtenido exitosamente",
-        },
-        { status: 200 }
-      );
-    } catch (serviceError) {
-      console.error("Error al obtener vehículo:", serviceError);
-      return NextResponse.json(
-        { success: false, error: "Error al procesar el vehículo" },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(response, { status: response.success ? 200 : 404 });
   } catch (error) {
     console.error("Error general en GET /api/vehicles/[id]:", error);
     const errorMessage = error instanceof Error ? error.message : "Error desconocido";

@@ -54,7 +54,7 @@ export const useAdminPanelEnhanced = () => {
     try {
       setIsLoading(true)
       setError(null)
-      console.log("🚗 Fetching vehicles...")
+      // console.log("🚗 Fetching vehicles...")
 
       const response = await fetch("/api/admin/vehicles", {
         method: "GET",
@@ -64,7 +64,7 @@ export const useAdminPanelEnhanced = () => {
         credentials: "include",
       })
 
-      console.log("📡 Response status:", response.status)
+      // console.log("📡 Response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -86,23 +86,16 @@ export const useAdminPanelEnhanced = () => {
         vehiclesData = data
       }
 
-      console.log("🔧 Processed vehicles data:", vehiclesData)
-      console.log("📈 Total vehicles found:", vehiclesData.length)
+      // console.log("🔧 Processed vehicles data:", vehiclesData)
+      // console.log("📈 Total vehicles found:", vehiclesData.length)
 
       const validVehicles = Array.isArray(vehiclesData) ? vehiclesData : []
       setAllVehicles(validVehicles)
 
-      const statusStats = validVehicles.reduce(
-        (acc, vehicle) => {
-          acc[vehicle.status] = (acc[vehicle.status] || 0) + 1
-          return acc
-        },
-        {} as Record<string, number>,
-      )
-
-      console.log("📊 Vehicles by status:", statusStats)
+    
+      // console.log("📊 Vehicles by status:", statusStats)
     } catch (err) {
-      console.error("❌ Fetch error:", err)
+      // console.error("❌ Fetch error:", err)
       setError(err instanceof Error ? err.message : "Error desconocido al cargar vehículos")
     } finally {
       setIsLoading(false)
@@ -120,28 +113,28 @@ export const useAdminPanelEnhanced = () => {
   }
 
   const filteredAndSortedVehicles = useMemo(() => {
-    console.log("🔍 Starting filter process...")
-    console.log("📋 Current filters:", filters)
-    console.log("🏗️ All vehicles count:", allVehicles.length)
+    // console.log("🔍 Starting filter process...")
+    // console.log("📋 Current filters:", filters)
+    // console.log("🏗️ All vehicles count:", allVehicles.length)
 
     let filtered = [...allVehicles]
 
     if (filters.status !== "all") {
-      console.log("🎯 Filtering by status:", filters.status)
-      const beforeCount = filtered.length
+      // console.log("🎯 Filtering by status:", filters.status)
+      // const beforeCount = filtered.length
       filtered = filtered.filter((vehicle) => {
         const matches = vehicle.status === filters.status
-        console.log(`Vehicle ${vehicle._id?.slice(-6)}: status='${vehicle.status}' matches='${matches}'`)
+        // console.log(`Vehicle ${vehicle._id?.slice(-6)}: status='${vehicle.status}' matches='${matches}'`)
         return matches
       })
-      console.log(`📊 Status filter: ${beforeCount} → ${filtered.length}`)
+      // console.log(`📊 Status filter: ${beforeCount} → ${filtered.length}`)
     } else {
-      console.log("🌐 Showing all statuses")
+      // console.log("🌐 Showing all statuses")
     }
 
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()
-      const beforeCount = filtered.length
+      // const beforeCount = filtered.length
       filtered = filtered.filter(
         (vehicle) =>
           vehicle.brand?.toLowerCase().includes(searchLower) ||
@@ -150,20 +143,20 @@ export const useAdminPanelEnhanced = () => {
           vehicle.sellerContact?.name?.toLowerCase().includes(searchLower) ||
           vehicle.description?.toLowerCase().includes(searchLower),
       )
-      console.log(`🔍 Search filter: ${beforeCount} → ${filtered.length}`)
+      // console.log(`🔍 Search filter: ${beforeCount} → ${filtered.length}`)
     }
 
     if (filters.category !== "all") {
-      const beforeCount = filtered.length
+      // const beforeCount = filtered.length
       filtered = filtered.filter((vehicle) => vehicle.category === filters.category)
-      console.log(`🏷️ Category filter: ${beforeCount} → ${filtered.length}`)
+      // console.log(`🏷️ Category filter: ${beforeCount} → ${filtered.length}`)
     }
 
-    const beforePriceCount = filtered.length
+    // const beforePriceCount = filtered.length
     filtered = filtered.filter(
       (vehicle) => vehicle.price >= filters.priceRange[0] && vehicle.price <= filters.priceRange[1],
     )
-    console.log(`💰 Price filter: ${beforePriceCount} → ${filtered.length}`)
+    // console.log(`💰 Price filter: ${beforePriceCount} → ${filtered.length}`)
 
     filtered.sort((a, b) => {
       switch (filters.sortBy) {
@@ -188,7 +181,7 @@ export const useAdminPanelEnhanced = () => {
       }
     })
 
-    console.log("✅ Final filtered vehicles:", filtered.length)
+    // console.log("✅ Final filtered vehicles:", filtered.length)
     return filtered
   }, [allVehicles, filters])
 
@@ -197,13 +190,13 @@ export const useAdminPanelEnhanced = () => {
     const endIndex = startIndex + pagination.itemsPerPage
     const paginated = filteredAndSortedVehicles.slice(startIndex, endIndex)
 
-    console.log("📄 Pagination:")
-    console.log("  Current page:", pagination.currentPage)
-    console.log("  Items per page:", pagination.itemsPerPage)
-    console.log("  Start index:", startIndex)
-    console.log("  End index:", endIndex)
-    console.log("  Total filtered:", filteredAndSortedVehicles.length)
-    console.log("  Paginated count:", paginated.length)
+    // console.log("📄 Pagination:")
+    // console.log("  Current page:", pagination.currentPage)
+    // console.log("  Items per page:", pagination.itemsPerPage)
+    // console.log("  Start index:", startIndex)
+    // console.log("  End index:", endIndex)
+    // console.log("  Total filtered:", filteredAndSortedVehicles.length)
+    // console.log("  Paginated count:", paginated.length)
 
     return paginated
   }, [filteredAndSortedVehicles, pagination.currentPage, pagination.itemsPerPage])
@@ -222,24 +215,24 @@ export const useAdminPanelEnhanced = () => {
   }, [filteredAndSortedVehicles.length, pagination.itemsPerPage, pagination.currentPage])
 
   useEffect(() => {
-    console.log("🔄 Setting vehicles from pagination:", paginatedVehicles.length)
+    // console.log("🔄 Setting vehicles from pagination:", paginatedVehicles.length)
     setVehicles(paginatedVehicles)
   }, [paginatedVehicles])
 
   useEffect(() => {
-    console.log("🔄 Session effect:", { status, role: session?.user?.role })
+    // console.log("🔄 Session effect:", { status, role: session?.user?.role })
     if (status === "authenticated" && session?.user?.role === "admin") {
-      console.log("✅ User is authenticated admin, fetching vehicles...")
+      // console.log("✅ User is authenticated admin, fetching vehicles...")
       fetchVehicles()
     } else if (status === "authenticated" && session?.user?.role !== "admin") {
-      console.log("❌ User is authenticated but not admin")
+      // console.log("❌ User is authenticated but not admin")
     }
   }, [status, session])
 
   // ✅ CORRECCIÓN: Ahora ApprovalStatus.REJECTED funcionará correctamente
   const handleStatusChange = async (vehicleId: string, newStatus: ApprovalStatus, reason?: string) => {
     try {
-      console.log("🔄 Changing status:", { vehicleId, newStatus, reason })
+      // console.log("🔄 Changing status:", { vehicleId, newStatus, reason })
 
       const body: { status: ApprovalStatus; rejectionReason?: string } = { status: newStatus }
       // ✅ Ahora esto funcionará correctamente
@@ -262,21 +255,21 @@ export const useAdminPanelEnhanced = () => {
         prev.map((vehicle) => (vehicle._id === vehicleId ? { ...vehicle, status: newStatus } : vehicle)),
       )
 
-      console.log("✅ Status updated successfully")
+      // console.log("✅ Status updated successfully")
     } catch (err) {
-      console.error("❌ Status change error:", err)
+      // console.error("❌ Status change error:", err)
       setError(err instanceof Error ? err.message : "Error al actualizar")
     }
   }
 
   const updateFilters = (newFilters: Partial<AdminPanelFilters>) => {
-    console.log("🔄 Updating filters:", newFilters)
+    // console.log("🔄 Updating filters:", newFilters)
     setFilters((prev) => ({ ...prev, ...newFilters }))
     setPagination((prev) => ({ ...prev, currentPage: 1 }))
   }
 
   const updatePagination = (updates: Partial<PaginationState>) => {
-    console.log("🔄 Updating pagination:", updates)
+    // console.log("🔄 Updating pagination:", updates)
     setPagination((prev) => ({ ...prev, ...updates }))
   }
 
@@ -305,7 +298,7 @@ export const useAdminPanelEnhanced = () => {
      
      return { success: true };
    } catch (error) {
-    console.error("Error al eliminar vehículo:", error);
+    // console.error("Error al eliminar vehículo:", error);
      setError(error instanceof Error ? error.message : "Error al eliminar vehículo");
      return { success: false, error: error instanceof Error ? error.message : "Error desconocido" };
 }
@@ -330,5 +323,6 @@ export const useAdminPanelEnhanced = () => {
     handleStatusChange,
     fetchVehicles,
     deleteVehicle,
+    setAllVehicles,
   }
 }
