@@ -17,6 +17,7 @@ interface VehicleDataMongo {
   category: VehicleData['category'];
   subcategory?: string;
   brand: string;
+  brandOther?: string;
   model: string;
   year: number;
   price: number;
@@ -24,6 +25,9 @@ interface VehicleDataMongo {
   color: string;
   engine: string;
   transmission: VehicleData['transmission'];
+  currency: VehicleData['currency'];
+  isNegotiable?: boolean;
+  displacement?: string;
   condition: VehicleData['condition'];
   location: string;
   features: string[];
@@ -31,6 +35,7 @@ interface VehicleDataMongo {
   doors: number;
   seats: number;
   weight?: number;
+  driveType?: string;
   loadCapacity?: number;
   sellerContact: VehicleData['sellerContact'];
   postedDate: Date;
@@ -39,10 +44,13 @@ interface VehicleDataMongo {
   images: string[];
   vin?: string;
   paymentProof?: string;
+  documentation?: string[];
+  referenceNumber?: string;
   status: ApprovalStatus;
   createdAt?: Date;
   updatedAt?: Date;
   views?: number;
+  isFeatured?: boolean;
 }
 
 // Tipos para los datos de analytics
@@ -94,6 +102,7 @@ export class VehicleService {
       category: vehicleData.category,
       subcategory: vehicleData.subcategory,
       brand: vehicleData.brand,
+      brandOther: vehicleData.brandOther,
       model: vehicleData.model,
       year: vehicleData.year,
       price: vehicleData.price,
@@ -101,6 +110,9 @@ export class VehicleService {
       color: vehicleData.color,
       engine: vehicleData.engine,
       transmission: vehicleData.transmission,
+      currency: vehicleData.currency,
+      isNegotiable: vehicleData.isNegotiable,
+      displacement: vehicleData.displacement,
       condition: vehicleData.condition,
       location: vehicleData.location,
       features: vehicleData.features,
@@ -108,15 +120,19 @@ export class VehicleService {
       doors: vehicleData.doors,
       seats: vehicleData.seats,
       weight: vehicleData.weight,
+      driveType: vehicleData.driveType,
       loadCapacity: vehicleData.loadCapacity,
       sellerContact: vehicleData.sellerContact,
       warranty: vehicleData.warranty,
       description: vehicleData.description,
       images: vehicleData.images,
       vin: vehicleData.vin,
+      documentation: vehicleData.documentation,
+      referenceNumber: vehicleData.referenceNumber,
       paymentProof: vehicleData.paymentProof,
       status: vehicleData.status || ApprovalStatus.PENDING, // Usar status, con valor por defecto
       views: 0,
+      isFeatured: vehicleData.isFeatured || false,
     };
   }
 
@@ -127,6 +143,7 @@ export class VehicleService {
       category: mongoData.category,
       subcategory: mongoData.subcategory,
       brand: mongoData.brand,
+      brandOther: mongoData.brandOther,
       model: mongoData.model,
       year: mongoData.year,
       price: mongoData.price,
@@ -134,6 +151,9 @@ export class VehicleService {
       color: mongoData.color,
       engine: mongoData.engine,
       transmission: mongoData.transmission,
+      currency: mongoData.currency,
+      isNegotiable: mongoData.isNegotiable,
+      displacement: mongoData.displacement,
       condition: mongoData.condition,
       location: mongoData.location,
       features: mongoData.features,
@@ -141,18 +161,22 @@ export class VehicleService {
       doors: mongoData.doors,
       seats: mongoData.seats,
       weight: mongoData.weight,
+      driveType: mongoData.driveType,
       loadCapacity: mongoData.loadCapacity,
       sellerContact: mongoData.sellerContact,
       postedDate: mongoData.postedDate,
       warranty: mongoData.warranty,
       description: mongoData.description,
       images: mongoData.images,
+      documentation: mongoData.documentation,
+      referenceNumber: mongoData.referenceNumber,
       vin: mongoData.vin,
       paymentProof: mongoData.paymentProof,
       status: mongoData.status,
       createdAt: mongoData.createdAt,
       updatedAt: mongoData.updatedAt,
       views: mongoData.views,
+      isFeatured: mongoData.isFeatured,
     };
   }
 
@@ -467,11 +491,69 @@ export class VehicleService {
       avgPriceByCategory: analytics.avgPriceByCategory,
     };
 
-    return formattedData;
-
-  } catch (error) {
-    console.error("Error obteniendo datos de analytics:", error);
-    throw error;
+      return formattedData;
+  
+    } catch (error) {
+      console.error("Error obteniendo datos de analytics:", error);
+      throw error;
+    }
   }
-}
+  
+  
+ async findSimilarVehicles(
+    vehicleId: string
+  ): Promise<ApiResponse<VehicleDataFrontend[]>> {
+    try {
+      if (!ValidationUtils.isValidObjectId(vehicleId)) {
+        return { success: false, error: "ID de vehículo inválido" };
+      }
+
+      const originalVehicle = await this.collection.findOne({
+        _id: new ObjectId(vehicleId),
+      });
+
+      if (!originalVehicle) {
+        return { success: false, error: "Vehículo original no encontrado" };
+      }
+
+      const priceTolerance = 0.30; // 30%
+      const yearTolerance = 3; // +/- 3 años
+
+      const pipeline = [
+        {
+          $match: {
+            _id: { $ne: new ObjectId(vehicleId) },
+            status: ApprovalStatus.APPROVED,
+            category: originalVehicle.category,
+          },
+        },
+        {
+          $addFields: {
+            similarityScore: {
+              $add: [
+                { $cond: [{ $eq: ["$brand", originalVehicle.brand] }, 50, 0] },
+                { $cond: [{ $eq: ["$subcategory", originalVehicle.subcategory] }, 25, 0] },
+                { $cond: [{ $lte: [{ $abs: { $subtract: ["$price", originalVehicle.price] } }, originalVehicle.price * priceTolerance] }, 20, 0] },
+                { $cond: [{ $lte: [{ $abs: { $subtract: ["$year", originalVehicle.year] } }, yearTolerance] }, 15, 0] },
+              ],
+            },
+          },
+        },
+        { $sort: { similarityScore: -1, views: -1 } },
+        { $limit: 4 },
+      ];
+
+      const similarVehicles = await this.collection.aggregate(pipeline).toArray();
+
+      const { convertToFrontend } = await import("@/types/types");
+      const frontendData = similarVehicles.map((v) =>
+        convertToFrontend(this.convertFromMongo(v as VehicleDataMongo))
+      );
+
+      return { success: true, data: frontendData };
+    } catch (error) {
+      console.error("Error encontrando vehículos similares:", error);
+      return { success: false, error: "Error interno del servidor al buscar vehículos similares" };
+    }
+  }
 }

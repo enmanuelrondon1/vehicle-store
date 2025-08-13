@@ -1,28 +1,31 @@
+// src/hooks/use-vehicle-form.ts
 "use client"
 
-import type React from "react"
 
 import { useState, useCallback, useEffect } from "react"
 import { type VehicleDataBackend, ApprovalStatus } from "@/types/types"
+import { Documentation } from "@/types/shared" // Importar directamente desde shared
 import type { Bank } from "@/constants/form-constants"
-import { compressAndUploadImages } from "@/utils/image-utils"
 import { useFormValidation } from "./use-form-validation"
 
 interface FormErrors {
   [key: string]: string
 }
 
+const initialFormData: Partial<VehicleDataBackend> = {
+  features: [],
+  images: [],
+  sellerContact: { name: "", email: "", phone: "" },
+  year: new Date().getFullYear(),
+  documentation: [], // Cambiamos a array vacío
+};
+
 export const useVehicleForm = () => {
   const [currentStep, setCurrentStep] = useState(1)
-  const [formData, setFormData] = useState<Partial<VehicleDataBackend>>({
-    features: [],
-    images: [],
-    sellerContact: { name: "", email: "", phone: "" },
-    year: new Date().getFullYear(),
-  })
+  const [formData, setFormData] = useState<Partial<VehicleDataBackend>>(initialFormData)
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) // Iniciar en true para la carga inicial
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
   const [submissionStatus, setSubmissionStatus] = useState<"idle" | "success" | "error">("idle")
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null)
@@ -42,6 +45,8 @@ export const useVehicleForm = () => {
           console.error("Error loading saved data:", error)
         }
       }
+      // Indicar que la carga inicial ha terminado
+      setIsLoading(false)
     }
   }, [])
 
@@ -111,33 +116,38 @@ export const useVehicleForm = () => {
     }))
   }, [])
 
-  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files)
-      setIsLoading(true)
-
-      try {
-        const imageUrls = await compressAndUploadImages(files)
-        setFormData((prev) => ({
+  // Nueva función para manejar la documentación
+  const handleDocumentationToggle = useCallback((docType: Documentation) => {
+    setFormData((prev) => {
+      const currentDocs = prev.documentation || [];
+      const docExists = currentDocs.includes(docType);
+      
+      if (docExists) {
+        // Si existe, lo removemos
+        return {
           ...prev,
-          images: prev.images ? [...prev.images, ...imageUrls] : [...imageUrls],
-        }))
-      } catch (error) {
-        console.error("Error al subir imágenes:", error)
-        alert("Error al subir imágenes. Revisa la consola.")
-      } finally {
-        setIsLoading(false)
+          documentation: currentDocs.filter(doc => doc !== docType)
+        };
+      } else {
+        // Si no existe, lo agregamos
+        return {
+          ...prev,
+          documentation: [...currentDocs, docType]
+        };
       }
-    }
+    });
   }, [])
 
-  const handleRemoveImage = useCallback((index: number) => {
-    if (window.confirm("¿Estás seguro de eliminar esta imagen?")) {
-      setFormData((prev) => ({
-        ...prev,
-        images: prev.images!.filter((_, i) => i !== index),
-      }))
-    }
+  // Función auxiliar para verificar si un documento está seleccionado
+  const isDocumentationSelected = useCallback((docType: Documentation) => {
+    return formData.documentation?.includes(docType) || false;
+  }, [formData.documentation])
+
+  const handleImagesChange = useCallback((urls: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: urls,
+    }));
   }, [])
 
   const validateCurrentStep = useCallback(() => {
@@ -221,6 +231,17 @@ export const useVehicleForm = () => {
     }
   }, [formData, validateCurrentStep, selectedBank, referenceNumber, paymentProof])
 
+  const resetForm = useCallback(() => {
+    setFormData(initialFormData);
+    setCurrentStep(1);
+    setErrors({});
+    setSubmissionStatus("idle");
+    setSelectedBank(null);
+    setPaymentProof(null);
+    setReferenceNumber("");
+    localStorage.removeItem("vehicleFormData");
+  }, []);
+
   return {
     // State
     currentStep,
@@ -236,6 +257,7 @@ export const useVehicleForm = () => {
 
     // Setters
     setCurrentStep,
+    setFormData,
     setSelectedBank,
     setPaymentProof,
     setReferenceNumber,
@@ -243,11 +265,13 @@ export const useVehicleForm = () => {
     // Handlers
     handleInputChange,
     handleFeatureToggle,
-    handleImageUpload,
-    handleRemoveImage,
+    handleDocumentationToggle, // Agregamos la nueva función aquí
+    isDocumentationSelected, // Agregamos la función auxiliar
+    handleImagesChange,
     nextStep,
     prevStep,
     manualSave,
     handleSubmit,
+    resetForm,
   }
 }

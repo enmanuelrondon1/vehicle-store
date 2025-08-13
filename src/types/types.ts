@@ -1,14 +1,30 @@
 // src/types/types.ts - Solo para el cliente
 import { z } from "zod";
-import { VehicleCategory, VehicleCondition, TransmissionType, FuelType, WarrantyType, ApprovalStatus } from "./shared";
+import {
+  VehicleCategory,
+  VehicleCondition,
+  TransmissionType,
+  FuelType,
+  WarrantyType,
+  ApprovalStatus,
+  Currency,
+} from "./shared";
 
 export {
   VehicleCategory,
   VehicleCondition,
   TransmissionType,
   FuelType,
+  Currency,
   WarrantyType,
-  ApprovalStatus, // Añadido para exportar
+  ApprovalStatus,
+  Documentation, // ← Asegúrate de que esté exportado
+  // Re-exportar también los labels para un acceso centralizado
+  VEHICLE_CATEGORIES_LABELS,
+  VEHICLE_CONDITIONS_LABELS,
+  TRANSMISSION_TYPES_LABELS,
+  FUEL_TYPES_LABELS,
+  WARRANTY_LABELS,
 } from "./shared";
 
 export interface SellerContactBackend {
@@ -17,17 +33,25 @@ export interface SellerContactBackend {
   email: string;
 }
 
+export type OwnershipType = "propio" | "tercero" | "concesionario";
+export type SaleType = "privado" | "concesionario";
+
 export interface VehicleDataBackend {
   _id?: string;
   category: VehicleCategory;
   subcategory?: string;
   brand: string;
+  brandOther?: string;
   model: string;
   year: number;
   price: number;
+  currency?: Currency;
+  isNegotiable?: boolean;
   mileage: number;
   color: string;
   engine: string;
+  displacement?: string;
+  driveType?: string;
   transmission: TransmissionType;
   condition: VehicleCondition;
   location: string;
@@ -43,11 +67,20 @@ export interface VehicleDataBackend {
   description: string;
   images: string[];
   vin?: string;
+  referenceNumber?: string;
   paymentProof?: string;
   status: ApprovalStatus;
   createdAt?: Date;
   updatedAt?: Date;
+  ownership?: OwnershipType;
+  saleType?: SaleType;
+  videoUrl?: string;
   views?: number;
+  documentation?: string[]; // Cambiado a string[] para mayor flexibilidad
+  armorLevel?: string;
+  tiresCondition?: string;
+  serialsIntact?: boolean;
+  isFeatured?: boolean;
 }
 
 export interface ApiResponseBackend<T = VehicleDataBackend> {
@@ -107,6 +140,7 @@ export const VehicleDataBackendSchema = z.object({
     .string()
     .min(1, "La marca es requerida")
     .max(50, "La marca no puede exceder 50 caracteres"),
+  brandOther: z.string().max(50, "El nombre de la marca es muy largo").optional(),
   model: z
     .string()
     .min(1, "El modelo es requerido")
@@ -122,7 +156,10 @@ export const VehicleDataBackendSchema = z.object({
   price: z
     .number()
     .positive("El precio debe ser mayor a 0")
-    .max(10000000, "El precio no puede exceder $10,000,000"),
+    .max(10000000, "El precio no puede exceder 10,000,000"),
+  currency: z
+    .nativeEnum(Currency).optional().default(Currency.USD),
+  isNegotiable: z.boolean().optional().default(false),
   mileage: z
     .number()
     .min(0, "El kilometraje no puede ser negativo")
@@ -136,6 +173,17 @@ export const VehicleDataBackendSchema = z.object({
     .max(100, "La descripción del motor no puede exceder 100 caracteres")
     .optional()
     .or(z.literal("")),
+  displacement: z
+    .string()
+    .max(20, "El cilindraje no puede exceder 20 caracteres")
+    .regex(/^(\d+(\.\d+)?[Ll]|\d+[Cc][Cc])$/, "Formato de cilindraje inválido (ej: 2.0L, 150cc)")
+    .optional()
+    .or(z.literal("")),
+  driveType: z
+    .enum(["fwd", "rwd", "awd", "4wd"], {
+      errorMap: () => ({ message: "Tipo de tracción inválido" }),
+    })
+    .optional(),
   transmission: z.nativeEnum(TransmissionType, {
     errorMap: () => ({ message: "Tipo de transmisión inválido" }),
   }),
@@ -191,12 +239,35 @@ export const VehicleDataBackendSchema = z.object({
       "El VIN debe tener 17 caracteres alfanuméricos (sin I, O, Q)"
     )
     .optional(),
+  referenceNumber: z
+    .string()
+    .min(8, "La referencia debe tener al menos 8 dígitos")
+    .max(20, "La referencia no puede exceder 20 caracteres")
+    .regex(/^\d+$/, "La referencia solo debe contener números")
+    .optional(),
   paymentProof: z
     .string()
     .url("La URL del comprobante debe ser válida")
     .optional(),
+  ownership: z.enum(["propio", "tercero", "concesionario"]).optional(),
+  saleType: z.enum(["privado", "concesionario"]).optional(),
+  videoUrl: z
+    .string()
+    .url("La URL del video debe ser válida")
+    .optional()
+    .optional(),
   status: z.nativeEnum(ApprovalStatus).default(ApprovalStatus.PENDING),
   postedDate: z.date(),
+  documentation: z.array(z.string()).optional(),
+  armorLevel: z
+    .string()
+    .max(50, "El nivel de blindaje es muy largo")
+    .optional(),
+  tiresCondition: z
+    .string()
+    .max(50, "La condición de los cauchos es muy larga")
+    .optional(),
+  serialsIntact: z.boolean().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
   views: z.number().min(0).default(0).optional(),
@@ -226,7 +297,9 @@ export interface VehicleDataFrontend
   createdAt?: string;
   updatedAt?: string;
   status: ApprovalStatus;
+  referenceNumber?: string;
   views?: number; // Añadido para el frontend
+  isFeatured?: boolean;
 }
 
 export interface VehicleDataGeneric {
@@ -234,12 +307,17 @@ export interface VehicleDataGeneric {
   category: VehicleCategory;
   subcategory?: string;
   brand: string;
+  brandOther?: string; 
   model: string;
   year: number;
-  price: number;
+  price: number; 
+  currency: Currency;
+  isNegotiable?: boolean;
   mileage: number;
   color: string;
   engine: string;
+  displacement?: string; // Nuevo: Cilindraje
+  driveType?: string; // Nuevo: Tracción
   transmission: TransmissionType;
   condition: VehicleCondition;
   location: string;
@@ -255,12 +333,18 @@ export interface VehicleDataGeneric {
   description: string;
   images: string[];
   vin?: string;
+  referenceNumber?: string;
   paymentProof?: string;
   status: ApprovalStatus;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  ownership?: OwnershipType;
+  saleType?: SaleType;
+  videoUrl?: string;
   views?: number; // Añadido para el frontend
-}
+  documentation?: string[];
+  isFeatured?: boolean;
+} 
 
 export const convertToBackend = (
   frontendData: VehicleDataGeneric
@@ -268,6 +352,7 @@ export const convertToBackend = (
   return {
     ...frontendData,
     _id: frontendData._id || undefined,
+    referenceNumber: frontendData.referenceNumber,
     postedDate: new Date(frontendData.postedDate),
     createdAt: frontendData.createdAt
       ? new Date(frontendData.createdAt)
@@ -276,6 +361,7 @@ export const convertToBackend = (
       ? new Date(frontendData.updatedAt)
       : undefined,
     status: frontendData.status || ApprovalStatus.PENDING,
+    isFeatured: frontendData.isFeatured || false,
   };
 };
 
@@ -298,8 +384,10 @@ export const convertToFrontend = (
     updatedAt:
       backendData.updatedAt?.toISOString?.() ||
       backendData.updatedAt?.toString(),
+    referenceNumber: backendData.referenceNumber,
     status: backendData.status || ApprovalStatus.PENDING,
     views: backendData.views,
+    isFeatured: backendData.isFeatured,
   };
 };
 
@@ -323,10 +411,14 @@ export interface Vehicle {
   model: string;
   year: number;
   price: number;
+  currency: Currency;
+  isNegotiable?: boolean;
   status: ApprovalStatus;
   mileage: number;
   color: string;
   engine: string;
+  displacement?: string; // Nuevo: Cilindraje
+  driveType?: string; // Nuevo: Tracción
   transmission: TransmissionType;
   condition: VehicleCondition;
   location: string;
@@ -337,14 +429,14 @@ export interface Vehicle {
   description: string;
   images: string[];
   category: VehicleCategory;
-  subcategory?: string;  // ← Propiedad agregada
+  subcategory?: string; // ← Propiedad agregada
   warranty: WarrantyType;
   sellerContact: SellerContactBackend;
   postedDate: string;
   createdAt?: string;
   updatedAt?: string;
-  
+
   // Propiedades adicionales:
-  isFeatured?: boolean;  // Indica si el vehículo es destacado
-  views?: number;        // Número de vistas del vehículo
+  isFeatured?: boolean; // Indica si el vehículo es destacado
+  views?: number; // Número de vistas del vehículo
 }

@@ -1,5 +1,5 @@
-import { AdminPanel } from "../../components/sections/AdminPanel/AdminPanel";
-import ProtectedRoute from "@/components/sections/ProtectedRoute/ProtectedRoute";
+import { AdminPanel } from "../../components/features/admin/AdminPanel";
+import ProtectedRoute from "@/components/features/auth/ProtectedRoute";
 
 export default function AdminPanelPage() {
   return (

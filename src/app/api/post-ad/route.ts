@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { pusherServer } from "@/lib/pusher";
 import { VehicleService } from "@/services/vehicleService";
-import { ApiResponseFrontend, VehicleDataBackend, ApprovalStatus } from "@/types/types";
+import { ApiResponseFrontend, VehicleDataBackend, ApprovalStatus, Currency } from "@/types/types";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const SellerContactSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
@@ -16,12 +17,17 @@ const CreateVehicleSchema = z.object({
   category: z.string().min(1, "La categoría es requerida"),
   subcategory: z.string().optional(),
   brand: z.string().min(1, "La marca es requerida"),
+  brandOther: z.string().optional(),
   model: z.string().min(1, "El modelo es requerido"),
   year: z.number().min(1900, "Año inválido"),
   price: z.number().positive("El precio debe ser mayor a 0"),
+  currency: z.nativeEnum(Currency).default(Currency.USD),
+  isNegotiable: z.boolean().optional(),
   mileage: z.number().min(0, "El kilometraje no puede ser negativo"),
   color: z.string().min(1, "El color es requerido"),
   engine: z.string().optional(),
+  displacement: z.string().optional(),
+  driveType: z.string().optional(),
   transmission: z.string().min(1, "La transmisión es requerida"),
   condition: z.string().min(1, "La condición es requerida"),
   location: z.string().min(1, "La ubicación es requerida"),
@@ -35,6 +41,7 @@ const CreateVehicleSchema = z.object({
   status: z.enum([ApprovalStatus.PENDING, ApprovalStatus.APPROVED, ApprovalStatus.REJECTED]).default(ApprovalStatus.PENDING),
   warranty: z.string().optional(),
   description: z.string().optional(),
+  documentation: z.array(z.string()).optional(),
   images: z.array(z.string()).default([]),
   vin: z
     .string()
@@ -45,7 +52,11 @@ const CreateVehicleSchema = z.object({
     .optional(),
   paymentProof: z.string().url("La URL del comprobante debe ser válida").optional(),
   selectedBank: z.string().min(1, "El banco es requerido").optional(),
-  referenceNumber: z.string().min(1, "El número de referencia es requerido").optional(),
+  referenceNumber: z
+    .string()
+    .min(8, "La referencia debe tener al menos 8 dígitos")
+    .max(20, "La referencia no puede exceder 20 caracteres")
+    .optional(),
 });
 
 const createErrorResponse = (
@@ -80,7 +91,7 @@ async function uploadToCloudinary(file: File): Promise<string> {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    console.log("POST /api/post-ad - Iniciando...");
+    logger.info("POST /api/post-ad - Iniciando...");
 
     let body;
     let paymentProofUrl: string | undefined;
@@ -89,7 +100,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const isFormData = contentType?.includes("multipart/form-data");
 
     if (isFormData) {
-      console.log("Procesando FormData...");
+      logger.info("Procesando FormData...");
       const formData = await req.formData();
       
       const vehicleDataString = formData.get("vehicleData") as string;
@@ -102,9 +113,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
       try {
         body = JSON.parse(vehicleDataString);
-        console.log("VehicleData parseado:", JSON.stringify(body, null, 2));
+        logger.log("VehicleData parseado:", JSON.stringify(body, null, 2));
       } catch (parseError) {
-        console.error("Error al parsear vehicleData:", parseError);
+        logger.error("Error al parsear vehicleData:", parseError);
         return NextResponse.json(
           createErrorResponse("Formato de vehicleData inválido"),
           { status: 400 }
@@ -113,12 +124,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
       const paymentProofFile = formData.get("paymentProof") as File;
       if (paymentProofFile && paymentProofFile.size > 0) {
-        console.log("Subiendo comprobante de pago...");
+        logger.info("Subiendo comprobante de pago...");
         try {
           paymentProofUrl = await uploadToCloudinary(paymentProofFile);
-          console.log("Comprobante subido:", paymentProofUrl);
+          logger.info("Comprobante subido:", paymentProofUrl);
         } catch (uploadError) {
-          console.error("Error al subir comprobante:", uploadError);
+          logger.error("Error al subir comprobante:", uploadError);
           return NextResponse.json(
             createErrorResponse("Error al subir el comprobante de pago"),
             { status: 500 }
@@ -128,9 +139,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     } else {
       try {
         body = await req.json();
-        console.log("Body JSON recibido:", JSON.stringify(body, null, 2));
+        logger.log("Body JSON recibido:", JSON.stringify(body, null, 2));
       } catch (parseError) {
-        console.error("Error al parsear JSON:", parseError);
+        logger.error("Error al parsear JSON:", parseError);
         return NextResponse.json(
           createErrorResponse("Formato de datos inválido"),
           { status: 400 }

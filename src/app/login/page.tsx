@@ -4,7 +4,7 @@
 import { useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import LoginForm from "@/components/sections/LoginForm/LoginForm";
+import  LoginForm from "@/components/features/auth/LoginForm";
 
 function LoginContent() {
   const { data: session, status } = useSession();

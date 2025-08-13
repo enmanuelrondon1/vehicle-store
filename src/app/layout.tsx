@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
-import ClientLayout from "@/components/ClientLayout";
 import { DarkModeProvider } from "@/context/DarkModeContext";
+import ClientLayout from "@/components/shared/layout/ClientLayout";
 
 export const metadata: Metadata = {
   title: "VehicleStore",

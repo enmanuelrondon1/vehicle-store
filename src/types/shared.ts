@@ -1,17 +1,20 @@
 // src/types/shared.ts
 export enum VehicleCategory {
   CAR = 'car',
+  SUV = 'suv',
+  VAN = 'van',
   TRUCK = 'truck',
   MOTORCYCLE = 'motorcycle',
-  BUS = 'bus',
-  VAN = 'van',
-  SUV = 'suv'
+  BUS = 'bus'
 }
 
 export enum VehicleCondition {
-  NEW = 'new',
-  USED = 'used',
-  CERTIFIED = 'certified'
+  EXCELLENT = 'excellent',     // Excelente
+  VERY_GOOD = 'very_good',     // Muy Bueno  
+  GOOD = 'good',               // Bueno
+  REGULAR = 'regular',         // Regular
+  NEEDS_REPAIR = 'needs_repair', // Necesita Reparación
+  NEW = 'new'                  // Nuevo (para vehículos 0km)
 }
 
 export enum TransmissionType {
@@ -22,13 +25,12 @@ export enum TransmissionType {
 }
 
 export enum FuelType {
-  GASOLINE = 'gasoline',
-  DIESEL = 'diesel',
+  GASOLINE_95 = 'gasoline_95', // Gasolina 95
+  GASOLINE_91 = 'gasoline_91', // Gasolina 91
+  DIESEL = 'diesel',           // Gasoil
+  LPG = 'lpg',                 // GLP / Gas
   ELECTRIC = 'electric',
-  HYBRID = 'hybrid',
-  PLUG_IN_HYBRID = 'plug-in-hybrid',
-  GAS = 'gas',
-  HYDROGEN = 'hydrogen'
+  HYBRID = 'hybrid'
 }
 
 export enum ApprovalStatus {
@@ -39,24 +41,43 @@ export enum ApprovalStatus {
 
 export enum WarrantyType {
   NO_WARRANTY = 'no-warranty',
+  SELLER_WARRANTY = 'seller-warranty',
   DEALER_WARRANTY = 'dealer-warranty',
   MANUFACTURER_WARRANTY = 'manufacturer-warranty',
   EXTENDED_WARRANTY = 'extended-warranty'
 }
 
+// Nuevo: Moneda para el precio
+export enum Currency {
+  USD = 'USD',
+  VES = 'VES',
+  BOTH = 'BOTH' // Ambas
+}
+
+// Nuevo: Documentación del vehículo
+export enum Documentation {
+  TITLE = 'title', // Título de Propiedad
+  ORIGIN_CERTIFICATE = 'origin_certificate', // Certificado de Origen
+  TRANSIT_REVIEW = 'transit_review', // Revisión de Tránsito (INTT)
+  BOLIVARIAN_PLATES = 'bolivarian_plates' // Placas Bolivarianas
+}
+
 export const VEHICLE_CATEGORIES_LABELS = {
   [VehicleCategory.CAR]: 'Automóvil',
+  [VehicleCategory.SUV]: 'SUV',
+  [VehicleCategory.VAN]: 'Camioneta de Carga/Pasajeros',
   [VehicleCategory.TRUCK]: 'Camión',
   [VehicleCategory.MOTORCYCLE]: 'Motocicleta',
   [VehicleCategory.BUS]: 'Autobús',
-  [VehicleCategory.VAN]: 'Camioneta',
-  [VehicleCategory.SUV]: 'SUV'
 } as const;
 
 export const VEHICLE_CONDITIONS_LABELS = {
-  [VehicleCondition.NEW]: 'Nuevo',
-  [VehicleCondition.USED]: 'Usado',
-  [VehicleCondition.CERTIFIED]: 'Certificado'
+  [VehicleCondition.EXCELLENT]: 'Excelente',
+  [VehicleCondition.VERY_GOOD]: 'Muy Bueno',
+  [VehicleCondition.GOOD]: 'Bueno', 
+  [VehicleCondition.REGULAR]: 'Regular',
+  [VehicleCondition.NEEDS_REPAIR]: 'Necesita Reparación',
+  [VehicleCondition.NEW]: 'Nuevo (0km)'
 } as const;
 
 export const TRANSMISSION_TYPES_LABELS = {
@@ -67,11 +88,18 @@ export const TRANSMISSION_TYPES_LABELS = {
 } as const;
 
 export const FUEL_TYPES_LABELS = {
-  [FuelType.GASOLINE]: 'Gasolina',
-  [FuelType.DIESEL]: 'Diésel',
+  [FuelType.GASOLINE_95]: 'Gasolina 95 Octanos',
+  [FuelType.GASOLINE_91]: 'Gasolina 91 Octanos',
+  [FuelType.DIESEL]: 'Gasoil / Diésel',
+  [FuelType.LPG]: 'GLP / Gas',
   [FuelType.ELECTRIC]: 'Eléctrico',
-  [FuelType.HYBRID]: 'Híbrido',
-  [FuelType.PLUG_IN_HYBRID]: 'Híbrido Enchufable',
-  [FuelType.GAS]: 'Gas',
-  [FuelType.HYDROGEN]: 'Hidrógeno'
+  [FuelType.HYBRID]: 'Híbrido'
+} as const;
+
+export const WARRANTY_LABELS: Record<WarrantyType, string> = {
+  [WarrantyType.NO_WARRANTY]: "Sin Garantía",
+  [WarrantyType.SELLER_WARRANTY]: "Garantía del Vendedor",
+  [WarrantyType.DEALER_WARRANTY]: "Garantía del Concesionario",
+  [WarrantyType.MANUFACTURER_WARRANTY]: "Garantía de Fábrica",
+  [WarrantyType.EXTENDED_WARRANTY]: "Garantía Extendida"
 } as const;
