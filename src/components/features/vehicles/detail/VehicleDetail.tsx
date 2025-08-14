@@ -8,8 +8,7 @@ import {
   ArrowLeft,
   Heart,
   Share2,
-  Phone,
-  Mail,
+
   MapPin,
   Calendar,
   Car,
@@ -22,9 +21,9 @@ import {
   X,
   Maximize2,
   Flag,
-  MessageCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDarkMode } from "@/context/DarkModeContext";
 import { SimilarVehicles } from "./SimilarVehicles";
 import Image from "next/image";
@@ -327,8 +326,7 @@ const ContactInfo = ({
       <h3
         className={`text-xl font-bold mb-4 ${
           isDarkMode ? "text-white" : "text-gray-900"
-        }`}
-      >
+        }`}>
         Información de Contacto
       </h3>
 
@@ -337,8 +335,7 @@ const ContactInfo = ({
           <div
             className={`w-12 h-12 rounded-full ${
               isDarkMode ? "bg-gray-700" : "bg-gray-200"
-            } flex items-center justify-center`}
-          >
+            } flex items-center justify-center`}>
             <span
               className={`text-lg font-bold ${
                 isDarkMode ? "text-white" : "text-gray-800"
@@ -358,8 +355,7 @@ const ContactInfo = ({
             <p
               className={`text-sm ${
                 isDarkMode ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
+              }`}>
               Vendedor
             </p>
           </div>
@@ -369,8 +365,7 @@ const ContactInfo = ({
           <button
             onClick={handleCall}
             className="flex items-center gap-3 p-3 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors"
-          >
-            <Phone className="w-5 h-5" />
+           >
             <div className="text-left">
               <p className="font-semibold">Llamar</p>
               <p className="text-sm opacity-90">{sellerContact.phone}</p>
@@ -380,8 +375,7 @@ const ContactInfo = ({
           <button
             onClick={handleWhatsApp}
             className="flex items-center gap-3 p-3 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors"
-          >
-            <MessageCircle className="w-5 h-5" />
+           >
             <div className="text-left">
               <p className="font-semibold">WhatsApp</p>
               <p className="text-sm opacity-90">Enviar mensaje</p>
@@ -391,8 +385,7 @@ const ContactInfo = ({
           <button
             onClick={handleEmail}
             className="flex items-center gap-3 p-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors"
-          >
-            <Mail className="w-5 h-5" />
+           >
             <div className="text-left">
               <p className="font-semibold">Email</p>
               <p className="text-sm opacity-90">{sellerContact.email}</p>
@@ -423,7 +416,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
       setIsLoading(true);
 
       // 1. Llamar a la nueva ruta unificada y pública
-      const apiUrl = `/api/vehicles/${vehicleId}`;
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/vehicles/${vehicleId}`;
       const response = await fetch(apiUrl, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -431,11 +424,9 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: `Error ${response.status}` }));
-        throw new Error(errorData.error || `Error ${response.status}`);
-      }
+         throw new Error(errorData.error || `Error ${response.status}`);      }
 
-      const result = await response.json();
-      if (!result.success || !result.data) {
+      const result = await response.json();      if (!result.success || !result.data) {
         throw new Error(result.error || "No se pudieron obtener los datos del vehículo.");
       }
 
@@ -446,7 +437,8 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
       // Esto se hace en un 'try/catch' separado para que un fallo aquí
       // no impida que el usuario vea la página del vehículo.
       try {
-        const viewResponse = await fetch(`/api/vehicles/${vehicleId}/views`, { method: 'POST' });
+        const viewApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/vehicles/${vehicleId}/views`;
+        const viewResponse = await fetch(viewApiUrl, { method: 'POST' });
         if (viewResponse.ok) {
           const updatedData = await viewResponse.json();
           if (updatedData.success && typeof updatedData.data?.views === 'number') {
@@ -462,8 +454,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
       const errorMessage =
         error instanceof Error ? error.message : "Error desconocido";
       setError(errorMessage);
-    } finally {
-      setIsLoading(false);
+     } finally {      setIsLoading(false);
     }
   }, [vehicleId]);
 
@@ -476,15 +467,14 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
       const fetchSimilar = async () => {
         setIsLoadingSimilar(true);
         try {
-          const response = await fetch(`/api/vehicles/${vehicle._id}/similar`);
-          const result = await response.json();
-          if (result.success) {
+          const similarApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/vehicles/${vehicle._id}/similar`;
+          const response = await fetch(similarApiUrl);
+          const result = await response.json();          if (result.success) {
             setSimilarVehicles(result.data);
           }
         } catch (err) {
           console.error("Error fetching similar vehicles:", err);
-          setSimilarVehicles([]);
-        } finally {
+           setSimilarVehicles([]);      } finally {
           setIsLoadingSimilar(false);
         }
       };
@@ -551,8 +541,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     return (
       <div className="min-h-screen py-8 px-4" style={backgroundStyle}>
         <div className="max-w-7xl mx-auto">
-          <div
-            className={`h-8 w-32 ${
+          <Skeleton className={`h-8 w-32 ${
               isDarkMode ? "bg-gray-700" : "bg-gray-200"
             } animate-pulse rounded mb-8`}
           />
@@ -560,23 +549,21 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
             <div className="lg:col-span-2">
               <div
                 className={`aspect-video ${
+
                   isDarkMode ? "bg-gray-800" : "bg-gray-200"
                 } animate-pulse rounded-xl mb-6`}
               />
-              <div
-                className={`h-64 ${
+              <Skeleton className={`h-64 ${
                   isDarkMode ? "bg-gray-800" : "bg-gray-200"
                 } animate-pulse rounded-xl`}
               />
             </div>
             <div className="space-y-6">
-              <div
-                className={`h-48 ${
+              <Skeleton className={`h-48 ${
                   isDarkMode ? "bg-gray-800" : "bg-gray-200"
                 } animate-pulse rounded-xl`}
               />
-              <div
-                className={`h-32 ${
+              <Skeleton className={`h-32 ${
                   isDarkMode ? "bg-gray-800" : "bg-gray-200"
                 } animate-pulse rounded-xl`}
               />
@@ -701,9 +688,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <div>
-              <div className="flex items-center gap-3 mb-4">
-                <h1
-                  className={`text-4xl font-bold ${
+              <div className="flex items-center gap-3 mb-4">                <h1 className={`text-4xl font-bold ${
                     isDarkMode ? "text-white" : "text-gray-900"
                   }`}
                 >
@@ -871,8 +856,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
                       Cilindraje
                     </span>
                     <span
-                      className={`${isDarkMode ? "text-white" : "text-gray-900"}`}
-                    >
+                      className={`${isDarkMode ? "text-white" : "text-gray-900"}`}>
                       {vehicle.displacement || 'N/A'}
                     </span>
                   </div>
@@ -993,8 +977,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
               </div>
             )}
             {vehicle.features.length > 0 && (
-              <div
-                className={`p-6 rounded-xl border ${
+              <div className={`p-6 rounded-xl border ${
                   isDarkMode
                     ? "bg-gray-800/50 border-gray-700"
                     : "bg-white/50 border-gray-200"
@@ -1027,8 +1010,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
               </div>
             )}
             {vehicle.description && (
-              <div
-                className={`p-6 rounded-xl border ${
+              <div className={`p-6 rounded-xl border ${
                   isDarkMode
                     ? "bg-gray-800/50 border-gray-700"
                     : "bg-white/50 border-gray-200"
@@ -1059,8 +1041,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
               isDarkMode={isDarkMode}
             />
             <div
-              className={`p-6 rounded-xl border ${
-                isDarkMode
+              className={`p-6 rounded-xl border ${                isDarkMode
                   ? "bg-gray-800/50 border-gray-700"
                   : "bg-white/50 border-gray-200"
               } backdrop-blur-sm`}

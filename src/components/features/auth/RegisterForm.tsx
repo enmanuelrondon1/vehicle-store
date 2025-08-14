@@ -1,4 +1,7 @@
+ // src/components/features/auth/RegisterForm.tsx
+
 "use client";
+
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -78,4 +81,4 @@ const RegisterForm: React.FC = () => {
   );
 };
 
-export default RegisterForm;
+ export default RegisterForm;

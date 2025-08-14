@@ -366,6 +366,10 @@ body.select-open {
   }
 }
 
+.example-class {
+  will-change: transform;
+}
+
 /* Prevenir zoom en focus para iOS */
 @media screen and (max-width: 767px) {
   input:focus,

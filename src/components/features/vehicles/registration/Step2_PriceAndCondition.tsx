@@ -362,7 +362,8 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
     const fetchRate = async () => {
       setIsLoadingRate(true);
       try {
-        const response = await fetch('/api/exchange-rate');
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/exchange-rate`;
+        const response = await fetch(apiUrl);
         const data = await response.json();
         if (data.success && data.rate) {
           setExchangeRate(data.rate);
