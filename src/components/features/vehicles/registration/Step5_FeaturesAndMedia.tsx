@@ -462,6 +462,7 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
                 <ImageUploader
                   onUploadChange={handleImagesChange}
                   initialUrls={formData.images || []}
+                  maxSizeMB={5} // Pasamos el límite de tamaño
                 />
               </InputField>
             </div>

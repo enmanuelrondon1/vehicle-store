@@ -37,7 +37,7 @@ import Step3_Specs from "./Step3_Specs";
 import Step4_ContactInfo from "./Step4_ContactInfo";
 import Step5_FeaturesAndMedia from "./Step5_FeaturesAndMedia";
 
-// Importar tipos desde la misma fuente centralizada
+// Importar tipos desde la misma fuente centralizada 
 import type { VehicleDataBackend } from "@/types/types";
 
 const VehicleRegistrationForm: React.FC = () => {

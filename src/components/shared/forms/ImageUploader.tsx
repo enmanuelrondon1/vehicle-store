@@ -10,6 +10,7 @@ import Image from 'next/image';
 interface ImageUploaderProps {
   onUploadChange?: (urls: string[]) => void;
   initialUrls?: string[];
+  maxSizeMB?: number;
 }
 
 interface UploadedFile {
@@ -20,7 +21,11 @@ interface UploadedFile {
   error?: string;
 }
 
-export const ImageUploader = ({ onUploadChange, initialUrls = [] }: ImageUploaderProps) => {
+export const ImageUploader = ({
+  onUploadChange,
+  initialUrls = [],
+  maxSizeMB = 10, // Valor por defecto de 10MB si no se proporciona
+}: ImageUploaderProps) => {
   const [files, setFiles] = useState<UploadedFile[]>(
     initialUrls.map(url => ({ preview: url, url, isLoading: false }))
   );
@@ -152,7 +157,7 @@ export const ImageUploader = ({ onUploadChange, initialUrls = [] }: ImageUploade
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'image/*': ['.jpeg', '.png', '.jpg', '.webp'] },
-    maxSize: 10 * 1024 * 1024, // Aumentamos el límite a 10MB, ya que se comprimirá
+    maxSize: maxSizeMB * 1024 * 1024, // Usamos el prop para el tamaño máximo
     maxFiles: 10, // Mantenemos el máximo de 10 archivos
   });
 
@@ -182,7 +187,7 @@ export const ImageUploader = ({ onUploadChange, initialUrls = [] }: ImageUploade
           Arrastra y suelta tus imágenes aquí, o haz clic para seleccionarlas.
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          PNG, JPG, WEBP hasta 10MB. Máximo 10 imágenes.
+          PNG, JPG, WEBP hasta {maxSizeMB}MB. Máximo 10 imágenes.
         </p>
       </div>
 
