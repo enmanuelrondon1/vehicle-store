@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
+import imageCompression from 'browser-image-compression';
 import { useDropzone } from 'react-dropzone';
 import { UploadCloud, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
@@ -49,6 +50,13 @@ export const ImageUploader = ({ onUploadChange, initialUrls = [] }: ImageUploade
     setFiles(prev => [...prev, ...newUploads]);
 
     const uploadPromises = newUploads.map(async (upload) => {
+      // Opciones de compresión
+      const compressionOptions = {
+        maxSizeMB: 2, // Comprime la imagen para que no pese más de 2MB
+        maxWidthOrHeight: 1920, // Redimensiona a un máximo de 1920px en el lado más largo
+        useWebWorker: true, // Usa web workers para no bloquear la interfaz
+      };
+
       try {
         // Obtener la firma del servidor (el timestamp se genera allí)
         const signResponse = await fetch('/api/cloudinary/sign', {
@@ -68,9 +76,12 @@ export const ImageUploader = ({ onUploadChange, initialUrls = [] }: ImageUploade
           throw new Error('No se recibió datos completos del servidor');
         }
 
+        // Comprimir la imagen antes de subirla
+        const compressedFile = await imageCompression(upload.file!, compressionOptions);
+
         // Preparar FormData para la carga
         const formData = new FormData();
-        formData.append('file', upload.file!);
+        formData.append('file', compressedFile); // Usamos el archivo comprimido
         formData.append('api_key', signData.apiKey);
         formData.append('timestamp', signData.timestamp.toString());
         formData.append('signature', signData.signature);
@@ -141,8 +152,8 @@ export const ImageUploader = ({ onUploadChange, initialUrls = [] }: ImageUploade
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'image/*': ['.jpeg', '.png', '.jpg', '.webp'] },
-    maxSize: 5 * 1024 * 1024, // 5MB
-    maxFiles: 10,
+    maxSize: 10 * 1024 * 1024, // Aumentamos el límite a 10MB, ya que se comprimirá
+    maxFiles: 10, // Mantenemos el máximo de 10 archivos
   });
 
   const removeImage = (previewToRemove: string) => {
@@ -171,7 +182,7 @@ export const ImageUploader = ({ onUploadChange, initialUrls = [] }: ImageUploade
           Arrastra y suelta tus imágenes aquí, o haz clic para seleccionarlas.
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          PNG, JPG, WEBP hasta 5MB. Máximo 10 imágenes.
+          PNG, JPG, WEBP hasta 10MB. Máximo 10 imágenes.
         </p>
       </div>
 
@@ -180,9 +191,11 @@ export const ImageUploader = ({ onUploadChange, initialUrls = [] }: ImageUploade
           {files.map((file, index) => (
             <div key={file.preview} className="relative aspect-square group">
               <Image
-                src={file.preview} 
-                alt={`Preview ${index}`} 
-                className="w-full h-full object-cover rounded-lg shadow-md" 
+                src={file.preview}
+                alt={`Vista previa de la imagen ${index + 1}`}
+                className="w-full h-full object-cover rounded-lg shadow-md"
+                fill
+                sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 16.6vw"
               />
               {file.isLoading && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-lg">

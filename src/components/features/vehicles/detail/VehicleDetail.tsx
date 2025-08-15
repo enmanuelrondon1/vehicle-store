@@ -192,6 +192,7 @@ const ImageGallery = ({
                   alt={`Miniatura ${index + 1}`}
                   className="w-full h-full object-cover"
                   fill
+                  sizes="80px"
                   onError={() => handleImageError(index)}
                 />
               </button>
@@ -205,8 +206,8 @@ const ImageGallery = ({
         <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center">
           {/* Contenedor principal del modal */}
           <div className="relative w-full h-full flex items-center justify-center p-4">
-            {/* Contenedor de la imagen */}
-            <div className="relative max-w-[95vw] max-h-[90vh] flex items-center justify-center">
+            {/* Contenedor de la imagen - CORREGIDO */}
+            <div className="relative w-full h-full max-w-[95vw] max-h-[90vh]">
               <Image
                 src={
                   imageErrors[currentImageIndex]
@@ -214,7 +215,9 @@ const ImageGallery = ({
                     : images[currentImageIndex]
                 }
                 alt={`${vehicleName} - Imagen ${currentImageIndex + 1}`}
-                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                className="object-contain"
+                fill
+                sizes="95vw"
                 onError={() => handleImageError(currentImageIndex)}
               />
             </div>

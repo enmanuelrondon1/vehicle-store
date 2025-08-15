@@ -4,6 +4,8 @@ import clientPromise from "@/lib/mongodb";
 import { pusherServer } from "@/lib/pusher";
 import { VehicleService } from "@/services/vehicleService";
 import { ApiResponseFrontend, VehicleDataBackend, ApprovalStatus, Currency } from "@/types/types";
+import { sendNewVehicleNotificationEmail } from "@/lib/mailer";
+import { toTitleCase } from "@/lib/utils";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 
@@ -174,8 +176,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     console.log("Validación exitosa, datos:", validationResult.data);
 
+    const validatedData = validationResult.data;
+
+    // Normalizar el nombre del vendedor a Title Case
+    if (validatedData.sellerContact?.name) {
+      validatedData.sellerContact.name = toTitleCase(validatedData.sellerContact.name);
+    }
+
     const vehicleDataForBackend = {
-      ...validationResult.data,
+      ...validatedData,
       status: ApprovalStatus.PENDING, // Asignar status por defecto
     } as Omit<VehicleDataBackend, "_id" | "postedDate" | "createdAt" | "updatedAt">;
 
@@ -206,16 +215,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       if (response.success && response.data) {
         console.log("Respuesta exitosa con _id:", response.data._id);
 
-        // Notificar a los administradores en tiempo real con el objeto completo
+        // Notificar a los administradores (Pusher y Email)
         try {
           // response.data ya está en formato VehicleDataFrontend gracias al servicio
           const frontendVehicle = response.data;
 
+          // 🚀 Notificación en tiempo real con Pusher
           const notificationPayload = {
             message: `Nuevo vehículo: ${frontendVehicle.brand} ${frontendVehicle.model}`,
             vehicleId: frontendVehicle._id,
             timestamp: new Date().toISOString(),
-            vehicleData: frontendVehicle, // ¡Añadimos el objeto completo!
+            vehicleData: frontendVehicle,
           };
 
           await pusherServer.trigger(
@@ -223,8 +233,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             'new-vehicle',
             notificationPayload
           );
-        } catch (pusherError) {
-          console.error('Error sending Pusher notification:', pusherError);
+          logger.info(`Notificación Pusher enviada para vehículo ${frontendVehicle._id}`);
+
+          // 📧 Notificación por correo electrónico
+          await sendNewVehicleNotificationEmail(frontendVehicle);
+
+        } catch (notificationError) {
+          // Si las notificaciones fallan, no se debe interrumpir el flujo principal.
+          // Solo se registra el error.
+          logger.error('Error al enviar notificaciones (Pusher/Email):', notificationError);
         }
 
         return NextResponse.json(response, { status: 201 });

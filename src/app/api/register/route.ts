@@ -2,91 +2,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
+import { logger } from "@/lib/logger";
+import { sendWelcomeEmail, sendAdminNewUserNotification } from "@/lib/mailer";
 import { ObjectId } from "mongodb";
+import { toTitleCase } from "@/lib/utils";
+import { z } from "zod";
 
-// Interfaz para los datos de registro
-interface RegisterData {
-  name: string;
-  email: string;
-  password: string;
-}
+// Esquema de validación con Zod para mayor robustez y consistencia
+const RegisterSchema = z.object({
+  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
+  email: z.string().email("El formato del email no es válido."),
+  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres."),
+});
 
 // Interfaz para el usuario en la base de datos
 interface UserDocument {
   _id?: ObjectId;
   name: string;
   email: string;
-  password: string;
+  password?: string; // Hacemos la contraseña opcional para no devolverla
   role: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Validar email
-const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-// Validar contraseña
-const validatePassword = (password: string): boolean => {
-  return password.length >= 8;
-};
-
-// Validar nombre
-const validateName = (name: string): boolean => {
-  return name.trim().length >= 2;
-};
-
 export async function POST(request: NextRequest) {
   try {
     // Parsear el cuerpo de la solicitud
-    const body: RegisterData = await request.json();
-    const { name, email, password } = body;
+    const body = await request.json();
 
-    // Validaciones básicas
-    if (!name || !email || !password) {
+    // 1. Validar los datos usando Zod
+    const validationResult = RegisterSchema.safeParse(body);
+    if (!validationResult.success) {
       return NextResponse.json(
-        { 
-          success: false, 
-          message: "Todos los campos son requeridos" 
-        },
+        { success: false, error: "Datos inválidos", details: validationResult.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
 
-    // Validar formato de email
-    if (!validateEmail(email)) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: "El formato del email no es válido" 
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validar longitud de contraseña
-    if (!validatePassword(password)) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: "La contraseña debe tener al menos 8 caracteres" 
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validar nombre
-    if (!validateName(name)) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: "El nombre debe tener al menos 2 caracteres" 
-        },
-        { status: 400 }
-      );
-    }
+    const { name, email, password } = validationResult.data;
 
     // Conectar a MongoDB
     const client = await clientPromise;
@@ -102,7 +56,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           success: false, 
-          message: "Ya existe un usuario con este email" 
+          error: "Ya existe un usuario con este email" 
         },
         { status: 409 }
       );
@@ -112,9 +66,9 @@ export async function POST(request: NextRequest) {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Crear el nuevo usuario
+    // Crear el nuevo usuario para la DB
     const newUser: UserDocument = {
-      name: name.trim(),
+      name: toTitleCase(name.trim()), // Normalizar el nombre
       email: email.toLowerCase(),
       password: hashedPassword,
       role: "user", // Rol por defecto
@@ -129,17 +83,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           success: false, 
-          message: "Error al crear el usuario" 
+          error: "Error al crear el usuario" 
         },
         { status: 500 }
       );
+    }
+
+    // 📧 Enviar correo de bienvenida
+    // Se ejecutan en paralelo para no retrasar la respuesta al usuario.
+    try {
+      await Promise.all([
+        sendWelcomeEmail(newUser.email, newUser.name),
+        sendAdminNewUserNotification(newUser.email, newUser.name)
+      ]);
+      logger.info(`Correo de bienvenida enviado a ${newUser.email}`);
+    } catch (emailError) {
+      logger.error('Fallo el envío del correo de bienvenida, pero el usuario fue creado:', emailError);
     }
 
     // Respuesta exitosa (no incluimos la contraseña)
     return NextResponse.json(
       {
         success: true,
-        message: "Usuario creado exitosamente",
+        message: "¡Registro exitoso! Revisa tu correo para darte la bienvenida.",
         user: {
           id: result.insertedId.toString(),
           name: newUser.name,
@@ -151,7 +117,7 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error("Error en el registro:", error);
+    logger.error("Error en el registro:", error);
     
     // Manejar errores específicos de MongoDB
     if (error instanceof Error) {
@@ -160,7 +126,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { 
             success: false, 
-            message: "Error de conexión a la base de datos" 
+            error: "Error de conexión a la base de datos" 
           },
           { status: 503 }
         );
@@ -171,7 +137,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { 
             success: false, 
-            message: "Ya existe un usuario con este email" 
+            error: "Ya existe un usuario con este email" 
           },
           { status: 409 }
         );
@@ -182,7 +148,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         success: false, 
-        message: "Error interno del servidor" 
+        error: "Error interno del servidor" 
       },
       { status: 500 }
     );

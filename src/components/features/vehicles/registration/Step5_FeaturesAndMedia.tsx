@@ -1,6 +1,7 @@
 // src/components/features/vehicles/registration/Step5_FeaturesAndMedia.tsx
 "use client";
 import React, { useState } from "react";
+import { useDarkMode } from "@/context/DarkModeContext"; // Importar el hook
 import {
   FileText,
   Shield,
@@ -114,10 +115,11 @@ const InputField: React.FC<InputFieldProps> = ({
   isValid,
   showValidation = false,
 }) => {
+  const { isDarkMode } = useDarkMode();
   const [showTooltip, setShowTooltip] = useState(false);
 
   return (
-    <div className="space-y-2 text-gray-700">
+    <div className={`space-y-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
       <div className="flex items-center justify-between">
         <label className="flex items-center text-sm font-semibold text-gray-800">
           {icon && <span className="mr-2">{icon}</span>}
@@ -130,7 +132,9 @@ const InputField: React.FC<InputFieldProps> = ({
                 onMouseLeave={() => setShowTooltip(false)}
               />
               {showTooltip && (
-                <div className="absolute left-0 top-5 z-10 w-64 p-2 text-xs bg-gray-800 text-white rounded-lg shadow-lg">
+                <div className={`absolute left-0 top-5 z-10 w-64 p-2 text-xs rounded-lg shadow-lg ${
+                  isDarkMode ? "bg-gray-700 text-gray-200" : "bg-gray-800 text-white"
+                }`}>
                   {tooltip}
                 </div>
               )}
@@ -148,7 +152,7 @@ const InputField: React.FC<InputFieldProps> = ({
         )}
       </div>
       {children}
-      {infoText && <p className="text-xs mt-1 text-gray-500">{infoText}</p>}
+      {infoText && <p className={`text-xs mt-1 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>{infoText}</p>}
       {error && (
         <p className="text-sm text-red-500 mt-1 flex items-center">
           <AlertCircle className="w-4 h-4 mr-1" />
@@ -171,6 +175,7 @@ const SelectableChip: React.FC<{
   isSelected: boolean;
   onToggle: () => void;
 }> = ({ label, isSelected, onToggle }) => {
+  const { isDarkMode } = useDarkMode();
   return (
     <button
       type="button"
@@ -181,6 +186,8 @@ const SelectableChip: React.FC<{
         ${
           isSelected
             ? "bg-teal-600 border-teal-700 text-white shadow-lg"
+            : isDarkMode
+            ? "bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500"
             : "bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400"
         }
       `}
@@ -203,6 +210,7 @@ const ProgressSummary: React.FC<{
   featuresCount,
   documentsCount,
 }) => {
+  const { isDarkMode } = useDarkMode();
   const completedItems = [
     { label: "Fotos", completed: imagesCount > 0, count: imagesCount },
     {
@@ -230,8 +238,8 @@ const ProgressSummary: React.FC<{
     <div
       className={`mt-8 p-6 rounded-xl border-2 ${
         completedCount >= totalRequired
-          ? "bg-green-50 border-green-200"
-          : "bg-blue-50 border-blue-200"
+          ? isDarkMode ? "bg-green-900/20 border-green-700" : "bg-green-50 border-green-200"
+          : isDarkMode ? "bg-blue-900/20 border-blue-700" : "bg-blue-50 border-blue-200"
       }`}
     >
       <div className="mb-4">
@@ -239,17 +247,17 @@ const ProgressSummary: React.FC<{
           <h3
             className={`font-semibold ${
               completedCount >= totalRequired
-                ? "text-green-800"
-                : "text-blue-800"
+                ? isDarkMode ? "text-green-300" : "text-green-800"
+                : isDarkMode ? "text-blue-300" : "text-blue-800"
             }`}
           >
             Progreso del registro
           </h3>
-          <span className="text-sm text-gray-600">
+          <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
             {Math.round(progressPercentage)}%
           </span>
         </div>
-        <div className="w-full rounded-full h-2 bg-gray-200">
+        <div className={`w-full rounded-full h-2 ${isDarkMode ? "bg-gray-700" : "bg-gray-200"}`}>
           <div
             className={`h-2 rounded-full transition-all duration-500 ${
               completedCount >= totalRequired ? "bg-green-500" : "bg-blue-500"
@@ -258,7 +266,7 @@ const ProgressSummary: React.FC<{
           ></div>
         </div>
       </div>
-      <ul className="space-y-2 text-sm text-gray-700">
+      <ul className={`space-y-2 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
         {completedItems.map((item, index) => (
           <li key={index} className="flex items-center justify-between">
             <div className="flex items-center">
@@ -269,21 +277,21 @@ const ProgressSummary: React.FC<{
               )}
               <span>{item.label}</span>
             </div>
-            <span className="text-xs text-gray-600">
+            <span className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
               {typeof item.count !== "undefined" ? item.count : item.extra}
             </span>
           </li>
         ))}
       </ul>
       {completedCount >= totalRequired ? (
-        <div className="mt-4 p-3 rounded-lg bg-green-100">
-          <p className="text-sm font-medium text-green-800">
+        <div className={`mt-4 p-3 rounded-lg ${isDarkMode ? "bg-green-900/30" : "bg-green-100"}`}>
+          <p className={`text-sm font-medium ${isDarkMode ? "text-green-300" : "text-green-800"}`}>
             🎉 ¡Excelente! Has completado toda la información necesaria
           </p>
         </div>
       ) : (
-        <div className="mt-4 p-3 rounded-lg bg-blue-100">
-          <p className="text-sm text-blue-800">
+        <div className={`mt-4 p-3 rounded-lg ${isDarkMode ? "bg-blue-900/30" : "bg-blue-100"}`}>
+          <p className={`text-sm ${isDarkMode ? "text-blue-300" : "text-blue-800"}`}>
             💡 Completa {totalRequired - completedCount} elemento
             {totalRequired - completedCount !== 1 ? "s" : ""} más para finalizar
           </p>
@@ -304,6 +312,7 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
   handleImagesChange,
   onPrevious,
 }) => {
+  const { isDarkMode } = useDarkMode();
   // Validación en tiempo real
   // const validateDescription = (value: string): string | undefined => {
   //   if (value.length > 2000)
@@ -326,17 +335,19 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
       : "text-gray-500";
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className={`p-6 ${isDarkMode ? "bg-gray-900" : "bg-gray-50"}`}>
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center space-x-3 mb-8">
-          <div className="p-3 rounded-xl shadow-lg bg-gradient-to-br from-teal-500 to-teal-600">
+          <div className={`p-3 rounded-xl shadow-lg ${
+            isDarkMode ? "bg-gray-700" : "bg-gradient-to-br from-teal-500 to-teal-600"
+          }`}>
             <FileBadge className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className={`text-2xl font-bold ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}>
               Características y Multimedia
             </h2>
-            <p className="text-gray-600 text-sm">
+            <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"} text-sm`}>
               Completa los detalles del vehículo
             </p>
           </div>
@@ -345,7 +356,7 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             {/* Características */}
-            <div className="p-6 rounded-xl shadow-lg bg-white">
+            <div className={`p-6 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
               <InputField
                 label="Características del Vehículo"
                 icon={<Shield className="w-4 h-4 text-teal-600" />}
@@ -356,7 +367,7 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
                   {Object.entries(AVAILABLE_FEATURES).map(
                     ([category, features]) => (
                       <div key={category}>
-                        <h4 className="text-md font-semibold mb-3 text-gray-800">
+                        <h4 className={`text-md font-semibold mb-3 ${isDarkMode ? "text-gray-200" : "text-gray-800"}`}>
                           {category}
                         </h4>
                         <div className="flex flex-wrap gap-3">
@@ -379,7 +390,7 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
             </div>
 
             {/* Documentación */}
-            <div className="p-6 rounded-xl shadow-lg bg-white">
+            <div className={`p-6 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
               <InputField
                 label="Documentación del Vehículo"
                 icon={<FileBadge className="w-4 h-4 text-indigo-600" />}
@@ -401,7 +412,7 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
             </div>
 
             {/* Descripción */}
-            <div className="p-6 rounded-xl shadow-lg bg-white">
+            <div className={`p-6 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
               <InputField
                 label="Descripción del Vehículo"
                 error={errors.description}
@@ -414,7 +425,9 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
                   value={formData.description || ""}
                   onChange={(e) => handleDescriptionChange(e.target.value)}
                   rows={5}
-                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-4 focus:ring-teal-500/20 transition-all duration-200 resize-none bg-white border-gray-200 ${
+                  className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-4 focus:ring-teal-500/20 transition-all duration-200 resize-none ${
+                    isDarkMode ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-200"
+                  } ${
                     errors.description
                       ? "border-red-500"
                       : !errors.description && (formData.description?.length ?? 0) > 0
@@ -425,11 +438,11 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
                   maxLength={maxDescriptionLength}
                 />
                 <div className="flex justify-between items-center mt-2">
-                  <div className={`text-xs ${charCounterColor}`}>
+                  <div className={`text-xs ${isDarkMode ? "text-gray-400" : charCounterColor}`}>
                     {descriptionLength}/{maxDescriptionLength} caracteres
                   </div>
                   {descriptionLength > 0 && (
-                    <div className={`text-xs ${charCounterColor}`}>
+                    <div className={`text-xs ${isDarkMode ? "text-gray-400" : charCounterColor}`}>
                       {maxDescriptionLength - descriptionLength} restantes
                     </div>
                   )}
@@ -438,7 +451,7 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
             </div>
 
             {/* Fotos */}
-            <div className="p-6 rounded-xl shadow-lg bg-white">
+            <div className={`p-6 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
               <InputField
                 label="Fotos del Vehículo"
                 icon={<ImageIcon className="w-4 h-4 text-teal-600" />}
@@ -458,7 +471,9 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
               {onPrevious && (
                 <button
                   onClick={onPrevious}
-                  className="flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center ${
+                    isDarkMode ? "bg-gray-700 text-gray-300 hover:bg-gray-600" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
                 >
                   Anterior
                 </button>
@@ -484,31 +499,31 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
             />
 
             {/* Tips para mejorar la venta */}
-            <div className="p-6 rounded-xl shadow-lg bg-white">
-              <h3 className="text-lg font-bold mb-4 text-gray-800">
+            <div className={`p-6 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
+              <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}>
                 💡 Tips para Destacar
               </h3>
               <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-gray-50">
-                  <p className="text-sm text-gray-600">
+                <div className={`p-3 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}>
+                  <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
                     📸 <strong>Fotos variadas:</strong> Exterior, interior,
                     motor y detalles únicos
                   </p>
                 </div>
-                <div className="p-3 rounded-lg bg-gray-50">
-                  <p className="text-sm text-gray-600">
+                <div className={`p-3 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}>
+                  <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
                     📝 <strong>Descripción honesta:</strong> Menciona tanto lo
                     bueno como lo que necesita atención
                   </p>
                 </div>
-                <div className="p-3 rounded-lg bg-gray-50">
-                  <p className="text-sm text-gray-600">
+                <div className={`p-3 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}>
+                  <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
                     ⭐ <strong>Características únicas:</strong> Destaca lo que
                     hace especial tu vehículo
                   </p>
                 </div>
-                <div className="p-3 rounded-lg bg-gray-50">
-                  <p className="text-sm text-gray-600">
+                <div className={`p-3 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}>
+                  <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
                     📋 <strong>Documentos listos:</strong> Tener los papeles en
                     orden acelera la venta
                   </p>
