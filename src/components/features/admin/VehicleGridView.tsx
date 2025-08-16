@@ -1,4 +1,4 @@
-// src/components/sections/AdminPanel/components/VehicleGridView/VehicleGridView.tsx
+// src/components/features/admin/VehicleGridView.tsx
 "use client"
 
 import Image from "next/image"
@@ -22,6 +22,7 @@ export const VehicleGridView = ({ vehicles, onStatusChange, onVehicleSelect, isD
       [ApprovalStatus.PENDING]: { variant: "secondary" as const, icon: Clock, text: "Pendiente" },
       [ApprovalStatus.APPROVED]: { variant: "default" as const, icon: CheckCircle, text: "Aprobado" },
       [ApprovalStatus.REJECTED]: { variant: "destructive" as const, icon: XCircle, text: "Rechazado" },
+      [ApprovalStatus.UNDER_REVIEW]: { variant: "default" as const, icon: Eye, text: "En Revisión" },
     }
     const config = variants[status] || variants[ApprovalStatus.PENDING]
     const Icon = config.icon
@@ -108,7 +109,8 @@ export const VehicleGridView = ({ vehicles, onStatusChange, onVehicleSelect, isD
                 </Dialog>
 
                 {/* ✅ CORREGIDO: Usar el enum ApprovalStatus */}
-                {vehicle.status === ApprovalStatus.PENDING && (
+                {(vehicle.status === ApprovalStatus.PENDING ||
+                  vehicle.status === ApprovalStatus.UNDER_REVIEW) && (
                   <div className="flex gap-2">
                     <Button
                       onClick={() => onStatusChange(vehicle._id!, ApprovalStatus.APPROVED)}

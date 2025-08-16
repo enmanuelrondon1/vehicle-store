@@ -311,28 +311,27 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
   isDocumentationSelected,
   handleImagesChange,
   onPrevious,
+  onNext,
 }) => {
   const { isDarkMode } = useDarkMode();
-  // Validación en tiempo real
-  // const validateDescription = (value: string): string | undefined => {
-  //   if (value.length > 2000)
-  //     return "La descripción no puede exceder 2000 caracteres";
-  //   return undefined;
-  // };
-
-  const handleDescriptionChange = (value: string) => {
-    handleInputChange("description", value);
-  };
-
-
-
 
   const descriptionLength = (formData.description || "").length;
   const maxDescriptionLength = 2000;
-  const charCounterColor =
-    descriptionLength > maxDescriptionLength * 0.9
-      ? "text-orange-500"
-      : "text-gray-500";
+
+  const isNearLimit = descriptionLength > maxDescriptionLength * 0.9;
+  const charCounterColor = isNearLimit
+    ? isDarkMode
+      ? "text-orange-400"
+      : "text-orange-500"
+    : isDarkMode
+    ? "text-gray-400"
+    : "text-gray-500";
+
+  const isFormComplete =
+    (formData.images?.length || 0) > 0 &&
+    (formData.description?.length || 0) > 0 &&
+    (formData.features?.length || 0) > 0 &&
+    (formData.documentation?.length || 0) > 0;
 
   return (
     <div className={`p-6 ${isDarkMode ? "bg-gray-900" : "bg-gray-50"}`}>
@@ -423,7 +422,7 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
               >
                 <textarea
                   value={formData.description || ""}
-                  onChange={(e) => handleDescriptionChange(e.target.value)}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
                   rows={5}
                   className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-4 focus:ring-teal-500/20 transition-all duration-200 resize-none ${
                     isDarkMode ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-200"
@@ -438,11 +437,11 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
                   maxLength={maxDescriptionLength}
                 />
                 <div className="flex justify-between items-center mt-2">
-                  <div className={`text-xs ${isDarkMode ? "text-gray-400" : charCounterColor}`}>
+                  <div className={`text-xs ${charCounterColor}`}>
                     {descriptionLength}/{maxDescriptionLength} caracteres
                   </div>
                   {descriptionLength > 0 && (
-                    <div className={`text-xs ${isDarkMode ? "text-gray-400" : charCounterColor}`}>
+                    <div className={`text-xs ${charCounterColor}`}>
                       {maxDescriptionLength - descriptionLength} restantes
                     </div>
                   )}
@@ -479,14 +478,21 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
                   Anterior
                 </button>
               )}
-              {/* El botón de "Siguiente" se convierte en "Finalizar y Pagar" en este paso */}
-              {/* <button
-                onClick={handleNextStep}
-                disabled={!isFormValid}
-                className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center ${isFormValid ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-              >
-                Finalizar y Pagar
-              </button> */}
+              {onNext && (
+                <button
+                  onClick={onNext}
+                  disabled={!isFormComplete}
+                  className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center ${
+                    isFormComplete
+                      ? "bg-teal-600 text-white hover:bg-teal-700 shadow-lg"
+                      : isDarkMode
+                      ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                >
+                  Finalizar y Pagar
+                </button>
+              )}
             </div>
           </div>
 

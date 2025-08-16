@@ -68,6 +68,8 @@ export interface VehicleDataBackend {
   images: string[];
   vin?: string;
   referenceNumber?: string;
+  paymentBank?: string;
+  paymentProofPublicId?: string;
   paymentProof?: string;
   status: ApprovalStatus;
   createdAt?: Date;

@@ -24,7 +24,7 @@ interface UploadedFile {
 export const ImageUploader = ({
   onUploadChange,
   initialUrls = [],
-  maxSizeMB = 10, // Valor por defecto de 10MB si no se proporciona
+  maxSizeMB = 2, // Establecemos 2MB como valor por defecto
 }: ImageUploaderProps) => {
   const [files, setFiles] = useState<UploadedFile[]>(
     initialUrls.map(url => ({ preview: url, url, isLoading: false }))
@@ -36,7 +36,7 @@ export const ImageUploader = ({
     if (typeof onUploadChange === 'function') onUploadChange(finalUrls);
   }, [files, onUploadChange]);
 
-  const handleUpload = async (acceptedFiles: File[]) => {
+  const handleUpload = useCallback(async (acceptedFiles: File[]) => {
     // Solo verificar cloud name (que sí está disponible en cliente)
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
@@ -57,7 +57,7 @@ export const ImageUploader = ({
     const uploadPromises = newUploads.map(async (upload) => {
       // Opciones de compresión
       const compressionOptions = {
-        maxSizeMB: 2, // Comprime la imagen para que no pese más de 2MB
+        maxSizeMB: maxSizeMB, // Usa la prop para el tamaño máximo de compresión
         maxWidthOrHeight: 1920, // Redimensiona a un máximo de 1920px en el lado más largo
         useWebWorker: true, // Usa web workers para no bloquear la interfaz
       };
@@ -144,7 +144,7 @@ export const ImageUploader = ({
     } catch (error) {
       console.error('Error procesando uploads:', error);
     }
-  };
+  }, [maxSizeMB]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 10) {
@@ -152,12 +152,12 @@ export const ImageUploader = ({
       return;
     }
     handleUpload(acceptedFiles);
-  }, []);
+  }, [handleUpload]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'image/*': ['.jpeg', '.png', '.jpg', '.webp'] },
-    maxSize: maxSizeMB * 1024 * 1024, // Usamos el prop para el tamaño máximo
+    maxSize: 10 * 1024 * 1024, // Aumentamos el límite a 10MB, ya que se comprimirá
     maxFiles: 10, // Mantenemos el máximo de 10 archivos
   });
 
@@ -187,7 +187,7 @@ export const ImageUploader = ({
           Arrastra y suelta tus imágenes aquí, o haz clic para seleccionarlas.
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          PNG, JPG, WEBP hasta {maxSizeMB}MB. Máximo 10 imágenes.
+          PNG, JPG, WEBP hasta 10MB. Máximo 10 imágenes.
         </p>
       </div>
 

@@ -52,11 +52,12 @@ const DOCUMENTATION_MAP: Record<Documentation, string> = {
   [Documentation.BOLIVARIAN_PLATES]: "Placas Bolivarianas",
 };
 
-const STATUS_MAP = {
+const STATUS_MAP: Record<ApprovalStatus, string> = {
   [ApprovalStatus.PENDING]: "Pendiente",
+  [ApprovalStatus.UNDER_REVIEW]: "En Revisión",
   [ApprovalStatus.APPROVED]: "Aprobado",
   [ApprovalStatus.REJECTED]: "Rechazado",
-} as const;
+};
 
 // Función helper para traducir valores
 const translateValue = <T extends string, M extends Record<T, string>>(

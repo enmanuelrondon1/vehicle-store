@@ -35,6 +35,7 @@ export enum FuelType {
 
 export enum ApprovalStatus {
   PENDING = "pending",
+  UNDER_REVIEW = "under_review",
   APPROVED = "approved",
   REJECTED = "rejected"
 }
