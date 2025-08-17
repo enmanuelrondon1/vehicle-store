@@ -36,115 +36,264 @@ export const ImageUploader = ({
     if (typeof onUploadChange === 'function') onUploadChange(finalUrls);
   }, [files, onUploadChange]);
 
-  const handleUpload = useCallback(async (acceptedFiles: File[]) => {
-    // Solo verificar cloud name (que sí está disponible en cliente)
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  // const handleUpload = useCallback(async (acceptedFiles: File[]) => {
+  //   // Solo verificar cloud name (que sí está disponible en cliente)
+  //   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
-    if (!cloudName) {
-      console.error('Cloud name de Cloudinary no configurado');
-      alert('Error de configuración: Cloud name no encontrado');
-      return;
-    }
+  //   if (!cloudName) {
+  //     console.error('Cloud name de Cloudinary no configurado');
+  //     alert('Error de configuración: Cloud name no encontrado');
+  //     return;
+  //   }
 
-    const newUploads: UploadedFile[] = acceptedFiles.map(file => ({
-      file,
-      preview: URL.createObjectURL(file),
-      isLoading: true,
-    }));
+  //   const newUploads: UploadedFile[] = acceptedFiles.map(file => ({
+  //     file,
+  //     preview: URL.createObjectURL(file),
+  //     isLoading: true,
+  //   }));
 
-    setFiles(prev => [...prev, ...newUploads]);
+  //   setFiles(prev => [...prev, ...newUploads]);
 
-    const uploadPromises = newUploads.map(async (upload) => {
-      // Opciones de compresión
-      const compressionOptions = {
-        maxSizeMB: maxSizeMB, // Usa la prop para el tamaño máximo de compresión
-        maxWidthOrHeight: 1920, // Redimensiona a un máximo de 1920px en el lado más largo
-        useWebWorker: true, // Usa web workers para no bloquear la interfaz
-      };
+  //   const uploadPromises = newUploads.map(async (upload) => {
+  //     // Opciones de compresión
+  //     const compressionOptions = {
+  //       maxSizeMB: maxSizeMB, // Usa la prop para el tamaño máximo de compresión
+  //       maxWidthOrHeight: 1920, // Redimensiona a un máximo de 1920px en el lado más largo
+  //       useWebWorker: true, // Usa web workers para no bloquear la interfaz
+  //     };
 
-      try {
-        // Obtener la firma del servidor (el timestamp se genera allí)
-        const signResponse = await fetch('/api/cloudinary/sign', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+  //     try {
+  //       // Obtener la firma del servidor (el timestamp se genera allí)
+  //       const signResponse = await fetch('/api/cloudinary/sign', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //       });
 
-        if (!signResponse.ok) {
-          throw new Error(`Error al obtener firma: ${signResponse.status}`);
-        }
+  //       if (!signResponse.ok) {
+  //         throw new Error(`Error al obtener firma: ${signResponse.status}`);
+  //       }
 
-        const signData = await signResponse.json();
+  //       const signData = await signResponse.json();
         
-        if (!signData.signature || !signData.apiKey || !signData.timestamp) {
-          throw new Error('No se recibió datos completos del servidor');
-        }
+  //       if (!signData.signature || !signData.apiKey || !signData.timestamp) {
+  //         throw new Error('No se recibió datos completos del servidor');
+  //       }
 
-        // Comprimir la imagen antes de subirla
-        const compressedFile = await imageCompression(upload.file!, compressionOptions);
+  //       // Comprimir la imagen antes de subirla
+  //       const compressedFile = await imageCompression(upload.file!, compressionOptions);
 
-        // Preparar FormData para la carga
-        const formData = new FormData();
-        formData.append('file', compressedFile); // Usamos el archivo comprimido
-        formData.append('api_key', signData.apiKey);
-        formData.append('timestamp', signData.timestamp.toString());
-        formData.append('signature', signData.signature);
-        formData.append('folder', 'vehicles');
+  //       // Preparar FormData para la carga
+  //       const formData = new FormData();
+  //       formData.append('file', compressedFile); // Usamos el archivo comprimido
+  //       formData.append('api_key', signData.apiKey);
+  //       formData.append('timestamp', signData.timestamp.toString());
+  //       formData.append('signature', signData.signature);
+  //       formData.append('folder', 'vehicles');
 
-        // Subir a Cloudinary
-        const uploadResponse = await fetch(
-          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-          { 
-            method: 'POST', 
-            body: formData 
-          }
-        );
+  //       // Subir a Cloudinary
+  //       const uploadResponse = await fetch(
+  //         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+  //         { 
+  //           method: 'POST', 
+  //           body: formData 
+  //         }
+  //       );
 
-        if (!uploadResponse.ok) {
-          const errorText = await uploadResponse.text();
-          throw new Error(`Error de carga: ${uploadResponse.status} - ${errorText}`);
-        }
+  //       if (!uploadResponse.ok) {
+  //         const errorText = await uploadResponse.text();
+  //         throw new Error(`Error de carga: ${uploadResponse.status} - ${errorText}`);
+  //       }
 
-        const result = await uploadResponse.json();
+  //       const result = await uploadResponse.json();
         
-        if (!result.secure_url) {
-          throw new Error('No se recibió URL de la imagen');
-        }
+  //       if (!result.secure_url) {
+  //         throw new Error('No se recibió URL de la imagen');
+  //       }
 
-        return { preview: upload.preview, url: result.secure_url };
+  //       return { preview: upload.preview, url: result.secure_url };
 
-      } catch (error) {
-        console.error('Upload error:', error);
-        return { 
-          preview: upload.preview, 
-          error: error instanceof Error ? error.message : 'Error desconocido al subir'
-        };
-      }
-    });
+  //     } catch (error) {
+  //       console.error('Upload error:', error);
+  //       return { 
+  //         preview: upload.preview, 
+  //         error: error instanceof Error ? error.message : 'Error desconocido al subir'
+  //       };
+  //     }
+  //   });
+
+  //   try {
+  //     const results = await Promise.all(uploadPromises);
+
+  //     setFiles(prev => {
+  //       const updated = [...prev];
+  //       results.forEach(result => {
+  //         const index = updated.findIndex(f => f.preview === result.preview);
+  //         if (index !== -1) {
+  //           updated[index].isLoading = false;
+  //           if (result.url) {
+  //             updated[index].url = result.url;
+  //           } else {
+  //             updated[index].error = result.error || 'Error al subir';
+  //           }
+  //         }
+  //       });
+  //       return updated;
+  //     });
+  //   } catch (error) {
+  //     console.error('Error procesando uploads:', error);
+  //   }
+  // }, [maxSizeMB]);
+
+
+  // Reemplaza la sección del handleUpload en tu ImageUploader.tsx
+
+const handleUpload = useCallback(async (acceptedFiles: File[]) => {
+  // Solo verificar cloud name (que sí está disponible en cliente)
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+  if (!cloudName) {
+    console.error('Cloud name de Cloudinary no configurado');
+    alert('Error de configuración: Cloud name no encontrado');
+    return;
+  }
+
+  const newUploads: UploadedFile[] = acceptedFiles.map(file => ({
+    file,
+    preview: URL.createObjectURL(file),
+    isLoading: true,
+  }));
+
+  setFiles(prev => [...prev, ...newUploads]);
+
+  const uploadPromises = newUploads.map(async (upload) => {
+    // Opciones de compresión
+    const compressionOptions = {
+      maxSizeMB: maxSizeMB,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+    };
 
     try {
-      const results = await Promise.all(uploadPromises);
-
-      setFiles(prev => {
-        const updated = [...prev];
-        results.forEach(result => {
-          const index = updated.findIndex(f => f.preview === result.preview);
-          if (index !== -1) {
-            updated[index].isLoading = false;
-            if (result.url) {
-              updated[index].url = result.url;
-            } else {
-              updated[index].error = result.error || 'Error al subir';
-            }
-          }
-        });
-        return updated;
+      // Obtener la firma del servidor (el timestamp se genera allí)
+      console.log('🚀 Solicitando firma al servidor...');
+      
+      const signResponse = await fetch('/api/cloudinary/sign', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+
+      console.log('📡 Respuesta del servidor:', {
+        status: signResponse.status,
+        statusText: signResponse.statusText,
+        ok: signResponse.ok,
+        url: signResponse.url
+      });
+
+      if (!signResponse.ok) {
+        const errorText = await signResponse.text();
+        console.error('❌ Error del servidor:', errorText);
+        throw new Error(`Error al obtener firma: ${signResponse.status} - ${errorText}`);
+      }
+
+      const signData = await signResponse.json();
+      
+      console.log('📋 Datos recibidos del servidor:', {
+        hasSignature: !!signData.signature,
+        hasApiKey: !!signData.apiKey,
+        hasTimestamp: !!signData.timestamp,
+        timestamp: signData.timestamp,
+        // NO logear la signature ni apiKey completos por seguridad
+        signatureLength: signData.signature?.length,
+        apiKeyLength: signData.apiKey?.length,
+        allKeys: Object.keys(signData)
+      });
+      
+      if (!signData.signature || !signData.apiKey || !signData.timestamp) {
+        console.error('❌ Datos incompletos del servidor:', signData);
+        throw new Error('No se recibió datos completos del servidor');
+      }
+
+      // Comprimir la imagen antes de subirla
+      console.log('🗜️ Comprimiendo imagen...');
+      const compressedFile = await imageCompression(upload.file!, compressionOptions);
+      console.log('✅ Imagen comprimida exitosamente');
+
+      // Preparar FormData para la carga
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+      formData.append('api_key', signData.apiKey);
+      formData.append('timestamp', signData.timestamp.toString());
+      formData.append('signature', signData.signature);
+      formData.append('folder', 'vehicles');
+
+      console.log('☁️ Subiendo a Cloudinary...');
+      
+      // Subir a Cloudinary
+      const uploadResponse = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        { 
+          method: 'POST', 
+          body: formData 
+        }
+      );
+
+      console.log('📤 Respuesta de Cloudinary:', {
+        status: uploadResponse.status,
+        statusText: uploadResponse.statusText,
+        ok: uploadResponse.ok
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error('❌ Error de Cloudinary:', errorText);
+        throw new Error(`Error de carga: ${uploadResponse.status} - ${errorText}`);
+      }
+
+      const result = await uploadResponse.json();
+      
+      if (!result.secure_url) {
+        console.error('❌ No se recibió URL de Cloudinary:', result);
+        throw new Error('No se recibió URL de la imagen');
+      }
+
+      console.log('🎉 Imagen subida exitosamente!');
+      return { preview: upload.preview, url: result.secure_url };
+
     } catch (error) {
-      console.error('Error procesando uploads:', error);
+      console.error('💥 Upload error:', error);
+      return { 
+        preview: upload.preview, 
+        error: error instanceof Error ? error.message : 'Error desconocido al subir'
+      };
     }
-  }, [maxSizeMB]);
+  });
+
+  try {
+    const results = await Promise.all(uploadPromises);
+
+    setFiles(prev => {
+      const updated = [...prev];
+      results.forEach(result => {
+        const index = updated.findIndex(f => f.preview === result.preview);
+        if (index !== -1) {
+          updated[index].isLoading = false;
+          if (result.url) {
+            updated[index].url = result.url;
+          } else {
+            updated[index].error = result.error || 'Error al subir';
+          }
+        }
+      });
+      return updated;
+    });
+  } catch (error) {
+    console.error('Error procesando uploads:', error);
+  }
+}, [maxSizeMB]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 10) {
