@@ -1,86 +1,64 @@
 // middleware.ts
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type { NextRequestWithAuth } from "next-auth/middleware";
+
+const protectedPaths = ['/postAd', '/profile', '/dashboard', '/adminPanel', '/api/admin', '/api/protected'];
+const adminPaths = ['/adminPanel', '/api/admin'];
+const migrationPaths = ["/api/migrate-status", "/api/migrate-views"];
 
 export default withAuth(
-  function middleware(req: NextRequest) {
-    const { pathname } = req.nextUrl;
-    const token = (req as any).nextauth?.token;
+  // La función `middleware` se ejecuta solo si `authorized` devuelve `true`.
+  // Aquí puedes realizar acciones adicionales como añadir headers.
+  function middleware(req: NextRequestWithAuth) {
+    console.log("✅ Acceso autorizado para:", req.nextUrl.pathname, "Usuario:", req.nextauth.token?.email);
 
-    // Excluir rutas de migración
-    if (pathname === "/api/migrate-status" || pathname === "/api/migrate-views") {
-      return NextResponse.next();
-    }
-
-    console.log("🔒 Middleware ejecutándose para:", pathname);
-    console.log("🔑 Token presente:", !!token);
-    console.log("👤 Usuario:", token?.email || "No autenticado");
-    console.log("🔑 Token completo:", token);
-
-    if (
-      (pathname.startsWith("/AdminPanel") || pathname.startsWith("/api/admin")) &&
-      token?.role !== "admin"
-    ) {
-      console.log("❌ Acceso denegado - No es administrador:", pathname);
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-
+    // Establecer headers de seguridad y anti-caché
     const response = NextResponse.next();
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
-    response.headers.set('Surrogate-Control', 'no-store');
-    response.headers.set('X-Accel-Expires', '0');
-    response.headers.set('X-Protected-Route', 'true');
-    response.headers.set('Vary', 'Cookie, Authorization');
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('X-Frame-Options', 'DENY');
-    response.headers.set('X-XSS-Protection', '1; mode=block');
+    // X-XSS-Protection está obsoleto. Se recomienda usar Content-Security-Policy.
+    // response.headers.set('Content-Security-Policy', "default-src 'self'");
 
-    console.log("✅ Acceso permitido con headers anti-caché y seguridad aplicados");
     return response;
   },
   {
     callbacks: {
+      // Este callback es el lugar central para la lógica de autorización.
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
-        // Excluir rutas de migración
-        if (pathname === "/api/migrate-status" || pathname === "/api/migrate-views") {
+
+        // Permitir siempre el acceso a las rutas de migración
+        if (migrationPaths.includes(pathname)) {
           return true;
         }
 
-        const protectedPaths = ['/postAd', '/profile', '/dashboard', '/AdminPanel', '/api/admin'];
         const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
 
-        console.log("🛡️ Verificando autorización:", {
-          pathname,
-          isProtectedPath,
-          hasToken: !!token,
-          userEmail: token?.email,
-          userRole: token?.role,
-          userAgent: req.headers.get('user-agent')?.substring(0, 50) + '...'
-        });
+        // Si no es una ruta protegida, permitir acceso.
+        if (!isProtectedPath) {
+          return true;
+        }
 
-        if (isProtectedPath && !token) {
+        // A partir de aquí, todas las rutas son protegidas.
+        // Si no hay token, el acceso es denegado.
+        if (!token) {
           console.log("❌ Acceso denegado - No hay token para ruta protegida:", pathname);
           return false;
         }
 
-        if (
-          (pathname.startsWith("/AdminPanel") || pathname.startsWith("/api/admin")) &&
-          token?.role !== "admin"
-        ) {
-          console.log("❌ Acceso denegado - No es administrador:", pathname);
-          return false;
+        // Si es una ruta de admin y el usuario no tiene el rol 'admin', denegar.
+        const isAdminPath = adminPaths.some(path => pathname.startsWith(path));
+        if (isAdminPath && token.role !== 'admin') {
+            console.log("❌ Acceso denegado - No es administrador:", pathname);
+            return false;
         }
-
-        if (isProtectedPath && token) {
-          console.log("✅ Acceso permitido - Usuario autenticado:", token.email);
-          return true;
-        }
-
-        console.log("🔓 Ruta no protegida, acceso permitido:", pathname);
+        
+        // Si llegó hasta aquí, es una ruta protegida, el usuario tiene token
+        // y, si es ruta de admin, tiene el rol correcto.
         return true;
       },
     },
@@ -95,7 +73,7 @@ export const config = {
     '/postAd/:path*',
     '/profile/:path*',
     '/dashboard/:path*',
-    '/AdminPanel/:path*',
+    '/adminPanel/:path*',
     '/api/admin/:path*',
     '/api/protected/:path*'
   ]

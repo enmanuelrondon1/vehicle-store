@@ -1,13 +1,9 @@
-// src/components/sections/AdminPanel.tsx
+// src/components/features/admin/AdminPanel.tsx
 "use client";
 
-import { useState, Fragment, useEffect, useMemo } from "react";
-import Image from "next/image";
-import { Menu, Transition } from "@headlessui/react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -29,21 +25,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  CheckCircle,
   XCircle,
-  Clock,
-  Eye,
-  Mail,
-  Phone,
-  MapPin,
-  DollarSign,
-  Gauge,
-  Palette,
-  Settings,
-  Fuel,
   Car,
   RefreshCw,
-  MoreVertical,
   Trash2,
   MessageSquare,
   History,
@@ -53,8 +37,8 @@ import {
   User,
   FileText,
   AlertTriangle,
+  BarChart2,
 } from "lucide-react";
-import { generateVehiclePdf } from "@/lib/pdfGenerator";
 import { useDarkMode } from "@/context/DarkModeContext";
 import { useAdminPanelEnhanced } from "@/hooks/use-admin-panel-enhanced";
 import type {
@@ -62,11 +46,15 @@ import type {
   ApprovalStatus as ApprovalStatusType,
 } from "@/types/types";
 import { PdfViewer } from "../payment/pdf-viewer";
-import { AnalyticsDashboard } from "./AnalyticsDashboard";
 import { AdminFilters } from "./AdminFilters";
 import { VehicleGridView } from "./VehicleGridView";
+import { VehicleListView } from "./VehicleListView";
 import { AdminPagination } from "./AdminPagination";
 import { NotificationBell } from "../../shared/notifications/NotificationBell";
+import { filterVehicles } from "@/lib/vehicleUtils"; // Importa la nueva función
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import Image from "next/image";
 
 // Interfaces para las nuevas funcionalidades
 interface VehicleComment {
@@ -85,20 +73,6 @@ interface VehicleHistoryEntry {
   timestamp: string;
   oldValue?: string;
   newValue?: string;
-}
-
-interface AnalyticsData {
-  generalStats: {
-    totalVehicles: number;
-    averagePrice: number;
-    totalViews: number;
-  };
-  statusCounts: { [key: string]: number };
-  monthlyPublications: {
-    _id: { year: number; month: number };
-    count: number;
-  }[];
-  avgPriceByCategory: { _id: string; averagePrice: number; count: number }[];
 }
 
 // Mapeo explícito
@@ -155,33 +129,6 @@ export const AdminPanel = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [vehicleFromNotification, setVehicleFromNotification] =
     useState<VehicleDataFrontend | null>(null);
-
-  // Estado para los datos de analytics
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(
-    null
-  );
-  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
-
-  // Fetch de datos de analytics
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        setIsLoadingAnalytics(true);
-        const response = await fetch("/api/admin/analytics");
-        const result = await response.json();
-        if (result.success) {
-          setAnalyticsData(result.data);
-        } else {
-          console.error("Error fetching analytics:", result.error);
-        }
-      } catch (error) {
-        console.error("Error fetching analytics:", error);
-      } finally {
-        setIsLoadingAnalytics(false);
-      }
-    };
-    fetchAnalytics();
-  }, []);
 
   // Efecto para asegurar que se cargan TODOS los vehículos al inicio.
   // Esto soluciona el problema de que los vehículos pendientes no aparezcan.
@@ -259,30 +206,24 @@ export const AdminPanel = () => {
   // Esto reemplaza la lógica defectuosa del hook y los useEffect anteriores.
   const displayedVehicles = useMemo(() => {
     // 1. Filtrar
-    const filtered = allVehicles.filter(vehicle => {
-      const statusMatch = filters.status === 'all' || vehicle.status === filters.status;
-      const categoryMatch = filters.category === 'all' || vehicle.category === filters.category;
-      const searchMatch = !filters.search ||
-        `${vehicle.brand} ${vehicle.model} ${vehicle.year} ${vehicle.sellerContact.name} ${vehicle.sellerContact.email} ${vehicle.referenceNumber || ''}`
-          .toLowerCase()
-          .includes(filters.search.toLowerCase());
-      const priceMatch = vehicle.price >= filters.priceRange[0] && vehicle.price <= filters.priceRange[1];
-
-      return statusMatch && categoryMatch && searchMatch && priceMatch;
-    });
+    const filtered = filterVehicles(allVehicles, filters);
 
     // 2. Ordenar
     const sorted = [...filtered].sort((a, b) => {
       switch (filters.sortBy) {
-        case 'newest':
-          return new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime();
-        case 'oldest':
-          return new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime();
-        case 'price-low':
+        case "newest":
+          return (
+            new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
+          );
+        case "oldest":
+          return (
+            new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime()
+          );
+        case "price-low":
           return a.price - b.price;
-        case 'price-high':
+        case "price-high":
           return b.price - a.price;
-        case 'views':
+        case "views":
           return (b.views || 0) - (a.views || 0);
         default:
           return 0;
@@ -298,16 +239,7 @@ export const AdminPanel = () => {
 
   // Efecto para actualizar el total de items en la paginación cuando los filtros cambian.
   useEffect(() => {
-    const filteredCount = allVehicles.filter(vehicle => {
-       const statusMatch = filters.status === 'all' || vehicle.status === filters.status;
-      const categoryMatch = filters.category === 'all' || vehicle.category === filters.category;
-      const searchMatch = !filters.search ||
-        `${vehicle.brand} ${vehicle.model} ${vehicle.year} ${vehicle.sellerContact.name} ${vehicle.sellerContact.email} ${vehicle.referenceNumber || ''}`
-          .toLowerCase()
-          .includes(filters.search.toLowerCase());
-      const priceMatch = vehicle.price >= filters.priceRange[0] && vehicle.price <= filters.priceRange[1];
-      return statusMatch && categoryMatch && searchMatch && priceMatch;
-    }).length;
+    const filteredCount = filterVehicles(allVehicles, filters).length;
 
     if (pagination.totalItems !== filteredCount) {
       // Resetea a la página 1 cuando los filtros cambian el total de resultados
@@ -506,44 +438,44 @@ export const AdminPanel = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      pending: {
-        variant: "secondary" as const,
-        icon: Clock,
-        text: "Pendiente",
-        className:
-          "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-      },
-      approved: {
-        variant: "default" as const,
-        icon: CheckCircle,
-        text: "Aprobado",
-        className:
-          "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      },
-      rejected: {
-        variant: "destructive" as const,
-        icon: XCircle,
-        text: "Rechazado",
-        className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-      },
-    };
+  // const getStatusBadge = (status: string) => {
+  //   const variants = {
+  //     pending: {
+  //       variant: "secondary" as const,
+  //       icon: Clock,
+  //       text: "Pendiente",
+  //       className:
+  //         "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  //     },
+  //     approved: {
+  //       variant: "default" as const,
+  //       icon: CheckCircle,
+  //       text: "Aprobado",
+  //       className:
+  //         "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  //     },
+  //     rejected: {
+  //       variant: "destructive" as const,
+  //       icon: XCircle,
+  //       text: "Rechazado",
+  //       className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  //     },
+  //   };
 
-    const config =
-      variants[status as keyof typeof variants] || variants.pending;
-    const Icon = config.icon;
+  //   const config =
+  //     variants[status as keyof typeof variants] || variants.pending;
+  //   const Icon = config.icon;
 
-    return (
-      <Badge
-        variant={config.variant}
-        className={`flex items-center gap-1 text-xs ${config.className}`}
-      >
-        <Icon className="w-3 h-3" />
-        <span className="hidden xs:inline">{config.text}</span>
-      </Badge>
-    );
-  };
+  //   return (
+  //     <Badge
+  //       variant={config.variant}
+  //       className={`flex items-center gap-1 text-xs ${config.className}`}
+  //     >
+  //       <Icon className="w-3 h-3" />
+  //       <span className="hidden xs:inline">{config.text}</span>
+  //     </Badge>
+  //   );
+  // };
 
   const handleRejectWithReason = async (vehicleId: string, reason: string) => {
     try {
@@ -600,544 +532,38 @@ export const AdminPanel = () => {
         "Estado",
         "Ubicación",
         "Vendedor",
+        "Email Vendedor",
+        "Teléfono Vendedor",
+        "Fecha Creación",
       ],
-      ...allVehicles.map((v) => [ // Exportar todos, no solo los visibles
-        v._id,
-        v.brand,
-        v.model,
-        v.year,
-        v.price,
-        v.status,
-        v.location,
-        v.sellerContact.name,
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
+      ...allVehicles.map((v) =>
+        [
+          v._id,
+          `"${v.brand}"`,
+          `"${v.model}"`,
+          v.year,
+          v.price,
+          v.status,
+          `"${v.location.replace(/"/g, '""')}"`,
+          `"${v.sellerContact.name.replace(/"/g, '""')}"`,
+          v.sellerContact.email,
+          v.sellerContact.phone,
+          v.createdAt ? new Date(v.createdAt).toLocaleDateString() : "N/A",
+        ].join(",")
+      ),
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const blob = new Blob([`\uFEFF${csvContent}`], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `vehiculos_${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-  };
-
-  const VehicleActions = ({ vehicle }: { vehicle: VehicleDataFrontend }) => (
-    <Menu as="div" className="relative">
-      <Menu.Button
-        as={Button}
-        variant="ghost"
-        size="sm"
-        className="h-8 w-8 p-0"
-      >
-        <MoreVertical className="w-4 h-4" />
-      </Menu.Button>
-      <Transition
-        as={Fragment}
-        enter="transition ease-out duration-100"
-        enterFrom="transform opacity-0 scale-95"
-        enterTo="transform opacity-100 scale-100"
-        leave="transition ease-in duration-75"
-        leaveFrom="transform opacity-100 scale-100"
-        leaveTo="transform opacity-0 scale-95"
-      >
-        <Menu.Items
-          className={`absolute right-0 z-50 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none ${
-            isDarkMode ? "border-gray-700" : "border-gray-200"
-          }`}
-        >
-          <div className="py-1">
-            <Menu.Item>
-              {({ active }) => (
-                <button
-                  onClick={() => setSelectedVehicle(vehicle)}
-                  className={`flex items-center w-full px-4 py-2 text-sm ${
-                    active
-                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                      : "text-gray-700 dark:text-gray-300"
-                  }`}
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  Ver detalles
-                </button>
-              )}
-            </Menu.Item>
-            <hr className="border-gray-200 dark:border-gray-700" />
-            {vehicle.status !== "approved" && (
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    onClick={() =>
-                      handleStatusChange(vehicle._id!, ApprovalStatus.APPROVED)
-                    }
-                    className={`flex items-center w-full px-4 py-2 text-sm text-green-600 ${
-                      active ? "bg-gray-100 dark:bg-gray-700" : ""
-                    }`}
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Aprobar
-                  </button>
-                )}
-              </Menu.Item>
-            )}
-            {vehicle.status !== "pending" && (
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    onClick={() =>
-                      handleStatusChange(vehicle._id!, ApprovalStatus.PENDING)
-                    }
-                    className={`flex items-center w-full px-4 py-2 text-sm text-yellow-600 ${
-                      active ? "bg-gray-100 dark:bg-gray-700" : ""
-                    }`}
-                  >
-                    <Clock className="w-4 h-4 mr-2" />
-                    Marcar como pendiente
-                  </button>
-                )}
-              </Menu.Item>
-            )}
-            {vehicle.status !== "rejected" && (
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    onClick={() => {
-                      setVehicleToReject(vehicle._id!);
-                      setShowRejectDialog(true);
-                    }}
-                    className={`flex items-center w-full px-4 py-2 text-sm text-red-600 ${
-                      active ? "bg-gray-100 dark:bg-gray-700" : ""
-                    }`}
-                  >
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Rechazar
-                  </button>
-                )}
-              </Menu.Item>
-            )}
-            <hr className="border-gray-200 dark:border-gray-700" />
-            <Menu.Item>
-              {({ active }) => (
-                <button
-                  onClick={() => {
-                    setVehicleToComment(vehicle._id!);
-                    loadVehicleComments(vehicle._id!);
-                    setShowCommentDialog(true);
-                  }}
-                  className={`flex items-center w-full px-4 py-2 text-sm ${
-                    active
-                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                      : "text-gray-700 dark:text-gray-300"
-                  }`}
-                >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Agregar comentario
-                </button>
-              )}
-            </Menu.Item>
-            <Menu.Item>
-              {({ active }) => (
-                <button
-                  onClick={() => {
-                    loadVehicleHistory();
-                    setShowHistoryDialog(true);
-                  }}
-                  className={`flex items-center w-full px-4 py-2 text-sm ${
-                    active
-                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                      : "text-gray-700 dark:text-gray-300"
-                  }`}
-                >
-                  <History className="w-4 h-4 mr-2" />
-                  Ver historial
-                </button>
-              )}
-            </Menu.Item>
-            <Menu.Item>
-              {({ active }) => (
-                <button
-                  onClick={() => generateVehiclePdf(vehicle)}
-                  className={`flex items-center w-full px-4 py-2 text-sm ${
-                    active
-                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                      : "text-gray-700 dark:text-gray-300"
-                  }`}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Descargar PDF
-                </button>
-              )}
-            </Menu.Item>
-            <hr className="border-gray-200 dark:border-gray-700" />
-            <Menu.Item>
-              {({ active }) => (
-                <button
-                  onClick={() => {
-                    setVehicleToDelete(vehicle._id!);
-                    setShowDeleteDialog(true);
-                  }}
-                  className={`flex items-center w-full px-4 py-2 text-sm text-red-600 ${
-                    active ? "bg-gray-100 dark:bg-gray-700" : ""
-                  }`}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Eliminar
-                </button>
-              )}
-            </Menu.Item>
-          </div>
-        </Menu.Items>
-      </Transition>
-    </Menu>
-  );
-
-  const MobileActionSheet = ({ vehicle }: { vehicle: VehicleDataFrontend }) => (
-    <div className="flex flex-col sm:hidden gap-2 mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-      <div className="grid grid-cols-2 gap-2">
-        {vehicle.status !== "approved" && (
-          <Button
-            onClick={() =>
-              handleStatusChange(vehicle._id!, ApprovalStatus.APPROVED)
-            }
-            className="bg-green-600 hover:bg-green-700 text-xs h-8"
-            size="sm"
-          >
-            <CheckCircle className="w-3 h-3 mr-1" />
-            Aprobar
-          </Button>
-        )}
-        {vehicle.status !== "rejected" && (
-          <Button
-            onClick={() => {
-              setVehicleToReject(vehicle._id!);
-              setShowRejectDialog(true);
-            }}
-            variant="destructive"
-            size="sm"
-            className="text-xs h-8"
-          >
-            <XCircle className="w-3 h-3 mr-1" />
-            Rechazar
-          </Button>
-        )}
-      </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setSelectedVehicle(vehicle)}
-        className="text-xs h-8"
-      >
-        <Eye className="w-3 h-3 mr-1" />
-        Ver detalles
-      </Button>
-      <div className="grid grid-cols-2 gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setVehicleToComment(vehicle._id!);
-            loadVehicleComments(vehicle._id!);
-            setShowCommentDialog(true);
-          }}
-          className="text-xs h-8"
-        >
-          <MessageSquare className="w-3 h-3 mr-1" />
-          Comentar
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            loadVehicleHistory();
-            setShowHistoryDialog(true);
-          }}
-          className="text-xs h-8"
-        >
-          <History className="w-3 h-3 mr-1" />
-          Historial
-        </Button>
-      </div>
-      <div className="grid grid-cols-1">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => generateVehiclePdf(vehicle)}
-          className="text-xs h-8"
-        >
-          <Download className="w-3 h-3 mr-1" />
-          Descargar PDF
-        </Button>
-      </div>
-    </div>
-  );
-
-  const VehicleListView = ({
-    vehicles,
-  }: {
-    vehicles: VehicleDataFrontend[];
-  }) => {
-    if (vehicles.length === 0) {
-      return (
-        <div className="text-center py-8 md:py-12">
-          <Car className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-base md:text-lg font-semibold mb-2">
-            No hay vehículos
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base px-4">
-            No se encontraron vehículos con los filtros seleccionados.
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4 md:space-y-6">
-        {/* Acciones masivas */}
-        {selectedVehicles.size > 0 && (
-          <Card className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
-            <CardContent className="p-3 md:p-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                  <span className="text-sm font-medium">
-                    {selectedVehicles.size} vehículo
-                    {selectedVehicles.size !== 1 ? "s" : ""} seleccionado
-                    {selectedVehicles.size !== 1 ? "s" : ""}
-                  </span>
-                  <Button variant="outline" size="sm" onClick={clearSelection}>
-                    Limpiar selección
-                  </Button>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => handleBulkAction(ApprovalStatus.APPROVED)}
-                    className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Aprobar seleccionados
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleBulkAction(ApprovalStatus.REJECTED)}
-                    className="text-xs sm:text-sm"
-                  >
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Rechazar seleccionados
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {vehicles.map((vehicle) => (
-          <Card
-            key={vehicle._id}
-            id={vehicle._id} // Añadimos el ID para el anclaje
-            className={`${
-              isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
-            } hover:shadow-lg transition-all duration-200 ${
-              selectedVehicles.has(vehicle._id!) ? "ring-2 ring-blue-500" : ""
-            }`}
-          >
-            <CardContent className="p-3 md:p-6">
-              <div className="flex flex-col space-y-4">
-                {/* Header móvil con checkbox y estado */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Checkbox
-                      checked={selectedVehicles.has(vehicle._id!)}
-                      onCheckedChange={() =>
-                        toggleVehicleSelection(vehicle._id!)
-                      }
-                    />
-                    <h3 className="text-base md:text-xl font-bold line-clamp-1">
-                      {vehicle.brand} {vehicle.model} ({vehicle.year})
-                    </h3>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(vehicle.status)}
-                    <div className="hidden sm:block">
-                      <VehicleActions vehicle={vehicle} />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-                  {/* Imagen del vehículo */}
-                  <div className="relative w-full lg:w-64 h-48 lg:h-40 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700 flex-shrink-0">
-                    <Image
-                      src={
-                        vehicle.images[0] ||
-                        "/placeholder.svg?height=200&width=300"
-                      }
-                      alt={`${vehicle.brand} ${vehicle.model}`}
-                      fill
-                      className="object-cover"
-                    />
-                    {vehicle.images.length > 1 && (
-                      <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-                        +{vehicle.images.length - 1} fotos
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Información del vehículo */}
-                  <div className="flex-1 space-y-3 md:space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 text-xs md:text-sm">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="w-3 h-3 md:w-4 md:h-4 text-green-600" />
-                        <span className="font-semibold">
-                          ${vehicle.price.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Gauge className="w-3 h-3 md:w-4 md:h-4 text-blue-600" />
-                        <span>{vehicle.mileage.toLocaleString()} km</span>
-                      </div>
-                      <div className="flex items-center gap-2 col-span-2 md:col-span-1">
-                        <MapPin className="w-3 h-3 md:w-4 md:h-4 text-red-600" />
-                        <span className="truncate">{vehicle.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Palette className="w-3 h-3 md:w-4 md:h-4 text-purple-600" />
-                        <span>{vehicle.color}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Settings className="w-3 h-3 md:w-4 md:h-4 text-gray-600" />
-                        <span className="truncate">{vehicle.transmission}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Fuel className="w-3 h-3 md:w-4 md:h-4 text-orange-600" />
-                        <span>{vehicle.fuelType}</span>
-                      </div>
-                    </div>
-
-                    {vehicle.description && (
-                      <p className="text-gray-600 dark:text-gray-400 line-clamp-2 text-sm md:text-base">
-                        {vehicle.description}
-                      </p>
-                    )}
-
-                    {/* Información del vendedor */}
-                    <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-                      <h4 className="font-semibold mb-2 text-sm md:text-base">
-                        Información del vendedor:
-                      </h4>
-                      <div className="space-y-1 text-xs md:text-sm">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {vehicle.sellerContact.name}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-                          <span className="truncate">
-                            {vehicle.sellerContact.email}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-3 h-3 md:w-4 md:h-4 flex-shrink-0" />
-                          <span>{vehicle.sellerContact.phone}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Comprobante de pago y Referencia */}
-                    {(vehicle.paymentProof || vehicle.referenceNumber) && (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg space-y-4">
-                        {vehicle.referenceNumber && (
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                            <span className="text-sm font-medium">Referencia:</span>
-                            <span className="text-sm font-mono bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">{vehicle.referenceNumber}</span>
-                          </div>
-                        )}
-                        {vehicle.paymentProof && (
-                          <div>
-                            <PdfViewer
-                              url={vehicle.paymentProof}
-                              vehicleId={vehicle._id!}
-                              isDarkMode={isDarkMode}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Acciones rápidas - Desktop */}
-                    <div className="hidden sm:flex flex-wrap items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedVehicle(vehicle)}
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Ver detalles
-                      </Button>
-
-                      {/* Botones de estado mejorados */}
-                      {vehicle.status !== "approved" && (
-                        <Button
-                          onClick={() =>
-                            handleStatusChange(
-                              vehicle._id!,
-                              ApprovalStatus.APPROVED
-                            )
-                          }
-                          className="bg-green-600 hover:bg-green-700"
-                          size="sm"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Aprobar
-                        </Button>
-                      )}
-
-                      {vehicle.status !== "pending" && (
-                        <Button
-                          onClick={() =>
-                            handleStatusChange(
-                              vehicle._id!,
-                              ApprovalStatus.PENDING
-                            )
-                          }
-                          variant="outline"
-                          size="sm"
-                          className="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
-                        >
-                          <Clock className="w-4 h-4 mr-2" />
-                          Pendiente
-                        </Button>
-                      )}
-
-                      {vehicle.status !== "rejected" && (
-                        <Button
-                          onClick={() => {
-                            setVehicleToReject(vehicle._id!);
-                            setShowRejectDialog(true);
-                          }}
-                          variant="destructive"
-                          size="sm"
-                        >
-                          <XCircle className="w-4 h-4 mr-2" />
-                          Rechazar
-                        </Button>
-                      )}
-                    </div>
-
-                    {/* Acciones móviles */}
-                    <MobileActionSheet vehicle={vehicle} />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -1178,6 +604,17 @@ export const AdminPanel = () => {
                   <span className="hidden xs:inline">Exportar</span>
                 </Button>
                 <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="text-xs sm:text-sm"
+                >
+                  <Link href="/adminPanel/dashboard">
+                    <BarChart2 className="w-4 h-4 mr-2" />
+                    <span className="hidden xs:inline">Dashboard</span>
+                  </Link>
+                </Button>
+                <Button
                   onClick={fetchVehicles}
                   variant="outline"
                   size="sm"
@@ -1195,15 +632,6 @@ export const AdminPanel = () => {
             </div>
           </CardHeader>
         </Card>
-
-        {/* Estadísticas */}
-        {isLoadingAnalytics ? (
-          <Card className="p-6 text-center text-gray-500">
-            Cargando analíticas...
-          </Card>
-        ) : (
-          <AnalyticsDashboard data={analyticsData} isDarkMode={isDarkMode} />
-        )}
 
         {/* Filtros */}
         <AdminFilters
@@ -1231,7 +659,33 @@ export const AdminPanel = () => {
                 isDarkMode={isDarkMode}
               />
             ) : (
-              <VehicleListView vehicles={displayedVehicles} />
+              <VehicleListView
+                vehicles={displayedVehicles}
+                selectedVehicles={selectedVehicles}
+                isDarkMode={isDarkMode}
+                onToggleSelection={toggleVehicleSelection}
+                onClearSelection={clearSelection}
+                onStatusChange={handleStatusChange}
+                onVehicleSelect={setSelectedVehicle}
+                onShowRejectDialog={(id) => {
+                  setVehicleToReject(id);
+                  setShowRejectDialog(true);
+                }}
+                onShowCommentDialog={(id) => {
+                  setVehicleToComment(id);
+                  loadVehicleComments(id);
+                  setShowCommentDialog(true);
+                }}
+                onShowHistoryDialog={() => {
+                  loadVehicleHistory();
+                  setShowHistoryDialog(true);
+                }}
+                onShowDeleteDialog={(id) => {
+                  setVehicleToDelete(id);
+                  setShowDeleteDialog(true);
+                }}
+                onBulkAction={handleBulkAction}
+              />
             )}
 
             {/* Paginación */}
@@ -1273,8 +727,8 @@ export const AdminPanel = () => {
                         alt={`${selectedVehicle.brand} ${
                           selectedVehicle.model
                         } - ${index + 1}`}
-                        fill
-                        className="object-cover rounded-lg"
+                        className="object-cover rounded-lg w-full h-full"
+                        style={{ objectFit: "cover", borderRadius: "0.5rem" }}
                       />
                     </div>
                   ))}
@@ -1309,8 +763,14 @@ export const AdminPanel = () => {
                         {selectedVehicle.price.toLocaleString()}
                         {selectedVehicle.isNegotiable && " (Negociable)"}
                       </li>
-                      <li><strong>Tracción:</strong> {selectedVehicle.driveType || 'N/A'}</li>
-                      <li><strong>Cilindraje:</strong> {selectedVehicle.displacement || 'N/A'}</li>
+                      <li>
+                        <strong>Tracción:</strong>{" "}
+                        {selectedVehicle.driveType || "N/A"}
+                      </li>
+                      <li>
+                        <strong>Cilindraje:</strong>{" "}
+                        {selectedVehicle.displacement || "N/A"}
+                      </li>
                     </ul>
                   </div>
                   <div>
@@ -1328,13 +788,22 @@ export const AdminPanel = () => {
                       Documentación
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {selectedVehicle.documentation && selectedVehicle.documentation.length > 0 ? (
+                      {selectedVehicle.documentation &&
+                      selectedVehicle.documentation.length > 0 ? (
                         selectedVehicle.documentation.map((doc, index) => (
-                          <Badge key={index} variant="outline" className="border-green-500 text-green-700">
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="border-green-500 text-green-700"
+                          >
                             {doc}
                           </Badge>
                         ))
-                      ) : (<p className="text-sm text-gray-500">No se especificó documentación.</p>)}
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          No se especificó documentación.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1348,7 +817,8 @@ export const AdminPanel = () => {
                 </div>
 
                 {/* Información de Pago */}
-                {(selectedVehicle.paymentProof || selectedVehicle.referenceNumber) && (
+                {(selectedVehicle.paymentProof ||
+                  selectedVehicle.referenceNumber) && (
                   <div>
                     <h4 className="font-semibold mb-2 border-b pb-2">
                       Información de Pago
@@ -1357,8 +827,12 @@ export const AdminPanel = () => {
                       {selectedVehicle.referenceNumber && (
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                          <span className="text-sm font-medium">Número de Referencia:</span>
-                          <span className="text-sm font-mono bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">{selectedVehicle.referenceNumber}</span>
+                          <span className="text-sm font-medium">
+                            Número de Referencia:
+                          </span>
+                          <span className="text-sm font-mono bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
+                            {selectedVehicle.referenceNumber}
+                          </span>
                         </div>
                       )}
                       {selectedVehicle.paymentProof && (

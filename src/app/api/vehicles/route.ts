@@ -1,3 +1,4 @@
+// src/app/api/vehicles/route.ts
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ApprovalStatus } from '@/types/types';
