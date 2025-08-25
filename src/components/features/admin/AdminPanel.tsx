@@ -570,14 +570,14 @@ export const AdminPanel = () => {
     <div
       className={`min-h-screen p-2 sm:p-4 lg:p-6 ${
         isDarkMode
-          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+          ? "bg-slate-900 text-slate-200"
           : "bg-gradient-to-br from-gray-50 via-white to-gray-100"
       }`}
     >
       <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Header mejorado */}
         <Card
-          className={isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"}
+          className={isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"}
         >
           <CardHeader className="p-4 md:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -586,7 +586,7 @@ export const AdminPanel = () => {
                   <Car className="w-6 h-6 md:w-8 md:h-8 text-blue-600 flex-shrink-0" />
                   <span className="truncate">Panel de Administrador</span>
                 </CardTitle>
-                <p className="text-gray-600 dark:text-gray-400 mt-1 md:mt-2 text-sm md:text-base">
+                <p className="text-slate-500 dark:text-slate-400 mt-1 md:mt-2 text-sm md:text-base">
                   Gestiona los anuncios de vehículos y comprobantes de pago
                 </p>
               </div>
@@ -648,7 +648,7 @@ export const AdminPanel = () => {
 
         {/* Contenido principal */}
         <Card
-          className={isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"}
+          className={isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"}
         >
           <CardContent className="p-3 md:p-6">
             {viewMode === "grid" ? (
@@ -811,7 +811,7 @@ export const AdminPanel = () => {
                   <h4 className="font-semibold mb-2 border-b pb-2">
                     Descripción
                   </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
                     {selectedVehicle.description}
                   </p>
                 </div>
@@ -825,8 +825,8 @@ export const AdminPanel = () => {
                     </h4>
                     <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg space-y-4">
                       {selectedVehicle.referenceNumber && (
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                          <FileText className="w-4 h-4" />
                           <span className="text-sm font-medium">
                             Número de Referencia:
                           </span>
@@ -912,9 +912,9 @@ export const AdminPanel = () => {
                       <div
                         key={comment.id}
                         className={`p-3 rounded-lg ${
-                          comment.type === "admin"
+                          comment.type === "admin" // El estilo de comentario de admin con azul se ve bien
                             ? "bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500"
-                            : "bg-gray-50 dark:bg-gray-700 border-l-4 border-gray-400"
+                            : "bg-slate-100 dark:bg-slate-700 border-l-4 border-slate-400"
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -934,18 +934,18 @@ export const AdminPanel = () => {
                               {comment.type === "admin" ? "Admin" : "Sistema"}
                             </Badge>
                           </div>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-slate-500">
                             {new Date(comment.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                        <p className="text-sm text-slate-700 dark:text-slate-300">
                           {comment.text}
                         </p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-slate-500">
                     <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p>No hay comentarios aún</p>
                   </div>
@@ -1020,7 +1020,7 @@ export const AdminPanel = () => {
                     <div key={entry.id} className="relative">
                       {/* Línea de tiempo */}
                       {index < vehicleHistory.length - 1 && (
-                        <div className="absolute left-4 top-8 w-0.5 h-full bg-gray-200 dark:bg-gray-600"></div>
+                        <div className="absolute left-4 top-8 w-0.5 h-full bg-slate-300 dark:bg-slate-700"></div>
                       )}
 
                       <div className="flex gap-4">
@@ -1033,7 +1033,7 @@ export const AdminPanel = () => {
                             ) : entry.action.includes("Comentario") ? (
                               <MessageSquare className="w-4 h-4 text-purple-600" />
                             ) : (
-                              <FileText className="w-4 h-4 text-gray-600" />
+                              <FileText className="w-4 h-4 text-slate-600" />
                             )}
                           </div>
                         </div>
@@ -1043,13 +1043,13 @@ export const AdminPanel = () => {
                             <h4 className="font-medium text-sm">
                               {entry.action}
                             </h4>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
                               <Calendar className="w-3 h-3" />
                               {new Date(entry.timestamp).toLocaleString()}
                             </div>
                           </div>
 
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
                             {entry.details}
                           </p>
 
@@ -1071,7 +1071,7 @@ export const AdminPanel = () => {
                             </div>
                           )}
 
-                          <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
+                          <div className="flex items-center gap-1 mt-2 text-xs text-slate-500">
                             <User className="w-3 h-3" />
                             <span>por {entry.author}</span>
                           </div>
@@ -1081,7 +1081,7 @@ export const AdminPanel = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-slate-500">
                   <History className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>No hay historial disponible</p>
                 </div>
