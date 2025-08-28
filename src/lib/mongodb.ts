@@ -12,7 +12,6 @@ let clientPromise: Promise<MongoClient>;
 
 // Extiende el tipo globalThis para incluir _mongoClientPromise
 declare global {
-  // eslint-disable-next-line no-var
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 

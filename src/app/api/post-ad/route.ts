@@ -259,7 +259,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error("Error general en POST /api/post-ad:", error);
     const errorMessage =
-      error instanceof Error ? error.message : "Error desconocido";
+      error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : "";
     console.error("Stack trace:", errorStack);
     return NextResponse.json(

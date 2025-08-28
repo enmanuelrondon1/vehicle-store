@@ -71,6 +71,8 @@ export interface VehicleDataBackend {
   paymentBank?: string;
   paymentProofPublicId?: string;
   paymentProof?: string;
+  telegramUserId?: string; // Para integración con bot de Telegram
+  ownerTelegramId?: string; // Para integración con bot de Telegram
   status: ApprovalStatus;
   createdAt?: Date;
   updatedAt?: Date;
@@ -377,15 +379,9 @@ export const convertToFrontend = (
   return {
     ...backendData,
     _id: backendData._id?.toString(),
-    postedDate:
-      backendData.postedDate?.toISOString?.() ||
-      backendData.postedDate.toString(),
-    createdAt:
-      backendData.createdAt?.toISOString?.() ||
-      backendData.createdAt?.toString(),
-    updatedAt:
-      backendData.updatedAt?.toISOString?.() ||
-      backendData.updatedAt?.toString(),
+    postedDate: backendData.postedDate.toISOString(),
+    createdAt: backendData.createdAt?.toISOString(),
+    updatedAt: backendData.updatedAt?.toISOString(),
     referenceNumber: backendData.referenceNumber,
     status: backendData.status || ApprovalStatus.PENDING,
     views: backendData.views,
