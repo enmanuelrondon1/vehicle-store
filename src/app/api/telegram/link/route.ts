@@ -4,26 +4,45 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import clientPromise from '@/lib/mongodb';
 import { randomBytes } from 'crypto';
+import { ObjectId } from 'mongodb'; // Importar directamente
 
 export async function GET() {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user?.id) {
+  if (!session || !session.user?.id) {
+    console.log("Session user: null or unauthorized");
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
+
+  console.log("Session user:", {
+    id: session.user.id,
+    email: session.user.email
+  });
 
   try {
     const client = await clientPromise;
     const db = client.db('vehicle_store');
     const usersCollection = db.collection('users');
 
-    // 1. Generar un token seguro y una fecha de expiración (ej. 10 minutos)
+    // Verificar si ya tiene Telegram vinculado (opcional pero recomendado)
+    const user = await usersCollection.findOne({ 
+      _id: new ObjectId(session.user.id) 
+    });
+    
+    if (user?.telegramUserId) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Tu cuenta ya está vinculada con Telegram' 
+      }, { status: 400 });
+    }
+
+    // 1. Generar un token seguro y una fecha de expiración (ej. 15 minutos)
     const token = randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos desde ahora
+    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos desde ahora
 
     // 2. Guardar el token en el documento del usuario
     await usersCollection.updateOne(
-      { _id: new (await import('mongodb')).ObjectId(session.user.id) },
+      { _id: new ObjectId(session.user.id) },
       { $set: { telegramLinkToken: token, telegramLinkTokenExpires: expires } }
     );
 
