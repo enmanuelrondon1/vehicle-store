@@ -120,8 +120,45 @@ class TelegramBot {
   }
 
   private setupCommands() {
-    this.bot.start((ctx) => {
-      const welcomeMessage = `
+    this.bot.start(async (ctx) => {
+      const payload = ctx.startPayload;
+
+      if (payload) {
+        // Lógica para manejar la vinculación de cuenta a través del payload
+        try {
+          const db = await getDb();
+          const usersCollection = db.collection("users");
+
+          const user = await usersCollection.findOne({
+            telegramLinkToken: payload,
+            telegramLinkTokenExpires: { $gt: new Date() },
+          });
+
+          if (user) {
+            await usersCollection.updateOne(
+              { _id: user._id },
+              {
+                $set: { telegramUserId: ctx.from.id.toString(), telegramUsername: ctx.from.username || null },
+                $unset: { telegramLinkToken: "", telegramLinkTokenExpires: "" },
+              }
+            );
+            ctx.reply(
+              `✅ ¡Éxito! Tu cuenta de 1auto.market ha sido vinculada a este chat de Telegram.`
+            );
+          } else {
+            ctx.reply(
+              `❌ El enlace de vinculación es inválido o ha expirado. Por favor, genera uno nuevo desde tu perfil en la web.`
+            );
+          }
+        } catch (error) {
+          console.error("Error al vincular cuenta de Telegram:", error);
+          ctx.reply(
+            "❌ Ocurrió un error al intentar vincular tu cuenta. Inténtalo más tarde."
+          );
+        }
+      } else {
+        // Mensaje de bienvenida por defecto si no hay payload
+        const welcomeMessage = `
 🚗 ¡Bienvenido a Auto Market Bot! 🚗
 
 Soy tu asistente virtual para consultar vehículos, motos y maquinaria pesada.
@@ -136,47 +173,7 @@ Soy tu asistente virtual para consultar vehículos, motos y maquinaria pesada.
 
 ¿En qué puedo ayudarte hoy?
       `;
-      ctx.reply(welcomeMessage, { parse_mode: "Markdown" });
-    });
-
-    this.bot.start(async (ctx) => {
-      const payload = ctx.startPayload;
-
-      if (payload) {
-        try {
-          const db = await getDb();
-          const usersCollection = db.collection("users");
-
-          const user = await usersCollection.findOne({
-            telegramLinkToken: payload,
-            telegramLinkTokenExpires: { $gt: new Date() },
-          });
-
-          if (user) {
-            await usersCollection.updateOne(
-              { _id: user._id },
-              {
-                $set: { telegramUserId: ctx.from.id.toString() },
-                $unset: { telegramLinkToken: "", telegramLinkTokenExpires: "" },
-              }
-            );
-            ctx.reply(
-              `✅ ¡Éxito! Tu cuenta de 1auto.market ha sido vinculada a este chat de Telegram.`
-            );
-          } else {
-            ctx.reply(
-              `❌ El enlace de vinculación es inválido o ha expirado. Por favor, genera uno nuevo desde tu perfil en la web.`
-            );
-          }
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          console.error("Error al vincular cuenta de Telegram:", errorMessage);
-          ctx.reply(
-            "❌ Ocurrió un error al intentar vincular tu cuenta. Inténtalo más tarde."
-          );
-        }
-        return;
+        ctx.reply(welcomeMessage, { parse_mode: "Markdown" });
       }
     });
 
