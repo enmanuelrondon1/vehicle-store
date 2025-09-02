@@ -1,10 +1,8 @@
 // src/hooks/use-vehicle-form.ts
 "use client"
 
-
 import { useState, useCallback, useEffect } from "react"
-import { type VehicleDataBackend, ApprovalStatus } from "@/types/types"
-import { Documentation } from "@/types/shared" // Importar directamente desde shared
+import { type VehicleDataBackend, ApprovalStatus, Documentation } from "@/types/types" // Importación corregida
 import type { Bank } from "@/constants/form-constants"
 import { useFormValidation } from "./use-form-validation"
 
@@ -17,7 +15,7 @@ const initialFormData: Partial<VehicleDataBackend> = {
   images: [],
   sellerContact: { name: "", email: "", phone: "" },
   year: new Date().getFullYear(),
-  documentation: [], // Cambiamos a array vacío
+  documentation: [], // Array de strings, no de enums
 };
 
 export const useVehicleForm = () => {
@@ -25,7 +23,7 @@ export const useVehicleForm = () => {
   const [formData, setFormData] = useState<Partial<VehicleDataBackend>>(initialFormData)
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true) // Iniciar en true para la carga inicial
+  const [isLoading, setIsLoading] = useState(true)
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
   const [submissionStatus, setSubmissionStatus] = useState<"idle" | "success" | "error">("idle")
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null)
@@ -40,19 +38,25 @@ export const useVehicleForm = () => {
       const saved = localStorage.getItem("vehicleFormData")
       if (saved) {
         try {
-          setFormData(JSON.parse(saved))
+          const parsedData = JSON.parse(saved)
+          // Asegurar que la documentación sea un array de strings
+          if (parsedData.documentation && Array.isArray(parsedData.documentation)) {
+            parsedData.documentation = parsedData.documentation.map((doc: string | Documentation) => 
+              typeof doc === 'string' ? doc : String(doc)
+            )
+          }
+          setFormData(parsedData)
         } catch (error) {
           console.error("Error loading saved data:", error)
         }
       }
-      // Indicar que la carga inicial ha terminado
       setIsLoading(false)
     }
   }, [])
 
   // Auto-save to localStorage
   useEffect(() => {
-    if (typeof window !== "undefined" && submissionStatus !== "success") {
+    if (typeof window !== "undefined" && submissionStatus !== "success" && !isLoading) {
       setSaveStatus("saving")
       localStorage.setItem("vehicleFormData", JSON.stringify(formData))
       const timer = setTimeout(() => {
@@ -61,7 +65,7 @@ export const useVehicleForm = () => {
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [formData, submissionStatus])
+  }, [formData, submissionStatus, isLoading])
 
   const handleInputChange = useCallback(
     (field: string, value: unknown) => {
@@ -93,6 +97,7 @@ export const useVehicleForm = () => {
         return { ...prev, [field]: value }
       })
 
+      // Clear related errors
       if (errors[field] || (field.startsWith("sellerContact.") && errors[field])) {
         setErrors((prev) => {
           const newErrors = { ...prev }
@@ -116,31 +121,30 @@ export const useVehicleForm = () => {
     }))
   }, [])
 
-  // Nueva función para manejar la documentación
+  // CORRECCIÓN: Manejar documentación como strings
   const handleDocumentationToggle = useCallback((docType: Documentation) => {
     setFormData((prev) => {
       const currentDocs = prev.documentation || [];
-      const docExists = currentDocs.includes(docType);
+      const docString = docType.toString(); // Convertir enum a string
+      const docExists = currentDocs.includes(docString);
       
       if (docExists) {
-        // Si existe, lo removemos
         return {
           ...prev,
-          documentation: currentDocs.filter(doc => doc !== docType)
+          documentation: currentDocs.filter(doc => doc !== docString)
         };
       } else {
-        // Si no existe, lo agregamos
         return {
           ...prev,
-          documentation: [...currentDocs, docType]
+          documentation: [...currentDocs, docString]
         };
       }
     });
   }, [])
 
-  // Función auxiliar para verificar si un documento está seleccionado
+  // CORRECCIÓN: Verificar documentación como strings
   const isDocumentationSelected = useCallback((docType: Documentation) => {
-    return formData.documentation?.includes(docType) || false;
+    return formData.documentation?.includes(docType.toString()) || false;
   }, [formData.documentation])
 
   const handleImagesChange = useCallback((urls: string[]) => {
@@ -167,9 +171,11 @@ export const useVehicleForm = () => {
   }, [])
 
   const manualSave = useCallback(() => {
-    localStorage.setItem("vehicleFormData", JSON.stringify(formData))
-    setSaveStatus("saved")
-    setTimeout(() => setSaveStatus("idle"), 2000)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("vehicleFormData", JSON.stringify(formData))
+      setSaveStatus("saved")
+      setTimeout(() => setSaveStatus("idle"), 2000)
+    }
   }, [formData])
 
   const handleSubmit = useCallback(async () => {
@@ -179,7 +185,7 @@ export const useVehicleForm = () => {
     setErrors({})
 
     try {
-      // 1. Preparar todos los datos en un solo objeto
+      // Preparar datos del vehículo
       const vehiclePayload = {
         ...formData,
         features: formData.features || [],
@@ -188,9 +194,11 @@ export const useVehicleForm = () => {
         warranty: formData.warranty || "NO_WARRANTY",
         selectedBank: selectedBank?.name,
         referenceNumber,
+        // Asegurar que la documentación sea un array de strings
+        documentation: formData.documentation || [],
       }
 
-      // 2. Crear un único FormData para enviar todo junto
+      // Crear FormData para el envío
       const submissionFormData = new FormData();
       submissionFormData.append("vehicleData", JSON.stringify(vehiclePayload));
       
@@ -198,10 +206,10 @@ export const useVehicleForm = () => {
         submissionFormData.append("paymentProof", paymentProof);
       }
 
-      // 3. Hacer una única llamada a la API
+      // Llamada a la API
       const response = await fetch("/api/post-ad", {
         method: "POST",
-        body: submissionFormData, // No se necesita 'Content-Type', el navegador lo pone por nosotros
+        body: submissionFormData,
       })
 
       const result = await response.json();
@@ -212,6 +220,7 @@ export const useVehicleForm = () => {
         return
       }
 
+      // Éxito
       setSubmissionStatus("success")
       setFormData((prev) => ({
         ...prev,
@@ -219,7 +228,11 @@ export const useVehicleForm = () => {
         paymentProof: result.data.paymentProof,
       }))
       setCurrentStep(7)
-      localStorage.removeItem("vehicleFormData")
+      
+      // Limpiar localStorage solo en caso de éxito
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("vehicleFormData")
+      }
     } catch (error) {
       setSubmissionStatus("error")
       console.error("Error en submit:", error)
@@ -239,7 +252,11 @@ export const useVehicleForm = () => {
     setSelectedBank(null);
     setPaymentProof(null);
     setReferenceNumber("");
-    localStorage.removeItem("vehicleFormData");
+    setSaveStatus("idle");
+    
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("vehicleFormData");
+    }
   }, []);
 
   return {
@@ -265,8 +282,8 @@ export const useVehicleForm = () => {
     // Handlers
     handleInputChange,
     handleFeatureToggle,
-    handleDocumentationToggle, // Agregamos la nueva función aquí
-    isDocumentationSelected, // Agregamos la función auxiliar
+    handleDocumentationToggle,
+    isDocumentationSelected,
     handleImagesChange,
     nextStep,
     prevStep,

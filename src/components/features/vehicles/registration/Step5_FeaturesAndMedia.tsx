@@ -1,10 +1,8 @@
-// src/components/features/vehicles/registration/Step5_FeaturesAndMedia.tsx
 "use client";
-import React, { useState } from "react";
-import { useDarkMode } from "@/context/DarkModeContext"; // Importar el hook
+import React, { useState, useMemo } from "react";
+import { useDarkMode } from "@/context/DarkModeContext";
 import {
   FileText,
-  Shield,
   Image as ImageIcon,
   FileBadge,
   Check,
@@ -12,14 +10,101 @@ import {
   CheckCircle,
   XCircle,
   HelpCircle,
+  Car,
+  Shield,
+  Users,
+  Package,
+  Zap,
+  Navigation,
+  Wrench,
+  Truck
 } from "lucide-react";
 import { ImageUploader } from "@/components/shared/forms/ImageUploader";
 
-// ✅ CAMBIO PRINCIPAL: Importar Documentation desde shared.ts en lugar de definirlo aquí
-import { Documentation } from "@/types/shared";
+// Importaciones corregidas - usar re-exportaciones de types.ts
+import { Documentation, VehicleCategory } from "@/types/types";
 
-// Tipos que coinciden con tu estructura original
+// Función para obtener el ícono - versión mejorada y segura
+const iconMap = {
+  Car, Shield, Users, Package, Zap, Navigation, Wrench, Truck
+} as const;
+
+const getDynamicIcon = (iconName: keyof typeof iconMap = 'Car') => {
+  const IconComponent = iconMap[iconName] || iconMap.Car;
+  return <IconComponent className="w-4 h-4" />;
+};
+
+// Tipos para las características
+interface FeatureCategory {
+  iconName: keyof typeof iconMap;
+  color: string;
+  features: string[];
+}
+
+interface FeatureCategories {
+  [key: string]: FeatureCategory;
+}
+
+// Función para características con manejo dinámico de todas las categorías
+const getAvailableFeatures = (category: VehicleCategory): FeatureCategories => {
+  // Definir características base para cada categoría conocida
+  const baseFeatures: Partial<Record<VehicleCategory, FeatureCategories>> = {
+    [VehicleCategory.CAR]: {
+      "Seguridad": {
+        iconName: "Shield",
+        color: "text-blue-500",
+        features: ["ABS", "Airbags", "Control de estabilidad", "Sensores de reversa"]
+      },
+      "Comodidad": {
+        iconName: "Users",
+        color: "text-green-500", 
+        features: ["Aire acondicionado", "Asientos de cuero", "GPS", "Bluetooth"]
+      }
+    },
+    [VehicleCategory.MOTORCYCLE]: {
+      "Motor": {
+        iconName: "Zap",
+        color: "text-yellow-500",
+        features: ["Inyección electrónica", "Arranque eléctrico", "ABS"]
+      }
+    },
+    [VehicleCategory.TRUCK]: {
+      "Carga": {
+        iconName: "Package",
+        color: "text-orange-500",
+        features: ["Plataforma", "Grúa", "Refrigeración", "Doble tracción"]
+      }
+    },
+    [VehicleCategory.BUS]: {
+      "Pasajeros": {
+        iconName: "Users",
+        color: "text-purple-500",
+        features: ["Aire acondicionado", "Asientos reclinables", "TV", "Baño"]
+      }
+    }
+  };
+
+  // Agregar dinámicamente otras categorías que puedan existir
+  const allCategories = Object.values(VehicleCategory);
+  allCategories.forEach(cat => {
+    if (!baseFeatures[cat]) {
+      // Características genéricas para categorías no definidas
+      baseFeatures[cat] = {
+        "Características Generales": {
+          iconName: "Car",
+          color: "text-gray-500",
+          features: ["Aire acondicionado", "Radio", "Luces LED", "Asientos cómodos"]
+        }
+      };
+    }
+  });
+
+  return baseFeatures[category] || {};
+};
+
+// Tipos
 interface VehicleDataBackend {
+  category?: VehicleCategory;
   features?: string[];
   documentation?: string[];
   description?: string;
@@ -30,7 +115,6 @@ interface FormErrors {
   [key: string]: string | undefined;
 }
 
-// ✅ CAMBIO: Actualizar StepProps para usar Documentation importado
 interface StepProps {
   formData: Partial<VehicleDataBackend>;
   errors: FormErrors;
@@ -43,47 +127,7 @@ interface StepProps {
   onPrevious?: () => void;
 }
 
-const AVAILABLE_FEATURES = {
-  Básico: [
-    "Aire Acondicionado",
-    "Radio AM/FM",
-    "Vidrios Eléctricos",
-    "Dirección Hidráulica",
-    "Alarma",
-    "Caucho de Repuesto",
-  ],
-  Comodidad: [
-    "Tapicería de Cuero",
-    "Asientos de Tela",
-    "Volante Ajustable",
-    "Espejos Eléctricos",
-    "Vidrios Polarizados",
-    "Techo Solar",
-    "Bluetooth",
-    "Sistema de Sonido Premium",
-    "Arranque por Botón",
-  ],
-  Seguridad: [
-    "Frenos ABS",
-    "Airbags",
-    "Cinturones de Seguridad",
-    "Frenos de Disco",
-    "Luces Antiniebla",
-    "Cámara de Reversa",
-    "Sensores de Estacionamiento",
-    "Blindaje",
-    "Seriales Intactos",
-  ],
-  Comercial: [
-    "Capacidad de Carga (kg)",
-    "Ganchos de Remolque",
-    "Compartimento de Carga",
-    "Asientos Plegables",
-    "Racks de Techo",
-  ],
-};
-
-// ✅ CAMBIO: Usar los valores correctos de shared.ts (minúsculas)
+// Opciones de documentación - usar valores del enum
 const DOCUMENTATION_OPTIONS = [
   { label: "Título de Propiedad", value: Documentation.TITLE },
   { label: "Certificado de Origen", value: Documentation.ORIGIN_CERTIFICATE },
@@ -91,7 +135,7 @@ const DOCUMENTATION_OPTIONS = [
   { label: "Placas Bolivarianas", value: Documentation.BOLIVARIAN_PLATES },
 ];
 
-// Componente InputField
+// InputField component (sin cambios)
 interface InputFieldProps {
   label: string;
   error?: string;
@@ -169,7 +213,7 @@ const InputField: React.FC<InputFieldProps> = ({
   );
 };
 
-// Componente SelectableChip
+// SelectableChip component (sin cambios)
 const SelectableChip: React.FC<{
   label: string;
   isSelected: boolean;
@@ -198,7 +242,7 @@ const SelectableChip: React.FC<{
   );
 };
 
-// Componente ProgressSummary
+// ProgressSummary component (sin cambios)
 const ProgressSummary: React.FC<{
   imagesCount: number;
   hasDescription: boolean;
@@ -301,7 +345,7 @@ const ProgressSummary: React.FC<{
   );
 };
 
-// Componente principal con todas las props necesarias
+// Componente principal corregido
 const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
   formData,
   errors,
@@ -314,6 +358,17 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
   onNext,
 }) => {
   const { isDarkMode } = useDarkMode();
+
+  // Obtener características dinámicamente según la categoría
+  const availableFeatures = useMemo(() => {
+    if (!formData.category) {
+      return {};
+    }
+    return getAvailableFeatures(formData.category);
+  }, [formData.category]);
+
+  // Verificar si tenemos características disponibles
+  const hasFeatures = Object.keys(availableFeatures).length > 0;
 
   const descriptionLength = (formData.description || "").length;
   const maxDescriptionLength = 2000;
@@ -333,6 +388,60 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
     (formData.features?.length || 0) > 0 &&
     (formData.documentation?.length || 0) > 0;
 
+  // Si no hay categoría, mostrar mensaje de error
+  if (!formData.category) {
+    return (
+      <div className={`p-6 ${isDarkMode ? "bg-gray-900" : "bg-gray-50"}`}>
+        <div className="max-w-6xl mx-auto">
+          <div className={`p-6 rounded-xl border-2 border-red-500 ${isDarkMode ? "bg-red-900/20" : "bg-red-50"}`}>
+            <div className="flex items-center">
+              <AlertCircle className="w-6 h-6 text-red-500 mr-3" />
+              <div>
+                <h3 className={`font-semibold ${isDarkMode ? "text-red-300" : "text-red-800"}`}>
+                  Error: Categoría no especificada
+                </h3>
+                <p className={`text-sm ${isDarkMode ? "text-red-400" : "text-red-600"}`}>
+                  No se puede mostrar las características sin conocer el tipo de vehículo.
+                  Por favor, regresa al paso anterior y selecciona la categoría.
+                </p>
+              </div>
+            </div>
+            {onPrevious && (
+              <button
+                onClick={onPrevious}
+                className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Regresar
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const getCategoryName = (category: VehicleCategory): string => {
+    // Definir nombres base para categorías conocidas
+    const baseNames: Partial<Record<VehicleCategory, string>> = {
+      [VehicleCategory.CAR]: 'Vehículo',
+      [VehicleCategory.MOTORCYCLE]: 'Motocicleta',
+      [VehicleCategory.TRUCK]: 'Camión',
+      [VehicleCategory.BUS]: 'Autobús'
+    };
+
+    // Agregar dinámicamente otras categorías
+    const allCategories = Object.values(VehicleCategory);
+    allCategories.forEach(cat => {
+      if (!baseNames[cat]) {
+        // Nombre genérico basado en el valor del enum
+        const categoryStr = cat.toString();
+        baseNames[cat] = categoryStr.charAt(0).toUpperCase() + categoryStr.slice(1).toLowerCase();
+      }
+    });
+
+    return baseNames[category] || 'Vehículo';
+  };
+
   return (
     <div className={`p-6 ${isDarkMode ? "bg-gray-900" : "bg-gray-50"}`}>
       <div className="max-w-6xl mx-auto">
@@ -347,46 +456,50 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
               Características y Multimedia
             </h2>
             <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"} text-sm`}>
-              Completa los detalles del vehículo
+              Completa los detalles del vehículo ({getCategoryName(formData.category).toUpperCase()})
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {/* Características */}
-            <div className={`p-6 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
-              <InputField
-                label="Características del Vehículo"
-                icon={<Shield className="w-4 h-4 text-teal-600" />}
-                tooltip="Selecciona todo lo que aplique. Más detalles generan más interés en los compradores."
-                error={errors.features}
-              >
-                <div className="space-y-6 mt-3">
-                  {Object.entries(AVAILABLE_FEATURES).map(
-                    ([category, features]) => (
-                      <div key={category}>
-                        <h4 className={`text-md font-semibold mb-3 ${isDarkMode ? "text-gray-200" : "text-gray-800"}`}>
-                          {category}
+            {/* Características dinámicas por categoría */}
+            {hasFeatures && (
+              <div className={`p-6 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
+                <InputField
+                  label={`Características del ${getCategoryName(formData.category)}`}
+                  icon={(() => {
+                    const firstCategory = Object.values(availableFeatures)[0];
+                    return firstCategory ? getDynamicIcon(firstCategory.iconName) : getDynamicIcon('Car');
+                  })()}
+                  tooltip="Selecciona todo lo que aplique. Más detalles generan más interés en los compradores."
+                  error={errors.features}
+                >
+                  <div className="space-y-6 mt-3">
+                    {Object.entries(availableFeatures).map(([categoryName, categoryData]) => (
+                      <div key={categoryName}>
+                        <h4 className={`text-md font-semibold mb-3 flex items-center ${isDarkMode ? "text-gray-200" : "text-gray-800"}`}>
+                          <span className={`mr-2 ${categoryData.color}`}>
+                            {getDynamicIcon(categoryData.iconName)}
+                          </span>
+                          {categoryName}
                         </h4>
                         <div className="flex flex-wrap gap-3">
-                          {features.map((feature) => (
+                          {categoryData.features.map((feature) => (
                             <SelectableChip
                               key={feature}
                               label={feature}
-                              isSelected={
-                                formData.features?.includes(feature) || false
-                              }
+                              isSelected={formData.features?.includes(feature) || false}
                               onToggle={() => handleFeatureToggle(feature)}
                             />
                           ))}
                         </div>
                       </div>
-                    )
-                  )}
-                </div>
-              </InputField>
-            </div>
+                    ))}
+                  </div>
+                </InputField>
+              </div>
+            )}
 
             {/* Documentación */}
             <div className={`p-6 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
@@ -461,7 +574,7 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
                 <ImageUploader
                   onUploadChange={handleImagesChange}
                   initialUrls={formData.images || []}
-                  maxSizeMB={5} // Pasamos el límite de tamaño
+                  maxSizeMB={5}
                 />
               </InputField>
             </div>
@@ -505,34 +618,50 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
               documentsCount={formData.documentation?.length || 0}
             />
 
-            {/* Tips para mejorar la venta */}
+            {/* Tips específicos por categoría */}
             <div className={`p-6 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
               <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}>
-                💡 Tips para Destacar
+                💡 Tips para Destacar tu {getCategoryName(formData.category)}
               </h3>
               <div className="space-y-3">
                 <div className={`p-3 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}>
                   <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
-                    📸 <strong>Fotos variadas:</strong> Exterior, interior,
-                    motor y detalles únicos
+                    📸 <strong>Fotos variadas:</strong> 
+                    {(() => {
+                      switch(formData.category) {
+                        case VehicleCategory.MOTORCYCLE:
+                          return " Lateral, motor, odómetro y detalles";
+                        case VehicleCategory.TRUCK:
+                          return " Exterior, cabina, carrocería y motor";
+                        default:
+                          return " Exterior, interior, motor y detalles únicos";
+                      }
+                    })()}
                   </p>
                 </div>
                 <div className={`p-3 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}>
                   <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
-                    📝 <strong>Descripción honesta:</strong> Menciona tanto lo
-                    bueno como lo que necesita atención
+                    📝 <strong>Descripción honesta:</strong> Menciona tanto lo bueno como lo que necesita atención
                   </p>
                 </div>
                 <div className={`p-3 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}>
                   <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
-                    ⭐ <strong>Características únicas:</strong> Destaca lo que
-                    hace especial tu vehículo
+                    ⭐ <strong>Características únicas:</strong> 
+                    {(() => {
+                      switch(formData.category) {
+                        case VehicleCategory.MOTORCYCLE:
+                          return " Destaca modificaciones o accesorios";
+                        case VehicleCategory.TRUCK:
+                          return " Menciona capacidad y tipo de uso";
+                        default:
+                          return " Destaca lo que hace especial tu vehículo";
+                      }
+                    })()}
                   </p>
                 </div>
                 <div className={`p-3 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}>
                   <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
-                    📋 <strong>Documentos listos:</strong> Tener los papeles en
-                    orden acelera la venta
+                    📋 <strong>Documentos listos:</strong> Tener los papeles en orden acelera la venta
                   </p>
                 </div>
               </div>
