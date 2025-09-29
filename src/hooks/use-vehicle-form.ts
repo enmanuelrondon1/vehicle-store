@@ -1,6 +1,7 @@
 // src/hooks/use-vehicle-form.ts
 "use client"
 
+import { toast } from "sonner"
 import { useState, useCallback, useEffect } from "react"
 import { type VehicleDataBackend, ApprovalStatus, Documentation } from "@/types/types" // Importación corregida
 import type { Bank } from "@/constants/form-constants"
@@ -20,8 +21,10 @@ const initialFormData: Partial<VehicleDataBackend> = {
 
 export const useVehicleForm = () => {
   const [currentStep, setCurrentStep] = useState(1)
+  const [highestCompletedStep, setHighestCompletedStep] = useState(1);
   const [formData, setFormData] = useState<Partial<VehicleDataBackend>>(initialFormData)
   const [errors, setErrors] = useState<FormErrors>({})
+  const [isCurrentStepValid, setIsCurrentStepValid] = useState(false); // Nuevo estado
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle")
@@ -45,6 +48,9 @@ export const useVehicleForm = () => {
               typeof doc === 'string' ? doc : String(doc)
             )
           }
+          if (parsedData.highestCompletedStep) {
+            setHighestCompletedStep(parsedData.highestCompletedStep);
+          }
           setFormData(parsedData)
         } catch (error) {
           console.error("Error loading saved data:", error)
@@ -58,14 +64,25 @@ export const useVehicleForm = () => {
   useEffect(() => {
     if (typeof window !== "undefined" && submissionStatus !== "success" && !isLoading) {
       setSaveStatus("saving")
-      localStorage.setItem("vehicleFormData", JSON.stringify(formData))
+      localStorage.setItem("vehicleFormData", JSON.stringify({
+        ...formData,
+        highestCompletedStep,
+      }));
       const timer = setTimeout(() => {
         setSaveStatus("saved")
         setTimeout(() => setSaveStatus("idle"), 2000)
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [formData, submissionStatus, isLoading])
+  }, [formData, submissionStatus, isLoading, highestCompletedStep])
+
+  // Efecto para validar el paso actual en tiempo real
+  useEffect(() => {
+    // Validamos sin actualizar los errores para no ser intrusivos
+    const validation = validateStep(currentStep, formData, selectedBank, paymentProof, referenceNumber);
+    setIsCurrentStepValid(validation.isValid);
+  }, [formData, currentStep, selectedBank, paymentProof, referenceNumber, validateStep]);
+
 
   const handleInputChange = useCallback(
     (field: string, value: unknown) => {
@@ -162,21 +179,28 @@ export const useVehicleForm = () => {
 
   const nextStep = useCallback(() => {
     if (validateCurrentStep()) {
-      setCurrentStep((prev) => Math.min(prev + 1, 6))
+      const next = Math.min(currentStep + 1, 6);
+      setCurrentStep(next);
+      setHighestCompletedStep(prev => Math.max(prev, next));
     }
-  }, [validateCurrentStep])
+  }, [validateCurrentStep, currentStep]);
 
   const prevStep = useCallback(() => {
     setCurrentStep((prev) => Math.max(prev - 1, 1))
   }, [])
 
+  // ✅ CORRECCIÓN: Agregar highestCompletedStep a las dependencias
   const manualSave = useCallback(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("vehicleFormData", JSON.stringify(formData))
+      localStorage.setItem("vehicleFormData", JSON.stringify({
+        ...formData,
+        highestCompletedStep,
+      }));
       setSaveStatus("saved")
+      toast.success("¡Progreso guardado exitosamente!")
       setTimeout(() => setSaveStatus("idle"), 2000)
     }
-  }, [formData])
+  }, [formData, highestCompletedStep]) // ← Dependencia agregada aquí
 
   const handleSubmit = useCallback(async () => {
     if (!validateCurrentStep()) return
@@ -253,6 +277,7 @@ export const useVehicleForm = () => {
     setPaymentProof(null);
     setReferenceNumber("");
     setSaveStatus("idle");
+    setHighestCompletedStep(1);
     
     if (typeof window !== "undefined") {
       localStorage.removeItem("vehicleFormData");
@@ -262,7 +287,9 @@ export const useVehicleForm = () => {
   return {
     // State
     currentStep,
+    highestCompletedStep,
     formData,
+    isCurrentStepValid, // Exponer el nuevo estado
     errors,
     isSubmitting,
     isLoading,

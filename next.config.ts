@@ -70,14 +70,6 @@ const nextConfig: NextConfig = {
       });
     }
     
-    // Optimizaciones para desarrollo
-    if (dev) {
-      config.watchOptions = {
-        poll: 1000,
-        aggregateTimeout: 300,
-      };
-    }
-    
     return config;
   },
   

@@ -1,11 +1,14 @@
-//src/componentes/features/vehicles/registration/steps/Step1_BasicInfo.tsx
+// src/components/features/vehicles/registration/Step1_BasicInfo.tsx
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
-import { Car, ChevronDown, Check, AlertCircle, Info, Search, Calendar, Tag, Layers, Award } from "lucide-react";
+import React, {  useMemo } from 'react';
+import { Car, Check, AlertCircle, Search, Calendar, Tag, Layers, Award } from 'lucide-react';
 import { VehicleCategory, VEHICLE_CATEGORIES_LABELS } from "@/types/shared";
 import { VehicleDataBackend } from "@/types/types";
 import { useDarkMode } from "@/context/DarkModeContext";
 import { CATEGORY_DATA } from "@/constants/form-constants";
+import { useFieldValidation } from '@/hooks/useFieldValidation';
+import { InputField } from '@/components/shared/forms/InputField';
+import { SelectField } from '@/components/shared/forms/SelectField';
 
 interface FormErrors {
   [key: string]: string | undefined;
@@ -19,120 +22,6 @@ interface StepProps {
   handleInputChange: (field: string, value: FormFieldValue) => void;
   isLoading?: boolean;
 }
-
-const InputField: React.FC<{
-  label: string;
-  required?: boolean;
-  error?: string;
-  success?: boolean;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-  tooltip?: string;
-  counter?: { current: number; max: number };
-}> = ({ label, required, error, success, icon, children, tooltip, counter }) => {
-  const { isDarkMode } = useDarkMode();
-  
-  return (
-    <div className={`space-y-2 ${isDarkMode ? "text-gray-200" : "text-gray-700"}`}>
-      <label className={`flex items-center text-sm font-semibold ${
-        isDarkMode ? "text-gray-300" : "text-gray-700"
-      }`}>
-        {icon && <span className="mr-2">{icon}</span>}
-        {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
-        {tooltip && (
-          <span 
-            className="ml-2 text-xs bg-gray-500 text-white px-2 py-1 rounded cursor-help"
-            title={tooltip}
-          >
-            <Info className="w-3 h-3" />
-          </span>
-        )}
-      </label>
-      <div className="relative">
-        {children}
-        {success && !error && (
-          <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
-        )}
-        {error && (
-          <AlertCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
-        )}
-      </div>
-      {counter && (
-        <div className={`text-xs ${
-          counter.current > counter.max * 0.9 
-            ? "text-orange-500" 
-            : isDarkMode ? "text-gray-400" : "text-gray-500"
-        }`}>
-          {counter.current}/{counter.max} caracteres
-        </div>
-      )}
-      {error && (
-        <p className={`text-sm text-red-500 mt-1 flex items-center`}>
-          <AlertCircle className="w-4 h-4 mr-1" />
-          {error}
-        </p>
-      )}
-      {success && !error && (
-        <p className="text-sm text-green-500 mt-1 flex items-center">
-          <Check className="w-4 h-4 mr-1" />
-          ¡Perfecto!
-        </p>
-      )}
-    </div>
-  );
-};
-
-const SelectField: React.FC<{
-  value: string;
-  onChange: (value: string) => void;
-  disabled?: boolean;
-  placeholder: string;
-  options: Array<{ value: string; label: string }>;
-  error?: string;
-  success?: boolean;
-}> = ({ value, onChange, disabled, placeholder, options, error, success }) => {
-  const { isDarkMode } = useDarkMode();
-  
-  const getSelectClass = () => {
-    let borderColor = isDarkMode ? "border-gray-600" : "border-gray-200";
-    
-    if (error) {
-      borderColor = "border-red-400";
-    } else if (success) {
-      borderColor = "border-green-400";
-    }
-    
-    return `w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 appearance-none ${
-      isDarkMode
-        ? `bg-gray-700 ${borderColor} text-gray-200`
-        : `bg-white ${borderColor} text-gray-900`
-    } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`;
-  };
-
-  return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-        className={getSelectClass()}
-      >
-        <option value="">{placeholder}</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown
-        className={`absolute right-10 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
-          isDarkMode ? "text-gray-500" : "text-gray-500"
-        } pointer-events-none`}
-      />
-    </div>
-  );
-};
 
 // Componente de sugerencias inteligentes
 const SmartSuggestions: React.FC<{
@@ -183,80 +72,61 @@ const SmartSuggestions: React.FC<{
   );
 };
 
+// Componente de Progreso (estandarizado)
+const ProgressBar: React.FC<{ progress: number; isDarkMode: boolean }> = ({ progress, isDarkMode }) => (
+  <div className="mb-6">
+    <div className="flex justify-between items-center mb-2">
+      <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        Progreso del formulario
+      </span>
+      <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+        {Math.round(progress)}%
+      </span>
+    </div>
+    <div className={`w-full h-2 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+      <div 
+        className="h-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all duration-500 ease-out"
+        style={{ width: `${progress}%` }}
+      ></div>
+    </div>
+  </div>
+);
+
+
 const Step1_BasicInfo: React.FC<StepProps> = ({
   formData,
   errors,
   handleInputChange,
 }) => {
   const { isDarkMode } = useDarkMode();
-  const [validationState, setValidationState] = useState<{[key: string]: boolean}>({});
-  const [modelSuggestions, setModelSuggestions] = useState<string[]>([]);
 
-  // Validación en tiempo real - usar useCallback para evitar recreación
-  const validateField = useCallback((field: string, value: FormFieldValue): boolean => {
-    switch (field) {
-      case "category":
-        return !!value && Object.values(VehicleCategory).includes(value as VehicleCategory);
-      case "brand":
-        return !!value && typeof value === 'string' && value.length >= 2;
-      case "brandOther":
-        return !formData.brand || formData.brand !== "Otra" || (!!value && typeof value === 'string' && value.length >= 2);
-      case "model":
-        return !!value && typeof value === 'string' && value.trim().length >= 2 && value.length <= 100;
-      case "year":
-        const currentYear = new Date().getFullYear();
-        return !!value && typeof value === 'number' && value >= 1900 && value <= currentYear + 1;
-      default:
-        return false;
-    }
-  }, [formData.brand]);
+  // Hooks de validación para cada campo
+  const categoryValidation = useFieldValidation(formData.category, errors.category);
+  const brandValidation = useFieldValidation(formData.brand, errors.brand);
+  const brandOtherValidation = useFieldValidation(formData.brandOther, errors.brandOther);
+  const modelValidation = useFieldValidation(formData.model, errors.model);
+  const modelOtherValidation = useFieldValidation(formData.modelOther, errors.modelOther);
+  const versionValidation = useFieldValidation(formData.version, errors.version);
+  const yearValidation = useFieldValidation(formData.year, errors.year);
 
-  // Actualizar estado de validación
-  useEffect(() => {
-    const newValidationState: {[key: string]: boolean} = {};
-    
-    newValidationState["category"] = validateField("category", formData.category);
-    newValidationState["brand"] = validateField("brand", formData.brand);
-    newValidationState["brandOther"] = validateField("brandOther", formData.brandOther);
-    newValidationState["model"] = validateField("model", formData.model);
-    newValidationState["year"] = validateField("year", formData.year);
+  const inputClass = `w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
+    isDarkMode
+      ? "bg-gray-700 text-gray-200"
+      : "bg-white text-gray-900"
+  }`;
 
-    setValidationState(newValidationState);
-  }, [formData.category, formData.brand, formData.brandOther, formData.model, formData.year, validateField]);
 
-  // Sugerencias de modelos basadas en marca
-  useEffect(() => {
-    if (formData.brand && formData.category) {
-      const suggestions = getModelSuggestions(formData.brand, formData.category);
-      setModelSuggestions(suggestions);
-    } else {
-      setModelSuggestions([]);
-    }
-  }, [formData.brand, formData.category]);
 
-  const getModelSuggestions = (brand: string, category: VehicleCategory): string[] => {
-    const modelsByBrand: {[key: string]: {[key in VehicleCategory]?: string[]}} = {
-      "Toyota": {
-        [VehicleCategory.CAR]: ["Corolla", "Camry", "Prius", "Yaris"],
-        [VehicleCategory.SUV]: ["RAV4", "Highlander", "4Runner", "Land Cruiser"],
-        [VehicleCategory.TRUCK]: ["Hilux", "Tacoma"]
-      },
-      "Ford": {
-        [VehicleCategory.CAR]: ["Fiesta", "Focus", "Mustang"],
-        [VehicleCategory.SUV]: ["Explorer", "Escape", "Expedition"],
-        [VehicleCategory.TRUCK]: ["F-150", "Ranger"]
-      },
-      "Yamaha": {
-        [VehicleCategory.MOTORCYCLE]: ["YBR 125", "FZ16", "R15", "MT-03", "XTZ 250"]
-      },
-      "Honda": {
-        [VehicleCategory.CAR]: ["Civic", "Accord", "CR-V"],
-        [VehicleCategory.MOTORCYCLE]: ["CBR", "CB", "CRF", "PCX"]
-      }
-    };
-
-    return modelsByBrand[brand]?.[category] || [];
-  };
+  // Memoización para el progreso
+  const { completedRequiredFields, progressPercentage } = useMemo(() => {
+    const requiredFields = ['category', 'brand', 'model', 'year'];
+    const completed = requiredFields.filter(field => {
+      const value = formData[field as keyof typeof formData];
+      return (!!value || value === 0) && !errors[field];
+    }).length;
+    const progress = (completed / requiredFields.length) * 100;
+    return { completedRequiredFields: completed, progressPercentage: progress };
+  }, [formData, errors]);
 
   const categoryOptions = Object.values(VehicleCategory).map((cat) => ({
     value: cat,
@@ -264,37 +134,30 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
   }));
 
   const currentCategory = formData.category as VehicleCategory | undefined;
-  const subcategoryOptions =
-    currentCategory && CATEGORY_DATA[currentCategory]
-      ? CATEGORY_DATA[currentCategory].subcategories.map((sub) => ({
-          value: sub,
-          label: sub,
-        }))
-      : [];
 
-  const brandOptions =
-    currentCategory && CATEGORY_DATA[currentCategory]
-      ? CATEGORY_DATA[currentCategory].brands.map((brand) => ({
-          value: brand,
-          label: brand,
-        }))
-      : [];
+  const brandOptions = useMemo(() => {
+    if (!currentCategory || !CATEGORY_DATA[currentCategory]) return [];
+    // ¡NUEVA LÓGICA! Leemos las claves (nombres de marcas) del objeto.
+    return Object.keys(CATEGORY_DATA[currentCategory].brands).map(brand => ({
+      value: brand,
+      label: brand,
+    }));
+  }, [currentCategory]);
+      
+  const modelOptions = useMemo(() => {
+    // ¡NUEVA LÓGICA! Buscamos los modelos dentro de la categoría y marca seleccionadas.
+    if (!currentCategory || !formData.brand || !CATEGORY_DATA[currentCategory]?.brands[formData.brand]) return [];
+    return CATEGORY_DATA[currentCategory].brands[formData.brand].map(model => ({
+      value: model,
+      label: model,
+    }));
+  }, [currentCategory, formData.brand]);
 
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: currentYear - 1899 }, (_, i) => {
     const year = currentYear + 1 - i;
     return { value: year.toString(), label: year.toString() };
   });
-
-  const totalRequiredFields = 4; // category, brand, model, year
-  const completedRequiredFields = [
-    validationState["category"],
-    validationState["brand"],
-    validationState["model"], 
-    validationState["year"]
-  ].filter(Boolean).length;
-  
-  const progressPercentage = (completedRequiredFields / totalRequiredFields) * 100;
 
   return (
     <div className={`max-w-2xl mx-auto ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}>
@@ -318,12 +181,7 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
         </div>
 
         {/* Barra de progreso */}
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
-          <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-            style={{ width: `${progressPercentage}%` }}
-          ></div>
-        </div>
+        <ProgressBar progress={progressPercentage} isDarkMode={isDarkMode} />
       </div>
 
       <div className="space-y-6">
@@ -331,44 +189,27 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           label="Categoría del Vehículo"
           required
           error={errors.category}
-          success={validationState.category}
+          success={categoryValidation.isValid}
           icon={<Layers className="w-4 h-4 text-blue-600" />}
           tooltip="Selecciona el tipo que mejor describe tu vehículo"
+          tips={[
+            "🚗 Los carros y camionetas (SUV) son los más buscados.",
+            "🏍️ Las motos de baja cilindrada tienen alta demanda para trabajo.",
+            "🚚 Si es un camión, asegúrate de detallar su capacidad en los siguientes pasos."
+          ]}
         >
           <SelectField
             value={formData.category || ""}
             onChange={(value) => {
               handleInputChange("category", value as VehicleCategory);
-              handleInputChange("subcategory", "");
               handleInputChange("brand", "");
               handleInputChange("model", "");
             }}
             placeholder="Selecciona el tipo de vehículo"
+            onBlur={categoryValidation.handleBlur}
             options={categoryOptions}
+            className={`${inputClass} ${categoryValidation.getBorderColor(isDarkMode)}`}
             error={errors.category}
-            success={validationState.category}
-          />
-        </InputField>
-
-        <InputField 
-          label="Subcategoría" 
-          error={errors.subcategory}
-          success={!!formData.subcategory && !errors.subcategory}
-          icon={<Tag className="w-4 h-4 text-blue-600" />}
-          tooltip="Especifica el tipo exacto para mejor clasificación"
-        >
-          <SelectField
-            value={formData.subcategory || ""}
-            onChange={(value) => handleInputChange("subcategory", value)}
-            disabled={!formData.category}
-            placeholder={
-              !formData.category
-                ? "Primero selecciona una categoría"
-                : "Selecciona una subcategoría"
-            }
-            options={subcategoryOptions}
-            error={errors.subcategory}
-            success={!!formData.subcategory && !errors.subcategory}
           />
         </InputField>
 
@@ -376,9 +217,14 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           label="Marca" 
           required 
           error={errors.brand}
-          success={validationState.brand}
+          success={brandValidation.isValid}
           icon={<Award className="w-4 h-4 text-blue-600" />}
           tooltip="La marca del fabricante del vehículo"
+          tips={[
+            "👍 Marcas como Toyota, Honda y Ford son muy populares y confiables.",
+            "🏍️ Para motos, Empire Keeway, Bera y Yamaha son líderes en el mercado.",
+            "❓ Si no encuentras tu marca, selecciona 'Otra' y escríbela manualmente."
+          ]}
         >
           <SelectField
             value={formData.brand || ""}
@@ -387,14 +233,16 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
               handleInputChange("model", ""); // Reset model when brand changes
             }}
             disabled={!formData.category}
+            onBlur={brandValidation.handleBlur}
+            isLoading={!!formData.category && brandOptions.length === 0}
             placeholder={
               !formData.category
                 ? "Primero selecciona una categoría"
                 : "Selecciona la marca"
             }
             options={brandOptions}
+            className={`${inputClass} ${brandValidation.getBorderColor(isDarkMode)}`}
             error={errors.brand}
-            success={validationState.brand}
           />
         </InputField>
 
@@ -404,7 +252,7 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             label="Especificar Marca"
             required
             error={errors.brandOther}
-            success={validationState.brandOther}
+            success={brandOtherValidation.isValid}
             icon={<Award className="w-4 h-4 text-blue-600" />}
             tooltip="Escribe el nombre exacto de la marca"
             counter={{ current: formData.brandOther?.length || 0, max: 50 }}
@@ -413,12 +261,9 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
               type="text"
               value={formData.brandOther || ""}
               onChange={(e) => handleInputChange("brandOther", e.target.value)}
+              onBlur={brandOtherValidation.handleBlur}
               maxLength={50}
-              className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 ${
-                isDarkMode
-                  ? "bg-gray-700 border-gray-600 text-gray-200"
-                  : "bg-white border-gray-200 text-gray-900"
-              } ${errors.brandOther ? "border-red-400" : validationState.brandOther ? "border-green-400" : ""}`}
+              className={`${inputClass} ${brandOtherValidation.getBorderColor(isDarkMode)}`}
               placeholder="Ej: Empire Keeway, Skygo, Lifan"
             />
           </InputField>
@@ -428,58 +273,98 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           label="Modelo" 
           required 
           error={errors.model}
-          success={validationState.model}
+          success={modelValidation.isValid}
           icon={<Search className="w-4 h-4 text-blue-600" />}
           tooltip="El modelo específico del vehículo"
-          counter={{ current: formData.model?.length || 0, max: 100 }}
+          tips={[
+            "✨ Sé lo más específico posible (Ej: Corolla XEI, no solo Corolla).",
+            "💡 Si tu modelo no aparece, asegúrate de haber seleccionado la marca correcta.",
+          ]}
         >
-          <div className="relative">
+          <SelectField
+            value={formData.model || ""}
+            onChange={(value) => handleInputChange("model", value)}
+            disabled={!formData.brand || formData.brand === 'Otra'}
+            onBlur={modelValidation.handleBlur}
+            isLoading={!!formData.brand && modelOptions.length === 0 && formData.brand !== 'Otra'}
+            placeholder={
+              !formData.brand || formData.brand === 'Otra'
+                ? "Primero selecciona una marca"
+                : "Selecciona el modelo"
+            }
+            options={modelOptions}
+            className={`${inputClass} ${modelValidation.getBorderColor(isDarkMode)}`}
+            error={errors.model}
+          />
+        </InputField>
+
+        {/* Campo condicional para especificar otro modelo */}
+        {formData.model === "Otro" && (
+          <InputField
+            label="Especificar Modelo"
+            required
+            error={errors.modelOther}
+            success={modelOtherValidation.isValid}
+            icon={<Search className="w-4 h-4 text-blue-600" />}
+            tooltip="Escribe el nombre exacto del modelo"
+            counter={{ current: formData.modelOther?.length || 0, max: 50 }}
+          >
             <input
               type="text"
-              value={formData.model || ""}
-              onChange={(e) => handleInputChange("model", e.target.value)}
-              maxLength={100}
-              className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-200 ${
-                isDarkMode
-                  ? "bg-gray-700 border-gray-600 text-gray-200"
-                  : "bg-white border-gray-200 text-gray-900"
-              } ${errors.model ? "border-red-400" : validationState.model ? "border-green-400" : ""}`}
-              placeholder="Ej: Corolla, Civic, F-150, CBR600RR"
-              autoComplete="off"
-              list="model-suggestions"
+              value={formData.modelOther || ""}
+              onChange={(e) => handleInputChange("modelOther", e.target.value)}
+              onBlur={modelOtherValidation.handleBlur}
+              maxLength={50}
+              className={`${inputClass} ${modelOtherValidation.getBorderColor(isDarkMode)}`}
+              placeholder="Ej: Corolla Cross, F-250, etc."
             />
-            {modelSuggestions.length > 0 && (
-              <datalist id="model-suggestions">
-                {modelSuggestions.map((suggestion, index) => (
-                  <option key={index} value={suggestion} />
-                ))}
-              </datalist>
-            )}
-          </div>
-          {modelSuggestions.length > 0 && !formData.model && (
-            <div className={`text-xs mt-1 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-              💡 Sugerencias: {modelSuggestions.slice(0, 3).join(", ")}
-            </div>
-          )}
+          </InputField>
+        )}
+
+        <InputField
+          label="Versión / Edición (Opcional)"
+          error={errors.version}
+          success={versionValidation.isValid}
+          icon={<Tag className="w-4 h-4 text-blue-600" />}
+          tooltip="Añade detalles específicos del modelo. Ej: XEI, Limited, 4x4, etc."
+          counter={{ current: formData.version?.length || 0, max: 100 }}
+        >
+          <input
+            type="text"
+            value={formData.version || ""}
+            onChange={(e) => handleInputChange("version", e.target.value)}
+            onBlur={versionValidation.handleBlur}
+            maxLength={100}
+            className={`${inputClass} ${versionValidation.getBorderColor(isDarkMode)}`}
+            placeholder="Ej: XEI, Limited, Sport, 4x4"
+            autoComplete="off"
+            disabled={!formData.model}
+          />
         </InputField>
 
         <InputField 
           label="Año" 
           required 
           error={errors.year}
-          success={validationState.year}
+          success={yearValidation.isValid}
           icon={<Calendar className="w-4 h-4 text-blue-600" />}
           tooltip="Año de fabricación del vehículo"
+          tips={[
+            "📈 El año del modelo es uno de los factores más importantes en el precio.",
+            "🆕 Los vehículos más nuevos suelen tener mayor valor de reventa.",
+            "❗ Asegúrate de que el año coincida con los papeles del vehículo."
+          ]}
         >
           <SelectField
             value={formData.year?.toString() || ""}
             onChange={(value) =>
               handleInputChange("year", parseInt(value) || 0)
             }
+            onBlur={yearValidation.handleBlur}
             placeholder="Selecciona el año"
             options={yearOptions}
+            className={`${inputClass} ${yearValidation.getBorderColor(isDarkMode)}`}
             error={errors.year}
-            success={validationState.year}
           />
         </InputField>
 
@@ -492,31 +377,31 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
 
         {/* Resumen de completitud */}
         <div className={`mt-6 p-4 rounded-xl ${
-          completedRequiredFields === totalRequiredFields
+          completedRequiredFields >= 4
             ? (isDarkMode ? "bg-green-900/20 border-green-700" : "bg-green-50 border-green-200")
             : (isDarkMode ? "bg-orange-900/20 border-orange-700" : "bg-orange-50 border-orange-200")
         } border`}>
           <div className="flex items-center space-x-2">
-            {completedRequiredFields === totalRequiredFields ? (
+            {completedRequiredFields >= 4 ? (
               <Check className="w-5 h-5 text-green-500" />
             ) : (
               <AlertCircle className="w-5 h-5 text-orange-500" />
             )}
             <span className={`font-medium ${
-              completedRequiredFields === totalRequiredFields
+              completedRequiredFields >= 4
                 ? "text-green-700"
                 : "text-orange-700"
             }`}>
-              {completedRequiredFields === totalRequiredFields
+              {completedRequiredFields >= 4
                 ? "¡Información básica completa!"
-                : `Completa ${totalRequiredFields - completedRequiredFields} campos más para continuar`
+                : `Completa ${4 - completedRequiredFields} campos más para continuar`
               }
             </span>
           </div>
           <div className={`text-xs mt-2 ${
             isDarkMode ? "text-gray-400" : "text-gray-600"
           }`}>
-            Progreso: {completedRequiredFields}/{totalRequiredFields} campos requeridos
+            Progreso: {completedRequiredFields}/4 campos requeridos
           </div>
         </div>
       </div>

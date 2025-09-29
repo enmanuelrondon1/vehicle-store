@@ -6,14 +6,12 @@ import {
   DollarSign, 
   Gauge, 
   Shield, 
-  Handshake, 
+  Handshake,
   Loader2, 
-  CheckCircle, 
-  AlertCircle, 
   Info,
-  TrendingUp,
-  Eye
+  Eye,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch"; // Importar el componente Switch
 import {
   VehicleCondition,
   WarrantyType,
@@ -23,6 +21,15 @@ import {
 } from "@/types/shared";
 import { VehicleDataBackend } from "@/types/types";
 import { useDarkMode } from "@/context/DarkModeContext";
+import { useFieldValidation } from "@/hooks/useFieldValidation";
+import { InputField } from "@/components/shared/forms/InputField";
+import { SelectField } from "@/components/shared/forms/SelectField";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface FormErrors {
   [key: string]: string | undefined;
@@ -56,95 +63,6 @@ const VALIDATION_CONFIG = {
       "✅ Sé honesto con el kilometraje real"
     ]
   }
-};
-
-// Hook para validación en tiempo real
-const useRealTimeValidation = (value: FormFieldValue, field: string) => {
-  const [isValid, setIsValid] = useState<boolean | null>(null);
-  const [validationMessage, setValidationMessage] = useState<string>("");
-
-  useEffect(() => {
-    if (value === undefined || value === "" || value === null) {
-      setIsValid(null);
-      setValidationMessage("");
-      return;
-    }
-
-    let valid = false;
-    let message = "";
-
-    switch (field) {
-      case "price":
-        const price = typeof value === "string" ? parseFloat(value) : Number(value);
-        if (isNaN(price)) {
-          message = "Debe ser un número válido";
-        } else if (price < VALIDATION_CONFIG.price.min) {
-          message = `El precio mínimo es $${VALIDATION_CONFIG.price.min.toLocaleString()}`;
-        } else if (price > VALIDATION_CONFIG.price.max) {
-          message = `El precio máximo es $${VALIDATION_CONFIG.price.max.toLocaleString()}`;
-        } else {
-          valid = true;
-          message = "Precio válido";
-        }
-        break;
-
-      case "mileage":
-        const mileage = typeof value === "string" ? parseInt(value.replace(/[^0-9]/g, '')) : Number(value);
-        if (isNaN(mileage)) {
-          message = "Debe ser un número válido";
-        } else if (mileage < 0) {
-          message = "El kilometraje no puede ser negativo";
-        } else if (mileage > VALIDATION_CONFIG.mileage.max) {
-          message = "El kilometraje es muy alto";
-        } else {
-          valid = true;
-          message = "Kilometraje válido";
-        }
-        break;
-
-      case "condition":
-        valid = typeof value === "string" && Object.values(VehicleCondition).includes(value as VehicleCondition);
-        message = valid ? "Condición seleccionada" : "Selecciona una condición";
-        break;
-
-      default:
-        valid = true;
-        message = "";
-    }
-
-    setIsValid(valid);
-    setValidationMessage(message);
-  }, [value, field]);
-
-  return { isValid, validationMessage };
-};
-
-// Componente de Tooltip
-const Tooltip: React.FC<{ content: string; children: React.ReactNode }> = ({ content, children }) => {
-  const [show, setShow] = useState(false);
-  const { isDarkMode } = useDarkMode();
-
-  return (
-    <div className="relative inline-block">
-      <div 
-        onMouseEnter={() => setShow(true)}
-        onMouseLeave={() => setShow(false)}
-        className="cursor-help"
-      >
-        {children}
-      </div>
-      {show && (
-        <div className={`absolute z-10 p-2 text-xs rounded-lg shadow-lg w-48 bottom-full left-1/2 transform -translate-x-1/2 mb-2 ${
-          isDarkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-900 text-white'
-        }`}>
-          {content}
-          <div className={`absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent ${
-            isDarkMode ? 'border-t-gray-800' : 'border-t-gray-900'
-          }`}></div>
-        </div>
-      )}
-    </div>
-  );
 };
 
 // Componente de Progreso
@@ -235,96 +153,6 @@ const PreviewCard: React.FC<{ formData: Partial<VehicleDataBackend>; exchangeRat
   );
 };
 
-const InputField: React.FC<{
-  label: string;
-  required?: boolean;
-  error?: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-  isValid?: boolean | null;
-  validationMessage?: string;
-  tooltip?: string;
-  tips?: string[];
-}> = ({ label, required, error, icon, children, isValid, validationMessage, tooltip, tips }) => {
-  const { isDarkMode } = useDarkMode();
-  const [showTips, setShowTips] = useState(false);
-  
-  const getValidationIcon = () => {
-    if (isValid === true) {
-      return <CheckCircle className="w-4 h-4 text-green-500" />;
-    } else if (isValid === false) {
-      return <AlertCircle className="w-4 h-4 text-red-500" />;
-    }
-    return null;
-  };
-
-  return (
-    <div className={`space-y-2 ${isDarkMode ? "text-gray-200" : "text-gray-700"}`}>
-      <div className="flex items-center justify-between">
-        <label className={`flex items-center text-sm font-semibold ${
-          isDarkMode ? "text-gray-300" : "text-gray-700"
-        }`}>
-          {icon && <span className="mr-2">{icon}</span>}
-          {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
-          {tooltip && (
-            <Tooltip content={tooltip}>
-              <Info className="w-3 h-3 ml-1 text-gray-400" />
-            </Tooltip>
-          )}
-        </label>
-        
-        <div className="flex items-center space-x-2">
-          {getValidationIcon()}
-          {tips && (
-            <button
-              type="button"
-              onClick={() => setShowTips(!showTips)}
-              className={`text-xs px-2 py-1 rounded-full transition-colors ${
-                isDarkMode 
-                  ? 'bg-blue-900/50 text-blue-300 hover:bg-blue-800/70' 
-                  : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-              }`}
-            >
-              <TrendingUp className="w-3 h-3 inline mr-1" />
-              Tips
-            </button>
-          )}
-        </div>
-      </div>
-      
-      {children}
-      
-      {/* Mensaje de validación en tiempo real */}
-      {validationMessage && (
-        <p className={`text-xs mt-1 flex items-center ${
-          isValid ? 'text-green-600' : 'text-orange-500'
-        }`}>
-          {isValid ? '✅' : '⚠️'} {validationMessage}
-        </p>
-      )}
-      
-      {/* Error del formulario */}
-      {error && <p className="text-sm text-red-500 mt-1">🚨 {error}</p>}
-      
-      {/* Tips expandibles */}
-      {showTips && tips && (
-        <div className={`mt-2 p-3 rounded-lg space-y-1 ${
-          isDarkMode ? 'bg-blue-900/20 border border-blue-800/30' : 'bg-blue-50 border border-blue-200'
-        }`}>
-          {tips.map((tip, index) => (
-            <p key={index} className={`text-xs ${
-              isDarkMode ? 'text-blue-300' : 'text-blue-700'
-            }`}>
-              {tip}
-            </p>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const Step2_PriceAndCondition: React.FC<StepProps> = ({
   formData,
   errors,
@@ -334,10 +162,18 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [isLoadingRate, setIsLoadingRate] = useState(false);
 
-  // Validaciones en tiempo real
-  const priceValidation = useRealTimeValidation(formData.price, "price");
-  const mileageValidation = useRealTimeValidation(formData.mileage, "mileage");
-  const conditionValidation = useRealTimeValidation(formData.condition, "condition");
+  // Hooks de validación
+  const priceValidation = useFieldValidation(formData.price, errors.price);
+  const mileageValidation = useFieldValidation(formData.mileage, errors.mileage);
+  const conditionValidation = useFieldValidation(formData.condition, errors.condition);
+  const warrantyValidation = useFieldValidation(formData.warranty, errors.warranty);
+
+  const inputClass = `w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
+    isDarkMode
+      ? "bg-gray-700 text-gray-200"
+      : "bg-white text-gray-900"
+  }`;
+
 
   // Calcular progreso del formulario
   const formProgress = useMemo(() => {
@@ -418,9 +254,23 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
 
   // Función mejorada para el precio con validación
   const handlePriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value);
-    handleInputChange("price", isNaN(value) ? undefined : value);
+    const rawValue = e.target.value;
+    // Eliminar todo excepto los dígitos
+    const numericValue = rawValue.replace(/[^0-9]/g, '');
+    
+    if (numericValue === '') {
+      handleInputChange("price", undefined);
+    } else {
+      const parsedValue = parseInt(numericValue, 10);
+      if (!isNaN(parsedValue)) {
+        handleInputChange("price", parsedValue);
+      }
+    }
   }, [handleInputChange]);
+
+  const formatPrice = (value: number | undefined): string => {
+    return value !== undefined ? value.toLocaleString('es-VE') : '';
+  };
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -465,10 +315,9 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
         <InputField
           label="Precio (USD)"
           required
+          success={priceValidation.isValid}
           error={errors.price}
           icon={<DollarSign className="w-4 h-4 text-green-600" />}
-          isValid={priceValidation.isValid}
-          validationMessage={priceValidation.validationMessage}
           tooltip="El precio debe estar en dólares estadounidenses. Se mostrará la conversión automática a bolívares."
           tips={VALIDATION_CONFIG.price.tips}
         >
@@ -481,23 +330,13 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
               </span>
             </div>
             <input
-              type="number"
-              value={formData.price || ""}
+              type="text"
+              value={formatPrice(formData.price)}
               onChange={handlePriceChange}
-              className={`w-full pl-8 pr-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
-                priceValidation.isValid === true
-                  ? 'border-green-500 focus:ring-green-500/20'
-                  : priceValidation.isValid === false
-                  ? 'border-red-500 focus:ring-red-500/20'
-                  : 'focus:ring-green-500/20'
-              } ${
-                isDarkMode
-                  ? "bg-gray-700 border-gray-600 text-gray-200"
-                  : "bg-white border-gray-200 text-gray-900"
-              }`}
+              className={`${inputClass} pl-8 ${priceValidation.getBorderColor(isDarkMode)}`}
               placeholder="25,000"
-              min="0"
-              step="0.01"
+              onBlur={priceValidation.handleBlur}
+              inputMode="numeric"
             />
           </div>
           
@@ -522,39 +361,37 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
           )}
         </InputField>
 
-        <div className="flex items-center justify-end -mt-2">
+        <div className="flex items-center justify-between rounded-lg p-3 -mt-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800/50">
           <label className="flex items-center space-x-2 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={formData.isNegotiable || false}
-              onChange={(e) => handleInputChange("isNegotiable", e.target.checked)}
-              className={`w-4 h-4 rounded focus:ring-2 transition-colors ${
-                isDarkMode 
-                  ? 'text-blue-400 bg-gray-600 border-gray-500 focus:ring-blue-400' 
-                  : 'text-blue-600 border-gray-300 focus:ring-blue-500'
-              }`}
-            />
             <span className={`text-sm font-medium transition-colors group-hover:text-blue-600 ${
               isDarkMode ? 'text-gray-300 group-hover:text-blue-400' : 'text-gray-700'
             }`}>
-              Precio Negociable
+              ¿Precio Negociable?
             </span>
-            <Handshake className={`w-4 h-4 transition-colors ${
-              isDarkMode ? 'text-gray-500 group-hover:text-blue-400' : 'text-gray-500 group-hover:text-blue-600'
+            <Handshake className={`w-4 h-4 transition-colors group-hover:scale-110 ${
+              formData.isNegotiable ? 'text-blue-500' : (isDarkMode ? 'text-gray-500' : 'text-gray-400')
             }`} />
-            <Tooltip content="Marcar como negociable puede atraer más compradores interesados">
-              <Info className="w-3 h-3 text-gray-400" />
-            </Tooltip>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-3 h-3 text-gray-400" />
+                </TooltipTrigger>
+                <TooltipContent>Marcar como negociable puede atraer más compradores interesados</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </label>
+          <Switch
+            checked={formData.isNegotiable || false}
+            onCheckedChange={(checked) => handleInputChange("isNegotiable", checked)}
+          />
         </div>
 
         <InputField
           label="Kilometraje"
           required
+          success={mileageValidation.isValid}
           error={errors.mileage}
           icon={<Gauge className="w-4 h-4 text-blue-600" />}
-          isValid={mileageValidation.isValid}
-          validationMessage={mileageValidation.validationMessage}
           tooltip="Introduce el kilometraje actual del vehículo. Se formatará automáticamente."
           tips={VALIDATION_CONFIG.mileage.tips}
         >
@@ -563,18 +400,9 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
               type="text"
               value={formatMileage(formData.mileage)}
               onChange={handleMileageChange}
-              className={`w-full px-4 py-3 pr-12 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
-                mileageValidation.isValid === true
-                  ? 'border-green-500 focus:ring-green-500/20'
-                  : mileageValidation.isValid === false
-                  ? 'border-red-500 focus:ring-red-500/20'
-                  : 'focus:ring-blue-500/20'
-              } ${
-                isDarkMode
-                  ? "bg-gray-700 border-gray-600 text-gray-200"
-                  : "bg-white border-gray-200 text-gray-900"
-              }`}
+              className={`${inputClass} pr-12 ${mileageValidation.getBorderColor(isDarkMode)}`}
               placeholder="85,000"
+              onBlur={mileageValidation.handleBlur}
               inputMode="numeric"
             />
             <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
@@ -590,58 +418,43 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
         <InputField
           label="Condición"
           required
+          success={conditionValidation.isValid}
           error={errors.condition}
           icon={<Shield className="w-4 h-4 text-orange-600" />}
-          isValid={conditionValidation.isValid}
-          validationMessage={conditionValidation.validationMessage}
           tooltip="La condición del vehículo afecta significativamente su valor de mercado"
         >
-          <select
+          <SelectField
             value={formData.condition || ""}
-            onChange={(e) => handleInputChange("condition", e.target.value)}
-            className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 appearance-none cursor-pointer ${
-              conditionValidation.isValid === true
-                ? 'border-green-500 focus:ring-green-500/20'
-                : conditionValidation.isValid === false
-                ? 'border-red-500 focus:ring-red-500/20'
-                : 'focus:ring-orange-500/20'
-            } ${
-              isDarkMode
-                ? "bg-gray-700 border-gray-600 text-gray-200"
-                : "bg-white border-gray-200 text-gray-900"
-            }`}
-          >
-            <option value="">Selecciona la condición</option>
-            {Object.values(VehicleCondition).map((condition) => (
-              <option key={condition} value={condition}>
-                {VEHICLE_CONDITIONS_LABELS[condition]}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => handleInputChange("condition", value)}
+            onBlur={conditionValidation.handleBlur}
+            options={[VehicleCondition.EXCELLENT, VehicleCondition.GOOD].map(c => ({
+              value: c,
+              label: VEHICLE_CONDITIONS_LABELS[c]
+            }))}
+            placeholder="Selecciona la condición"
+            error={errors.condition}
+            className={`${inputClass} ${conditionValidation.getBorderColor(isDarkMode)}`}
+          />
         </InputField>
 
         <InputField
           label="Garantía"
           error={errors.warranty}
+          success={warrantyValidation.isValid}
           icon={<Shield className="w-4 h-4 text-purple-600" />}
           tooltip="La garantía puede ser un factor decisivo para muchos compradores"
         >
-          <select
+          <SelectField
             value={formData.warranty || ""}
-            onChange={(e) => handleInputChange("warranty", e.target.value)}
-            className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 focus:ring-purple-500/20 transition-all duration-200 appearance-none cursor-pointer ${
-              isDarkMode
-                ? "bg-gray-700 border-gray-600 text-gray-200"
-                : "bg-white border-gray-200 text-gray-900"
-            }`}
-          >
-            <option value="">Selecciona tipo de garantía</option>
-            {Object.values(WarrantyType).map((warranty) => (
-              <option key={warranty} value={warranty}>
-                {WARRANTY_LABELS[warranty]}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => handleInputChange("warranty", value)}
+            options={[WarrantyType.NO_WARRANTY, WarrantyType.SELLER_WARRANTY].map(w => ({
+              value: w,
+              label: WARRANTY_LABELS[w]
+            }))}
+            placeholder="Selecciona tipo de garantía"
+            error={errors.warranty}
+            className={`${inputClass} ${warrantyValidation.getBorderColor(isDarkMode)}`}
+          />
         </InputField>
 
         {/* Vista Previa */}

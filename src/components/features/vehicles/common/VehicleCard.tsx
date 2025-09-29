@@ -4,6 +4,7 @@
 import type React from "react";
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Heart,
   Share2,
@@ -17,7 +18,7 @@ import {
   Star,
 } from "lucide-react";
 import { Vehicle, VehicleCondition } from "@/types/types";
-import {  ApprovalStatus } from "@/types/types";
+import { ApprovalStatus } from "@/types/types";
 import {
   VEHICLE_CONDITIONS_LABELS,
   FUEL_TYPES_LABELS,
@@ -89,20 +90,29 @@ const VehicleCard = ({
     onToggleCompare(vehicle._id);
   };
 
-  const translatedCondition = translateValue(vehicle.condition, VEHICLE_CONDITIONS_LABELS);
-  const translatedFuelType = translateValue(vehicle.fuelType, FUEL_TYPES_LABELS);
-  const translatedTransmission = translateValue(vehicle.transmission, TRANSMISSION_TYPES_LABELS);
+  const translatedCondition = translateValue(
+    vehicle.condition,
+    VEHICLE_CONDITIONS_LABELS
+  );
+  const translatedFuelType = translateValue(
+    vehicle.fuelType,
+    FUEL_TYPES_LABELS
+  );
+  const translatedTransmission = translateValue(
+    vehicle.transmission,
+    TRANSMISSION_TYPES_LABELS
+  );
   const translatedStatus = translateValue(vehicle.status, STATUS_MAP);
 
   if (viewMode === "list") {
     return (
-      <div
+      <Link
+        href={`/vehicle/${vehicle._id}`}
         className={`${
           isDarkMode
             ? "bg-gray-800/50 border-gray-700 hover:bg-gray-800"
             : "bg-white/50 border-gray-200 hover:bg-white"
-        } transition-all duration-300 hover:shadow-xl backdrop-blur-sm group cursor-pointer rounded-lg border relative`}
-        onClick={() => window.open(`/vehicle/${vehicle._id}`, "_self")}
+        } transition-all duration-300 hover:shadow-xl backdrop-blur-sm group rounded-lg border relative block`}
       >
         {vehicle.isFeatured && (
           <div className="absolute top-3 left-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
@@ -149,8 +159,8 @@ const VehicleCard = ({
                   isInCompareList
                     ? "bg-blue-600 text-white"
                     : isDarkMode
-                    ? "bg-gray-900/70 hover:bg-gray-800 text-gray-300"
-                    : "bg-white/70 hover:bg-white text-gray-600"
+                      ? "bg-gray-900/70 hover:bg-gray-800 text-gray-300"
+                      : "bg-white/70 hover:bg-white text-gray-600"
                 } backdrop-blur-sm transition-colors`}
                 title="Comparar"
               >
@@ -169,8 +179,8 @@ const VehicleCard = ({
                     isFavorited
                       ? "fill-red-500 text-red-500"
                       : isDarkMode
-                      ? "text-gray-300"
-                      : "text-gray-600"
+                        ? "text-gray-300"
+                        : "text-gray-600"
                   }`}
                 />
               </button>
@@ -319,7 +329,7 @@ const VehicleCard = ({
             )}
           </div>
         </div>
-      </div>
+      </Link>
     );
   }
 
@@ -330,7 +340,6 @@ const VehicleCard = ({
           ? "bg-gray-800/50 border-gray-700 hover:bg-gray-800"
           : "bg-white/50 border-gray-200 hover:bg-white"
       } transition-all duration-300 hover:shadow-xl hover:-translate-y-2 backdrop-blur-sm group cursor-pointer overflow-hidden rounded-lg border relative`}
-      onClick={() => window.open(`/vehicle/${vehicle._id}`, "_self")}
     >
       {vehicle.isFeatured && (
         <div className="absolute top-3 left-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
@@ -377,8 +386,8 @@ const VehicleCard = ({
               isInCompareList
                 ? "bg-blue-600 text-white"
                 : isDarkMode
-                ? "bg-gray-900/70 hover:bg-gray-800 text-gray-300"
-                : "bg-white/70 hover:bg-white text-gray-600"
+                  ? "bg-gray-900/70 hover:bg-gray-800 text-gray-300"
+                  : "bg-white/70 hover:bg-white text-gray-600"
             } backdrop-blur-sm shadow-lg transition-colors`}
             title="Comparar"
           >
@@ -397,8 +406,8 @@ const VehicleCard = ({
                 isFavorited
                   ? "fill-red-500 text-red-500"
                   : isDarkMode
-                  ? "text-gray-300"
-                  : "text-gray-600"
+                    ? "text-gray-300"
+                    : "text-gray-600"
               }`}
             />
           </button>
@@ -564,15 +573,12 @@ const VehicleCard = ({
         )}
       </div>
       <div className="p-6 pt-0">
-        <button
+        <Link
+          href={`/vehicle/${vehicle._id}`}
           className="w-full p-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl rounded"
-          onClick={(e) => {
-            e.stopPropagation();
-            window.open(`/vehicle/${vehicle._id}`, "_self");
-          }}
         >
           Ver Detalles
-        </button>
+        </Link>
       </div>
     </div>
   );

@@ -1,60 +1,15 @@
 // src/components/sections/VehicleList/AdvancedFiltersPanel.tsx
 "use client";
 
-import type React from "react";
-import { useMemo } from "react";
-import { SlidersHorizontal, X } from "lucide-react";
-import {
-  ApprovalStatus,
-} from "@/types/types";
+import { useMemo, type FC } from "react";
+import { X } from "lucide-react";
+import type { AdvancedFilters, FilterOptions } from "@/types/types";
+import FilterGroup from "./filters/FilterGroup";
+import CheckboxFilter from "./filters/CheckboxFilter";
+import RangeSliderFilter from "./filters/RangeSliderFilter";
+import { MultiSelectFilter } from "./filters/MultiSelectFilter";
 
-interface AdvancedFilters {
-  search: string;
-  category: string;
-  subcategory: string;
-  brands: string[];
-  priceRange: [number, number];
-  yearRange: [number, number];
-  mileageRange: [number, number];
-  condition: string[];
-  fuelType: string[];
-  transmission: string[];
-  location: string[];
-  features: string[];
-  status: ApprovalStatus | "all";
-  hasWarranty: boolean;
-  isFeatured: boolean;
-  postedWithin: string;
-}
-
-interface FilterOptions {
-  categories: string[];
-  subcategories: string[];
-  brands: string[];
-  conditions: string[];
-  fuelTypes: string[];
-  transmissions: string[];
-  locations: string[];
-  features: string[];
-  statuses: string[];
-}
-
-const POSTED_WITHIN_OPTIONS = [
-  { value: "all", label: "Cualquier momento" },
-  { value: "24h", label: "Últimas 24 horas" },
-  { value: "7d", label: "Última semana" },
-  { value: "30d", label: "Último mes" },
-];
-
-const AdvancedFiltersPanel = ({
-  filters,
-  filterOptions,
-  onFiltersChange,
-  onClearFilters,
-  isOpen,
-  onToggle,
-  isDarkMode,
-}: {
+interface AdvancedFiltersPanelProps {
   filters: AdvancedFilters;
   filterOptions: FilterOptions;
   onFiltersChange: (filters: AdvancedFilters) => void;
@@ -62,6 +17,16 @@ const AdvancedFiltersPanel = ({
   isOpen: boolean;
   onToggle: () => void;
   isDarkMode: boolean;
+}
+
+const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
+  filters,
+  filterOptions,
+  onFiltersChange,
+  onClearFilters,
+  isOpen,
+  onToggle,
+  isDarkMode,
 }) => {
   const updateFilter = <K extends keyof AdvancedFilters>(
     key: K,
@@ -82,7 +47,9 @@ const AdvancedFiltersPanel = ({
   };
 
   const activeFiltersCount = useMemo(() => {
+    // ✅ CORRECCIÓN: Añadir 'category' al conteo de filtros activos
     let count = 0;
+    if (filters.colors.length > 0) count++;
     if (filters.brands.length > 0) count++;
     if (filters.condition.length > 0) count++;
     if (filters.fuelType.length > 0) count++;
@@ -90,32 +57,17 @@ const AdvancedFiltersPanel = ({
     if (filters.location.length > 0) count++;
     if (filters.hasWarranty) count++;
     if (filters.isFeatured) count++;
-    if (filters.postedWithin !== "all") count++;
-    if (filters.status !== "all") count++;
+    if (filters.category && filters.category !== "all") count++;
+    if (filters.driveType.length > 0) count++;
     if (filters.priceRange[0] > 0 || filters.priceRange[1] < 1000000) count++;
     if (filters.yearRange[0] > 2000 || filters.yearRange[1] < 2025) count++;
+    if (filters.mileageRange[0] > 0 || filters.mileageRange[1] < 500000)
+      count++;
     return count;
   }, [filters]);
 
   if (!isOpen) {
-    return (
-      <button
-        onClick={onToggle}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors relative ${
-          isDarkMode
-            ? "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700"
-            : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-        }`}
-      >
-        <SlidersHorizontal className="w-4 h-4" />
-        Filtros Avanzados
-        {activeFiltersCount > 0 && (
-          <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-            {activeFiltersCount}
-          </span>
-        )}
-      </button>
-    );
+    return null;
   }
 
   return (
@@ -132,7 +84,8 @@ const AdvancedFiltersPanel = ({
             isDarkMode ? "text-white" : "text-gray-900"
           }`}
         >
-          Filtros Avanzados {activeFiltersCount > 0 && `(${activeFiltersCount} activos)`}
+          Filtros Avanzados{" "}
+          {activeFiltersCount > 0 && `(${activeFiltersCount} activos)`}
         </h3>
         <div className="flex gap-2">
           <button
@@ -152,7 +105,7 @@ const AdvancedFiltersPanel = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div>
           <label
             className={`block text-sm font-medium mb-2 ${
@@ -171,335 +124,155 @@ const AdvancedFiltersPanel = ({
             }`}
           >
             <option value="all">Todas las categorías</option>
-            {filterOptions.categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
+            {/* ✅ CORRECCIÓN: Añadir tipo explícito a 'cat' */}
+            {filterOptions.categories.map((category) => (
+              <option key={category.value} value={category.value}>
+                {category.label}
               </option>
             ))}
           </select>
         </div>
 
-        <div>
-          <label
-            className={`block text-sm font-medium mb-2 ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Precio: ${filters.priceRange[0].toLocaleString()} - $
-            {filters.priceRange[1].toLocaleString()}
-          </label>
-          <div className="space-y-2">
-            <input
-              type="range"
-              min="0"
-              max="1000000"
-              step="10000"
-              value={filters.priceRange[0]}
-              onChange={(e) =>
-                updateFilter("priceRange", [
-                  Number(e.target.value),
-                  filters.priceRange[1],
-                ])
-              }
-              className="w-full"
-            />
-            <input
-              type="range"
-              min="0"
-              max="1000000"
-              step="10000"
-              value={filters.priceRange[1]}
-              onChange={(e) =>
-                updateFilter("priceRange", [
-                  filters.priceRange[0],
-                  Number(e.target.value),
-                ])
-              }
-              className="w-full"
-            />
-          </div>
-        </div>
+        <FilterGroup
+          label={`Precio: $${filters.priceRange[0].toLocaleString()} - $${filters.priceRange[1].toLocaleString()}`}
+          isDarkMode={isDarkMode}
+        >
+          <RangeSliderFilter
+            min={0}
+            max={1000000}
+            step={10000}
+            value={filters.priceRange}
+            onChange={(value) =>
+              updateFilter("priceRange", value as [number, number])
+            }
+            isDarkMode={isDarkMode}
+          />
+        </FilterGroup>
 
-        <div>
-          <label
-            className={`block text-sm font-medium mb-2 ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Año: {filters.yearRange[0]} - {filters.yearRange[1]}
-          </label>
-          <div className="space-y-2">
-            <input
-              type="range"
-              min="2000"
-              max="2025"
-              value={filters.yearRange[0]}
-              onChange={(e) =>
-                updateFilter("yearRange", [
-                  Number(e.target.value),
-                  filters.yearRange[1],
-                ])
-              }
-              className="w-full"
-            />
-            <input
-              type="range"
-              min="2000"
-              max="2025"
-              value={filters.yearRange[1]}
-              onChange={(e) =>
-                updateFilter("yearRange", [
-                  filters.yearRange[0],
-                  Number(e.target.value),
-                ])
-              }
-              className="w-full"
-            />
-          </div>
-        </div>
+        <FilterGroup
+          label={`Año: ${filters.yearRange[0]} - ${filters.yearRange[1]}`}
+          isDarkMode={isDarkMode}
+        >
+          <RangeSliderFilter
+            min={2000}
+            max={new Date().getFullYear() + 1}
+            step={1}
+            value={filters.yearRange}
+            onChange={(value) =>
+              updateFilter("yearRange", value as [number, number])
+            }
+            isDarkMode={isDarkMode}
+          />
+        </FilterGroup>
 
-        <div>
-          <label
-            className={`block text-sm font-medium mb-2 ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Marcas ({filters.brands.length} seleccionadas)
-          </label>
-          <div className="max-h-32 overflow-y-auto space-y-1 border rounded p-2">
-            {filterOptions.brands.slice(0, 10).map((brand) => (
-              <label key={brand} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={filters.brands.includes(brand)}
-                  onChange={() =>
-                    toggleArrayFilter("brands", brand, filters.brands)
-                  }
-                  className="rounded"
-                />
-                <span
-                  className={`text-sm ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  {brand}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <FilterGroup
+          label={`Kilometraje: ${filters.mileageRange[0].toLocaleString()} - ${filters.mileageRange[1].toLocaleString()} km`}
+          isDarkMode={isDarkMode}
+        >
+          <RangeSliderFilter
+            min={0}
+            max={500000}
+            step={5000}
+            value={filters.mileageRange}
+            onChange={(value) =>
+              updateFilter("mileageRange", value as [number, number])
+            }
+            isDarkMode={isDarkMode}
+          />
+        </FilterGroup>
 
-        <div>
-          <label
-            className={`block text-sm font-medium mb-2 ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Condición
-          </label>
-          <div className="space-y-1">
-            {filterOptions.conditions.map((condition) => (
-              <label key={condition} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={filters.condition.includes(condition)}
-                  onChange={() =>
-                    toggleArrayFilter("condition", condition, filters.condition)
-                  }
-                  className="rounded"
-                />
-                <span
-                  className={`text-sm ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  {condition}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <FilterGroup
+          label={`Marcas (${filters.brands.length} seleccionadas)`}
+          isDarkMode={isDarkMode}
+        >
+          <MultiSelectFilter
+            // ✅ CORRECCIÓN: Mapear las opciones al formato { value, label }
+            options={filterOptions.brands.map((brand) => ({ value: brand, label: brand }))}
+            selected={filters.brands}
+            onChange={(newSelection) => updateFilter("brands", newSelection)}
+            isDarkMode={isDarkMode}
+            placeholder="Seleccionar marcas..."
+          />
+        </FilterGroup>
 
-        <div>
-          <label
-            className={`block text-sm font-medium mb-2 ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Combustible
-          </label>
-          <div className="space-y-1">
-            {filterOptions.fuelTypes.map((fuel) => (
-              <label key={fuel} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={filters.fuelType.includes(fuel)}
-                  onChange={() =>
-                    toggleArrayFilter("fuelType", fuel, filters.fuelType)
-                  }
-                  className="rounded"
-                />
-                <span
-                  className={`text-sm ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  {fuel}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <FilterGroup
+          label={`Color (${filters.colors.length} seleccionados)`}
+          isDarkMode={isDarkMode}
+        >
+          <MultiSelectFilter
+            // ✅ SOLUCIÓN: Las opciones ya vienen en el formato correcto desde el hook
+            options={filterOptions.colors}
+            selected={filters.colors}
+            onChange={(newSelection) => updateFilter("colors", newSelection)}
+            isDarkMode={isDarkMode}
+            placeholder="Seleccionar colores..."
+          />
+        </FilterGroup>
 
-        <div>
-          <label
-            className={`block text-sm font-medium mb-2 ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Transmisión
-          </label>
-          <div className="space-y-1">
-            {filterOptions.transmissions.map((transmission) => (
-              <label key={transmission} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={filters.transmission.includes(transmission)}
-                  onChange={() =>
-                    toggleArrayFilter(
-                      "transmission",
-                      transmission,
-                      filters.transmission
-                    )
-                  }
-                  className="rounded"
-                />
-                <span
-                  className={`text-sm ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  {transmission}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <FilterGroup label="Condición" isDarkMode={isDarkMode}>
+          <CheckboxFilter
+            options={filterOptions.conditions}
+            selected={filters.condition}
+            onChange={(condition) =>
+              toggleArrayFilter("condition", condition, filters.condition)
+            }
+            isDarkMode={isDarkMode}
+            maxHeight="max-h-full"
+          />
+        </FilterGroup>
 
-        <div>
-          <label
-            className={`block text-sm font-medium mb-2 ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Ubicación
-          </label>
-          <div className="max-h-32 overflow-y-auto space-y-1 border rounded p-2">
-            {filterOptions.locations.slice(0, 8).map((location) => (
-              <label key={location} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={filters.location.includes(location)}
-                  onChange={() =>
-                    toggleArrayFilter("location", location, filters.location)
-                  }
-                  className="rounded"
-                />
-                <span
-                  className={`text-sm ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  {location}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <FilterGroup label="Combustible" isDarkMode={isDarkMode}>
+          <CheckboxFilter
+            options={filterOptions.fuelTypes}
+            selected={filters.fuelType}
+            onChange={(fuel) =>
+              toggleArrayFilter("fuelType", fuel, filters.fuelType)
+            }
+            isDarkMode={isDarkMode}
+            maxHeight="max-h-full"
+          />
+        </FilterGroup>
 
-        <div className="space-y-4">
-          <div>
-            <label
-              className={`block text-sm font-medium mb-2 ${
-                isDarkMode ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              Estado
-            </label>
-            <select
-              value={filters.status}
-              onChange={(e) =>
-                updateFilter("status", e.target.value as ApprovalStatus | "all")
-              }
-              className={`w-full p-2 rounded border ${
-                isDarkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300"
-              }`}
-            >
-              <option value="all">Todos los estados</option>
-              <option value={ApprovalStatus.PENDING}>Pendiente</option>
-              <option value={ApprovalStatus.APPROVED}>Aprobado</option>
-              <option value={ApprovalStatus.REJECTED}>Rechazado</option>
-            </select>
-          </div>
-          <div>
-            <label
-              className={`block text-sm font-medium mb-2 ${
-                isDarkMode ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              Publicado en
-            </label>
-            <select
-              value={filters.postedWithin}
-              onChange={(e) => updateFilter("postedWithin", e.target.value)}
-              className={`w-full p-2 rounded border ${
-                isDarkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300"
-              }`}
-            >
-              {POSTED_WITHIN_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={filters.hasWarranty}
-                onChange={(e) => updateFilter("hasWarranty", e.target.checked)}
-                className="rounded"
-              />
-              <span
-                className={`text-sm ${
-                  isDarkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Con garantía
-              </span>
-            </label>
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={filters.isFeatured}
-                onChange={(e) => updateFilter("isFeatured", e.target.checked)}
-                className="rounded"
-              />
-              <span
-                className={`text-sm ${
-                  isDarkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Solo destacados
-              </span>
-            </label>
-          </div>
-        </div>
+        <FilterGroup label="Transmisión" isDarkMode={isDarkMode}>
+          <CheckboxFilter
+            options={filterOptions.transmissions}
+            selected={filters.transmission}
+            onChange={(transmission) =>
+              toggleArrayFilter(
+                "transmission",
+                transmission,
+                filters.transmission
+              )
+            }
+            isDarkMode={isDarkMode}
+            maxHeight="max-h-full"
+          />
+        </FilterGroup>
+
+        <FilterGroup
+          label={`Ubicación (${filters.location.length} seleccionadas)`}
+          isDarkMode={isDarkMode}
+        >
+          <CheckboxFilter
+            options={filterOptions.locations}
+            selected={filters.location}
+            onChange={(location) =>
+              toggleArrayFilter("location", location, filters.location)
+            }
+            isDarkMode={isDarkMode}
+          />
+        </FilterGroup>
+        <FilterGroup label="Tipo de Tracción" isDarkMode={isDarkMode}>
+          <CheckboxFilter
+            options={filterOptions.driveTypes}
+            selected={filters.driveType}
+            onChange={(driveType) =>
+              toggleArrayFilter("driveType", driveType, filters.driveType)
+            }
+            isDarkMode={isDarkMode}
+            maxHeight="max-h-full"
+          />
+        </FilterGroup>
       </div>
     </div>
   );

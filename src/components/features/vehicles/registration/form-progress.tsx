@@ -1,134 +1,138 @@
 // src/components/features/vehicles/registration/form-progress.tsx
+"use client";
 
-import React from "react";
-import { CheckCircle, Car, FileText, Camera, DollarSign, MapPin } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { formSteps } from "@/constants/form-constants";
+import React from 'react';
+
+const formSteps = [
+  { label: "Información Básica", description: "Marca, modelo y año", iconName: "Car" },
+  { label: "Precio y Condición", description: "Valor y estado del vehículo", iconName: "DollarSign" },
+  { label: "Especificaciones", description: "Detalles técnicos y motor", iconName: "FileText" },
+  { label: "Contacto", description: "Tus datos de vendedor", iconName: "MapPin" },
+  { label: "Multimedia y Extras", description: "Fotos y características", iconName: "Camera" },
+];
+import { Car, DollarSign, FileText, MapPin, Camera, CheckCircle } from "lucide-react";
+
+const iconMap = {
+  Car,
+  DollarSign,
+  FileText,
+  MapPin,
+  Camera,
+  CheckCircle,
+};
 
 interface FormProgressProps {
   currentStep: number;
+  highestCompletedStep: number;
   isDarkMode: boolean;
+  onStepClick: (step: number) => void;
 }
 
-// Función para renderizar el icono basado en el nombre
-const renderIcon = (iconName: string, className: string = "w-5 h-5") => {
-  const iconProps = { className };
-  
-  switch (iconName) {
-    case "Car":
-      return <Car {...iconProps} />;
-    case "FileText":
-      return <FileText {...iconProps} />;
-    case "Camera":
-      return <Camera {...iconProps} />;
-    case "DollarSign":
-      return <DollarSign {...iconProps} />;
-    case "MapPin":
-      return <MapPin {...iconProps} />;
-    case "CheckCircle":
-      return <CheckCircle {...iconProps} />;
-    default:
-      return <Car {...iconProps} />;
-  }
-};
+export const FormProgress: React.FC<FormProgressProps> = ({
+  currentStep,
+  highestCompletedStep,
+  isDarkMode,
+  onStepClick,
+}) => {
+  const handleStepClick = (stepIndex: number) => {
+    // Permite navegar a cualquier paso ya completado o al actual.
+    if (stepIndex + 1 <= highestCompletedStep) {
+      onStepClick(stepIndex + 1);
+    }
+  };
 
-export const FormProgress: React.FC<FormProgressProps> = ({ currentStep, isDarkMode }) => {
   return (
-    <>
-      {/* Desktop Progress */}
-      <div className="mb-6 hidden md:block">
-        <div className="flex justify-between items-center mb-4">
-          {formSteps.map((step, index) => (
-            <div key={index} className="flex flex-col items-center relative flex-1">
+    <div className="mb-8">
+      <div className="flex flex-col lg:flex-row lg:flex-nowrap items-stretch justify-center gap-2">
+        {formSteps.map((step, index) => {
+          const stepNumber = index + 1;
+          const isCompleted = stepNumber < currentStep;
+          const isActive = stepNumber === currentStep;
+          const isReachable = stepNumber <= highestCompletedStep;
+
+          const Icon = iconMap[step.iconName as keyof typeof iconMap] || Car;
+
+          const stepClasses = `
+            flex items-center p-3 rounded-xl transition-all duration-300 w-full lg:flex-1
+            ${isReachable ? "cursor-pointer" : "cursor-not-allowed"} 
+            ${
+              isActive
+                ? isDarkMode
+                  ? "bg-blue-900/50 border-2 border-blue-600 shadow-lg"
+                  : "bg-blue-50 border-2 border-blue-500 shadow-lg"
+                : isCompleted
+                  ? isDarkMode
+                    ? "bg-gray-700/50 hover:bg-gray-700/80"
+                    : "bg-gray-100 hover:bg-gray-200/80"
+                  : isDarkMode
+                  ? "bg-gray-800 opacity-50"
+                  : "bg-gray-50 opacity-50"
+            }
+          `;
+
+          const iconClasses = `
+            w-10 h-10 p-2 rounded-full transition-all duration-300
+            ${
+              isActive
+                ? isDarkMode
+                  ? "bg-blue-600 text-white"
+                  : "bg-blue-500 text-white"
+                : isCompleted
+                ? isDarkMode
+                  ? "bg-green-700 text-white"
+                  : "bg-green-500 text-white"
+                : isDarkMode
+                ? "bg-gray-700 text-gray-500"
+                : "bg-gray-200 text-gray-400"
+            }
+          `;
+
+          const textClasses = `
+            transition-colors duration-300
+            ${
+              isActive
+                ? isDarkMode
+                  ? "text-blue-300"
+                  : "text-blue-700"
+                : isCompleted
+                ? isDarkMode
+                  ? "text-gray-200"
+                  : "text-gray-800"
+                : isDarkMode
+                ? "text-gray-500"
+                : "text-gray-400"
+            }
+          `;
+
+          return (
+            <React.Fragment key={index}>
               <div
-                className={`flex items-center justify-center w-12 h-12 rounded-full text-sm font-bold transition-all duration-300 ${
-                  index + 1 < currentStep
-                    ? isDarkMode
-                      ? "bg-gray-700 text-white"
-                      : "bg-blue-500 text-white"
-                    : index + 1 === currentStep
-                      ? isDarkMode
-                        ? "bg-gray-600 text-white ring-2 ring-gray-800"
-                        : "bg-blue-600 text-white ring-2 ring-blue-100"
-                      : isDarkMode
-                        ? "bg-gray-800 text-gray-500"
-                        : "bg-gray-200 text-gray-400"
-                }`}
+                className={stepClasses}
+                onClick={() => handleStepClick(index)}
+                aria-disabled={!isReachable}
               >
-                {index + 1 < currentStep ? (
-                  <CheckCircle className="w-5 h-5" />
-                ) : (
-                  renderIcon(step.iconName)
-                )}
+                <div className={iconClasses}>
+                  <Icon className="w-full h-full" />
+                </div>
+                <div className="ml-3">
+                  <p className={`font-bold text-sm ${textClasses}`}>
+                    {step.label}
+                  </p>
+                  <p className={`text-xs hidden md:block ${textClasses}`}>{step.description}</p>
+                </div>
               </div>
-              <p
-                className={`mt-2 text-xs text-center max-w-[80px] ${
-                  index + 1 <= currentStep
-                    ? isDarkMode
-                      ? "text-gray-300"
-                      : "text-blue-600"
-                    : isDarkMode
-                      ? "text-gray-500"
-                      : "text-gray-500"
-                }`}
-              >
-                {step.label}
-              </p>
-              {/* Línea conectora */}
               {index < formSteps.length - 1 && (
                 <div
-                  className={`absolute top-6 left-1/2 w-full h-1 -z-10 ${
-                    index + 1 < currentStep
-                      ? isDarkMode
-                        ? "bg-gray-700"
-                        : "bg-blue-500"
-                      : isDarkMode
-                        ? "bg-gray-800"
-                        : "bg-gray-200"
-                  }`}
-                  style={{
-                    marginLeft: "24px",
-                    width: "calc(100% - 48px)",
-                  }}
+                  className={`
+                    h-px w-full md:h-auto md:w-px flex-shrink-0 my-2 md:my-0 md:mx-2
+                    ${isCompleted ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}
+                  `}
                 />
               )}
-            </div>
-          ))}
-        </div>
+            </React.Fragment>
+          );
+        })}
       </div>
-
-      {/* Mobile Progress */} 
-      <div className="md:hidden mb-4">
-        <div className="flex justify-between items-center mb-2">
-          <p className={`text-sm font-bold ${isDarkMode ? "text-gray-200" : "text-gray-800"}`}>
-            Paso {currentStep} de {formSteps.length}
-          </p>
-          <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-            {Math.round(((currentStep - 1) / (formSteps.length - 1)) * 100)}% completado
-          </p>
-        </div>
-        <Progress 
-          value={((currentStep - 1) / (formSteps.length - 1)) * 100} 
-          className={`h-2 ${isDarkMode ? "bg-gray-700" : "bg-gray-200"}`}
-        />
-        
-        {/* Información del paso actual en mobile */}
-        <div className="mt-3 text-center">
-          <div className={`inline-flex items-center space-x-2 px-3 py-2 rounded-lg ${
-            isDarkMode ? "bg-gray-800" : "bg-gray-100"
-          }`}>
-            {renderIcon(formSteps[currentStep - 1]?.iconName || "Car", "w-4 h-4")}
-            <div className="text-left">
-              <p className={`text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
-                {formSteps[currentStep - 1]?.label}
-              </p>
-              <p className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-                {formSteps[currentStep - 1]?.description}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+    </div>
   );
 };

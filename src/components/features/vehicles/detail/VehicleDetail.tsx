@@ -633,6 +633,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     vehicle.transmission,
     TRANSMISSION_TYPES_LABELS
   );
+  // ✅ CORRECCIÓN: Usar la importación ES6 estándar.
   const translatedWarranty = translateValue(vehicle.warranty, WARRANTY_LABELS);
   const translatedStatus = translateValue(vehicle.status, STATUS_MAP);
 

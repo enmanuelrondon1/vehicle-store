@@ -1,10 +1,10 @@
 // src/hooks/use-form-validation.ts
-"use client"
+"use client";
 
-import { useCallback } from "react"
-import { schemasByStep } from "@/components/features/vehicles/registration/vehicleSchema"
-import type { VehicleDataBackend } from "@/types/types"
-import type { Bank } from "@/constants/form-constants"
+import { useCallback } from "react";
+import { schemasByStep } from "@/components/features/vehicles/registration/vehicleSchema";
+import type { VehicleDataBackend } from "@/types/types";
+import type { Bank } from "@/constants/form-constants";
 
 export const useFormValidation = () => {
   const validateStep = useCallback(
@@ -39,8 +39,8 @@ export const useFormValidation = () => {
       const formattedErrors = result.error.flatten().fieldErrors;
       return { isValid: false, errors: formattedErrors };
     },
-    [],
-  )
+    []
+  );
 
-  return { validateStep }
-}
+  return { validateStep };
+};

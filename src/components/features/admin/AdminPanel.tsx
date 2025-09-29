@@ -727,8 +727,8 @@ export const AdminPanel = () => {
                         alt={`${selectedVehicle.brand} ${
                           selectedVehicle.model
                         } - ${index + 1}`}
-                        className="object-cover rounded-lg w-full h-full"
-                        style={{ objectFit: "cover", borderRadius: "0.5rem" }}
+                        fill
+                        className="object-cover rounded-lg"
                       />
                     </div>
                   ))}

@@ -1,10 +1,10 @@
 // src/components/sections/VehicleList/SearchBar.tsx
 "use client";
 
-import type React from "react";
-import { Search, Grid3X3, List } from "lucide-react";
-import AdvancedFiltersPanel from "./AdvancedFiltersPanel";
-import { AdvancedFilters } from "./VehicleList";
+import { type FC, useMemo } from "react";
+import { Search, Grid3X3, List, SlidersHorizontal } from "lucide-react";
+import type { AdvancedFilters, FilterOptions } from "@/types/types";
+import { SORT_OPTIONS } from "@/types/types";
 
 interface SearchBarProps {
   filters: AdvancedFilters;
@@ -16,21 +16,11 @@ interface SearchBarProps {
   showAdvancedFilters: boolean;
   setShowAdvancedFilters: (show: boolean) => void;
   isDarkMode: boolean;
-  clearAllFilters: () => void;
-  filterOptions: {
-    categories: string[];
-    subcategories: string[];
-    brands: string[];
-    conditions: string[];
-    fuelTypes: string[];
-    transmissions: string[];
-    locations: string[];
-    features: string[];
-    statuses: string[];
-  };
+  clearAllFilters: () => void; // ✅ CORRECCIÓN: Usar la interfaz FilterOptions importada
+  filterOptions: FilterOptions;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({
+const SearchBar: FC<SearchBarProps> = ({
   filters,
   setFilters,
   viewMode,
@@ -40,9 +30,25 @@ const SearchBar: React.FC<SearchBarProps> = ({
   showAdvancedFilters,
   setShowAdvancedFilters,
   isDarkMode,
-  clearAllFilters,
-  filterOptions,
 }) => {
+  const activeFiltersCount = useMemo(() => {
+    // ✅ CORRECCIÓN: Añadir 'category' al conteo de filtros activos
+    let count = 0;
+    if (filters.colors.length > 0) count++;
+    if (filters.brands.length > 0) count++;
+    if (filters.condition.length > 0) count++;
+    if (filters.fuelType.length > 0) count++;
+    if (filters.transmission.length > 0) count++;
+    if (filters.location.length > 0) count++;
+    if (filters.hasWarranty) count++;
+    if (filters.isFeatured) count++;
+    if (filters.category && filters.category !== "all") count++;
+    if (filters.driveType.length > 0) count++;
+    if (filters.priceRange[0] > 0 || filters.priceRange[1] < 1000000) count++;
+    if (filters.yearRange[0] > 2000 || filters.yearRange[1] < 2025) count++;
+    if (filters.mileageRange[0] > 0 || filters.mileageRange[1] < 500000) count++;
+    return count;
+  }, [filters]);
   return (
     <div
       className={`p-6 rounded-2xl mb-8 backdrop-blur-sm ${
@@ -73,16 +79,23 @@ const SearchBar: React.FC<SearchBarProps> = ({
             />
           </div>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <AdvancedFiltersPanel
-            filters={filters}
-            filterOptions={filterOptions}
-            onFiltersChange={setFilters}
-            onClearFilters={clearAllFilters}
-            isOpen={showAdvancedFilters}
-            onToggle={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            isDarkMode={isDarkMode}
-          />
+        <div className="flex items-center gap-3 flex-wrap ">
+          <button
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors relative ${
+              isDarkMode
+                ? "bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600"
+                : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            Filtros
+            {activeFiltersCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
           <div className="flex rounded-lg overflow-hidden border border-gray-300">
             <button
               onClick={() => setViewMode("grid")}
@@ -116,56 +129,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
             }`}
           >
-            {[
-              {
-                value: "relevance",
-                label: "Más Relevantes",
-                key: "relevance" as const,
-                order: "desc" as const,
-              },
-              {
-                value: "price_asc",
-                label: "Precio: Menor a Mayor",
-                key: "price" as const,
-                order: "asc" as const,
-              },
-              {
-                value: "price_desc",
-                label: "Precio: Mayor a Menor",
-                key: "price" as const,
-                order: "desc" as const,
-              },
-              {
-                value: "year_desc",
-                label: "Año: Más Nuevo",
-                key: "year" as const,
-                order: "desc" as const,
-              },
-              {
-                value: "year_asc",
-                label: "Año: Más Antiguo",
-                key: "year" as const,
-                order: "asc" as const,
-              },
-              {
-                value: "mileage_asc",
-                label: "Kilometraje: Menor",
-                key: "mileage" as const,
-                order: "asc" as const,
-              },
-              {
-                value: "mileage_desc",
-                label: "Kilometraje: Mayor",
-                key: "mileage" as const,
-                order: "desc" as const,
-              },
-              {
-                value: "date_desc",
-                label: "Más Recientes",
-                key: "createdAt" as const,
-                order: "desc" as const,
-              },
-            ].map((option) => (
+            {SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>

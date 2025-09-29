@@ -8,7 +8,7 @@ interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
   itemsPerPage: number;
-  filteredVehicles: number;
+  totalVehicles: number; // ✅ CORRECCIÓN: Cambiar nombre de la prop
   goToPage: (page: number) => void;
   setItemsPerPage: (items: number) => void;
   isDarkMode: boolean;
@@ -18,7 +18,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   currentPage,
   totalPages,
   itemsPerPage,
-  filteredVehicles,
+  totalVehicles, // ✅ CORRECCIÓN: Usar la nueva prop
   goToPage,
   setItemsPerPage,
   isDarkMode,
@@ -97,8 +97,8 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
         }`}
       >
         Mostrando {(currentPage - 1) * itemsPerPage + 1} -{" "}
-        {Math.min(currentPage * itemsPerPage, filteredVehicles)}{" "}
-        de {filteredVehicles} resultados
+        {Math.min(currentPage * itemsPerPage, totalVehicles)}{" "}
+        de {totalVehicles} resultados
       </div>
     </div>
   );

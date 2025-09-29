@@ -1,8 +1,8 @@
 // src/components/features/vehicles/registration/VehicleRegistrationForm.tsx
 "use client";
 
-import React, { useState } from "react"; // Importar useState
-import { Car, AlertCircle, Trash2 } from "lucide-react"; // Importar Trash2
+import React, { useState, useMemo } from "react";
+import { Car, AlertCircle, Trash2, ArrowLeft, ArrowRight, Save, AlertTriangle } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/features/auth/ProtectedRoute";
@@ -47,7 +47,9 @@ const VehicleRegistrationForm: React.FC = () => {
 
   const {
     currentStep,
+    highestCompletedStep,
     formData,
+    isCurrentStepValid,
     errors,
     isSubmitting,
     isLoading,
@@ -87,6 +89,14 @@ const VehicleRegistrationForm: React.FC = () => {
   // Las funciones del hook ya usan el tipo correcto, no necesitamos wrappers
   const handleDocumentationToggleWrapper = handleDocumentationToggle;
   const isDocumentationSelectedWrapper = isDocumentationSelected;
+
+  // Memoización para verificar si el paso 5 está completo
+  const isStep5Complete = useMemo(() => {
+    return (
+      (formData.images?.length ?? 0) > 0 &&
+      (formData.description?.length ?? 0) > 50 // Un mínimo de 50 caracteres para la descripción
+    );
+  }, [formData.images, formData.description]);
 
   return (
     <ProtectedRoute>
@@ -163,7 +173,9 @@ const VehicleRegistrationForm: React.FC = () => {
               <CardContent>
                 <FormProgress
                   currentStep={currentStep}
+                  highestCompletedStep={highestCompletedStep}
                   isDarkMode={isDarkMode}
+                  onStepClick={setCurrentStep}
                 />
 
                 {submissionStatus === "error" && (
@@ -249,40 +261,58 @@ const VehicleRegistrationForm: React.FC = () => {
                         handleImagesChange={handleImagesChange}
                       />
                     )}
-
-                    <CardFooter className="flex justify-between mt-4 gap-2">
-                      {currentStep > 1 && currentStep < 6 && (
-                        <Button
-                          variant="outline"
-                          onClick={prevStep}
-                          disabled={isSubmitting}
-                        >
-                          Anterior
-                        </Button>
-                      )}
-                      {currentStep === 5 ? (
-                        <div className="flex gap-2">
+                    
+                    {/* --- INICIO DE LA SECCIÓN DE BOTONES MEJORADA --- */}
+                    <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                      {/* Botón "Anterior" - Siempre a la izquierda si aplica */}
+                      <div>
+                        {currentStep > 1 && currentStep < 6 && (
                           <Button
                             variant="outline"
-                            onClick={manualSave}
+                            onClick={prevStep}
                             disabled={isSubmitting}
+                            className="flex w-full sm:w-auto items-center justify-center gap-2 border-2 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
-                            {saveStatus === "saving"
-                              ? "Guardando..."
-                              : saveStatus === "saved"
-                              ? "Guardado"
-                              : "Guardar Progreso"}
+                            <ArrowLeft className="w-4 h-4" />
+                            Anterior
                           </Button>
-                          <Button onClick={nextStep} disabled={isSubmitting}>
+                        )}
+                      </div>
+
+                      {/* Grupo de botones de acción - Siempre a la derecha */}
+                      <div className="flex flex-col sm:flex-row w-full sm:w-auto items-center gap-3">
+                        {currentStep === 5 && (
+                           <Button
+                           variant="outline"
+                           onClick={manualSave}
+                           disabled={isSubmitting}
+                           className="flex w-full sm:w-auto items-center justify-center gap-2 border-2 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700"
+                         >
+                           <Save className="w-4 h-4" />
+                           {saveStatus === "saving"
+                             ? "Guardando..."
+                             : saveStatus === "saved"
+                             ? "Guardado"
+                             : "Guardar"}
+                         </Button>
+                        )}
+
+                        {currentStep < 5 && (
+                          <Button onClick={nextStep} disabled={isSubmitting || !isCurrentStepValid} className="flex w-full sm:w-auto items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600">
                             Siguiente
+                            <ArrowRight className="w-4 h-4" />
                           </Button>
-                        </div>
-                      ) : currentStep < 5 ? (
-                        <Button onClick={nextStep} disabled={isSubmitting}>
-                          Siguiente
-                        </Button>
-                      ) : null}
+                        )}
+
+                        {currentStep === 5 && (
+                          <Button onClick={nextStep} disabled={isSubmitting || !isStep5Complete} className="flex w-full sm:w-auto items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white">
+                            Finalizar y Pagar
+                            <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                     </CardFooter>
+                    {/* --- FIN DE LA SECCIÓN DE BOTONES MEJORADA --- */}
                   </div>
                 )}
               </CardContent>
@@ -320,16 +350,23 @@ const VehicleRegistrationForm: React.FC = () => {
             open={showClearConfirm}
             onOpenChange={setShowClearConfirm}
           >
-            <AlertDialogContent>
+            <AlertDialogContent className={isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"}>
               <AlertDialogHeader>
-                <AlertDialogTitle>¿Estás realmente seguro?</AlertDialogTitle>
-                <AlertDialogDescription>
+                <div className="flex items-center space-x-3">
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                    <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" aria-hidden="true" />
+                  </div>
+                  <AlertDialogTitle className={`text-lg font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                    ¿Estás realmente seguro?
+                  </AlertDialogTitle>
+                </div>
+                <AlertDialogDescription className={`mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   Esta acción eliminará permanentemente todos los datos que has
                   ingresado en el formulario. No podrás recuperarlos.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogCancel className="mt-2 sm:mt-0">Cancelar</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleClearForm}
                   className="bg-red-600 hover:bg-red-700"

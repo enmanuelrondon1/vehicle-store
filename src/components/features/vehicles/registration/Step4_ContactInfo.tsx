@@ -1,10 +1,11 @@
 // src/components/features/vehicles/registration/Step4_ContactInfo.tsx
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { User, MapPin, Mail, Phone, Check, AlertCircle, Eye, EyeOff, ChevronDown } from "lucide-react";
 import { VehicleDataBackend } from "@/types/types";
 import { useDarkMode } from "@/context/DarkModeContext";
 import { VENEZUELAN_STATES } from "@/constants/form-constants";
+import { InputField } from "@/components/shared/forms/InputField";
 
 interface FormErrors {
   [key: string]: string | undefined;
@@ -17,6 +18,23 @@ interface StepProps {
   phoneCodes: string[];
 }
 
+// Hook de validación simple para este componente
+const useValidation = (value: string | undefined, rule: (val: string) => boolean) => {
+  const [isValid, setIsValid] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (value === undefined || value === "") {
+      setIsValid(null);
+    } else {
+      setIsValid(rule(value));
+    }
+  }, [value, rule]);
+
+  return {
+    isValid,
+  };
+};
+
 // Componente selector de ubicación
 // Componente selector de ubicación corregido
 const LocationSelector: React.FC<{
@@ -26,63 +44,24 @@ const LocationSelector: React.FC<{
   isDarkMode: boolean;
 }> = ({ value, onChange, className, isDarkMode }) => {
   const [selectedState, setSelectedState] = useState("");
-  const [city, setCity] = useState("");
-  const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
-  const [lastParsedValue, setLastParsedValue] = useState("");
+  const [city, setCity] = useState("");  
+  const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);  
 
-  // Parsear el valor inicial SOLO cuando el valor externo cambia y es diferente
   useEffect(() => {
-    if (value !== lastParsedValue) {
-      if (value) {
-        const parts = value.split(", ");
-        if (parts.length >= 2) {
-          setCity(parts[0]);
-          setSelectedState(parts[1]);
-        } else {
-          // Si solo hay una parte, verificar si es un estado conocido
-          const isKnownState = VENEZUELAN_STATES.includes(parts[0]);
-          if (isKnownState) {
-            setCity("");
-            setSelectedState(parts[0]);
-          } else {
-            setCity(parts[0]);
-            setSelectedState("");
-          }
-        }
-      } else {
-        setCity("");
-        setSelectedState("");
-      }
-      setLastParsedValue(value);
-    }
-  }, [value, lastParsedValue]);
+    const [currentCity = "", currentState = ""] = value.split(", ").map(s => s.trim());
+    setCity(currentCity);
+    setSelectedState(currentState);
+  }, [value]);
 
   const handleStateSelect = (state: string) => {
     setSelectedState(state);
     setIsStateDropdownOpen(false);
-    // CORREGIDO: Solo actualizar si hay ciudad, si no, solo guardar el estado internamente
-    // pero no enviarlo como valor completo hasta que haya ciudad
-    if (city.trim()) {
-      onChange(`${city}, ${state}`);
-    } else {
-      // Si no hay ciudad, enviar string vacío o solo el estado si así lo prefieres
-      // Para este caso, enviamos string vacío para forzar que llenen la ciudad
-      onChange("");
-    }
+    onChange(`${city}, ${state}`);
   };
 
   const handleCityChange = (newCity: string) => {
     setCity(newCity);
-    // CORREGIDO: Solo crear el valor completo si ambos campos tienen contenido
-    if (newCity.trim() && selectedState) {
-      onChange(`${newCity}, ${selectedState}`);
-    } else if (newCity.trim() && !selectedState) {
-      // Si hay ciudad pero no estado, enviar solo la ciudad
-      onChange(newCity);
-    } else {
-      // Si no hay ciudad, enviar string vacío
-      onChange("");
-    }
+    onChange(`${newCity}, ${selectedState}`);
   };
 
   return (
@@ -116,11 +95,11 @@ const LocationSelector: React.FC<{
                   key={state}
                   type="button"
                   onClick={() => handleStateSelect(state)}
-                  className={`w-full px-4 py-2 text-left hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none ${
+                  className={`w-full px-4 py-2 text-left focus:outline-none transition-colors duration-150 ${
                     isDarkMode 
-                      ? "hover:bg-gray-600 focus:bg-gray-600 text-gray-200" 
-                      : "hover:bg-indigo-50 focus:bg-indigo-50 text-gray-900"
-                  } ${selectedState === state ? "bg-indigo-100 font-medium" : ""}`}
+                      ? "text-gray-200 hover:bg-gray-600 focus:bg-gray-600" 
+                      : "text-gray-900 hover:bg-indigo-50 focus:bg-indigo-50"
+                  } ${selectedState === state ? (isDarkMode ? "bg-indigo-800 font-medium" : "bg-indigo-100 font-medium") : ""}`}
                 >
                   {state}
                 </button>
@@ -160,57 +139,6 @@ const LocationSelector: React.FC<{
   );
 };
 
-const InputField: React.FC<{
-  label: string;
-  required?: boolean;
-  error?: string;
-  success?: boolean;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-  tooltip?: string;
-}> = ({ label, required, error, success, icon, children, tooltip }) => {
-  const { isDarkMode } = useDarkMode();
-  
-  return (
-    <div className={`space-y-2 ${isDarkMode ? "text-gray-200" : "text-gray-700"}`}>
-      <label className={`flex items-center text-sm font-semibold ${
-        isDarkMode ? "text-gray-300" : "text-gray-700"
-      }`}>
-        {icon && <span className="mr-2">{icon}</span>}
-        {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
-        {tooltip && (
-          <span 
-            className="ml-2 text-xs bg-gray-500 text-white px-2 py-1 rounded cursor-help"
-            title={tooltip}
-          >
-            ?
-          </span>
-        )}
-      </label>
-      <div className="relative">
-        {children}
-        {success && !error && (
-          <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500" />
-        )}
-        {error && (
-          <AlertCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500" />
-        )}
-      </div>
-      {error && <p className={`text-sm text-red-500 mt-1 flex items-center`}>
-        <AlertCircle className="w-4 h-4 mr-1" />
-        {error}
-      </p>}
-      {success && !error && (
-        <p className="text-sm text-green-500 mt-1 flex items-center">
-          <Check className="w-4 h-4 mr-1" />
-          ¡Perfecto!
-        </p>
-      )}
-    </div>
-  );
-};
-
 const Step4_ContactInfo: React.FC<StepProps> = ({
   formData,
   errors,
@@ -218,49 +146,24 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
   phoneCodes,
 }) => {
   const { isDarkMode } = useDarkMode();
-  const [validationState, setValidationState] = useState<{[key: string]: boolean}>({});
   const [showEmailPreview, setShowEmailPreview] = useState(false);
-  const [phoneFormatted, setPhoneFormatted] = useState("");
 
-  // Validación en tiempo real
-  const validateField = (field: string, value: string): boolean => {
-    switch (field) {
-      case "sellerContact.name":
-        return value.length >= 2 && /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value);
-      case "sellerContact.email":
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-      case "sellerContact.phone":
-        const phoneNumber = value.split(" ")[1] || "";
-        return phoneNumber.length >= 7 && /^\d+$/.test(phoneNumber);
-      case "location":
-        return value.length >= 5 && value.includes(","); // Requiere ciudad y estado
-      default:
-        return false;
-    }
-  };
-
-  // Actualizar estado de validación cuando cambien los datos
-  useEffect(() => {
-    const newValidationState: {[key: string]: boolean} = {};
-    
-    if (formData.sellerContact?.name) {
-      newValidationState["sellerContact.name"] = validateField("sellerContact.name", formData.sellerContact.name);
-    }
-    if (formData.sellerContact?.email) {
-      newValidationState["sellerContact.email"] = validateField("sellerContact.email", formData.sellerContact.email);
-    }
-    if (formData.sellerContact?.phone) {
-      newValidationState["sellerContact.phone"] = validateField("sellerContact.phone", formData.sellerContact.phone);
-    }
-    if (formData.location) {
-      newValidationState["location"] = validateField("location", formData.location);
-    }
-
-    setValidationState(newValidationState);
-  }, [formData.sellerContact?.name, formData.sellerContact?.email, formData.sellerContact?.phone, formData.location]);
+  // Hooks de validación
+  const nameValidation = useValidation(formData.sellerContact?.name, 
+    useCallback(v => v.length >= 2 && /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(v), [])
+  );
+  const emailValidation = useValidation(formData.sellerContact?.email, 
+    useCallback(v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), [])
+  );
+  const phoneValidation = useValidation(formData.sellerContact?.phone, 
+    useCallback(v => (v.split(" ")[1] || "").length === 7 && /^\d+$/.test(v.split(" ")[1] || ""), [])
+  );
+  const locationValidation = useValidation(formData.location, 
+    useCallback(v => v.length >= 5 && v.includes(","), [])
+  );
 
   // Formatear teléfono para mostrar
-  useEffect(() => {
+  const phoneFormatted = useMemo(() => {
     if (formData.sellerContact?.phone) {
       const parts = formData.sellerContact.phone.split(" ");
       const code = parts[0] || "";
@@ -268,8 +171,9 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
       
       // Formatear número con guiones
       const formatted = number.replace(/(\d{3})(\d{4})/, "$1-$2");
-      setPhoneFormatted(`${code} ${formatted}`);
+      return `${code} ${formatted}`;
     }
+    return "";
   }, [formData.sellerContact?.phone]);
 
   const inputBaseClass = `w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 transition-all duration-200 ${
@@ -277,21 +181,6 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
       ? "bg-gray-700 border-gray-600 text-gray-200"
       : "bg-white border-gray-200 text-gray-900"
   }`;
-
-  const getInputClass = (fieldName: string) => {
-    const hasError = errors[fieldName];
-    const isValid = validationState[fieldName] && !hasError;
-    
-    let borderColor = isDarkMode ? "border-gray-600" : "border-gray-200";
-    
-    if (hasError) {
-      borderColor = "border-red-400";
-    } else if (isValid) {
-      borderColor = "border-green-400";
-    }
-    
-    return `${inputBaseClass} ${borderColor}`;
-  };
 
   // Memoizar el manejador de cambio de teléfono
   const handlePhoneChange = useCallback((value: string) => {
@@ -304,6 +193,35 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
     const numberPart = formData.sellerContact?.phone?.split(" ")[1] || "";
     handleInputChange("sellerContact.phone", `${code} ${numberPart}`);
   }, [formData.sellerContact?.phone, handleInputChange]);
+
+  const progress = useMemo(() => {
+    const fields = [nameValidation.isValid, emailValidation.isValid, phoneValidation.isValid, locationValidation.isValid];
+    // Usamos .filter(v => v === true) para ser explícitos y no contar `null`
+    const completedCount = fields.filter(v => v === true).length;
+    return (completedCount / fields.length) * 100;
+  }, [nameValidation, emailValidation, phoneValidation, locationValidation]);
+
+
+  // Componente de Progreso (estandarizado)
+  const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => (
+    <div className="mb-6">
+      <div className="flex justify-between items-center mb-2">
+        <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          Progreso del formulario
+        </span>
+        <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          {Math.round(progress)}%
+        </span>
+      </div>
+      <div className={`w-full h-2 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+        <div 
+          className="h-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
+    </div>
+  );
+
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -331,14 +249,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
         </div>
 
         {/* Barra de progreso */}
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
-          <div 
-            className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
-            style={{ 
-              width: `${Object.values(validationState).filter(Boolean).length * 25}%` 
-            }}
-          ></div>
-        </div>
+        <ProgressBar progress={progress} />
       </div>
 
       <div className="space-y-6">
@@ -346,7 +257,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           label="Nombre Completo"
           required
           error={errors["sellerContact.name"]}
-          success={validationState["sellerContact.name"]}
+          success={nameValidation.isValid === true}
           icon={<User className="w-4 h-4 text-indigo-600" />}
           tooltip="Usa tu nombre real para generar confianza"
         >
@@ -354,7 +265,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
             type="text"
             value={formData.sellerContact?.name || ""}
             onChange={(e) => handleInputChange("sellerContact.name", e.target.value)}
-            className={getInputClass("sellerContact.name")}
+            className={inputBaseClass}
             placeholder="Ej: Juan Carlos Pérez"
             maxLength={100}
           />
@@ -367,7 +278,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           label="Correo Electrónico"
           required
           error={errors["sellerContact.email"]}
-          success={validationState["sellerContact.email"]}
+          success={emailValidation.isValid === true}
           icon={<Mail className="w-4 h-4 text-indigo-600" />}
           tooltip="Recibirás notificaciones de interesados aquí"
         >
@@ -376,7 +287,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
               type="email"
               value={formData.sellerContact?.email || ""}
               onChange={(e) => handleInputChange("sellerContact.email", e.target.value)}
-              className={getInputClass("sellerContact.email")}
+              className={inputBaseClass}
               placeholder="Ej: juan.perez@email.com"
               maxLength={255}
             />
@@ -406,7 +317,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           label="Teléfono"
           required
           error={errors["sellerContact.phone"]}
-          success={validationState["sellerContact.phone"]}
+          success={phoneValidation.isValid === true}
           icon={<Phone className="w-4 h-4 text-indigo-600" />}
           tooltip="Preferiblemente WhatsApp para contacto directo"
         >
@@ -432,7 +343,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
               maxLength={7}
               value={formData.sellerContact?.phone?.split(" ")[1] || ""}
               onChange={(e) => handlePhoneChange(e.target.value)}
-              className={`w-3/4 ${getInputClass("sellerContact.phone")}`}
+              className={`w-3/4 ${inputBaseClass}`}
               placeholder="1234567"
             />
           </div>
@@ -449,14 +360,14 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           label="Ubicación"
           required
           error={errors.location}
-          success={validationState.location}
+          success={locationValidation.isValid === true}
           icon={<MapPin className="w-4 h-4 text-indigo-600" />}
           tooltip="Selecciona tu estado y especifica la ciudad"
         >
           <LocationSelector
             value={formData.location || ""}
             onChange={(value) => handleInputChange("location", value)}
-            className={getInputClass("location")}
+            className={inputBaseClass}
             isDarkMode={isDarkMode}
           />
           <div className="text-xs text-gray-500 mt-1">
@@ -485,24 +396,24 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
 
         {/* Resumen de completitud */}
         <div className={`mt-6 p-4 rounded-xl ${
-          Object.values(validationState).filter(Boolean).length === 4
+          progress === 100
             ? (isDarkMode ? "bg-green-900/20 border-green-700" : "bg-green-50 border-green-200")
             : (isDarkMode ? "bg-orange-900/20 border-orange-700" : "bg-orange-50 border-orange-200")
         } border`}>
           <div className="flex items-center space-x-2">
-            {Object.values(validationState).filter(Boolean).length === 4 ? (
+            {progress === 100 ? (
               <Check className="w-5 h-5 text-green-500" />
             ) : (
               <AlertCircle className="w-5 h-5 text-orange-500" />
             )}
             <span className={`font-medium ${
-              Object.values(validationState).filter(Boolean).length === 4
+              progress === 100
                 ? "text-green-700"
                 : "text-orange-700"
             }`}>
-              {Object.values(validationState).filter(Boolean).length === 4
+              {progress === 100
                 ? "¡Información de contacto completa!"
-                : `Completa ${4 - Object.values(validationState).filter(Boolean).length} campos más`
+                : `Completa ${4 - [nameValidation, emailValidation, phoneValidation, locationValidation].filter(v => v.isValid === true).length} campos más`
               }
             </span>
           </div>

@@ -9,12 +9,16 @@ export enum VehicleCategory {
 }
 
 export enum VehicleCondition {
+  NEW = 'new',                 // Nuevo
   EXCELLENT = 'excellent',     // Excelente
-  VERY_GOOD = 'very_good',     // Muy Bueno  
   GOOD = 'good',               // Bueno
-  REGULAR = 'regular',         // Regular
-  NEEDS_REPAIR = 'needs_repair', // Necesita Reparación
-  NEW = 'new'                  // Nuevo (para vehículos 0km)
+}
+
+export enum DriveType {
+  FWD = "fwd",
+  RWD = "rwd",
+  AWD = "awd",
+  FOUR_WD = "4wd",
 }
 
 export enum TransmissionType {
@@ -25,12 +29,9 @@ export enum TransmissionType {
 }
 
 export enum FuelType {
-  GASOLINE_95 = 'gasoline_95', // Gasolina 95
-  GASOLINE_91 = 'gasoline_91', // Gasolina 91
+  GASOLINE = 'gasoline',       // Gasolina
   DIESEL = 'diesel',           // Gasoil
-  LPG = 'lpg',                 // GLP / Gas
-  ELECTRIC = 'electric',
-  HYBRID = 'hybrid'
+  HYBRID = 'hybrid'            // Híbrido
 }
 
 export enum ApprovalStatus {
@@ -46,6 +47,11 @@ export enum WarrantyType {
   DEALER_WARRANTY = 'dealer-warranty',
   MANUFACTURER_WARRANTY = 'manufacturer-warranty',
   EXTENDED_WARRANTY = 'extended-warranty'
+}
+
+export enum SaleType {
+  PRIVATE = "privado",
+  DEALER = "concesionario",
 }
 
 // Nuevo: Moneda para el precio
@@ -66,20 +72,24 @@ export enum Documentation {
 export const VEHICLE_CATEGORIES_LABELS = {
   [VehicleCategory.CAR]: 'Automóvil',
   [VehicleCategory.SUV]: 'SUV',
-  [VehicleCategory.VAN]: 'Camioneta de Carga/Pasajeros',
+  [VehicleCategory.VAN]: 'Furgonetas',
   [VehicleCategory.TRUCK]: 'Camión',
   [VehicleCategory.MOTORCYCLE]: 'Motocicleta',
   [VehicleCategory.BUS]: 'Autobús',
 } as const;
 
 export const VEHICLE_CONDITIONS_LABELS = {
+  [VehicleCondition.NEW]: 'Nuevo',
   [VehicleCondition.EXCELLENT]: 'Excelente',
-  [VehicleCondition.VERY_GOOD]: 'Muy Bueno',
   [VehicleCondition.GOOD]: 'Bueno', 
-  [VehicleCondition.REGULAR]: 'Regular',
-  [VehicleCondition.NEEDS_REPAIR]: 'Necesita Reparación',
-  [VehicleCondition.NEW]: 'Nuevo (0km)'
 } as const;
+
+export const DRIVE_TYPE_LABELS: Record<DriveType, string> = {
+  [DriveType.FWD]: "Delantera (FWD)",
+  [DriveType.RWD]: "Trasera (RWD)",
+  [DriveType.AWD]: "Integral (AWD)",
+  [DriveType.FOUR_WD]: "4x4",
+};
 
 export const TRANSMISSION_TYPES_LABELS = {
   [TransmissionType.MANUAL]: 'Manual',
@@ -89,12 +99,9 @@ export const TRANSMISSION_TYPES_LABELS = {
 } as const;
 
 export const FUEL_TYPES_LABELS = {
-  [FuelType.GASOLINE_95]: 'Gasolina 95 Octanos',
-  [FuelType.GASOLINE_91]: 'Gasolina 91 Octanos',
+  [FuelType.GASOLINE]: 'Gasolina',
   [FuelType.DIESEL]: 'Gasoil / Diésel',
-  [FuelType.LPG]: 'GLP / Gas',
-  [FuelType.ELECTRIC]: 'Eléctrico',
-  [FuelType.HYBRID]: 'Híbrido'
+  [FuelType.HYBRID]: 'Híbrido',
 } as const;
 
 export const WARRANTY_LABELS: Record<WarrantyType, string> = {
@@ -104,3 +111,36 @@ export const WARRANTY_LABELS: Record<WarrantyType, string> = {
   [WarrantyType.MANUFACTURER_WARRANTY]: "Garantía de Fábrica",
   [WarrantyType.EXTENDED_WARRANTY]: "Garantía Extendida"
 } as const;
+
+export const SALE_TYPE_LABELS: Record<SaleType, string> = {
+  [SaleType.PRIVATE]: "Vendedor Privado",
+  [SaleType.DEALER]: "Concesionario",
+};
+
+// ✅ CORRECCIÓN: Añadir y exportar el mapa de etiquetas para las ubicaciones.
+export const LOCATION_LABELS: Record<string, string> = {
+  amazonas: "Amazonas",
+  anzoategui: "Anzoátegui",
+  apure: "Apure",
+  aragua: "Aragua",
+  barinas: "Barinas",
+  bolivar: "Bolívar",
+  carabobo: "Carabobo",
+  cojedes: "Cojedes",
+  "delta-amacuro": "Delta Amacuro",
+  "distrito-capital": "Distrito Capital",
+  falcon: "Falcón",
+  guarico: "Guárico",
+  lara: "Lara",
+  merida: "Mérida",
+  miranda: "Miranda",
+  monagas: "Monagas",
+  "nueva-esparta": "Nueva Esparta",
+  portuguesa: "Portuguesa",
+  sucre: "Sucre",
+  tachira: "Táchira",
+  trujillo: "Trujillo",
+  vargas: "Vargas",
+  yaracuy: "Yaracuy",
+  zulia: "Zulia",
+};

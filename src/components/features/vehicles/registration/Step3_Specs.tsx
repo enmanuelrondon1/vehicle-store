@@ -1,4 +1,3 @@
-
 // src/components/features/vehicles/registration/Step3_Specs.tsx
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
@@ -8,89 +7,25 @@ import {
   Calendar,
   Gauge,
   Cog,
-  CheckCircle,
   AlertCircle,
-  Info,
-  TrendingUp,
-  Eye,
 } from "lucide-react";
+import { useDarkMode } from "@/context/DarkModeContext";
+import { InputField } from "@/components/shared/forms/InputField";
+import { SelectField } from "@/components/shared/forms/SelectField";
+import { COMMON_COLORS } from "@/constants/form-constants";
 
 // IMPORTAR TIPOS DESDE TU SISTEMA CENTRALIZADO
 import type { VehicleDataBackend, FormErrors } from "@/types/types";
 
 import {
   VehicleCategory,
+  DriveType,
   TransmissionType,
   FuelType,
+  DRIVE_TYPE_LABELS,
   TRANSMISSION_TYPES_LABELS,
   FUEL_TYPES_LABELS,
 } from "@/types/types";
-
-// Definir DriveType localmente o moverlo a shared.ts si lo usas en otros lugares
-enum DriveType {
-  FWD = "fwd",
-  RWD = "rwd",
-  AWD = "awd",
-  FOUR_WD = "4wd",
-}
-
-const DRIVE_TYPE_LABELS = {
-  [DriveType.FWD]: "Delantera (FWD)",
-  [DriveType.RWD]: "Trasera (RWD)",
-  [DriveType.AWD]: "Integral (AWD)",
-  [DriveType.FOUR_WD]: "4x4",
-};
-
-// Simulando datos de categoría - también podrías mover esto a constants
-const CATEGORY_DATA = {
-  [VehicleCategory.CAR]: {
-    colors: [
-      "Blanco",
-      "Negro",
-      "Gris",
-      "Plata",
-      "Azul",
-      "Rojo",
-      "Verde",
-      "Amarillo",
-      "Marrón",
-      "Naranja",
-    ],
-  },
-  [VehicleCategory.MOTORCYCLE]: {
-    colors: [
-      "Negro",
-      "Blanco",
-      "Rojo",
-      "Azul",
-      "Verde",
-      "Amarillo",
-      "Gris",
-      "Naranja",
-    ],
-  },
-  [VehicleCategory.TRUCK]: {
-    colors: ["Blanco", "Azul", "Rojo", "Verde", "Gris", "Negro", "Amarillo"],
-  },
-  [VehicleCategory.SUV]: {
-    colors: [
-      "Negro",
-      "Blanco",
-      "Gris",
-      "Plata",
-      "Azul",
-      "Rojo",
-      "Verde",
-      "Marrón",
-    ],
-  },
-  [VehicleCategory.VAN]: {
-    colors: ["Blanco", "Gris", "Azul", "Negro", "Rojo"],
-  },
-  [VehicleCategory.BUS]: {
-    colors: ["Blanco", "Azul", "Verde", "Rojo", "Amarillo", "Gris"],
-  },
-};
 
 type FormFieldValue = string | number | undefined;
 
@@ -264,290 +199,33 @@ const useRealTimeValidation = (
   return { isValid, validationMessage };
 };
 
-// Componente de Tooltip
-const Tooltip: React.FC<{ content: string; children: React.ReactNode }> = ({
-  content,
-  children,
-}) => {
-  const [show, setShow] = useState(false);
-
-  return (
-    <div className="relative inline-block">
-      <div
-        onMouseEnter={() => setShow(true)}
-        onMouseLeave={() => setShow(false)}
-        className="cursor-help"
-      >
-        {children}
-      </div>
-      {show && (
-        <div className="absolute z-10 p-2 text-xs rounded-lg shadow-lg w-48 bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-800 text-gray-200">
-          {content}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 // Componente de barra de progreso
-const ProgressBar: React.FC<{ formData: Partial<VehicleDataBackend> }> = ({
-  formData,
+const ProgressBar: React.FC<{ progress: number }> = ({
+  progress,
 }) => {
-  const progress = useMemo(() => {
-    const requiredFields = ["year", "color", "transmission", "fuelType"];
-    const conditionalFields = [];
-
-    if (
-      formData.category &&
-      [
-        VehicleCategory.CAR,
-        VehicleCategory.SUV,
-        VehicleCategory.VAN,
-        VehicleCategory.BUS,
-      ].includes(formData.category)
-    ) {
-      conditionalFields.push("doors", "seats");
-    }
-
-    const allRequiredFields = [...requiredFields, ...conditionalFields];
-    const completedFields = allRequiredFields.filter((field) => {
-      const value = formData[field as keyof VehicleDataBackend];
-      return value !== undefined && value !== "" && value !== null;
-    });
-
-    return (completedFields.length / allRequiredFields.length) * 100;
-  }, [formData]);
+  const { isDarkMode } = useDarkMode();
 
   return (
     <div className="mb-6">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-gray-300">
+        <span
+          className={`text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}
+        >
           Progreso del formulario
         </span>
-        <span className="text-sm text-gray-400">{Math.round(progress)}%</span>
+        <span
+          className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}
+        >
+          {Math.round(progress)}%
+        </span>
       </div>
-      <div className="w-full bg-gray-700 rounded-full h-2">
+      <div
+        className={`w-full h-2 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}
+      >
         <div
-          className="bg-gradient-to-r from-cyan-400 to-blue-500 h-2 rounded-full transition-all duration-300"
+          className="h-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all duration-500 ease-out"
           style={{ width: `${progress}%` }}
         ></div>
-      </div>
-    </div>
-  );
-};
-
-// Componente de consejo
-const TipCard: React.FC<{ category?: VehicleCategory }> = ({ category }) => {
-  const getTip = () => {
-    switch (category) {
-      case VehicleCategory.MOTORCYCLE:
-        return "💡 Las motos con cilindraje 125cc-150cc son las más demandadas en Venezuela";
-      case VehicleCategory.CAR:
-        return "💡 Los carros con transmisión manual suelen venderse más rápido";
-      case VehicleCategory.TRUCK:
-        return "💡 Incluye la capacidad de carga para atraer compradores comerciales";
-      default:
-        return "💡 Completa todos los campos para mejorar tus posibilidades de venta";
-    }
-  };
-
-  return (
-    <div className="bg-gray-800 border-l-4 border-cyan-400 p-4 rounded-r-lg mb-6">
-      <div className="flex items-center">
-        <TrendingUp className="w-5 h-5 text-cyan-400 mr-2" />
-        <p className="text-sm text-cyan-300">{getTip()}</p>
-      </div>
-    </div>
-  );
-};
-
-// Componente InputField mejorado
-const InputField: React.FC<{
-  label: string;
-  required?: boolean;
-  error?: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-  infoText?: string;
-  tooltip?: string;
-  field: string;
-  value: FormFieldValue;
-  category?: VehicleCategory;
-  maxLength?: number;
-  isValid?: boolean | null;
-  validationMessage?: string;
-  tips?: string[];
-}> = ({
-  label,
-  required,
-  error,
-  icon,
-  children,
-  infoText,
-  tooltip,
-  value,
-  maxLength,
-  isValid,
-  validationMessage,
-  tips,
-}) => {
-  const [showTips, setShowTips] = useState(false);
-
-  const getValidationIcon = () => {
-    if (isValid === true) {
-      return <CheckCircle className="w-4 h-4 text-green-500" />;
-    } else if (isValid === false) {
-      return <AlertCircle className="w-4 h-4 text-red-500" />;
-    }
-    return null;
-  };
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <label className="flex items-center text-sm font-semibold text-gray-300">
-          {icon && <span className="mr-2">{icon}</span>}
-          {label}
-          {required && <span className="text-red-400 ml-1">*</span>}
-          {tooltip && (
-            <Tooltip content={tooltip}>
-              <Info className="w-4 h-4 text-gray-400 ml-1 cursor-help hover:text-gray-300" />
-            </Tooltip>
-          )}
-        </label>
-        <div className="flex items-center space-x-2">
-          {maxLength && typeof value === "string" && (
-            <span
-              className={`text-xs ${
-                value.length > maxLength * 0.8
-                  ? "text-orange-400"
-                  : "text-gray-500"
-              }`}
-            >
-              {value.length}/{maxLength}
-            </span>
-          )}
-          {getValidationIcon()}
-          {tips && (
-            <button
-              type="button"
-              onClick={() => setShowTips(!showTips)}
-              className="text-xs px-2 py-1 rounded-full transition-colors bg-blue-900/50 text-blue-300 hover:bg-blue-800/70"
-            >
-              <TrendingUp className="w-3 h-3 inline mr-1" />
-              Tips
-            </button>
-          )}
-        </div>
-      </div>
-
-      {children}
-
-      {/* Mensaje de validación en tiempo real */}
-      {validationMessage && (
-        <p
-          className={`text-xs mt-1 flex items-center ${
-            isValid ? "text-green-600" : "text-orange-500"
-          }`}
-        >
-          {isValid ? "✅" : "⚠️"} {validationMessage}
-        </p>
-      )}
-
-      {infoText && !validationMessage && (
-        <p className="text-xs mt-1 text-gray-500 flex items-center">
-          <Info className="w-3 h-3 mr-1" />
-          {infoText}
-        </p>
-      )}
-
-      {/* Error del formulario */}
-      {error && <p className="text-sm text-red-500 mt-1">🚨 {error}</p>}
-
-      {/* Tips expandibles */}
-      {showTips && tips && (
-        <div className="mt-2 p-3 rounded-lg space-y-1 bg-blue-900/20 border border-blue-800/30">
-          {tips.map((tip, index) => (
-            <p key={index} className="text-xs text-blue-300">
-              {tip}
-            </p>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Vista previa de datos
-const DataPreview: React.FC<{ formData: Partial<VehicleDataBackend> }> = ({
-  formData,
-}) => {
-  const [showPreview, setShowPreview] = useState(false);
-
-  if (!showPreview) {
-    return (
-      <button
-        onClick={() => setShowPreview(true)}
-        className="flex items-center text-sm text-cyan-400 hover:text-cyan-300 mb-4 transition-colors"
-      >
-        <Eye className="w-4 h-4 mr-1" />
-        Ver vista previa
-      </button>
-    );
-  }
-
-  return (
-    <div className="bg-gray-800 p-4 rounded-lg mb-6 border border-gray-700">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="font-semibold text-gray-200">Vista previa</h3>
-        <button
-          onClick={() => setShowPreview(false)}
-          className="text-sm text-gray-400 hover:text-gray-300 transition-colors"
-        >
-          Ocultar
-        </button>
-      </div>
-      <div className="text-sm space-y-1 text-gray-300">
-        {formData.year && (
-          <p>
-            <strong className="text-gray-200">Año:</strong> {formData.year}
-          </p>
-        )}
-        {formData.color && (
-          <p>
-            <strong className="text-gray-200">Color:</strong> {formData.color}
-          </p>
-        )}
-        {formData.displacement && (
-          <p>
-            <strong className="text-gray-200">Cilindraje:</strong>{" "}
-            {formData.displacement}
-          </p>
-        )}
-        {formData.transmission && (
-          <p>
-            <strong className="text-gray-200">Transmisión:</strong>{" "}
-            {TRANSMISSION_TYPES_LABELS[formData.transmission]}
-          </p>
-        )}
-        {formData.fuelType && (
-          <p>
-            <strong className="text-gray-200">Combustible:</strong>{" "}
-            {FUEL_TYPES_LABELS[formData.fuelType]}
-          </p>
-        )}
-        {formData.doors && (
-          <p>
-            <strong className="text-gray-200">Puertas:</strong> {formData.doors}
-          </p>
-        )}
-        {formData.seats && (
-          <p>
-            <strong className="text-gray-200">Asientos:</strong>{" "}
-            {formData.seats}
-          </p>
-        )}
       </div>
     </div>
   );
@@ -559,8 +237,15 @@ const Step3_Specs: React.FC<StepProps> = ({
   handleInputChange,
 }) => {
   const currentCategory = formData.category as VehicleCategory | undefined;
-  const categoryData = currentCategory ? CATEGORY_DATA[currentCategory] : null;
+  const { isDarkMode } = useDarkMode();
 
+  const inputClass = `w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
+    isDarkMode
+      ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500"
+      : "bg-white border-gray-200 text-gray-900"
+  }`;
+
+  // ✅ SOLUCION: Llamar SIEMPRE los hooks, sin condiciones
   // Validaciones en tiempo real para cada campo
   const yearValidation = useRealTimeValidation(
     formData.year,
@@ -613,6 +298,7 @@ const Step3_Specs: React.FC<StepProps> = ({
     currentCategory
   );
 
+  // ✅ SOLUCION: useCallback siempre se llaman, sin condiciones
   // Función para manejar el año con validación en tiempo real
   const handleYearChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -696,28 +382,78 @@ const Step3_Specs: React.FC<StepProps> = ({
     return displacements.map((d) => `${d}L`);
   };
 
+  const { progressPercentage, isComplete } = useMemo(() => {
+    const requiredFields = ["year", "color", "transmission", "fuelType"];
+    const conditionalFields: string[] = [];
+
+    if (
+      currentCategory &&
+      [
+        VehicleCategory.CAR,
+        VehicleCategory.SUV,
+        VehicleCategory.VAN,
+        VehicleCategory.BUS,
+      ].includes(currentCategory)
+    ) {
+      conditionalFields.push("doors", "seats");
+    }
+
+    const allRequiredFields = [...requiredFields, ...conditionalFields];
+    const completedFields = allRequiredFields.filter((field) => {
+      const value = formData[field as keyof VehicleDataBackend];
+      return value !== undefined && value !== "" && value !== null;
+    }).length;
+
+    const progress =
+      allRequiredFields.length > 0
+        ? (completedFields / allRequiredFields.length) * 100
+        : 0;
+    return { progressPercentage: progress, isComplete: progress === 100 };
+  }, [formData, currentCategory]);
+
+  // Si no hay categoría, mostrar un mensaje de error o estado vacío.
+  if (!currentCategory) {
+    return (
+      <div
+        className={`p-6 rounded-xl border-2 border-dashed ${isDarkMode ? "border-gray-700 text-gray-500" : "border-gray-300 text-gray-500"}`}
+      >
+        <AlertCircle className="w-6 h-6 mx-auto mb-2" />
+        <p className="text-center">
+          Por favor, regresa al paso 1 y selecciona una categoría para
+          continuar.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <div className="max-w-2xl mx-auto p-6">
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="p-3 rounded-xl shadow-lg bg-gradient-to-br from-cyan-500 to-blue-600">
-              <Settings className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white">
-                Especificaciones Técnicas
-              </h2>
-              <p className="text-gray-400 text-sm">
-                Detalles técnicos del vehículo
-              </p>
-            </div>
+    <div
+      className={`max-w-2xl mx-auto ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}
+    >
+      <div className="mb-8">
+        <div className="flex items-center space-x-3 mb-4">
+          <div
+            className={`p-3 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-700" : "bg-gradient-to-br from-cyan-500 to-blue-600"}`}
+          >
+            <Settings
+              className={`w-6 h-6 ${isDarkMode ? "text-gray-200" : "text-white"}`}
+            />
+          </div>
+          <div>
+            <h2
+              className={`text-2xl font-bold ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}
+            >
+              Especificaciones Técnicas
+            </h2>
+            <p
+              className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}
+            >
+              Detalles técnicos del vehículo
+            </p>
           </div>
         </div>
 
-        <ProgressBar formData={formData} />
-        <TipCard category={currentCategory} />
-        <DataPreview formData={formData} />
+        <ProgressBar progress={progressPercentage} />
 
         <div className="space-y-6">
           {/* Año - Campo muy importante */}
@@ -727,11 +463,7 @@ const Step3_Specs: React.FC<StepProps> = ({
             error={errors.year}
             icon={<Calendar className="w-4 h-4 text-cyan-400" />}
             tooltip="El año del vehículo afecta significativamente su valor de mercado"
-            field="year"
-            value={formData.year}
-            category={currentCategory}
-            isValid={yearValidation.isValid}
-            validationMessage={yearValidation.validationMessage}
+            success={yearValidation.isValid === true}
             tips={[
               "🎯 Año más reciente = mayor valor",
               "📅 Considera el modelo específico del año",
@@ -742,13 +474,13 @@ const Step3_Specs: React.FC<StepProps> = ({
               type="text"
               value={formData.year || ""}
               onChange={handleYearChange}
-              className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
+              className={`${inputClass} ${
                 yearValidation.isValid === true
                   ? "border-green-500 focus:ring-green-500/20"
                   : yearValidation.isValid === false
-                  ? "border-red-500 focus:ring-red-500/20"
-                  : "focus:ring-cyan-500/20"
-              } bg-gray-800 border-gray-700 text-white placeholder-gray-500`}
+                    ? "border-red-500 focus:ring-red-500/20"
+                    : "focus:ring-cyan-500/20"
+              }`}
               placeholder="2020"
               maxLength={4}
               inputMode="numeric"
@@ -763,37 +495,26 @@ const Step3_Specs: React.FC<StepProps> = ({
               <div className="w-4 h-4 rounded-full bg-gradient-to-r from-red-500 to-blue-500" />
             }
             tooltip="Los colores neutros (blanco, gris, negro) suelen tener mejor demanda"
-            field="color"
-            value={formData.color}
-            category={currentCategory}
-            isValid={colorValidation.isValid}
-            validationMessage={colorValidation.validationMessage}
+            success={colorValidation.isValid === true}
             tips={[
               "🤍 Blanco y gris tienen mayor demanda",
               "💎 Colores metálicos conservan mejor valor",
               "🌈 Colores llamativos pueden ser más difíciles de vender",
             ]}
           >
-            <select
+            <SelectField
               value={formData.color || ""}
-              onChange={(e) => handleInputChange("color", e.target.value)}
-              className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 appearance-none cursor-pointer ${
+              onChange={(value) => handleInputChange("color", value)}
+              placeholder="Selecciona un color"
+              options={COMMON_COLORS.map((c) => ({ value: c, label: c }))}
+              className={`${inputClass} ${
                 colorValidation.isValid === true
                   ? "border-green-500 focus:ring-green-500/20"
                   : colorValidation.isValid === false
-                  ? "border-red-500 focus:ring-red-500/20"
-                  : "focus:ring-cyan-500/20"
-              } bg-gray-800 border-gray-700 text-white`}
-            >
-              <option value="" className="bg-gray-800">
-                Selecciona un color
-              </option>
-              {(categoryData?.colors || []).map((color) => (
-                <option key={color} value={color} className="bg-gray-800">
-                  {color}
-                </option>
-              ))}
-            </select>
+                    ? "border-red-500 focus:ring-red-500/20"
+                    : "focus:ring-cyan-500/20"
+              }`}
+            />
           </InputField>
 
           {/* Cilindraje */}
@@ -810,11 +531,7 @@ const Step3_Specs: React.FC<StepProps> = ({
                 ? "125cc-150cc son los más populares en Venezuela"
                 : "El cilindraje afecta el consumo y potencia"
             }
-            field="displacement"
-            value={formData.displacement}
-            category={currentCategory}
-            isValid={displacementValidation.isValid}
-            validationMessage={displacementValidation.validationMessage}
+            success={displacementValidation.isValid === true}
             tips={
               currentCategory === VehicleCategory.MOTORCYCLE
                 ? [
@@ -829,32 +546,22 @@ const Step3_Specs: React.FC<StepProps> = ({
                   ]
             }
           >
-            <select
+            <SelectField
               value={formData.displacement || ""}
-              onChange={(e) =>
-                handleInputChange("displacement", e.target.value)
-              }
-              className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 appearance-none cursor-pointer ${
+              onChange={(value) => handleInputChange("displacement", value)}
+              placeholder="Selecciona cilindraje"
+              options={generateDisplacementOptions().map((d) => ({
+                value: d,
+                label: d,
+              }))}
+              className={`${inputClass} ${
                 displacementValidation.isValid === true
                   ? "border-green-500 focus:ring-green-500/20"
                   : displacementValidation.isValid === false
-                  ? "border-red-500 focus:ring-red-500/20"
-                  : "focus:ring-green-500/20"
-              } bg-gray-800 border-gray-700 text-white`}
-            >
-              <option value="" className="bg-gray-800">
-                Selecciona cilindraje
-              </option>
-              {generateDisplacementOptions().map((displacement) => (
-                <option
-                  key={displacement}
-                  value={displacement}
-                  className="bg-gray-800"
-                >
-                  {displacement}
-                </option>
-              ))}
-            </select>
+                    ? "border-red-500 focus:ring-red-500/20"
+                    : "focus:ring-green-500/20"
+              }`}
+            />
           </InputField>
 
           <InputField
@@ -862,12 +569,8 @@ const Step3_Specs: React.FC<StepProps> = ({
             error={errors.engine}
             icon={<Wrench className="w-4 h-4 text-gray-400" />}
             tooltip="Incluye detalles como V6, Turbo, DOHC para mayor atractivo"
-            field="engine"
-            value={formData.engine}
-            category={currentCategory}
-            maxLength={100}
-            isValid={engineValidation.isValid}
-            validationMessage={engineValidation.validationMessage}
+            success={engineValidation.isValid === true}
+            counter={{ current: formData.engine?.length || 0, max: 100 }}
             tips={[
               "🔧 Incluye tecnologías especiales (Turbo, DOHC)",
               "⚡ Motores especiales aumentan el valor",
@@ -878,13 +581,13 @@ const Step3_Specs: React.FC<StepProps> = ({
               type="text"
               value={formData.engine || ""}
               onChange={(e) => handleInputChange("engine", e.target.value)}
-              className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
+              className={`${inputClass} ${
                 engineValidation.isValid === true
                   ? "border-green-500 focus:ring-green-500/20"
                   : engineValidation.isValid === false
-                  ? "border-red-500 focus:ring-red-500/20"
-                  : "focus:ring-cyan-500/20"
-              } bg-gray-800 border-gray-700 text-white placeholder-gray-500`}
+                    ? "border-red-500 focus:ring-red-500/20"
+                    : "focus:ring-cyan-500/20"
+              }`}
               placeholder="Ej: V6, Turbo, DOHC, Inyección Directa"
               maxLength={100}
             />
@@ -896,43 +599,28 @@ const Step3_Specs: React.FC<StepProps> = ({
             error={errors.transmission}
             icon={<Settings className="w-4 h-4 text-blue-400" />}
             tooltip="La transmisión manual suele ser más económica de mantener"
-            field="transmission"
-            value={formData.transmission}
-            category={currentCategory}
-            isValid={transmissionValidation.isValid}
-            validationMessage={transmissionValidation.validationMessage}
+            success={transmissionValidation.isValid === true}
             tips={[
               "🔧 Manual = menor costo de mantenimiento",
               "🚗 Automática = mayor comodidad",
               "⚡ CVT = mejor eficiencia de combustible",
             ]}
           >
-            <select
+            <SelectField
               value={formData.transmission || ""}
-              onChange={(e) =>
-                handleInputChange("transmission", e.target.value)
-              }
-              className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 appearance-none cursor-pointer ${
+              onChange={(value) => handleInputChange("transmission", value)}
+              placeholder="Selecciona transmisión"
+              options={Object.entries(TRANSMISSION_TYPES_LABELS).map<{ value: string; label: string }>(
+                ([value, label]) => ({ value, label })
+              )}
+              className={`${inputClass} ${
                 transmissionValidation.isValid === true
                   ? "border-green-500 focus:ring-green-500/20"
                   : transmissionValidation.isValid === false
-                  ? "border-red-500 focus:ring-red-500/20"
-                  : "focus:ring-blue-500/20"
-              } bg-gray-800 border-gray-700 text-white`}
-            >
-              <option value="" className="bg-gray-800">
-                Selecciona transmisión
-              </option>
-              {Object.values(TransmissionType).map((transmission) => (
-                <option
-                  key={transmission}
-                  value={transmission}
-                  className="bg-gray-800"
-                >
-                  {TRANSMISSION_TYPES_LABELS[transmission]}
-                </option>
-              ))}
-            </select>
+                    ? "border-red-500 focus:ring-red-500/20"
+                    : "focus:ring-blue-500/20"
+              }`}
+            />
           </InputField>
 
           <InputField
@@ -941,37 +629,28 @@ const Step3_Specs: React.FC<StepProps> = ({
             error={errors.fuelType}
             icon={<Fuel className="w-4 h-4 text-orange-400" />}
             tooltip="La gasolina es más común, pero el diesel puede ser más económico"
-            field="fuelType"
-            value={formData.fuelType}
-            category={currentCategory}
-            isValid={fuelTypeValidation.isValid}
-            validationMessage={fuelTypeValidation.validationMessage}
+            success={fuelTypeValidation.isValid === true}
             tips={[
               "⛽ Gasolina = más estaciones de servicio",
               "🚛 Diesel = mayor eficiencia en distancias largas",
               "🔋 Eléctrico/Híbrido = futuro sostenible",
             ]}
           >
-            <select
+            <SelectField
               value={formData.fuelType || ""}
-              onChange={(e) => handleInputChange("fuelType", e.target.value)}
-              className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 appearance-none cursor-pointer ${
+              onChange={(value) => handleInputChange("fuelType", value)}
+              placeholder="Selecciona combustible"
+              options={Object.entries(FUEL_TYPES_LABELS).map<{ value: string; label: string }>(
+                ([value, label]) => ({ value, label })
+              )}
+              className={`${inputClass} ${
                 fuelTypeValidation.isValid === true
                   ? "border-green-500 focus:ring-green-500/20"
                   : fuelTypeValidation.isValid === false
-                  ? "border-red-500 focus:ring-red-500/20"
-                  : "focus:ring-orange-500/20"
-              } bg-gray-800 border-gray-700 text-white`}
-            >
-              <option value="" className="bg-gray-800">
-                Selecciona combustible
-              </option>
-              {Object.values(FuelType).map((fuel) => (
-                <option key={fuel} value={fuel} className="bg-gray-800">
-                  {FUEL_TYPES_LABELS[fuel]}
-                </option>
-              ))}
-            </select>
+                    ? "border-red-500 focus:ring-red-500/20"
+                    : "focus:ring-orange-500/20"
+              }`}
+            />
           </InputField>
 
           {/* Tracción - Para vehículos con motor */}
@@ -981,37 +660,28 @@ const Step3_Specs: React.FC<StepProps> = ({
               error={errors.driveType}
               icon={<Cog className="w-4 h-4 text-indigo-400" />}
               tooltip="4x4 es ideal para terrenos difíciles, FWD para ciudad"
-              field="driveType"
-              value={formData.driveType}
-              category={currentCategory}
-              isValid={driveTypeValidation.isValid}
-              validationMessage={driveTypeValidation.validationMessage}
+              success={driveTypeValidation.isValid === true}
               tips={[
                 "🏙️ FWD = ideal para ciudad",
                 "🏔️ AWD/4x4 = terrenos difíciles",
                 "⚡ RWD = mejor para deportivos",
               ]}
             >
-              <select
+              <SelectField
                 value={formData.driveType || ""}
-                onChange={(e) => handleInputChange("driveType", e.target.value)}
-                className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 appearance-none cursor-pointer ${
+                onChange={(value) => handleInputChange("driveType", value)}
+                placeholder="Selecciona tracción"
+                options={Object.entries(DRIVE_TYPE_LABELS).map<{ value: string; label: string }>(
+                  ([value, label]) => ({ value, label })
+                )}
+                className={`${inputClass} ${
                   driveTypeValidation.isValid === true
                     ? "border-green-500 focus:ring-green-500/20"
                     : driveTypeValidation.isValid === false
-                    ? "border-red-500 focus:ring-red-500/20"
-                    : "focus:ring-indigo-500/20"
-                } bg-gray-800 border-gray-700 text-white`}
-              >
-                <option value="" className="bg-gray-800">
-                  Selecciona tracción
-                </option>
-                {Object.values(DriveType).map((drive) => (
-                  <option key={drive} value={drive} className="bg-gray-800">
-                    {DRIVE_TYPE_LABELS[drive]}
-                  </option>
-                ))}
-              </select>
+                      ? "border-red-500 focus:ring-red-500/20"
+                      : "focus:ring-indigo-500/20"
+                }`}
+              />
             </InputField>
           )}
 
@@ -1029,11 +699,7 @@ const Step3_Specs: React.FC<StepProps> = ({
                   required
                   error={errors.doors}
                   tooltip="Más puertas = mayor comodidad familiar"
-                  field="doors"
-                  value={formData.doors}
-                  category={currentCategory}
-                  isValid={doorsValidation.isValid}
-                  validationMessage={doorsValidation.validationMessage}
+                  success={doorsValidation.isValid === true}
                   tips={[
                     "🚪 2 puertas = deportivo",
                     "👨‍👩‍👧‍👦 4-5 puertas = familiar",
@@ -1044,13 +710,13 @@ const Step3_Specs: React.FC<StepProps> = ({
                     type="number"
                     value={formData.doors || ""}
                     onChange={handleDoorsChange}
-                    className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
+                    className={`${inputClass} ${
                       doorsValidation.isValid === true
                         ? "border-green-500 focus:ring-green-500/20"
                         : doorsValidation.isValid === false
-                        ? "border-red-500 focus:ring-red-500/20"
-                        : "focus:ring-cyan-500/20"
-                    } bg-gray-800 border-gray-700 text-white placeholder-gray-500`}
+                          ? "border-red-500 focus:ring-red-500/20"
+                          : "focus:ring-cyan-500/20"
+                    }`}
                     placeholder="4"
                     min="2"
                     max="5"
@@ -1061,11 +727,7 @@ const Step3_Specs: React.FC<StepProps> = ({
                   required
                   error={errors.seats}
                   tooltip="Considera el uso: familiar, comercial, transporte"
-                  field="seats"
-                  value={formData.seats}
-                  category={currentCategory}
-                  isValid={seatsValidation.isValid}
-                  validationMessage={seatsValidation.validationMessage}
+                  success={seatsValidation.isValid === true}
                   tips={[
                     "👥 5-7 asientos = familia promedio",
                     "🚐 8+ asientos = transporte",
@@ -1076,23 +738,23 @@ const Step3_Specs: React.FC<StepProps> = ({
                     type="number"
                     value={formData.seats || ""}
                     onChange={handleSeatsChange}
-                    className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
+                    className={`${inputClass} ${
                       seatsValidation.isValid === true
                         ? "border-green-500 focus:ring-green-500/20"
                         : seatsValidation.isValid === false
-                        ? "border-red-500 focus:ring-red-500/20"
-                        : "focus:ring-cyan-500/20"
-                    } bg-gray-800 border-gray-700 text-white placeholder-gray-500`}
+                          ? "border-red-500 focus:ring-red-500/20"
+                          : "focus:ring-cyan-500/20"
+                    }`}
                     placeholder="5"
                     min="2"
                     max={
                       currentCategory === VehicleCategory.BUS
                         ? "50"
                         : currentCategory === VehicleCategory.VAN
-                        ? "15"
-                        : currentCategory === VehicleCategory.SUV
-                        ? "8"
-                        : "9"
+                          ? "15"
+                          : currentCategory === VehicleCategory.SUV
+                            ? "8"
+                            : "9"
                     }
                   />
                 </InputField>
@@ -1105,11 +767,7 @@ const Step3_Specs: React.FC<StepProps> = ({
               error={errors.loadCapacity}
               icon={<Wrench className="w-4 h-4 text-yellow-400" />}
               tooltip="Especifica la capacidad real para atraer compradores comerciales"
-              field="loadCapacity"
-              value={formData.loadCapacity}
-              category={currentCategory}
-              isValid={loadCapacityValidation.isValid}
-              validationMessage={loadCapacityValidation.validationMessage}
+              success={loadCapacityValidation.isValid === true}
               tips={[
                 "📦 Mayor capacidad = mayor valor comercial",
                 "⚖️ Capacidad real vs. teórica",
@@ -1125,13 +783,13 @@ const Step3_Specs: React.FC<StepProps> = ({
                     parseFloat(e.target.value) || undefined
                   )
                 }
-                className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
+                className={`${inputClass} ${
                   loadCapacityValidation.isValid === true
                     ? "border-green-500 focus:ring-green-500/20"
                     : loadCapacityValidation.isValid === false
-                    ? "border-red-500 focus:ring-red-500/20"
-                    : "focus:ring-yellow-500/20"
-                } bg-gray-800 border-gray-700 text-white placeholder-gray-500`}
+                      ? "border-red-500 focus:ring-red-500/20"
+                      : "focus:ring-yellow-500/20"
+                }`}
                 placeholder="1000"
                 min="0"
               />
@@ -1140,91 +798,27 @@ const Step3_Specs: React.FC<StepProps> = ({
         </div>
 
         {/* Resumen de completitud */}
-        <div className="mt-6 p-4 rounded-xl bg-gray-800 border border-gray-700">
-          <h3 className="text-sm font-semibold mb-2 text-gray-300">
+        <div
+          className={`mt-6 p-4 rounded-xl border ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-blue-50 border-blue-200"}`}
+        >
+          <h3
+            className={`text-sm font-semibold mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}
+          >
             Estado del Formulario
           </h3>
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400">
-              {(() => {
-                const requiredFields = [
-                  "year",
-                  "color",
-                  "transmission",
-                  "fuelType",
-                ];
-                const conditionalFields = [];
-
-                if (
-                  currentCategory &&
-                  [
-                    VehicleCategory.CAR,
-                    VehicleCategory.SUV,
-                    VehicleCategory.VAN,
-                    VehicleCategory.BUS,
-                  ].includes(currentCategory)
-                ) {
-                  conditionalFields.push("doors", "seats");
-                }
-
-                const allRequiredFields = [
-                  ...requiredFields,
-                  ...conditionalFields,
-                ];
-                const completedFields = allRequiredFields.filter((field) => {
-                  const value = formData[field as keyof VehicleDataBackend];
-                  return value !== undefined && value !== "" && value !== null;
-                });
-
-                const progress =
-                  (completedFields.length / allRequiredFields.length) * 100;
-
-                return progress === 100
-                  ? "🎉 ¡Formulario completo!"
-                  : `📝 ${Math.round(progress)}% completado`;
-              })()}
+            <span
+              className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}
+            >
+              {isComplete
+                ? "🎉 ¡Formulario completo!"
+                : `📝 ${Math.round(progressPercentage)}% completado`}
             </span>
-            {(() => {
-              const requiredFields = [
-                "year",
-                "color",
-                "transmission",
-                "fuelType",
-              ];
-              const conditionalFields = [];
-
-              if (
-                currentCategory &&
-                [
-                  VehicleCategory.CAR,
-                  VehicleCategory.SUV,
-                  VehicleCategory.VAN,
-                  VehicleCategory.BUS,
-                ].includes(currentCategory)
-              ) {
-                conditionalFields.push("doors", "seats");
-              }
-
-              const allRequiredFields = [
-                ...requiredFields,
-                ...conditionalFields,
-              ];
-              const completedFields = allRequiredFields.filter((field) => {
-                const value = formData[field as keyof VehicleDataBackend];
-                return value !== undefined && value !== "" && value !== null;
-              });
-
-              const progress =
-                (completedFields.length / allRequiredFields.length) * 100;
-
-              return (
-                progress === 100 && (
-                  <span className="text-xs text-green-600 font-medium">
-                    ✅ Listo para continuar
-                  </span>
-                )
-              );
-            })()}
+            {isComplete && (
+              <span className="text-xs text-green-600 font-medium">
+                ✅ Listo para continuar
+              </span>
+            )}
           </div>
         </div>
       </div>
