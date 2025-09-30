@@ -17,6 +17,12 @@ interface AdvancedFiltersPanelProps {
   isOpen: boolean;
   onToggle: () => void;
   isDarkMode: boolean;
+  showOnlyPublishedBrands: boolean;
+  setShowOnlyPublishedBrands: (value: boolean) => void;
+  showOnlyPublishedColors: boolean;
+  setShowOnlyPublishedColors: (value: boolean) => void;
+  showOnlyPublishedLocations: boolean;
+  setShowOnlyPublishedLocations: (value: boolean) => void;
 }
 
 const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
@@ -27,6 +33,12 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
   isOpen,
   onToggle,
   isDarkMode,
+  showOnlyPublishedBrands,
+  setShowOnlyPublishedBrands,
+  showOnlyPublishedColors,
+  setShowOnlyPublishedColors,
+  showOnlyPublishedLocations,
+  setShowOnlyPublishedLocations,
 }) => {
   const updateFilter = <K extends keyof AdvancedFilters>(
     key: K,
@@ -192,6 +204,10 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
             onChange={(newSelection) => updateFilter("brands", newSelection)}
             isDarkMode={isDarkMode}
             placeholder="Seleccionar marcas..."
+            showPublishedToggle={true}
+            isPublishedOnly={showOnlyPublishedBrands}
+            onPublishedOnlyChange={setShowOnlyPublishedBrands}
+            publishedOnlyLabel="Mostrar solo marcas con vehículos publicados"
           />
         </FilterGroup>
 
@@ -200,12 +216,15 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
           isDarkMode={isDarkMode}
         >
           <MultiSelectFilter
-            // ✅ SOLUCIÓN: Las opciones ya vienen en el formato correcto desde el hook
             options={filterOptions.colors}
             selected={filters.colors}
             onChange={(newSelection) => updateFilter("colors", newSelection)}
             isDarkMode={isDarkMode}
             placeholder="Seleccionar colores..."
+            showPublishedToggle={true}
+            isPublishedOnly={showOnlyPublishedColors}
+            onPublishedOnlyChange={setShowOnlyPublishedColors}
+            publishedOnlyLabel="Mostrar solo colores con vehículos publicados"
           />
         </FilterGroup>
 
@@ -253,13 +272,16 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
           label={`Ubicación (${filters.location.length} seleccionadas)`}
           isDarkMode={isDarkMode}
         >
-          <CheckboxFilter
+          <MultiSelectFilter
             options={filterOptions.locations}
             selected={filters.location}
-            onChange={(location) =>
-              toggleArrayFilter("location", location, filters.location)
-            }
+            onChange={(newSelection) => updateFilter("location", newSelection)}
             isDarkMode={isDarkMode}
+            placeholder="Seleccionar ubicaciones..."
+            showPublishedToggle={true}
+            isPublishedOnly={showOnlyPublishedLocations}
+            onPublishedOnlyChange={setShowOnlyPublishedLocations}
+            publishedOnlyLabel="Mostrar solo ubicaciones con vehículos publicados"
           />
         </FilterGroup>
         <FilterGroup label="Tipo de Tracción" isDarkMode={isDarkMode}>

@@ -43,6 +43,12 @@ const VehicleList: React.FC<{ initialVehicles: Vehicle[] }> = ({
     filteredVehicles,
     filterOptions, // ✅ USAR LAS OPCIONES DEL HOOK
     clearAllFilters,
+    showOnlyPublishedBrands,
+    setShowOnlyPublishedBrands,
+    showOnlyPublishedColors,
+    setShowOnlyPublishedColors,
+    showOnlyPublishedLocations,
+    setShowOnlyPublishedLocations,
   } = useVehicleFiltering(initialVehicles);
 
   // ✅ MEJORA: Aplicar "debouncing" a la búsqueda para mejorar el rendimiento
@@ -150,6 +156,12 @@ const VehicleList: React.FC<{ initialVehicles: Vehicle[] }> = ({
           isOpen={showAdvancedFilters}
           onToggle={() => setShowAdvancedFilters(!showAdvancedFilters)}
           isDarkMode={isDarkMode}
+          showOnlyPublishedBrands={showOnlyPublishedBrands}
+          setShowOnlyPublishedBrands={setShowOnlyPublishedBrands}
+          showOnlyPublishedColors={showOnlyPublishedColors}
+          setShowOnlyPublishedColors={setShowOnlyPublishedColors}
+          showOnlyPublishedLocations={showOnlyPublishedLocations}
+          setShowOnlyPublishedLocations={setShowOnlyPublishedLocations}
         />
 
         {compareList.length > 0 && (

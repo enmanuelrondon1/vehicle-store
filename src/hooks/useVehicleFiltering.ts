@@ -15,6 +15,7 @@ import {
 import { LOCATION_LABELS } from "@/types/shared"; // ✅ CORRECCIÓN: Importar LOCATION_LABELS
 import type { Vehicle, AdvancedFilters, FilterOptions } from "@/types/types";
 import { SORT_OPTIONS } from "@/types/types"; // ✅ CORRECCIÓN: Importar SORT_OPTIONS desde types.ts
+import { CATEGORY_DATA, COMMON_COLORS } from "@/constants/form-constants";
 
 const INITIAL_FILTERS: AdvancedFilters = {
   search: "",
@@ -45,12 +46,30 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
   const [vehicles] = useState<Vehicle[]>(initialVehicles);
   const [filters, setFilters] = useState<AdvancedFilters>(INITIAL_FILTERS);
   const [sortBy, setSortBy] = useState("relevance");
+  const [showOnlyPublishedBrands, setShowOnlyPublishedBrands] = useState(false);
+  const [showOnlyPublishedColors, setShowOnlyPublishedColors] = useState(false);
+  const [showOnlyPublishedLocations, setShowOnlyPublishedLocations] = useState(false);
 
   // ✅ MEJORA: Generar opciones de filtro dinámicamente a partir de los vehículos
   const filterOptions = useMemo<FilterOptions>(() => {
-    const brands = [...new Set(vehicles.map((v) => v.brand).filter(Boolean))].sort(); // ✅ SOLUCIÓN: Debe ser string[]
-    const colors = [...new Set(vehicles.map((v) => v.color).filter(Boolean))].sort().map(c => ({ value: c, label: c }));
-    const locations = [...new Set(vehicles.map((v) => v.location).filter(Boolean))].sort().map(l => ({ value: l, label: translateValue(l, LOCATION_LABELS) }));
+    const allBrands = [
+      ...new Set(
+        Object.values(CATEGORY_DATA).flatMap((category) =>
+          Object.keys(category.brands)
+        )
+      ),
+    ].sort();
+
+    const publishedBrands = [...new Set(vehicles.map((v) => v.brand).filter(Boolean))].sort();
+    const brands = showOnlyPublishedBrands ? publishedBrands : allBrands;
+
+    const allColors = COMMON_COLORS.map(c => ({ value: c, label: c }));
+    const publishedColors = [...new Set(vehicles.map((v) => v.color).filter(Boolean))].sort().map(c => ({ value: c, label: c }));
+    const colors = showOnlyPublishedColors ? publishedColors : allColors;
+
+    const allLocations = Object.entries(LOCATION_LABELS).map(([value, label]) => ({ value, label }));
+    const publishedLocations = [...new Set(vehicles.map((v) => v.location).filter(Boolean))].sort().map(l => ({ value: l, label: translateValue(l, LOCATION_LABELS) }));
+    const locations = showOnlyPublishedLocations ? publishedLocations : allLocations;
 
     return {
       categories: Object.entries(VEHICLE_CATEGORIES_LABELS).map(([value, label]) => ({ value, label })),
@@ -65,7 +84,7 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
       saleTypes: Object.entries(SALE_TYPE_LABELS).map(([value, label]) => ({ value, label })),
       features: [], // Se puede implementar después
     };
-  }, [vehicles]);
+  }, [vehicles, showOnlyPublishedBrands, showOnlyPublishedColors, showOnlyPublishedLocations]);
 
   // ✅ MEJORA: Usar el término de búsqueda con retardo para el filtrado
   const debouncedSearchTerm = useDebounce(filters.search, 300);
@@ -238,5 +257,11 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
     setSortBy,
     filteredVehicles,
     clearAllFilters,
+    showOnlyPublishedBrands,
+    setShowOnlyPublishedBrands,
+    showOnlyPublishedColors,
+    setShowOnlyPublishedColors,
+    showOnlyPublishedLocations,
+    setShowOnlyPublishedLocations,
   };
 };

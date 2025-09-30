@@ -20,6 +20,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface MultiSelectFilterProps {
   options: (string | { value: string; label: string })[];
@@ -27,6 +28,10 @@ interface MultiSelectFilterProps {
   onChange: (selected: string[]) => void;
   placeholder?: string;
   isDarkMode: boolean;
+  showPublishedToggle?: boolean;
+  isPublishedOnly?: boolean;
+  onPublishedOnlyChange?: (value: boolean) => void;
+  publishedOnlyLabel?: string;
 }
 
 export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
@@ -35,6 +40,10 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
   onChange,
   placeholder = "Seleccionar...",
   isDarkMode,
+  showPublishedToggle = false,
+  isPublishedOnly = false,
+  onPublishedOnlyChange,
+  publishedOnlyLabel = "Mostrar solo publicados",
 }) => {
   const [open, setOpen] = React.useState(false);
 
@@ -104,6 +113,30 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
         )}
       >
         <Command>
+          {showPublishedToggle && onPublishedOnlyChange && (
+            <div className="px-2 py-1.5">
+              <div
+                className="flex items-center space-x-2 cursor-pointer px-2 py-1.5 rounded-md hover:bg-accent"
+                onClick={() => onPublishedOnlyChange(!isPublishedOnly)}
+              >
+                <Checkbox
+                  id="published-only"
+                  checked={isPublishedOnly}
+                  onCheckedChange={(checked) => {
+                    if (onPublishedOnlyChange) {
+                      onPublishedOnlyChange(checked === true);
+                    }
+                  }}
+                />
+                <label
+                  htmlFor="published-only"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  {publishedOnlyLabel}
+                </label>
+              </div>
+            </div>
+          )}
           <CommandInput placeholder="Buscar..." />
           <CommandList className="max-h-[300px] overflow-y-auto">
             <CommandEmpty>No se encontraron resultados.</CommandEmpty>
