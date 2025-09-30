@@ -59,8 +59,8 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
       colors,
       locations,
       conditions: Object.entries(VEHICLE_CONDITIONS_LABELS).map(([value, label]) => ({ value, label })),
-      fuelTypes: Object.values(FUEL_TYPES_LABELS).map(label => ({ value: label, label })),
-      transmissions: Object.values(TRANSMISSION_TYPES_LABELS).map(label => ({ value: label, label })),
+      fuelTypes: Object.entries(FUEL_TYPES_LABELS).map(([value, label]) => ({ value, label })),
+      transmissions: Object.entries(TRANSMISSION_TYPES_LABELS).map(([value, label]) => ({ value, label })),
       driveTypes: Object.entries(DRIVE_TYPE_LABELS).map(([value, label]) => ({ value, label })),
       saleTypes: Object.entries(SALE_TYPE_LABELS).map(([value, label]) => ({ value, label })),
       features: [], // Se puede implementar después
