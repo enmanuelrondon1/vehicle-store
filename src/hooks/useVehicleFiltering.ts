@@ -20,7 +20,7 @@ import { CATEGORY_DATA, COMMON_COLORS } from "@/constants/form-constants";
 // ✅ NUEVO: Función para contar opciones
 const getOptionsWithCounts = (
   vehicles: Vehicle[],
-  key: "brand" | "color" | "location" | "condition"
+  key: "brand" | "color" | "location" | "condition" | "category" | "fuelType" | "transmission" | "driveType"
 ) => {
   const counts = vehicles.reduce((acc, vehicle) => {
     const value = vehicle[key];
@@ -95,6 +95,10 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
     const brandCounts = getOptionsWithCounts(vehicles, "brand");
     const colorCounts = getOptionsWithCounts(vehicles, "color");
     const conditionCounts = getOptionsWithCounts(vehicles, "condition");
+    const categoryCounts = getOptionsWithCounts(vehicles, "category");
+    const fuelTypeCounts = getOptionsWithCounts(vehicles, "fuelType");
+    const transmissionCounts = getOptionsWithCounts(vehicles, "transmission");
+    const driveTypeCounts = getOptionsWithCounts(vehicles, "driveType");
 
     // ✅ CÁLCULO SEGURO: Contar solo ubicaciones normalizables
     const locationCounts = vehicles.reduce((acc, vehicle) => {
@@ -156,7 +160,11 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
     const locations = showOnlyPublishedLocations ? publishedLocations : allLocations;
 
     return {
-      categories: Object.entries(VEHICLE_CATEGORIES_LABELS).map(([value, label]) => ({ value, label })),
+      categories: Object.entries(VEHICLE_CATEGORIES_LABELS).map(([value, label]) => ({
+        value,
+        label,
+        count: categoryCounts[value] || 0,
+      })),
       subcategories: [],
       brands,
       colors,
@@ -171,9 +179,18 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
       fuelTypes: Object.entries(FUEL_TYPES_LABELS).map(([value, label]) => ({
         value,
         label,
+        count: fuelTypeCounts[value] || 0,
       })),
-      transmissions: Object.entries(TRANSMISSION_TYPES_LABELS).map(([value, label]) => ({ value, label })),
-      driveTypes: Object.entries(DRIVE_TYPE_LABELS).map(([value, label]) => ({ value, label })),
+      transmissions: Object.entries(TRANSMISSION_TYPES_LABELS).map(([value, label]) => ({
+        value,
+        label,
+        count: transmissionCounts[value] || 0,
+      })),
+      driveTypes: Object.entries(DRIVE_TYPE_LABELS).map(([value, label]) => ({
+        value,
+        label,
+        count: driveTypeCounts[value] || 0,
+      })),
       saleTypes: Object.entries(SALE_TYPE_LABELS).map(([value, label]) => ({ value, label })),
       features: [],
     };

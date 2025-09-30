@@ -23,6 +23,7 @@ interface AdvancedFiltersPanelProps {
   setShowOnlyPublishedColors: (value: boolean) => void;
   showOnlyPublishedLocations: boolean;
   setShowOnlyPublishedLocations: (value: boolean) => void;
+  totalVehicles: number;
 }
 
 const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
@@ -39,6 +40,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
   setShowOnlyPublishedColors,
   showOnlyPublishedLocations,
   setShowOnlyPublishedLocations,
+  totalVehicles,
 }) => {
   const [maxYear, setMaxYear] = useState(new Date().getFullYear() + 1);
 
@@ -125,32 +127,30 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div>
-          <label
-            className={`block text-sm font-medium mb-2 ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Categoría
-          </label>
-          <select
-            value={filters.category}
-            onChange={(e) => updateFilter("category", e.target.value)}
-            className={`w-full p-2 rounded border ${
-              isDarkMode
-                ? "bg-gray-700 border-gray-600 text-white"
-                : "bg-white border-gray-300"
-            }`}
-          >
-            <option value="all">Todas las categorías</option>
-            {/* ✅ CORRECCIÓN: Añadir tipo explícito a 'cat' */}
-            {filterOptions.categories.map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <FilterGroup
+          label={`Categoría (${
+            filters.category !== "all" ? "1 seleccionada" : "ninguna"
+          })`}
+          isDarkMode={isDarkMode}
+        >
+          <MultiSelectFilter
+            options={[{ value: "all", label: "Todas las categorías", count: totalVehicles }, ...filterOptions.categories]}
+            selected={filters.category === "all" ? [] : [filters.category]}
+            onChange={(newSelection) => {
+              // Si se deselecciona la última categoría, se vuelve a "all"
+              if (newSelection.length === 0) {
+                updateFilter("category", "all");
+              } else {
+                // Tomar solo el último elemento seleccionado para simular una selección única
+                const singleSelection = newSelection[newSelection.length - 1];
+                updateFilter("category", singleSelection);
+              }
+            }}
+            isDarkMode={isDarkMode}
+            placeholder="Seleccionar categoría..."
+            singleSelect={true} // Prop para modo de selección única
+          />
+        </FilterGroup>
 
         <FilterGroup
           label={`Precio: $${filters.priceRange[0].toLocaleString()} - $${filters.priceRange[1].toLocaleString()}`}

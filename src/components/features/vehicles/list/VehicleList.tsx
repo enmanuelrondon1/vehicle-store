@@ -162,6 +162,7 @@ const VehicleList: React.FC<{ initialVehicles: Vehicle[] }> = ({
           setShowOnlyPublishedColors={setShowOnlyPublishedColors}
           showOnlyPublishedLocations={showOnlyPublishedLocations}
           setShowOnlyPublishedLocations={setShowOnlyPublishedLocations}
+          totalVehicles={vehicles.length}
         />
 
         {compareList.length > 0 && (

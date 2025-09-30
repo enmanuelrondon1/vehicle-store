@@ -32,6 +32,7 @@ interface MultiSelectFilterProps {
   isPublishedOnly?: boolean;
   onPublishedOnlyChange?: (value: boolean) => void;
   publishedOnlyLabel?: string;
+  singleSelect?: boolean; // Añadir esta línea
 }
 
 export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
@@ -44,6 +45,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
   isPublishedOnly = false,
   onPublishedOnlyChange,
   publishedOnlyLabel = "Mostrar solo publicados",
+  singleSelect = false, // Añadir esta línea
 }) => {
   const [open, setOpen] = React.useState(false);
 
@@ -139,12 +141,17 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
                 <CommandItem
                   key={option.value}
                   onSelect={() => {
-                    onChange(
-                      selected.includes(option.value)
-                        ? selected.filter((item) => item !== option.value)
-                        : [...selected, option.value]
-                    );
-                    setOpen(true);
+                    if (singleSelect) {
+                      onChange(selected[0] === option.value ? [] : [option.value]);
+                      setOpen(false);
+                    } else {
+                      onChange(
+                        selected.includes(option.value)
+                          ? selected.filter((item) => item !== option.value)
+                          : [...selected, option.value]
+                      );
+                      setOpen(true);
+                    }
                   }}
                 >
                   <Check
