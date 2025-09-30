@@ -1,4 +1,4 @@
-// src/components/sections/VehicleList/AdvancedFiltersPanel.tsx
+// src/components/features/vehicles/list/AdvancedFiltersPanel.tsx
 "use client";
 
 import { useMemo, type FC, useState, useEffect } from "react";
@@ -93,11 +93,11 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
 
   return (
     <div
-      className={`p-6 rounded-xl border ${
+      className={`p-6 rounded-xl border shadow-2xl ${
         isDarkMode
-          ? "bg-gray-800/50 border-gray-700"
-          : "bg-white/50 border-gray-200"
-      } backdrop-blur-sm`}
+          ? "bg-gray-800/90 border-gray-700"
+          : "bg-white/80 border-gray-200"
+      } backdrop-blur-lg`}
     >
       <div className="flex items-center justify-between mb-6">
         <h3
@@ -109,12 +109,14 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
           {activeFiltersCount > 0 && `(${activeFiltersCount} activos)`}
         </h3>
         <div className="flex gap-2">
-          <button
-            onClick={onClearFilters}
-            className="text-sm text-red-600 hover:text-red-700 transition-colors px-3 py-1 rounded border border-red-200 hover:bg-red-50"
-          >
-            Limpiar Todo
-          </button>
+          {activeFiltersCount > 0 && (
+            <button
+              onClick={onClearFilters}
+              className="text-sm text-red-600 hover:text-red-700 transition-colors px-3 py-1 rounded border border-red-200 hover:bg-red-50"
+            >
+              Limpiar Todo
+            </button>
+          )}
           <button
             onClick={onToggle}
             className={`p-1 rounded ${
@@ -234,7 +236,10 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
           />
         </FilterGroup>
 
-        <FilterGroup label="Condición" isDarkMode={isDarkMode}>
+        <FilterGroup
+          label={`Condición (${filters.condition.length} seleccionadas)`}
+          isDarkMode={isDarkMode}
+        >
           <CheckboxFilter
             options={filterOptions.conditions}
             selected={filters.condition}
@@ -246,7 +251,10 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
           />
         </FilterGroup>
 
-        <FilterGroup label="Combustible" isDarkMode={isDarkMode}>
+        <FilterGroup
+          label={`Combustible (${filters.fuelType.length} seleccionadas)`}
+          isDarkMode={isDarkMode}
+        >
           <CheckboxFilter
             options={filterOptions.fuelTypes}
             selected={filters.fuelType}
@@ -258,7 +266,10 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
           />
         </FilterGroup>
 
-        <FilterGroup label="Transmisión" isDarkMode={isDarkMode}>
+        <FilterGroup
+          label={`Transmisión (${filters.transmission.length} seleccionadas)`}
+          isDarkMode={isDarkMode}
+        >
           <CheckboxFilter
             options={filterOptions.transmissions}
             selected={filters.transmission}

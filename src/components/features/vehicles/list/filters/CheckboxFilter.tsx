@@ -30,7 +30,17 @@ const CheckboxFilter: FC<CheckboxFilterProps> = ({ options, selected, onChange, 
               {option.label}
             </span>
           </div>
-          {hasCount && <Badge variant="secondary">{option.count}</Badge>}
+          {hasCount && (
+            <Badge
+              className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                isDarkMode
+                  ? "bg-blue-600 text-white"
+                  : "bg-blue-500 text-white"
+              }`}
+            >
+              {option.count}
+            </Badge>
+          )}
         </label>
       );
     })}

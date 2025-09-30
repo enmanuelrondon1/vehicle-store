@@ -1,4 +1,4 @@
-// src/components/sections/VehicleList/SearchBar.tsx
+// src/components/features/vehicles/list/SearchBar.tsx
 "use client";
 
 import { type FC, useMemo } from "react";

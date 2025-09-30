@@ -93,7 +93,11 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
                 );
               })
             ) : (
-              <span>{placeholder}</span>
+              <span
+                className={isDarkMode ? "text-gray-400" : "text-gray-500"}
+              >
+                {placeholder}
+              </span>
             )}
           </div>
           <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
@@ -167,7 +171,9 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
                     <span
                       className={cn(
                         "ml-2 text-xs px-1.5 py-0.5 rounded-full",
-                        isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-600"
+                        isDarkMode
+                          ? "bg-blue-800 text-white"
+                          : "bg-blue-500 text-white"
                       )}
                     >
                       {option.count}
