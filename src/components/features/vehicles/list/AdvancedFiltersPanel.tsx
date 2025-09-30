@@ -1,7 +1,7 @@
 // src/components/sections/VehicleList/AdvancedFiltersPanel.tsx
 "use client";
 
-import { useMemo, type FC } from "react";
+import { useMemo, type FC, useState, useEffect } from "react";
 import { X } from "lucide-react";
 import type { AdvancedFilters, FilterOptions } from "@/types/types";
 import FilterGroup from "./filters/FilterGroup";
@@ -40,6 +40,13 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
   showOnlyPublishedLocations,
   setShowOnlyPublishedLocations,
 }) => {
+  const [maxYear, setMaxYear] = useState(new Date().getFullYear() + 1);
+
+  useEffect(() => {
+    // Esto asegura que el valor se establezca en el cliente, evitando el mismatch de hidratación.
+    setMaxYear(new Date().getFullYear() + 1);
+  }, []);
+
   const updateFilter = <K extends keyof AdvancedFilters>(
     key: K,
     value: AdvancedFilters[K]
@@ -167,7 +174,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
         >
           <RangeSliderFilter
             min={2000}
-            max={new Date().getFullYear() + 1}
+            max={maxYear}
             step={1}
             value={filters.yearRange}
             onChange={(value) =>
@@ -198,8 +205,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
           isDarkMode={isDarkMode}
         >
           <MultiSelectFilter
-            // ✅ CORRECCIÓN: Mapear las opciones al formato { value, label }
-            options={filterOptions.brands.map((brand) => ({ value: brand, label: brand }))}
+            options={filterOptions.brands}
             selected={filters.brands}
             onChange={(newSelection) => updateFilter("brands", newSelection)}
             isDarkMode={isDarkMode}

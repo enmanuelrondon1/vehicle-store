@@ -23,7 +23,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface MultiSelectFilterProps {
-  options: (string | { value: string; label: string })[];
+  options: { value: string; label: string; count?: number }[];
   selected: string[];
   onChange: (selected: string[]) => void;
   placeholder?: string;
@@ -47,12 +47,6 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
 }) => {
   const [open, setOpen] = React.useState(false);
 
-  const formattedOptions = React.useMemo(() => {
-    return options.map((option) =>
-      typeof option === "string" ? { value: option, label: option } : option
-    );
-  }, [options]);
-
   const handleUnselect = (item: string) => {
     onChange(selected.filter((i) => i !== item));
   };
@@ -70,7 +64,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
             {selected.length > 0 ? (
               selected.map((value) => {
                 const optionLabel =
-                  formattedOptions.find((opt) => opt.value === value)?.label ||
+                  options.find((opt) => opt.value === value)?.label ||
                   value;
                 return (
                   <Badge
@@ -141,7 +135,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
           <CommandList className="max-h-[300px] overflow-y-auto">
             <CommandEmpty>No se encontraron resultados.</CommandEmpty>
             <CommandGroup>
-              {formattedOptions.map((option) => (
+              {options.map((option) => (
                 <CommandItem
                   key={option.value}
                   onSelect={() => {
@@ -161,7 +155,17 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
                         : "opacity-0"
                     )}
                   />
-                  {option.label}
+                  <span className="flex-1">{option.label}</span>
+                  {option.count !== undefined && option.count > 0 && (
+                    <span
+                      className={cn(
+                        "ml-2 text-xs px-1.5 py-0.5 rounded-full",
+                        isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-600"
+                      )}
+                    >
+                      {option.count}
+                    </span>
+                  )}
                 </CommandItem>
               ))}
             </CommandGroup>

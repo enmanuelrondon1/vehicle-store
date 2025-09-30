@@ -119,6 +119,7 @@ export const SALE_TYPE_LABELS: Record<SaleType, string> = {
 
 // ✅ CORRECCIÓN: Añadir y exportar el mapa de etiquetas para las ubicaciones.
 export const LOCATION_LABELS: Record<string, string> = {
+  // Estados venezolanos (originales)
   amazonas: "Amazonas",
   anzoategui: "Anzoátegui",
   apure: "Apure",
@@ -143,4 +144,11 @@ export const LOCATION_LABELS: Record<string, string> = {
   vargas: "Vargas",
   yaracuy: "Yaracuy",
   zulia: "Zulia",
+  
+  // Ciudades/estados mexicanos (basados en los datos reales de vehicles.json)
+  "leon": "León",
+  "ciudad-de-mexico": "Ciudad de México",
+  "monterrey": "Monterrey",
+  "queretaro": "Querétaro",
+  "puebla": "Puebla",
 };

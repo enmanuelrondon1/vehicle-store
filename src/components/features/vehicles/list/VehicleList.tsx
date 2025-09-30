@@ -1,4 +1,4 @@
-// src/components/features/vehicles/list/VehicleList.tsx
+// src/components/features/vehicles/list/VehicleList.tsxmi pagina 
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react"; // ✅ CAMBIO: Añadimos useEffect

@@ -1,4 +1,4 @@
-// src/components/features/vehicles/list/useVehicleFiltering.ts
+// src/hooks/useVehicleFiltering.ts
 "use client";
 
 import { useDebounce } from "@/hooks/useDebounce"; // ✅ SOLUCIÓN: Importar el hook useDebounce
@@ -16,6 +16,21 @@ import { LOCATION_LABELS } from "@/types/shared"; // ✅ CORRECCIÓN: Importar L
 import type { Vehicle, AdvancedFilters, FilterOptions } from "@/types/types";
 import { SORT_OPTIONS } from "@/types/types"; // ✅ CORRECCIÓN: Importar SORT_OPTIONS desde types.ts
 import { CATEGORY_DATA, COMMON_COLORS } from "@/constants/form-constants";
+
+// ✅ NUEVO: Función para contar opciones
+const getOptionsWithCounts = (
+  vehicles: Vehicle[],
+  key: "brand" | "color" | "location" | "condition"
+) => {
+  const counts = vehicles.reduce((acc, vehicle) => {
+    const value = vehicle[key];
+    if (value) {
+      acc[value] = (acc[value] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+  return counts;
+};
 
 const INITIAL_FILTERS: AdvancedFilters = {
   search: "",
@@ -38,9 +53,7 @@ const INITIAL_FILTERS: AdvancedFilters = {
   postedWithin: "all", // Ahora esto es válido gracias a la corrección en types.ts
 };
 
-const translateValue = (value: string, map: Record<string, string>): string => {
-  return map[value] || value;
-};
+
 
 export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
   const [vehicles] = useState<Vehicle[]>(initialVehicles);
@@ -50,8 +63,49 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
   const [showOnlyPublishedColors, setShowOnlyPublishedColors] = useState(false);
   const [showOnlyPublishedLocations, setShowOnlyPublishedLocations] = useState(false);
 
-  // ✅ MEJORA: Generar opciones de filtro dinámicamente a partir de los vehículos
+  // ✅ INICIO: Solución definitiva y centralizada para la normalización de ubicaciones
+  const locationStringToSlugMap = useMemo(() => {
+    const slugToLabelMap = LOCATION_LABELS;
+    return Object.entries(slugToLabelMap).reduce(
+      (acc, [slug, label]) => {
+        acc[label.toLowerCase().trim()] = slug;
+        acc[slug.toLowerCase().trim()] = slug;
+        return acc;
+      },
+      {} as Record<string, string>
+    );
+  }, []);
+
+  const getCanonicalLocationSlug = useCallback(
+    (locationString?: string) => {
+      if (!locationString) return undefined;
+      const parts = locationString.split(',');
+      const stateName = parts[parts.length - 1]?.trim().toLowerCase();
+      if (!stateName) return undefined;
+      return locationStringToSlugMap[stateName];
+    },
+    [locationStringToSlugMap]
+  );
+  // ✅ FIN: Solución definitiva
+
   const filterOptions = useMemo<FilterOptions>(() => {
+    const uniqueVehicleLocations = [...new Set(vehicles.map(v => v.location).filter(Boolean))];
+    console.log("Ubicaciones de vehículos en los datos:", uniqueVehicleLocations);
+
+    const brandCounts = getOptionsWithCounts(vehicles, "brand");
+    const colorCounts = getOptionsWithCounts(vehicles, "color");
+    const conditionCounts = getOptionsWithCounts(vehicles, "condition");
+
+    // ✅ CÁLCULO SEGURO: Contar solo ubicaciones normalizables
+    const locationCounts = vehicles.reduce((acc, vehicle) => {
+      const slug = getCanonicalLocationSlug(vehicle.location);
+      if (slug) {
+        acc[slug] = (acc[slug] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+
     const allBrands = [
       ...new Set(
         Object.values(CATEGORY_DATA).flatMap((category) =>
@@ -60,15 +114,45 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
       ),
     ].sort();
 
-    const publishedBrands = [...new Set(vehicles.map((v) => v.brand).filter(Boolean))].sort();
-    const brands = showOnlyPublishedBrands ? publishedBrands : allBrands;
+    const publishedBrands = [
+      ...new Set(vehicles.map((v) => v.brand).filter(Boolean)),
+    ].sort();
+    const brandsSource = showOnlyPublishedBrands ? publishedBrands : allBrands;
+    const brands = brandsSource.map((brand) => ({
+      value: brand,
+      label: brand,
+      count: brandCounts[brand] || 0,
+    }));
 
-    const allColors = COMMON_COLORS.map(c => ({ value: c, label: c }));
-    const publishedColors = [...new Set(vehicles.map((v) => v.color).filter(Boolean))].sort().map(c => ({ value: c, label: c }));
-    const colors = showOnlyPublishedColors ? publishedColors : allColors;
+    const allColorValues = COMMON_COLORS;
+    const publishedColorValues = [
+      ...new Set(vehicles.map((v) => v.color).filter(Boolean)),
+    ].sort();
+    const colorsSource = showOnlyPublishedColors
+      ? publishedColorValues
+      : allColorValues;
+    const colors = colorsSource.map((color) => ({
+      value: color,
+      label: color,
+      count: colorCounts[color] || 0,
+    }));
 
-    const allLocations = Object.entries(LOCATION_LABELS).map(([value, label]) => ({ value, label }));
-    const publishedLocations = [...new Set(vehicles.map((v) => v.location).filter(Boolean))].sort().map(l => ({ value: l, label: translateValue(l, LOCATION_LABELS) }));
+    const allLocations = Object.entries(LOCATION_LABELS).map(([value, label]) => ({
+      value,
+      label,
+      count: locationCounts[value] || 0,
+    }));
+
+    const publishedLocations = [
+      ...new Set(
+        vehicles.map((v) => getCanonicalLocationSlug(v.location)).filter(Boolean) as string[]
+      ),
+    ].sort().map((slug) => ({
+      value: slug,
+      label: LOCATION_LABELS[slug as keyof typeof LOCATION_LABELS] || slug,
+      count: locationCounts[slug] || 0,
+    }));
+
     const locations = showOnlyPublishedLocations ? publishedLocations : allLocations;
 
     return {
@@ -77,25 +161,33 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
       brands,
       colors,
       locations,
-      conditions: Object.entries(VEHICLE_CONDITIONS_LABELS).map(([value, label]) => ({ value, label })),
-      fuelTypes: Object.entries(FUEL_TYPES_LABELS).map(([value, label]) => ({ value, label })),
+      conditions: Object.entries(VEHICLE_CONDITIONS_LABELS).map(
+        ([value, label]) => ({
+          value,
+          label,
+          count: conditionCounts[value] || 0,
+        })
+      ),
+      fuelTypes: Object.entries(FUEL_TYPES_LABELS).map(([value, label]) => ({
+        value,
+        label,
+      })),
       transmissions: Object.entries(TRANSMISSION_TYPES_LABELS).map(([value, label]) => ({ value, label })),
       driveTypes: Object.entries(DRIVE_TYPE_LABELS).map(([value, label]) => ({ value, label })),
       saleTypes: Object.entries(SALE_TYPE_LABELS).map(([value, label]) => ({ value, label })),
-      features: [], // Se puede implementar después
+      features: [],
     };
-  }, [vehicles, showOnlyPublishedBrands, showOnlyPublishedColors, showOnlyPublishedLocations]);
+  }, [vehicles, showOnlyPublishedBrands, showOnlyPublishedColors, showOnlyPublishedLocations, getCanonicalLocationSlug]);
 
-  // ✅ MEJORA: Usar el término de búsqueda con retardo para el filtrado
   const debouncedSearchTerm = useDebounce(filters.search, 300);
   const applyFilters = useCallback(() => {
     let filtered = vehicles;
 
-    // Lógica de búsqueda
-    if (debouncedSearchTerm) { // ✅ CORRECCIÓN: Usar el valor con retardo
+    if (debouncedSearchTerm) {
       const searchTerm = debouncedSearchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (vehicle) =>
+      filtered = filtered.filter((vehicle) => {
+        const canonicalLocation = getCanonicalLocationSlug(vehicle.location);
+        return (
           (vehicle.brand && vehicle.brand.toLowerCase().includes(searchTerm)) ||
           (vehicle.model && vehicle.model.toLowerCase().includes(searchTerm)) ||
           (vehicle.description &&
@@ -104,14 +196,13 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
             vehicle.features.some(
               (feature) => feature && feature.toLowerCase().includes(searchTerm)
             )) ||
-          (vehicle.location &&
-            vehicle.location.toLowerCase().includes(searchTerm)) ||
+          (canonicalLocation && canonicalLocation.includes(searchTerm)) || // ✅ Búsqueda con ubicación normalizada
           (vehicle.category &&
             vehicle.category.toLowerCase().includes(searchTerm))
-      );
+        );
+      });
     }
 
-    // Filtros avanzados
     if (filters.category !== "all") {
       filtered = filtered.filter((v) => v.category === filters.category);
     }
@@ -125,20 +216,19 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
       filtered = filtered.filter((v) => v.color && filters.colors.includes(v.color));
     }
     if (filters.condition.length > 0) {
-      filtered = filtered.filter((v) => filters.condition.includes(v.condition));
+      filtered = filtered.filter((v) => v.condition && filters.condition.includes(v.condition));
     }
     if (filters.fuelType.length > 0) {
-      filtered = filtered.filter((v) => filters.fuelType.includes(v.fuelType));
+      filtered = filtered.filter((v) => v.fuelType && filters.fuelType.includes(v.fuelType));
     }
     if (filters.transmission.length > 0) {
       filtered = filtered.filter((v) => filters.transmission.includes(v.transmission));
     }
     if (filters.location.length > 0) {
-      // La comparación directa es correcta porque tanto `filters.location` como `v.location`
-      // usan el formato "slug" (ej: "distrito-capital").
-      filtered = filtered.filter(
-        (v) => v.location && filters.location.includes(v.location)
-      );
+      filtered = filtered.filter((v) => {
+        const vehicleLocationSlug = getCanonicalLocationSlug(v.location);
+        return vehicleLocationSlug && filters.location.includes(vehicleLocationSlug);
+      });
     }
     if (filters.driveType.length > 0) {
       filtered = filtered.filter(
@@ -239,7 +329,7 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
     }
 
     return filtered;
-  }, [vehicles, filters, sortBy, debouncedSearchTerm]); // ✅ CORRECCIÓN: Añadir debouncedSearchTerm a las dependencias de applyFilters
+  }, [vehicles, filters, sortBy, debouncedSearchTerm, getCanonicalLocationSlug]); // ✅ CORRECCIÓN: Añadir getCanonicalLocationSlug
 
   // ✅ SOLUCIÓN: Simplificar las dependencias del useMemo. applyFilters ya contiene todo lo necesario.
   const filteredVehicles = useMemo(() => applyFilters(), [applyFilters]);

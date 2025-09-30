@@ -56,13 +56,14 @@ export interface AdvancedFilters {
 export interface FilterOption {
   value: string;
   label: string;
+  count?: number;
 }
 
 // ✅ CORRECCIÓN: Añadir y exportar la interfaz FilterOptions
 export interface FilterOptions {
   categories: FilterOption[];
   subcategories: string[];
-  brands: string[];
+  brands: FilterOption[];
   conditions: FilterOption[];
   colors: FilterOption[];
   fuelTypes: FilterOption[];

@@ -65,10 +65,10 @@ export const banks: Bank[] = [
 // ===============================
 
 export const VENEZUELAN_STATES = [
-  "Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar",
-  "Carabobo", "Cojedes", "Delta Amacuro", "Distrito Capital", "Falcón",
-  "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta",
-  "Portuguesa", "Sucre", "Táchira", "Trujillo", "Vargas", "Yaracuy", "Zulia"
+  "amazonas", "anzoategui", "apure", "aragua", "barinas", "bolivar",
+  "carabobo", "cojedes", "delta-amacuro", "distrito-capital", "falcon",
+  "guarico", "lara", "merida", "miranda", "monagas", "nueva-esparta",
+  "portuguesa", "sucre", "tachira", "trujillo", "vargas", "yaracuy", "zulia"
 ].sort();
 
 export const phoneCodes = ["0412", "0424", "0414", "0426", "0416"];

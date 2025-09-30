@@ -1,4 +1,4 @@
-// src/components/features/vehicles/list/filters/CheckboxFilter.tsx
+// src/components/features/vehicles/list/CheckboxFilter.tsx
 "use client";
 
 import type { FC } from "react";
