@@ -8,7 +8,7 @@ import Link from "next/link";
 import {
   Heart,
   Share2,
-  Copy, // Reemplazo de Compare
+  Copy,
   Car,
   Fuel,
   Calendar,
@@ -18,7 +18,6 @@ import {
   Star,
 } from "lucide-react";
 import { Vehicle, VehicleCondition } from "@/types/types";
-import { ApprovalStatus } from "@/types/types";
 import {
   VEHICLE_CONDITIONS_LABELS,
   FUEL_TYPES_LABELS,
@@ -26,11 +25,11 @@ import {
   WARRANTY_LABELS,
 } from "@/types/shared";
 
-const STATUS_MAP = {
-  [ApprovalStatus.PENDING]: "Pendiente",
-  [ApprovalStatus.APPROVED]: "Aprobado",
-  [ApprovalStatus.REJECTED]: "Rechazado",
-} as const;
+// const STATUS_MAP = {
+//   [ApprovalStatus.PENDING]: "Pendiente",
+//   [ApprovalStatus.APPROVED]: "Aprobado",
+//   [Approval_Status.REJECTED]: "Rechazado",
+// } as const;
 
 const VehicleCard = ({
   vehicle,
@@ -90,6 +89,10 @@ const VehicleCard = ({
     onToggleCompare(vehicle._id);
   };
 
+  const translateValue = (value: string, map: Record<string, string>): string => {
+    return map[value] || value;
+  };
+
   const translatedCondition = translateValue(
     vehicle.condition,
     VEHICLE_CONDITIONS_LABELS
@@ -102,7 +105,7 @@ const VehicleCard = ({
     vehicle.transmission,
     TRANSMISSION_TYPES_LABELS
   );
-  const translatedStatus = translateValue(vehicle.status, STATUS_MAP);
+  // const translatedStatus = translateValue(vehicle.status, STATUS_MAP);
 
   if (viewMode === "list") {
     return (
@@ -159,12 +162,12 @@ const VehicleCard = ({
                   isInCompareList
                     ? "bg-blue-600 text-white"
                     : isDarkMode
-                      ? "bg-gray-900/70 hover:bg-gray-800 text-gray-300"
-                      : "bg-white/70 hover:bg-white text-gray-600"
+                    ? "bg-gray-900/70 hover:bg-gray-800 text-gray-300"
+                    : "bg-white/70 hover:bg-white text-gray-600"
                 } backdrop-blur-sm transition-colors`}
                 title="Comparar"
               >
-                <Copy className="w-4 h-4" /> {/* Reemplazo de Compare */}
+                <Copy className="w-4 h-4" />
               </button>
               <button
                 onClick={handleFavorite}
@@ -179,8 +182,8 @@ const VehicleCard = ({
                     isFavorited
                       ? "fill-red-500 text-red-500"
                       : isDarkMode
-                        ? "text-gray-300"
-                        : "text-gray-600"
+                      ? "text-gray-300"
+                      : "text-gray-600"
                   }`}
                 />
               </button>
@@ -297,7 +300,7 @@ const VehicleCard = ({
                     isDarkMode ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
-                  {translatedStatus}
+                  {/* {translatedStatus} */}
                 </span>
               </div>
             </div>
@@ -333,9 +336,10 @@ const VehicleCard = ({
     );
   }
 
+  // Grid View
   return (
     <div
-      className={`${
+      className={`flex flex-col ${
         isDarkMode
           ? "bg-gray-800/50 border-gray-700 hover:bg-gray-800"
           : "bg-white/50 border-gray-200 hover:bg-white"
@@ -386,12 +390,12 @@ const VehicleCard = ({
               isInCompareList
                 ? "bg-blue-600 text-white"
                 : isDarkMode
-                  ? "bg-gray-900/70 hover:bg-gray-800 text-gray-300"
-                  : "bg-white/70 hover:bg-white text-gray-600"
+                ? "bg-gray-900/70 hover:bg-gray-800 text-gray-300"
+                : "bg-white/70 hover:bg-white text-gray-600"
             } backdrop-blur-sm shadow-lg transition-colors`}
             title="Comparar"
           >
-            <Copy className="w-4 h-4" /> {/* Reemplazo de Compare */}
+            <Copy className="w-4 h-4" />
           </button>
           <button
             onClick={handleFavorite}
@@ -406,8 +410,8 @@ const VehicleCard = ({
                 isFavorited
                   ? "fill-red-500 text-red-500"
                   : isDarkMode
-                    ? "text-gray-300"
-                    : "text-gray-600"
+                  ? "text-gray-300"
+                  : "text-gray-600"
               }`}
             />
           </button>
@@ -427,7 +431,7 @@ const VehicleCard = ({
           </button>
         </div>
       </div>
-      <div className="p-6">
+      <div className="p-6 flex-grow flex flex-col">
         <h3
           className={`text-xl font-bold mb-3 ${
             isDarkMode ? "text-gray-100" : "text-gray-800"
@@ -435,157 +439,84 @@ const VehicleCard = ({
         >
           {`${vehicle.brand} ${vehicle.model} (${vehicle.year})`}
         </h3>
-        <p className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           {formatPrice(vehicle.price)}
         </p>
-        <div className="space-y-3 text-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Car
-                className={`w-4 h-4 ${
-                  isDarkMode ? "text-gray-400" : "text-gray-600"
-                }`}
-              />
-              <span
-                className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}
-              >
-                Kilometraje:
-              </span>
-            </div>
-            <span
-              className={`font-semibold ${
-                isDarkMode ? "text-gray-300" : "text-gray-700"
+        <div
+          className={`grid grid-cols-4 gap-2 text-center border-t border-b ${
+            isDarkMode ? "border-gray-700" : "border-gray-200"
+          } py-3 my-4`}
+        >
+          <div>
+            <Car
+              className={`w-5 h-5 mx-auto ${
+                isDarkMode ? "text-gray-400" : "text-gray-500"
               }`}
-            >
-              {formatMileage(vehicle.mileage)} km
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Settings2
-                className={`w-4 h-4 ${
-                  isDarkMode ? "text-gray-400" : "text-gray-600"
-                }`}
-              />
-              <span
-                className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}
-              >
-                Transmisión:
-              </span>
-            </div>
-            <span
-              className={`font-medium ${
-                isDarkMode ? "text-gray-300" : "text-gray-700"
-              }`}
+            />
+            <p
+              className={`text-xs mt-1 ${
+                isDarkMode ? "text-gray-300" : "text-gray-600"
+              } line-clamp-1`}
+              title={translatedTransmission}
             >
               {translatedTransmission}
-            </span>
+            </p>
           </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Fuel
-                className={`w-4 h-4 ${
-                  isDarkMode ? "text-gray-400" : "text-gray-600"
-                }`}
-              />
-              <span
-                className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}
-              >
-                Combustible:
-              </span>
-            </div>
-            <span
-              className={`font-medium ${
-                isDarkMode ? "text-gray-300" : "text-gray-700"
+          <div>
+            <Settings2
+              className={`w-5 h-5 mx-auto ${
+                isDarkMode ? "text-gray-400" : "text-gray-500"
               }`}
+            />
+            <p
+              className={`text-xs mt-1 ${
+                isDarkMode ? "text-gray-300" : "text-gray-600"
+              } line-clamp-1`}
+            >
+              {formatMileage(vehicle.mileage)} km
+            </p>
+          </div>
+          <div>
+            <Fuel
+              className={`w-5 h-5 mx-auto ${
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            />
+            <p
+              className={`text-xs mt-1 ${
+                isDarkMode ? "text-gray-300" : "text-gray-600"
+              } line-clamp-1`}
+              title={translatedFuelType}
             >
               {translatedFuelType}
-            </span>
+            </p>
           </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MapPin
-                className={`w-4 h-4 ${
-                  isDarkMode ? "text-gray-400" : "text-gray-600"
-                }`}
-              />
-              <span
-                className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}
-              >
-                Ubicación:
-              </span>
-            </div>
-            <span
-              className={`font-medium ${
-                isDarkMode ? "text-gray-300" : "text-gray-700"
+          <div>
+            <MapPin
+              className={`w-5 h-5 mx-auto ${
+                isDarkMode ? "text-gray-400" : "text-gray-500"
               }`}
+            />
+            <p
+              className={`text-xs mt-1 ${
+                isDarkMode ? "text-gray-300" : "text-gray-600"
+              } line-clamp-1`}
             >
               {vehicle.location}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MapPin
-                className={`w-4 h-4 ${
-                  isDarkMode ? "text-gray-400" : "text-gray-600"
-                }`}
-              />
-              <span
-                className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}
-              >
-                Estado:
-              </span>
-            </div>
-            <span
-              className={`font-medium ${
-                isDarkMode ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              {translatedStatus}
-            </span>
+            </p>
           </div>
         </div>
-        {vehicle.features.length > 0 && (
-          <div className="mt-4">
-            <div className="flex flex-wrap gap-2">
-              {vehicle.features.slice(0, 3).map((feature: string) => (
-                <span
-                  key={feature}
-                  className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded"
-                >
-                  {feature}
-                </span>
-              ))}
-              {vehicle.features.length > 3 && (
-                <span className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">
-                  +{vehicle.features.length - 3}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-        {vehicle.warranty && WARRANTY_LABELS[vehicle.warranty] && (
-          <div className="mt-3">
-            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-              {WARRANTY_LABELS[vehicle.warranty]}
-            </span>
-          </div>
-        )}
       </div>
-      <div className="p-6 pt-0">
+      <div className="p-6 pt-0 mt-auto">
         <Link
           href={`/vehicle/${vehicle._id}`}
-          className="w-full p-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl rounded"
+          className="flex items-center justify-center w-full p-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl rounded"
         >
           Ver Detalles
         </Link>
       </div>
     </div>
   );
-};
-
-const translateValue = (value: string, map: Record<string, string>): string => {
-  return map[value] || value;
 };
 
 export default VehicleCard;

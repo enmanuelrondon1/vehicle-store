@@ -2,8 +2,9 @@
 "use client";
 
 import type React from "react";
-import {  X } from "lucide-react";
+import { X } from "lucide-react";
 import { IoMdGitCompare } from "react-icons/io";
+import { useRouter } from "next/navigation"; // ✅ MEJORA: Importar el router
 
 interface CompareBarProps {
   compareList: string[];
@@ -16,6 +17,14 @@ const CompareBar: React.FC<CompareBarProps> = ({
   setCompareList,
   isDarkMode,
 }) => {
+  const router = useRouter(); // ✅ MEJORA: Inicializar el router
+
+  const handleCompare = () => {
+    const params = new URLSearchParams();
+    compareList.forEach((id) => params.append("vehicles", id));
+    router.push(`/compare?${params.toString()}`);
+  };
+
   return (
     <div className="mb-6 flex items-center justify-center gap-3">
       <span
@@ -26,10 +35,10 @@ const CompareBar: React.FC<CompareBarProps> = ({
         {compareList.length} vehículos para comparar
       </span>
       <button
-        onClick={() => console.log("Comparar:", compareList)}
+        onClick={handleCompare}
         className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center gap-2"
       >
-        <IoMdGitCompare  className="w-4 h-4" />
+        <IoMdGitCompare className="w-4 h-4" />
         Comparar ({compareList.length})
       </button>
       <button

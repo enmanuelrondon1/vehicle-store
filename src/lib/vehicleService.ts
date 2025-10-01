@@ -1,4 +1,4 @@
-// src/services/vehicleService.ts
+// src/lib/vehicleService.ts
 import { Db, Collection, ObjectId } from "mongodb";
 import {
   VehicleDataBackend as VehicleData,
@@ -8,6 +8,7 @@ import {
 } from "@/types/types";
 import { ValidationUtils } from "../lib/validation";
 import { pusherServer } from "@/lib/pusher";
+import { getDb } from "./mongodb";
 // import { pusherServer } from "@/lib/pusher";
 
 // Tipo específico para MongoDB con ObjectId real
@@ -94,6 +95,11 @@ export class VehicleService {
   constructor(db: Db) {
     this.db = db;
     this.collection = db.collection<VehicleDataMongo>("vehicles");
+  }
+
+  public static async getInstance(): Promise<VehicleService> {
+    const db = await getDb();
+    return new VehicleService(db);
   }
 
   // Función helper para convertir VehicleData a VehicleDataMongo
@@ -299,7 +305,6 @@ export class VehicleService {
           error: "Vehículo no encontrado",
         };
       }
-
       const { convertToFrontend } = await import("@/types/types");
       const backendData = this.convertFromMongo(vehicle);
 
