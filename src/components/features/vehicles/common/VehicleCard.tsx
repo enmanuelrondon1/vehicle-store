@@ -5,6 +5,8 @@ import type React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSession, signIn } from "next-auth/react";
+import toast from "react-hot-toast";
 import {
   Heart,
   Share2,
@@ -25,28 +27,27 @@ import {
   WARRANTY_LABELS,
 } from "@/types/shared";
 
-// const STATUS_MAP = {
-//   [ApprovalStatus.PENDING]: "Pendiente",
-//   [ApprovalStatus.APPROVED]: "Aprobado",
-//   [Approval_Status.REJECTED]: "Rechazado",
-// } as const;
-
 const VehicleCard = ({
   vehicle,
   isDarkMode,
   viewMode,
   onToggleCompare,
   isInCompareList,
+  isFavorited,
+  onFavoriteToggle,
 }: {
   vehicle: Vehicle;
   isDarkMode: boolean;
   viewMode: "grid" | "list";
   onToggleCompare: (vehicleId: string) => void;
   isInCompareList: boolean;
+  isFavorited: boolean;
+  onFavoriteToggle: (vehicleId: string, isNowFavorited: boolean) => void;
 }) => {
+  const { data: session } = useSession();
   const [imageError, setImageError] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
-  const [isFavorited, setIsFavorited] = useState(false);
+  const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("es-ES", {
@@ -68,9 +69,47 @@ const VehicleCard = ({
     setIsImageLoading(false);
   };
 
-  const handleFavorite = (e: React.MouseEvent) => {
+  const handleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsFavorited(!isFavorited);
+    e.preventDefault();
+
+    if (!session) {
+      signIn();
+      return;
+    }
+
+    if (isLoadingFavorite) return;
+
+    setIsLoadingFavorite(true);
+
+    try {
+      const response = await fetch("/api/user/favorites", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ vehicleId: vehicle._id }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const isNowFavorited = data.action === "added";
+        onFavoriteToggle(vehicle._id, isNowFavorited);
+        if (isNowFavorited) {
+        toast.success("Añadido a favoritos");
+        } else {
+        toast.error("Eliminado de favoritos");
+        }
+      } else {
+        toast.error("No se pudo actualizar favoritos");
+        console.error("Failed to update favorite status");
+      }
+    } catch (error) {
+      toast.error("Error al actualizar favoritos");
+      console.error("Error updating favorite status:", error);
+    } finally {
+      setIsLoadingFavorite(false);
+    }
   };
 
   const handleShare = (e: React.MouseEvent) => {
@@ -105,7 +144,6 @@ const VehicleCard = ({
     vehicle.transmission,
     TRANSMISSION_TYPES_LABELS
   );
-  // const translatedStatus = translateValue(vehicle.status, STATUS_MAP);
 
   if (viewMode === "list") {
     return (

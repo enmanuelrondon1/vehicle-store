@@ -3,6 +3,7 @@ import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
 import { DarkModeProvider } from "@/context/DarkModeContext";
 import ClientLayout from "@/components/shared/layout/ClientLayout";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "VehicleStore",
@@ -49,7 +50,10 @@ export default function RootLayout({
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 pt-16`}
       >
         <DarkModeProvider>
-          <ClientLayout>{children}</ClientLayout>
+          <ClientLayout>
+            {children}
+            <Toaster position="bottom-right" />
+          </ClientLayout>
         </DarkModeProvider>
       </body>
     </html>

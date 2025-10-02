@@ -1,3 +1,4 @@
+//src/components/features/vehicles/compare/CompareTable.tsx
 "use client";
 
 import { Vehicle } from "@/types/types";

@@ -1,7 +1,3 @@
-
-
-
-
 // TODO: NUEVA 
 
 // src/components/shared/Navbar/NavMenu.tsx
@@ -12,7 +8,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Phone, LogOut, ChevronDown, User, Shield } from "lucide-react";
+import { Menu, X, Phone, LogOut, ChevronDown, User, Shield, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import {
@@ -331,6 +327,12 @@ const NavMenu = () => {
                       <DropdownMenuItem className="cursor-pointer hover:bg-opacity-10 transition-colors duration-150">
                         <User className="w-4 h-4 mr-2" />
                         Perfil
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="cursor-pointer hover:bg-opacity-10 transition-colors duration-150">
+                        <Link href="/my-favorites" className="flex items-center w-full">
+                          <Heart className="w-4 h-4 mr-2" />
+                          Mis Favoritos
+                        </Link>
                       </DropdownMenuItem>
                       {/* 🔥 AdminPanel también en el dropdown del usuario */}
                       {isAdmin && (
