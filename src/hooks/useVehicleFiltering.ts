@@ -1,8 +1,8 @@
 // src/hooks/useVehicleFiltering.ts
 "use client";
 
-import { useDebounce } from "@/hooks/useDebounce"; // ✅ SOLUCIÓN: Importar el hook useDebounce
-import { useState, useMemo, useCallback } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   VEHICLE_CONDITIONS_LABELS,
   FUEL_TYPES_LABELS,
@@ -11,24 +11,34 @@ import {
   SALE_TYPE_LABELS,
   WarrantyType,
   VEHICLE_CATEGORIES_LABELS,
-} from "@/types/shared"; // ✅ CORRECCIÓN: Importar desde 'shared'
-import { LOCATION_LABELS } from "@/types/shared"; // ✅ CORRECCIÓN: Importar LOCATION_LABELS
+} from "@/types/shared";
+import { LOCATION_LABELS } from "@/types/shared";
 import type { Vehicle, AdvancedFilters, FilterOptions } from "@/types/types";
-import { SORT_OPTIONS } from "@/types/types"; // ✅ CORRECCIÓN: Importar SORT_OPTIONS desde types.ts
+import { SORT_OPTIONS } from "@/types/types";
 import { CATEGORY_DATA, COMMON_COLORS } from "@/constants/form-constants";
 
-// ✅ NUEVO: Función para contar opciones
 const getOptionsWithCounts = (
   vehicles: Vehicle[],
-  key: "brand" | "color" | "location" | "condition" | "category" | "fuelType" | "transmission" | "driveType"
+  key:
+    | "brand"
+    | "color"
+    | "location"
+    | "condition"
+    | "category"
+    | "fuelType"
+    | "transmission"
+    | "driveType"
 ) => {
-  const counts = vehicles.reduce((acc, vehicle) => {
-    const value = vehicle[key];
-    if (value) {
-      acc[value] = (acc[value] || 0) + 1;
-    }
-    return acc;
-  }, {} as Record<string, number>);
+  const counts = vehicles.reduce(
+    (acc, vehicle) => {
+      const value = vehicle[key];
+      if (value) {
+        acc[value] = (acc[value] || 0) + 1;
+      }
+      return acc;
+    },
+    {} as Record<string, number>
+  );
   return counts;
 };
 
@@ -50,10 +60,8 @@ const INITIAL_FILTERS: AdvancedFilters = {
   saleType: [],
   hasWarranty: false,
   isFeatured: false,
-  postedWithin: "all", // Ahora esto es válido gracias a la corrección en types.ts
+  postedWithin: "all",
 };
-
-
 
 export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
   const [vehicles] = useState<Vehicle[]>(initialVehicles);
@@ -61,9 +69,13 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
   const [sortBy, setSortBy] = useState("relevance");
   const [showOnlyPublishedBrands, setShowOnlyPublishedBrands] = useState(false);
   const [showOnlyPublishedColors, setShowOnlyPublishedColors] = useState(false);
-  const [showOnlyPublishedLocations, setShowOnlyPublishedLocations] = useState(false);
+  const [showOnlyPublishedLocations, setShowOnlyPublishedLocations] =
+    useState(false);
 
-  // ✅ INICIO: Solución definitiva y centralizada para la normalización de ubicaciones
+  useEffect(() => {
+    console.log("Valor de sortBy:", sortBy);
+  }, [sortBy]);
+
   const locationStringToSlugMap = useMemo(() => {
     const slugToLabelMap = LOCATION_LABELS;
     return Object.entries(slugToLabelMap).reduce(
@@ -79,19 +91,15 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
   const getCanonicalLocationSlug = useCallback(
     (locationString?: string) => {
       if (!locationString) return undefined;
-      const parts = locationString.split(',');
+      const parts = locationString.split(",");
       const stateName = parts[parts.length - 1]?.trim().toLowerCase();
       if (!stateName) return undefined;
       return locationStringToSlugMap[stateName];
     },
     [locationStringToSlugMap]
   );
-  // ✅ FIN: Solución definitiva
 
   const filterOptions = useMemo<FilterOptions>(() => {
-    const uniqueVehicleLocations = [...new Set(vehicles.map(v => v.location).filter(Boolean))];
-    console.log("Ubicaciones de vehículos en los datos:", uniqueVehicleLocations);
-
     const brandCounts = getOptionsWithCounts(vehicles, "brand");
     const colorCounts = getOptionsWithCounts(vehicles, "color");
     const conditionCounts = getOptionsWithCounts(vehicles, "condition");
@@ -100,15 +108,16 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
     const transmissionCounts = getOptionsWithCounts(vehicles, "transmission");
     const driveTypeCounts = getOptionsWithCounts(vehicles, "driveType");
 
-    // ✅ CÁLCULO SEGURO: Contar solo ubicaciones normalizables
-    const locationCounts = vehicles.reduce((acc, vehicle) => {
-      const slug = getCanonicalLocationSlug(vehicle.location);
-      if (slug) {
-        acc[slug] = (acc[slug] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
-
+    const locationCounts = vehicles.reduce(
+      (acc, vehicle) => {
+        const slug = getCanonicalLocationSlug(vehicle.location);
+        if (slug) {
+          acc[slug] = (acc[slug] || 0) + 1;
+        }
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     const allBrands = [
       ...new Set(
@@ -141,30 +150,40 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
       count: colorCounts[color] || 0,
     }));
 
-    const allLocations = Object.entries(LOCATION_LABELS).map(([value, label]) => ({
-      value,
-      label,
-      count: locationCounts[value] || 0,
-    }));
+    const allLocations = Object.entries(LOCATION_LABELS).map(
+      ([value, label]) => ({
+        value,
+        label,
+        count: locationCounts[value] || 0,
+      })
+    );
 
     const publishedLocations = [
       ...new Set(
-        vehicles.map((v) => getCanonicalLocationSlug(v.location)).filter(Boolean) as string[]
+        vehicles
+          .map((v) => getCanonicalLocationSlug(v.location))
+          .filter(Boolean) as string[]
       ),
-    ].sort().map((slug) => ({
-      value: slug,
-      label: LOCATION_LABELS[slug as keyof typeof LOCATION_LABELS] || slug,
-      count: locationCounts[slug] || 0,
-    }));
+    ]
+      .sort()
+      .map((slug) => ({
+        value: slug,
+        label: LOCATION_LABELS[slug as keyof typeof LOCATION_LABELS] || slug,
+        count: locationCounts[slug] || 0,
+      }));
 
-    const locations = showOnlyPublishedLocations ? publishedLocations : allLocations;
+    const locations = showOnlyPublishedLocations
+      ? publishedLocations
+      : allLocations;
 
     return {
-      categories: Object.entries(VEHICLE_CATEGORIES_LABELS).map(([value, label]) => ({
-        value,
-        label,
-        count: categoryCounts[value] || 0,
-      })),
+      categories: Object.entries(VEHICLE_CATEGORIES_LABELS).map(
+        ([value, label]) => ({
+          value,
+          label,
+          count: categoryCounts[value] || 0,
+        })
+      ),
       subcategories: [],
       brands,
       colors,
@@ -181,24 +200,35 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
         label,
         count: fuelTypeCounts[value] || 0,
       })),
-      transmissions: Object.entries(TRANSMISSION_TYPES_LABELS).map(([value, label]) => ({
-        value,
-        label,
-        count: transmissionCounts[value] || 0,
-      })),
+      transmissions: Object.entries(TRANSMISSION_TYPES_LABELS).map(
+        ([value, label]) => ({
+          value,
+          label,
+          count: transmissionCounts[value] || 0,
+        })
+      ),
       driveTypes: Object.entries(DRIVE_TYPE_LABELS).map(([value, label]) => ({
         value,
         label,
         count: driveTypeCounts[value] || 0,
       })),
-      saleTypes: Object.entries(SALE_TYPE_LABELS).map(([value, label]) => ({ value, label })),
+      saleTypes: Object.entries(SALE_TYPE_LABELS).map(([value, label]) => ({
+        value,
+        label,
+      })),
       features: [],
     };
-  }, [vehicles, showOnlyPublishedBrands, showOnlyPublishedColors, showOnlyPublishedLocations, getCanonicalLocationSlug]);
+  }, [
+    vehicles,
+    showOnlyPublishedBrands,
+    showOnlyPublishedColors,
+    showOnlyPublishedLocations,
+    getCanonicalLocationSlug,
+  ]);
 
   const debouncedSearchTerm = useDebounce(filters.search, 300);
   const applyFilters = useCallback(() => {
-    let filtered = vehicles;
+    let filtered = [...vehicles];
 
     if (debouncedSearchTerm) {
       const searchTerm = debouncedSearchTerm.toLowerCase();
@@ -213,7 +243,7 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
             vehicle.features.some(
               (feature) => feature && feature.toLowerCase().includes(searchTerm)
             )) ||
-          (canonicalLocation && canonicalLocation.includes(searchTerm)) || // ✅ Búsqueda con ubicación normalizada
+          (canonicalLocation && canonicalLocation.includes(searchTerm)) ||
           (vehicle.category &&
             vehicle.category.toLowerCase().includes(searchTerm))
         );
@@ -227,34 +257,47 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
       filtered = filtered.filter((v) => v.subcategory === filters.subcategory);
     }
     if (filters.brands.length > 0) {
-      filtered = filtered.filter((v) => filters.brands.includes(v.brand));
+      filtered = filtered.filter(
+        (v) => v.brand && filters.brands.includes(v.brand)
+      );
     }
     if (filters.colors.length > 0) {
-      filtered = filtered.filter((v) => v.color && filters.colors.includes(v.color));
+      filtered = filtered.filter(
+        (v) => v.color && filters.colors.includes(v.color)
+      );
     }
     if (filters.condition.length > 0) {
-      filtered = filtered.filter((v) => v.condition && filters.condition.includes(v.condition));
+      filtered = filtered.filter(
+        (v) => v.condition && filters.condition.includes(v.condition)
+      );
     }
     if (filters.fuelType.length > 0) {
-      filtered = filtered.filter((v) => v.fuelType && filters.fuelType.includes(v.fuelType));
+      filtered = filtered.filter(
+        (v) => v.fuelType && filters.fuelType.includes(v.fuelType)
+      );
     }
     if (filters.transmission.length > 0) {
-      filtered = filtered.filter((v) => filters.transmission.includes(v.transmission));
+      filtered = filtered.filter(
+        (v) => v.transmission && filters.transmission.includes(v.transmission)
+      );
     }
     if (filters.location.length > 0) {
       filtered = filtered.filter((v) => {
         const vehicleLocationSlug = getCanonicalLocationSlug(v.location);
-        return vehicleLocationSlug && filters.location.includes(vehicleLocationSlug);
+        return (
+          vehicleLocationSlug && filters.location.includes(vehicleLocationSlug)
+        );
       });
     }
     if (filters.driveType.length > 0) {
       filtered = filtered.filter(
-        (v) =>
-          v.driveType && filters.driveType.includes(v.driveType)
+        (v) => v.driveType && filters.driveType.includes(v.driveType)
       );
     }
     if (filters.saleType.length > 0) {
-      filtered = filtered.filter((v) => v.saleType && filters.saleType.includes(v.saleType));
+      filtered = filtered.filter(
+        (v) => v.saleType && filters.saleType.includes(v.saleType)
+      );
     }
     filtered = filtered.filter(
       (v) =>
@@ -270,17 +313,16 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
         (v) => v.warranty && v.warranty !== WarrantyType.NO_WARRANTY
       );
     }
-    if (filters.isFeatured) { 
+    if (filters.isFeatured) {
       filtered = filtered.filter((v) => v.isFeatured);
     }
-    // ✅ CORRECCIÓN: Refactorizar para que TypeScript entienda que `postedWithin` no es undefined.
-    if (filters.postedWithin && filters.postedWithin !== 'all') {
-      const postedWithinKey = filters.postedWithin as '24h' | '7d' | '30d';
+    if (filters.postedWithin && filters.postedWithin !== "all") {
+      const postedWithinKey = filters.postedWithin as "24h" | "7d" | "30d";
       const now = new Date();
       const timeLimit = {
-        '24h': 24 * 60 * 60 * 1000,
-        '7d': 7 * 24 * 60 * 60 * 1000,
-        '30d': 30 * 24 * 60 * 60 * 1000,
+        "24h": 24 * 60 * 60 * 1000,
+        "7d": 7 * 24 * 60 * 60 * 1000,
+        "30d": 30 * 24 * 60 * 60 * 1000,
       }[postedWithinKey];
 
       if (timeLimit) {
@@ -300,55 +342,78 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
 
     // Lógica de ordenamiento
     const sortOption = SORT_OPTIONS.find((option) => option.value === sortBy);
-    if (sortOption && sortOption.key !== "relevance") {
-      filtered.sort((a, b) => {
-        const getSortableValue = (val: unknown): string | number | Date => {
-          if (val === undefined || val === null) return sortOption.key === "createdAt" ? 0 : "";
-          if (typeof val === "string" || typeof val === "number") {
-            if (sortOption.key === "createdAt" && typeof val === "string") {
-              try {
-                const date = new Date(val);
-                return isNaN(date.getTime()) ? 0 : date;
-              } catch { return 0; }
+
+    if (sortOption) {
+      const getDateValue = (vehicle: Vehicle): number => {
+        const dateToCheck = vehicle.createdAt || vehicle.postedDate;
+        if (!dateToCheck) return 0;
+        try {
+          const date = new Date(dateToCheck);
+          return isNaN(date.getTime()) ? 0 : date.getTime();
+        } catch {
+          return 0;
+        }
+      };
+
+      if (sortBy === "relevance") {
+        filtered.sort((a, b) => {
+          if (a.isFeatured && !b.isFeatured) return -1;
+          if (!a.isFeatured && b.isFeatured) return 1;
+
+          const aDate = getDateValue(a);
+          const bDate = getDateValue(b);
+          return bDate - aDate;
+        });
+      } else {
+        filtered.sort((a, b) => {
+          let aValue: string | number | undefined | null;
+          let bValue: string | number | undefined | null;
+
+          if (sortOption.key === "createdAt") {
+            aValue = getDateValue(a);
+            bValue = getDateValue(b);
+          } else {
+            const key = sortOption.key as keyof Vehicle;
+            const valA = a[key];
+            const valB = b[key];
+
+            if (
+              (typeof valA === "string" || typeof valA === "number") &&
+              (typeof valB === "string" || typeof valB === "number")
+            ) {
+              aValue = valA;
+              bValue = valB;
+            } else {
+              aValue = null;
+              bValue = null;
             }
-            return val;
           }
-          if (val instanceof Date) return val;
-          return sortOption.key === "createdAt" ? 0 : "";
-        };
 
-        let aValue = getSortableValue(a[sortOption.key as keyof Vehicle]);
-        let bValue = getSortableValue(b[sortOption.key as keyof Vehicle]);
+          // Manejo de valores nulos o indefinidos
+          // Si aValue es nulo, se va al final. Si bValue es nulo, se va al final.
+          if (aValue == null) return 1;
+          if (bValue == null) return -1;
 
-        if (sortOption.key === "createdAt") {
-          const getDateValue = (vehicle: Vehicle): number => {
-            const dateToCheck = vehicle.createdAt || vehicle.postedDate;
-            if (!dateToCheck) return 0;
-            try {
-              const date = new Date(dateToCheck);
-              return isNaN(date.getTime()) ? 0 : date.getTime();
-            } catch { return 0; }
-          };
-          aValue = getDateValue(a);
-          bValue = getDateValue(b);
-        }
-
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          return sortOption.order === "asc"
-            ? aValue.localeCompare(bValue)
-            : bValue.localeCompare(aValue);
-        }
-
-        return sortOption.order === "asc"
-          ? (aValue as number) - (bValue as number)
-          : (bValue as number) - (aValue as number);
-      });
+          if (aValue < bValue) {
+            return sortOption.order === "asc" ? -1 : 1;
+          }
+          if (aValue > bValue) {
+            return sortOption.order === "asc" ? 1 : -1;
+          }
+          return 0;
+        });
+      }
     }
 
     return filtered;
-  }, [vehicles, filters, sortBy, debouncedSearchTerm, getCanonicalLocationSlug]); // ✅ CORRECCIÓN: Añadir getCanonicalLocationSlug
+  }, [
+    vehicles,
+    filters,
+    sortBy,
+    debouncedSearchTerm,
+    getCanonicalLocationSlug,
+  ]);
 
-  // ✅ SOLUCIÓN: Simplificar las dependencias del useMemo. applyFilters ya contiene todo lo necesario.
   const filteredVehicles = useMemo(() => applyFilters(), [applyFilters]);
 
   const clearAllFilters = useCallback(() => {
@@ -356,7 +421,6 @@ export const useVehicleFiltering = (initialVehicles: Vehicle[]) => {
   }, []);
 
   return {
-    // ✅ DEVOLVER LAS OPCIONES GENERADAS
     filterOptions,
     filters,
     setFilters,

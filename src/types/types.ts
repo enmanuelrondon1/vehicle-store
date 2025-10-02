@@ -317,7 +317,7 @@ export interface Vehicle {
 export const SORT_OPTIONS = [
   {
     value: "relevance",
-    label: "Más Relevantes",
+    label: "Predeterminado",
     key: "relevance" as const,
     order: "desc" as const,
   },

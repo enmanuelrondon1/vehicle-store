@@ -1,15 +1,22 @@
+//src/app/vehicleList/page.tsx
 import VehicleList from "@/components/features/vehicles/list/VehicleList";
 import { getApprovedVehicles } from "@/lib/vehicles";
+import { logger } from "@/lib/logger";
+import type { Vehicle } from "@/types/types";
+import { Suspense } from "react";
 
-export const metadata = {
-  title: "Listado de Vehículos - 1auto.market",
-  description: "Explora todos los vehículos disponibles para la venta.",
-};
+export const dynamic = "force-dynamic";
 
 export default async function VehicleListPage() {
-  // El servidor espera a que esta función termine antes de renderizar la página.
-  const initialVehicles = await getApprovedVehicles();
-
-  // Pasamos los datos directamente como prop al componente de cliente.
-  return <VehicleList initialVehicles={initialVehicles} />;
+  let initialVehicles: Vehicle[] = [];
+  try {
+    initialVehicles = await getApprovedVehicles();
+  } catch (error) {
+    logger.error("Failed to fetch initial vehicles:", error);
+  }
+  return (
+    <Suspense fallback={<div>Cargando vehículos...</div>}>
+      <VehicleList initialVehicles={initialVehicles} />
+    </Suspense>
+  );
 }

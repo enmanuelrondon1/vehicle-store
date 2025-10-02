@@ -19,29 +19,27 @@ import VehicleGrid from "../common/VehicleGrid"; // ✅ CORRECCIÓN: La ruta del
 import { useVehicleFiltering } from "@/hooks/useVehicleFiltering";
 import { useDebounce } from "@/hooks/useDebounce"; // ✅ MEJORA: Importar hook para debouncing
 
-// ✅ CAMBIO: El componente ahora acepta `initialVehicles` como prop
-const VehicleList: React.FC<{ initialVehicles: Vehicle[] }> = ({
-  initialVehicles,
-}) => {
+const VehicleList: React.FC<{
+  initialVehicles: Vehicle[];
+}> = ({ initialVehicles }) => {
   const { isDarkMode } = useDarkMode();
   const [vehicles] = useState<Vehicle[]>(initialVehicles);
   const [isLoading] = useState(false);
   const [error] = useState<string | null>(null);
 
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode] = useState<"grid" | "list">("grid");
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [compareList, setCompareList] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  // ✅ MEJORA: Usar el hook de filtrado para encapsular la lógica
   const {
     filters,
     setFilters,
     sortBy,
     setSortBy,
     filteredVehicles,
-    filterOptions, // ✅ USAR LAS OPCIONES DEL HOOK
+    filterOptions,
     clearAllFilters,
     showOnlyPublishedBrands,
     setShowOnlyPublishedBrands,
@@ -51,12 +49,9 @@ const VehicleList: React.FC<{ initialVehicles: Vehicle[] }> = ({
     setShowOnlyPublishedLocations,
   } = useVehicleFiltering(initialVehicles);
 
-  // ✅ MEJORA: Aplicar "debouncing" a la búsqueda para mejorar el rendimiento
   const debouncedSearchTerm = useDebounce(filters.search, 300);
 
   useEffect(() => {
-    // El filtrado se recalcula automáticamente por el hook,
-    // pero reseteamos la página a 1 cuando los filtros cambian.
     setCurrentPage(1);
   }, [
     debouncedSearchTerm,
@@ -128,17 +123,11 @@ const VehicleList: React.FC<{ initialVehicles: Vehicle[] }> = ({
           isDarkMode={isDarkMode}
         />
         <SearchBar
-          filters={filters}
-          setFilters={setFilters}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
+          onSearch={(term) => setFilters((prev) => ({ ...prev, search: term }))}
+          onToggleFilters={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          isFiltersOpen={showAdvancedFilters}
           sortBy={sortBy}
-          setSortBy={setSortBy}
-          showAdvancedFilters={showAdvancedFilters}
-          setShowAdvancedFilters={setShowAdvancedFilters}
-          isDarkMode={isDarkMode}
-          clearAllFilters={clearAllFilters}
-          filterOptions={filterOptions}
+          onSortChange={setSortBy}
         />
         {/* ✅ AÑADIR: Renderizar los chips de filtros activos */}
         <ActiveFiltersDisplay

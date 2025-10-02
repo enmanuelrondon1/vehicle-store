@@ -4,7 +4,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Monsieur+La+Doulaise&family=Playwrite+ID+Guides&display=swap');
 
-
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -129,7 +128,28 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+/* globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  overflow-y: scroll;
+}
+
+/* 
+  Solución para el "salto/zoom" de ShadCN/Radix.
+  Cuando un diálogo o menú se abre, la librería añade `padding-right` al body
+  para compensar la desaparición de la barra de scroll. Forzamos a que ese padding sea siempre 0.
+*/
+body[data-scroll-locked="true"] {
+  padding-right: 0 !important;
+}
+
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+  }
   button, input, select, textarea {
     @apply border-border outline-ring/50;
   }
@@ -184,7 +204,6 @@
  .max-padd-container {
     @apply mx-auto max-w-[1440px] px-6 lg:px-12;
   }
-
 
 /* Mantener el layout estable cuando un Select está abierto */
 body.select-open {
@@ -374,5 +393,14 @@ body.select-open {
     font-size: 16px !important;
     transform: translateZ(0);
     -webkit-user-select: text;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }

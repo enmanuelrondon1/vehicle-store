@@ -10,7 +10,6 @@ import toast from "react-hot-toast";
 import {
   Heart,
   Share2,
-  Copy,
   Car,
   Fuel,
   Calendar,
@@ -18,6 +17,7 @@ import {
   Settings2,
   Eye,
   Star,
+  Layers,
 } from "lucide-react";
 import { Vehicle, VehicleCondition } from "@/types/types";
 import {
@@ -112,14 +112,30 @@ const VehicleCard = ({
     }
   };
 
-  const handleShare = (e: React.MouseEvent) => {
+  const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
+    const vehicleUrl = `${window.location.origin}/vehicle/${vehicle._id}`;
+    const shareData = {
+      title: `${vehicle.brand} ${vehicle.model}`,
+      text: `Mira este ${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
+      url: vehicleUrl,
+    };
+
     if (navigator.share) {
-      navigator.share({
-        title: `${vehicle.brand} ${vehicle.model}`,
-        text: `Mira este ${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
-        url: `/vehicle/${vehicle._id}`,
-      });
+      try {
+        await navigator.share(shareData);
+      } catch (error) {
+        console.log("Share was cancelled or failed", error);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(vehicleUrl);
+        toast.success("Enlace copiado al portapapeles");
+      } catch (err) {
+        console.error("Failed to copy: ", err);
+        toast.error("No se pudo copiar el enlace.");
+      }
     }
   };
 
@@ -196,7 +212,7 @@ const VehicleCard = ({
             <div className="absolute bottom-3 right-3 flex gap-2">
               <button
                 onClick={handleCompare}
-                className={`w-8 h-8 p-0 rounded-full ${
+                className={`w-8 h-8 p-0 rounded-full flex items-center justify-center ${
                   isInCompareList
                     ? "bg-blue-600 text-white"
                     : isDarkMode
@@ -205,11 +221,11 @@ const VehicleCard = ({
                 } backdrop-blur-sm transition-colors`}
                 title="Comparar"
               >
-                <Copy className="w-4 h-4" />
+                <Layers className="w-4 h-4" />
               </button>
               <button
                 onClick={handleFavorite}
-                className={`w-8 h-8 p-0 rounded-full ${
+                className={`w-8 h-8 p-0 rounded-full flex items-center justify-center ${
                   isDarkMode
                     ? "bg-gray-900/70 hover:bg-gray-800"
                     : "bg-white/70 hover:bg-white"
@@ -227,7 +243,7 @@ const VehicleCard = ({
               </button>
               <button
                 onClick={handleShare}
-                className={`w-8 h-8 p-0 rounded-full ${
+                className={`w-8 h-8 p-0 rounded-full flex items-center justify-center ${
                   isDarkMode
                     ? "bg-gray-900/70 hover:bg-gray-800"
                     : "bg-white/70 hover:bg-white"
@@ -424,7 +440,7 @@ const VehicleCard = ({
         <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
           <button
             onClick={handleCompare}
-            className={`w-9 h-9 p-0 rounded-full ${
+            className={`w-9 h-9 p-0 rounded-full flex items-center justify-center ${
               isInCompareList
                 ? "bg-blue-600 text-white"
                 : isDarkMode
@@ -433,11 +449,11 @@ const VehicleCard = ({
             } backdrop-blur-sm shadow-lg transition-colors`}
             title="Comparar"
           >
-            <Copy className="w-4 h-4" />
+            <Layers className="w-4 h-4" />
           </button>
           <button
             onClick={handleFavorite}
-            className={`w-9 h-9 p-0 rounded-full ${
+            className={`w-9 h-9 p-0 rounded-full flex items-center justify-center ${
               isDarkMode
                 ? "bg-gray-900/70 hover:bg-gray-800"
                 : "bg-white/70 hover:bg-white"
@@ -455,7 +471,7 @@ const VehicleCard = ({
           </button>
           <button
             onClick={handleShare}
-            className={`w-9 h-9 p-0 rounded-full ${
+            className={`w-9 h-9 p-0 rounded-full flex items-center justify-center ${
               isDarkMode
                 ? "bg-gray-900/70 hover:bg-gray-800"
                 : "bg-white/70 hover:bg-white"
