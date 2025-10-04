@@ -3,7 +3,7 @@ import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
 import { DarkModeProvider } from "@/context/DarkModeContext";
 import ClientLayout from "@/components/shared/layout/ClientLayout";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "VehicleStore",
@@ -52,7 +52,25 @@ export default function RootLayout({
         <DarkModeProvider>
           <ClientLayout>
             {children}
-            <Toaster position="bottom-right" />
+            <Toaster
+              toastOptions={{
+                classNames: {
+                  toast:
+                    "group toast group-[.toaster]:bg-white group-[.toaster]:text-gray-950 group-[.toaster]:border-gray-200 group-[.toaster]:shadow-lg dark:group-[.toaster]:bg-gray-950 dark:group-[.toaster]:text-gray-50 dark:group-[.toaster]:border-gray-800",
+                  title: "font-semibold",
+                  description:
+                    "group-[.toast]:text-gray-500 dark:group-[.toast]:text-gray-400 group-[.success-toast]:!text-white group-[.info-toast]:!text-white group-[.error-toast]:!text-white",
+                  actionButton:
+                    "group-[.toast]:bg-gray-900 group-[.toast]:text-gray-50 dark:group-[.toast]:bg-gray-50 dark:group-[.toast]:text-gray-900",
+                  cancelButton:
+                    "group-[.toast]:bg-gray-100 group-[.toast]:text-gray-500 dark:group-[.toast]:bg-gray-800 dark:group-[.toast]:text-gray-400",
+                  icon: "w-6 h-6",
+                  success: "success-toast !bg-green-600 !text-white",
+                  info: "info-toast !bg-blue-600 !text-white",
+                  error: "error-toast !bg-red-600 !text-white",
+                },
+              }}
+            />
           </ClientLayout>
         </DarkModeProvider>
       </body>

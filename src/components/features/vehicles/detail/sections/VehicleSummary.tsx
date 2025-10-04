@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import React from "react";
 import { Star, Calendar, Car, MapPin, Eye } from "lucide-react";
 import type { VehicleDataFrontend } from "@/types/types";
 import { useDarkMode } from "@/context/DarkModeContext";
@@ -10,7 +10,7 @@ interface VehicleSummaryProps {
   vehicle: VehicleDataFrontend;
 }
 
-export const VehicleSummary: React.FC<VehicleSummaryProps> = ({ vehicle }) => {
+const VehicleSummaryComponent: React.FC<VehicleSummaryProps> = ({ vehicle }) => {
   const { isDarkMode } = useDarkMode();
   return (
     <div>
@@ -62,3 +62,5 @@ export const VehicleSummary: React.FC<VehicleSummaryProps> = ({ vehicle }) => {
     </div>
   );
 };
+
+export const VehicleSummary = React.memo(VehicleSummaryComponent);

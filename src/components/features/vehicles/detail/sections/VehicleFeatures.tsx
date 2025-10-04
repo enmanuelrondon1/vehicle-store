@@ -1,14 +1,14 @@
 "use client";
 
 import { useDarkMode } from "@/context/DarkModeContext";
-import type React from "react";
+import React from "react";
 import { CheckCircle } from "lucide-react";
 
 interface VehicleFeaturesProps {
   features: string[];
 }
 
-export const VehicleFeatures: React.FC<VehicleFeaturesProps> = ({ features }) => {
+const VehicleFeaturesComponent: React.FC<VehicleFeaturesProps> = ({ features }) => {
   const { isDarkMode } = useDarkMode();
   if (!features || features.length === 0) {
     return null;
@@ -40,3 +40,5 @@ export const VehicleFeatures: React.FC<VehicleFeaturesProps> = ({ features }) =>
     </div>
   );
 };
+
+export const VehicleFeatures = React.memo(VehicleFeaturesComponent);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useDarkMode } from "@/context/DarkModeContext";
-import type React from "react";
+import React from "react";
 
 interface Spec {
   label: string;
@@ -31,7 +31,7 @@ const SpecRow: React.FC<{ label: string; value: string | number }> = ({
   </div>);
 }
 
-export const TechnicalSpecifications: React.FC<TechnicalSpecificationsProps> = ({
+const TechnicalSpecificationsComponent: React.FC<TechnicalSpecificationsProps> = ({
   specs,
 }) => {
   const { isDarkMode } = useDarkMode();
@@ -69,3 +69,5 @@ export const TechnicalSpecifications: React.FC<TechnicalSpecificationsProps> = (
     </div>
   );
 };
+
+export const TechnicalSpecifications = React.memo(TechnicalSpecificationsComponent);

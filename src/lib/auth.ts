@@ -12,10 +12,12 @@ declare module "next-auth" {
   interface User {
     role?: string;
     id?: string;
+    _id?: string;
   }
   interface Session {
     user: {
       id?: string;
+      _id?: string;
       role?: string;
       name?: string | null;
       email?: string | null;
@@ -62,6 +64,7 @@ export const authOptions: NextAuthOptions = {
           console.log("Login exitoso para:", user.email);
           return {
             id: user._id.toString(),
+            _id: user._id.toString(),
             email: user.email,
             name: user.name,
             role: user.role || "user",
@@ -81,12 +84,14 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role;
         token.id = user.id;
+        token._id = user._id;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
+        session.user._id = token._id as string;
         session.user.role = token.role as string;
       }
       return session;

@@ -1,4 +1,4 @@
-// src/components/sections/VehicleList/VehicleCard.tsx
+// src/components/features/vehicles/common/VehicleCard.tsx
 "use client";
 
 import type React from "react";
@@ -6,7 +6,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import {
   Heart,
   Share2,
@@ -96,13 +96,19 @@ const VehicleCard = ({
         const isNowFavorited = data.action === "added";
         onFavoriteToggle(vehicle._id, isNowFavorited);
         if (isNowFavorited) {
-        toast.success("Añadido a favoritos");
+          toast.success("Añadido a favoritos", {
+            description: "Este vehículo ahora está en tu lista de favoritos.",
+          });
         } else {
-        toast.error("Eliminado de favoritos");
+          toast.info("Eliminado de favoritos", {
+            description:
+              "Este vehículo ha sido eliminado de tu lista de favoritos.",
+          });
         }
       } else {
-        toast.error("No se pudo actualizar favoritos");
-        console.error("Failed to update favorite status");
+        toast.error("No se pudo actualizar favoritos", {
+          description: "Por favor, inténtalo de nuevo más tarde.",
+        });
       }
     } catch (error) {
       toast.error("Error al actualizar favoritos");
@@ -131,10 +137,12 @@ const VehicleCard = ({
     } else {
       try {
         await navigator.clipboard.writeText(vehicleUrl);
-        toast.success("Enlace copiado al portapapeles");
+        toast.success("Enlace copiado al portapapeles", {
+          description: "El enlace del vehículo se ha copiado correctamente.",
+        });
       } catch (err) {
         console.error("Failed to copy: ", err);
-        toast.error("No se pudo copiar el enlace.");
+        toast.error("No se pudo copiar el enlace.", { description: "Hubo un problema al intentar copiar el enlace." });
       }
     }
   };

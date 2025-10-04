@@ -12,7 +12,13 @@ import type { VehicleDataFrontend } from "@/types/types";
 const VehicleCard = ({ vehicle, isDarkMode }: { vehicle: VehicleDataFrontend, isDarkMode: boolean }) => {
   return (
     <Link href={`/vehicle/${vehicle._id}`} className="block group">
-      <div className={`overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 h-full flex flex-col ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
+      <div
+        className={`overflow-hidden rounded-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col ${
+          isDarkMode
+            ? "bg-gray-800/50 border border-gray-700 backdrop-blur-sm"
+            : "bg-white shadow-md"
+        }`}
+      >
         <div className="relative w-full aspect-video">
           <Image
             src={vehicle.images[0] || "/placeholder.svg"}
@@ -30,11 +36,15 @@ const VehicleCard = ({ vehicle, isDarkMode }: { vehicle: VehicleDataFrontend, is
           <div className="mt-4 flex-grow space-y-2 text-sm">
             <div className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-green-500" />
-              <span>${vehicle.price.toLocaleString()}</span>
+              <span className={`${isDarkMode ? "text-gray-200" : "text-gray-800"}`}>
+                ${vehicle.price.toLocaleString()}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <Gauge className="w-4 h-4 text-blue-500" />
-              <span>{vehicle.mileage.toLocaleString()} km</span>
+              <span className={`${isDarkMode ? "text-gray-200" : "text-gray-800"}`}>
+                {vehicle.mileage.toLocaleString()} km
+              </span>
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
@@ -62,7 +72,7 @@ const SkeletonCard = ({ isDarkMode }: { isDarkMode: boolean }) => (
 );
 
 // El componente principal que muestra la sección de vehículos similares
-export const SimilarVehicles = ({ vehicles, isLoading }: { vehicles: VehicleDataFrontend[], isLoading: boolean }) => {
+const SimilarVehiclesComponent: React.FC<{ vehicles: VehicleDataFrontend[], isLoading: boolean }> = ({ vehicles, isLoading }) => {
   const { isDarkMode } = useDarkMode();
 
   // Si no está cargando y no hay vehículos, no renderizar nada.
@@ -87,3 +97,5 @@ export const SimilarVehicles = ({ vehicles, isLoading }: { vehicles: VehicleData
     </div>
   );
 };
+
+export const SimilarVehicles = React.memo(SimilarVehiclesComponent);

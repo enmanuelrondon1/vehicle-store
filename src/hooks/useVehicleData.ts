@@ -14,8 +14,10 @@ import {
   TRANSMISSION_TYPES_LABELS,
   WARRANTY_LABELS,
 } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function useVehicleData(vehicleId: string) {
+  // const { data: session } = useSession();
   const [vehicle, setVehicle] = useState<VehicleDataFrontend | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +50,7 @@ export function useVehicleData(vehicleId: string) {
 
       const vehicleData = result.data;
       setVehicle(vehicleData);
+      setIsFavorited(vehicleData.isFavorited || false);
 
       try {
         const viewApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/vehicles/${vehicleId}/views`;
@@ -111,13 +114,18 @@ export function useVehicleData(vehicleId: string) {
         console.log("Error sharing:", error);
       }
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert("Enlace copiado al portapapeles");
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Enlace copiado", {
+        description: "La URL del vehículo se ha copiado al portapapeles.",
+      })
     }
   };
 
-  const handleFavorite = () => setIsFavorited(!isFavorited);
-  const handleReport = () => alert("Funcionalidad de reporte en desarrollo");
+  const handleReport = () => {
+    toast.info("Función en desarrollo", {
+      description: "La opción para reportar publicaciones estará disponible pronto.",
+    })
+  };
 
   const translatedData = useMemo(() => {
     if (!vehicle) return {};
@@ -135,11 +143,11 @@ export function useVehicleData(vehicleId: string) {
     isLoading,
     error,
     isFavorited,
+    setIsFavorited,
     similarVehicles,
     isLoadingSimilar,
     fetchVehicle,
     handleShare,
-    handleFavorite,
     handleReport,
     ...translatedData,
   };

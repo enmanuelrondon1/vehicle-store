@@ -1,7 +1,7 @@
 "use client";
 
 import { useDarkMode } from "@/context/DarkModeContext";
-import type React from "react";
+import React from "react";
 import { Shield } from "lucide-react";
 import { WarrantyType } from "@/types/types";
 
@@ -10,7 +10,7 @@ interface VehicleWarrantyProps {
   translatedWarranty: string;
 }
 
-export const VehicleWarranty: React.FC<VehicleWarrantyProps> = ({
+const VehicleWarrantyComponent: React.FC<VehicleWarrantyProps> = ({
   warranty,
   translatedWarranty,
 }) => {
@@ -37,3 +37,5 @@ export const VehicleWarranty: React.FC<VehicleWarrantyProps> = ({
     </div>
   );
 };
+
+export const VehicleWarranty = React.memo(VehicleWarrantyComponent);

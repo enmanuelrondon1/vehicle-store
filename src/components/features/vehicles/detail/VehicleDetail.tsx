@@ -1,27 +1,35 @@
-// src/components/features/vehicles/detail/VehicleDetail.tsx 
+// src/components/features/vehicles/detail/VehicleDetail.tsx
 "use client";
 
-import type React from "react";
+import React, { useEffect, Suspense, lazy } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDarkMode } from "@/context/DarkModeContext";
 import { formatDate, formatMileage, DOCUMENTATION_MAP } from "@/lib/utils";
 import { Documentation } from "@/types/types";
 import { useVehicleData } from "@/hooks/useVehicleData";
-import { SimilarVehicles } from "./sections/SimilarVehicles";
-import { ImageGallery } from "./sections/ImageGallery";
-import { ContactInfo } from "./sections/ContactInfo";
-import { VehicleActions } from "./sections/VehicleActions";
-import { VehicleSummary } from "./sections/VehicleSummary";
-import { TechnicalSpecifications } from "./sections/TechnicalSpecifications";
+import { motion } from "framer-motion";
+import { containerVariants, itemVariants } from "@/lib/animations";
 import { VehicleDocumentation } from "./sections/VehicleDocumentation";
 import { VehicleFeatures } from "./sections/VehicleFeatures";
 import { VehicleDescription } from "./sections/VehicleDescription";
+import { ContactInfo } from "./sections/ContactInfo";
 import { VehicleAdditionalInfo } from "./sections/VehicleAdditionalInfo";
 import { VehicleWarranty } from "./sections/VehicleWarranty";
+import { VehicleActions } from "./sections/VehicleActions";
+import { VehicleSummary } from "./sections/VehicleSummary";
+import { ImageGallery } from "./sections/ImageGallery";
+import { TechnicalSpecifications } from "./sections/TechnicalSpecifications";
+// import { FinancingCalculator } from "./sections/FinancingCalculator";
+
+// Carga diferida para SimilarVehicles
+const SimilarVehicles = lazy(() =>
+  import("./sections/SimilarVehicles").then((module) => ({
+    default: module.SimilarVehicles,
+  }))
+);
 
 // Extiende el tipo Session para incluir accessToken
 declare module "next-auth" {
@@ -34,24 +42,42 @@ declare module "next-auth" {
 const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
   const { isDarkMode } = useDarkMode();
   const router = useRouter();
+  const { data: session } = useSession();
 
   const {
     vehicle,
     isLoading,
     error,
     isFavorited,
+    setIsFavorited,
     similarVehicles,
     isLoadingSimilar,
     fetchVehicle,
     handleShare,
-    handleFavorite,
-    handleReport,
     translatedCondition,
     translatedFuelType,
     translatedTransmission,
     translatedWarranty,
     translatedStatus,
   } = useVehicleData(vehicleId);
+
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (session && vehicle?._id) {
+        try {
+          const response = await fetch("/api/user/favorites");
+          if (response.ok) {
+            const data = await response.json();
+            const favoritesSet = new Set<string>(data.favorites);
+            setIsFavorited(favoritesSet.has(vehicle._id));
+          }
+        } catch (error) {
+          console.error("Error fetching favorite status:", error);
+        }
+      }
+    };
+    checkFavoriteStatus();
+  }, [session, vehicle?._id, setIsFavorited]);
 
   const backgroundStyle = {
     background: isDarkMode
@@ -63,7 +89,8 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     return (
       <div className="min-h-screen py-8 px-4" style={backgroundStyle}>
         <div className="max-w-7xl mx-auto">
-          <Skeleton className={`h-8 w-32 ${
+          <Skeleton
+            className={`h-8 w-32 ${
               isDarkMode ? "bg-gray-700" : "bg-gray-200"
             } animate-pulse rounded mb-8`}
           />
@@ -71,21 +98,23 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
             <div className="lg:col-span-2">
               <div
                 className={`aspect-video ${
-
                   isDarkMode ? "bg-gray-800" : "bg-gray-200"
                 } animate-pulse rounded-xl mb-6`}
               />
-              <Skeleton className={`h-64 ${
+              <Skeleton
+                className={`h-64 ${
                   isDarkMode ? "bg-gray-800" : "bg-gray-200"
                 } animate-pulse rounded-xl`}
               />
             </div>
             <div className="space-y-6">
-              <Skeleton className={`h-48 ${
+              <Skeleton
+                className={`h-48 ${
                   isDarkMode ? "bg-gray-800" : "bg-gray-200"
                 } animate-pulse rounded-xl`}
               />
-              <Skeleton className={`h-32 ${
+              <Skeleton
+                className={`h-32 ${
                   isDarkMode ? "bg-gray-800" : "bg-gray-200"
                 } animate-pulse rounded-xl`}
               />
@@ -148,15 +177,25 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
   return (
     <div className="min-h-screen py-8 px-4" style={backgroundStyle}>
       <div className="max-w-7xl mx-auto">
-        <VehicleActions
-          isFavorited={isFavorited}
-          onFavorite={handleFavorite}
-          onShare={handleShare}
-          onReport={handleReport}
-        />
+        {vehicle?._id && (
+          <VehicleActions
+            vehicleId={vehicle._id}
+            isFavorited={isFavorited}
+            onFavorite={() => setIsFavorited((prev) => !prev)}
+            onShare={handleShare}
+          />
+        )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+        <motion.div
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div
+            className="lg:col-span-2 space-y-8"
+            variants={itemVariants}
+          >
             <VehicleSummary vehicle={vehicle} />
             <ImageGallery
               images={vehicle.images}
@@ -165,50 +204,72 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
             <TechnicalSpecifications
               specs={[
                 { label: "Marca", value: vehicle.brand },
-                { label: "Kilometraje", value: `${formatMileage(vehicle.mileage)} km` },
+                {
+                  label: "Kilometraje",
+                  value: `${formatMileage(vehicle.mileage)} km`,
+                },
                 { label: "Modelo", value: vehicle.model },
-                { label: "Transmisión", value: translatedTransmission || '' },
+                { label: "Transmisión", value: translatedTransmission || "" },
                 { label: "Año", value: vehicle.year },
-                { label: "Combustible", value: translatedFuelType || '' },
-                { label: "Condición", value: translatedCondition || '' },
-                { label: "Motor", value: vehicle.engine || 'N/A' },
+                { label: "Combustible", value: translatedFuelType || "" },
+                { label: "Condición", value: translatedCondition || "" },
+                { label: "Motor", value: vehicle.engine || "N/A" },
                 { label: "Color", value: vehicle.color },
-                { label: "Garantía", value: translatedWarranty || '' },
-                { label: "Tracción", value: vehicle.driveType?.toUpperCase() || 'N/A' },
-                { label: "Cilindraje", value: vehicle.displacement || 'N/A' },
+                { label: "Garantía", value: translatedWarranty || "" },
+                {
+                  label: "Tracción",
+                  value: vehicle.driveType?.toUpperCase() || "N/A",
+                },
+                { label: "Cilindraje", value: vehicle.displacement || "N/A" },
               ]}
             />
             <VehicleDocumentation
-              documentation={(vehicle.documentation || []).map(doc => Object.values(Documentation).includes(doc as Documentation) ? DOCUMENTATION_MAP[doc as Documentation] : doc)}
+              documentation={(vehicle.documentation || []).map((doc) =>
+                Object.values(Documentation).includes(doc as Documentation)
+                  ? DOCUMENTATION_MAP[doc as Documentation]
+                  : doc
+              )}
             />
             <VehicleFeatures features={vehicle.features} />
             <VehicleDescription description={vehicle.description} />
-          </div>
-          <div className="space-y-6">
+          </motion.div>
+          <motion.div className="lg:col-span-1 space-y-6 sticky top-24 self-start" variants={itemVariants}>
             <ContactInfo
               sellerContact={vehicle.sellerContact}
               vehicleName={`${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
               price={vehicle.price}
             />
+            {/* <FinancingCalculator vehiclePrice={vehicle.price} isDarkMode={isDarkMode} /> */}
             <VehicleAdditionalInfo
               items={[
                 { label: "Categoría", value: vehicle.category },
                 { label: "Subcategoría", value: vehicle.subcategory },
-                { label: "Estado", value: translatedStatus || '' },
+                { label: "Estado", value: translatedStatus || "" },
                 { label: "Publicado", value: formatDate(vehicle.createdAt) },
                 { label: "Visitas", value: vehicle.views },
-                { label: "Capacidad de carga", value: vehicle.loadCapacity ? `${vehicle.loadCapacity} kg` : undefined },
+                {
+                  label: "Capacidad de carga",
+                  value: vehicle.loadCapacity
+                    ? `${vehicle.loadCapacity} kg`
+                    : undefined,
+                },
               ]}
             />
             <VehicleWarranty
               warranty={vehicle.warranty}
-              translatedWarranty={translatedWarranty || ''}
+              translatedWarranty={translatedWarranty || ""}
             />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <SimilarVehicles vehicles={similarVehicles} isLoading={isLoadingSimilar} />
-
+        <Suspense
+          fallback={<Skeleton className="h-64 w-full mt-8 rounded-xl" />}
+        >
+          <SimilarVehicles
+            vehicles={similarVehicles}
+            isLoading={isLoadingSimilar}
+          />
+        </Suspense>
       </div>
     </div>
   );

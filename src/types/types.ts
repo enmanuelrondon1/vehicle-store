@@ -173,6 +173,7 @@ export interface VehicleDataFrontend
   referenceNumber?: string;
   views?: number; // Añadido para el frontend
   isFeatured?: boolean;
+  isFavorited?: boolean;
 }
 
 export interface VehicleDataGeneric {

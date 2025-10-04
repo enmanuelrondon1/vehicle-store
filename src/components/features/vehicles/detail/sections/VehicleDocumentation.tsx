@@ -1,7 +1,7 @@
 "use client";
 
 import { useDarkMode } from "@/context/DarkModeContext";
-import type React from "react";
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle } from "lucide-react";
 
@@ -9,7 +9,7 @@ interface VehicleDocumentationProps {
   documentation: string[];
 }
 
-export const VehicleDocumentation: React.FC<VehicleDocumentationProps> = ({ documentation }) => {
+const VehicleDocumentationComponent: React.FC<VehicleDocumentationProps> = ({ documentation }) => {
   const { isDarkMode } = useDarkMode();
   if (!documentation || documentation.length === 0) {
     return null;
@@ -41,3 +41,5 @@ export const VehicleDocumentation: React.FC<VehicleDocumentationProps> = ({ docu
     </div>
   );
 };
+
+export const VehicleDocumentation = React.memo(VehicleDocumentationComponent);

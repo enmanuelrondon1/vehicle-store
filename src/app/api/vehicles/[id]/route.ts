@@ -5,6 +5,7 @@ import { VehicleService } from "@/services/vehicleService";
 import { ApprovalStatus } from "@/types/types";
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import { ObjectId } from 'mongodb';
 
 export async function GET(
   req: NextRequest,
@@ -14,8 +15,8 @@ export async function GET(
     // Await the params since they're now a Promise in Next.js 15
     const { id } = await params;
 
-    if (!id) {
-      return NextResponse.json({ success: false, error: 'Vehicle ID is required' }, { status: 400 });
+    if (!id || !ObjectId.isValid(id)) {
+      return NextResponse.json({ success: false, error: 'Invalid Vehicle ID' }, { status: 400 });
     }
 
     const session = await getServerSession(authOptions);
@@ -28,6 +29,23 @@ export async function GET(
     // Un admin puede ver cualquier vehículo, un usuario normal solo los aprobados.
     const statusFilter = isAdmin ? undefined : ApprovalStatus.APPROVED;
     const response = await vehicleService.getVehicleById(id, statusFilter);
+
+    if (response.success && response.data) {
+      // Por defecto, no es favorito
+      response.data.isFavorited = false;
+
+      if (session?.user?._id) {
+        const favoritesCollection = db.collection('favorites');
+        const favorite = await favoritesCollection.findOne({
+          userId: new ObjectId(session.user._id),
+          vehicleId: new ObjectId(id),
+        });
+
+        if (favorite) {
+          response.data.isFavorited = true;
+        }
+      }
+    }
 
     return NextResponse.json(response, { status: response.success ? 200 : 404 });
   } catch (error) {

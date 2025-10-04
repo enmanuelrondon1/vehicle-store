@@ -1,13 +1,13 @@
 "use client";
 
 import { useDarkMode } from "@/context/DarkModeContext";
-import type React from "react";
+import React from "react";
 
 interface VehicleDescriptionProps {
   description: string;
 }
 
-export const VehicleDescription: React.FC<VehicleDescriptionProps> = ({ description }) => {
+const VehicleDescriptionComponent: React.FC<VehicleDescriptionProps> = ({ description }) => {
   const { isDarkMode } = useDarkMode();
   if (!description) {
     return null;
@@ -30,3 +30,5 @@ export const VehicleDescription: React.FC<VehicleDescriptionProps> = ({ descript
     </div>
   );
 };
+
+export const VehicleDescription = React.memo(VehicleDescriptionComponent);

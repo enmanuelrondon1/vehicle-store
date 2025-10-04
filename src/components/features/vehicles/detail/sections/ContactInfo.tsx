@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import React from "react";
 import type { VehicleDataFrontend } from "@/types/types";
 import { useDarkMode } from "@/context/DarkModeContext";
 import { formatPrice } from "@/lib/utils";
@@ -11,7 +11,7 @@ interface ContactInfoProps {
   price: number;
 }
 
-export const ContactInfo: React.FC<ContactInfoProps> = ({
+const ContactInfoComponent: React.FC<ContactInfoProps> = ({
   sellerContact,
   vehicleName,
   price,
@@ -109,3 +109,5 @@ export const ContactInfo: React.FC<ContactInfoProps> = ({
     </div>
   );
 };
+
+export const ContactInfo = React.memo(ContactInfoComponent);
