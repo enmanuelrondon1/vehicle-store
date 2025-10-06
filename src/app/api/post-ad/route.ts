@@ -15,6 +15,11 @@ const SellerContactSchema = z.object({
   phone: z.string().min(1, "El teléfono es requerido"),
 });
 
+const FinancingDetailsSchema = z.object({
+  interestRate: z.number(),
+  loanTerm: z.number(),
+});
+
 const CreateVehicleSchema = z.object({
   category: z.string().min(1, "La categoría es requerida"),
   subcategory: z.string().optional(),
@@ -25,6 +30,8 @@ const CreateVehicleSchema = z.object({
   price: z.number().positive("El precio debe ser mayor a 0"),
   currency: z.nativeEnum(Currency).default(Currency.USD),
   isNegotiable: z.boolean().optional(),
+  offersFinancing: z.boolean().optional(),
+  financingDetails: FinancingDetailsSchema.optional(),
   mileage: z.number().min(0, "El kilometraje no puede ser negativo"),
   color: z.string().min(1, "El color es requerido"),
   engine: z.string().optional(),

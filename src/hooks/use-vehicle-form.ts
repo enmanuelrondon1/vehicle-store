@@ -17,10 +17,15 @@ const initialFormData: Partial<VehicleDataBackend> = {
   sellerContact: { name: "", email: "", phone: "" },
   year: new Date().getFullYear(),
   documentation: [], // Array de strings, no de enums
+  offersFinancing: false,
+  financingDetails: {
+    interestRate: 18, // Un valor inicial razonable
+    loanTerm: 36, // Un plazo común en meses
+  },
 };
 
 export const useVehicleForm = () => {
-  const [currentStep, setCurrentStep] = useState(1)
+  const [currentStep, setCurrentStep] = useState(1);
   const [highestCompletedStep, setHighestCompletedStep] = useState(1);
   const [formData, setFormData] = useState<Partial<VehicleDataBackend>>(initialFormData)
   const [errors, setErrors] = useState<FormErrors>({})
@@ -97,10 +102,22 @@ export const useVehicleForm = () => {
               phone: prev.sellerContact?.phone || "",
               ...contactValue,
             },
-          }
+          };
+        }
+        if (field === "financingDetails") {
+          const financingValue =
+            typeof value === "object" && value !== null ? value : {};
+          return {
+            ...prev,
+            financingDetails: {
+              interestRate: prev.financingDetails?.interestRate || 0,
+              loanTerm: prev.financingDetails?.loanTerm || 0,
+              ...financingValue,
+            },
+          };
         }
         if (field.startsWith("sellerContact.")) {
-          const contactField = field.split(".")[1]
+          const contactField = field.split(".")[1];
           return {
             ...prev,
             sellerContact: {
@@ -109,10 +126,10 @@ export const useVehicleForm = () => {
               phone: prev.sellerContact?.phone || "",
               [contactField]: value,
             },
-          }
+          };
         }
-        return { ...prev, [field]: value }
-      })
+        return { ...prev, [field]: value };
+      });
 
       // Clear related errors
       if (errors[field] || (field.startsWith("sellerContact.") && errors[field])) {

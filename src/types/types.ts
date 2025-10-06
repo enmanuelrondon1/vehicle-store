@@ -82,6 +82,13 @@ export interface SellerContactBackend {
 
 export type OwnershipType = "propio" | "tercero" | "concesionario";
 
+
+export interface FinancingDetails {
+  interestRate: number;
+  loanTerm: number;
+}
+
+
 export interface VehicleDataBackend {
   _id?: string;
   category: VehicleCategory;
@@ -95,6 +102,12 @@ export interface VehicleDataBackend {
   price: number;
   currency?: Currency;
   isNegotiable?: boolean;
+  showFinancingTips?: boolean; // ✅ NUEVO CAMPO UI
+  offersFinancing?: boolean; // ✅ NUEVO CAMPO
+  financingDetails?: {
+    interestRate: number; // Tasa de interés anual
+    loanTerm: number; // Plazo del préstamo en meses
+  };
   mileage: number;
   color: string;
   engine: string;
@@ -174,6 +187,11 @@ export interface VehicleDataFrontend
   views?: number; // Añadido para el frontend
   isFeatured?: boolean;
   isFavorited?: boolean;
+  offersFinancing?: boolean;
+  financingDetails?: {
+    interestRate: number;
+    loanTerm: number;
+  };
 }
 
 export interface VehicleDataGeneric {
@@ -189,6 +207,11 @@ export interface VehicleDataGeneric {
   price: number;
   currency: Currency;
   isNegotiable?: boolean;
+  offersFinancing?: boolean;
+  financingDetails?: {
+    interestRate: number;
+    loanTerm: number;
+  };
   mileage: number;
   color: string;
   engine: string;
@@ -285,6 +308,11 @@ export interface Vehicle {
   price: number;
   currency: Currency;
   isNegotiable?: boolean;
+  offersFinancing?: boolean;
+  financingDetails?: {
+    interestRate: number;
+    loanTerm: number;
+  };
   status: ApprovalStatus;
   mileage: number;
   color: string;

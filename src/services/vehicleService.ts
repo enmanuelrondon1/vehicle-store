@@ -1,4 +1,3 @@
-
 // src/services/vehicleService.ts
 import { Db, Collection, ObjectId } from "mongodb";
 import {
@@ -6,6 +5,7 @@ import {
   ApiResponseFrontend as ApiResponse,
   VehicleDataFrontend,
   ApprovalStatus,
+  FinancingDetails,
 } from "@/types/types";
 import { ValidationUtils } from "../lib/validation";
 import { pusherServer } from "@/lib/pusher";
@@ -14,7 +14,7 @@ import { pusherServer } from "@/lib/pusher";
 // Tipo específico para MongoDB con ObjectId real
 interface VehicleDataMongo {
   _id?: ObjectId;
-  category: VehicleData['category'];
+  category: VehicleData["category"];
   subcategory?: string;
   brand: string;
   brandOther?: string;
@@ -24,22 +24,22 @@ interface VehicleDataMongo {
   mileage: number;
   color: string;
   engine: string;
-  transmission: VehicleData['transmission'];
-  currency: VehicleData['currency'];
+  transmission: VehicleData["transmission"];
+  currency: VehicleData["currency"];
   isNegotiable?: boolean;
   displacement?: string;
-  condition: VehicleData['condition'];
+  condition: VehicleData["condition"];
   location: string;
   features: string[];
-  fuelType: VehicleData['fuelType'];
+  fuelType: VehicleData["fuelType"];
   doors: number;
   seats: number;
   weight?: number;
   driveType?: string;
   loadCapacity?: number;
-  sellerContact: VehicleData['sellerContact'];
+  sellerContact: VehicleData["sellerContact"];
   postedDate: Date;
-  warranty: VehicleData['warranty'];
+  warranty: VehicleData["warranty"];
   description: string;
   images: string[];
   vin?: string;
@@ -51,6 +51,8 @@ interface VehicleDataMongo {
   updatedAt?: Date;
   views?: number;
   isFeatured?: boolean;
+  offersFinancing?: boolean;
+  financingDetails?: FinancingDetails;
 }
 
 // Tipos para los datos de analytics
@@ -86,7 +88,6 @@ interface AnalyticsData {
   avgPriceByCategory: AvgPriceByCategory[];
 }
 
-
 export class VehicleService {
   private db: Db;
   private collection: Collection<VehicleDataMongo>;
@@ -97,7 +98,12 @@ export class VehicleService {
   }
 
   // Función helper para convertir VehicleData a VehicleDataMongo
-  private convertToMongo(vehicleData: Omit<VehicleData, "_id" | "postedDate" | "createdAt" | "updatedAt">): Omit<VehicleDataMongo, "_id" | "postedDate" | "createdAt" | "updatedAt"> {
+  private convertToMongo(
+    vehicleData: Omit<
+      VehicleData,
+      "_id" | "postedDate" | "createdAt" | "updatedAt"
+    >
+  ): Omit<VehicleDataMongo, "_id" | "postedDate" | "createdAt" | "updatedAt"> {
     return {
       category: vehicleData.category,
       subcategory: vehicleData.subcategory,
@@ -122,7 +128,7 @@ export class VehicleService {
       weight: vehicleData.weight,
       driveType: vehicleData.driveType,
       loadCapacity: vehicleData.loadCapacity,
-      sellerContact: vehicleData.sellerContact,
+      sellerContact: vehicleData.sellerContact, 
       warranty: vehicleData.warranty,
       description: vehicleData.description,
       images: vehicleData.images,
@@ -133,6 +139,8 @@ export class VehicleService {
       status: vehicleData.status || ApprovalStatus.PENDING, // Usar status, con valor por defecto
       views: 0,
       isFeatured: vehicleData.isFeatured || false,
+      offersFinancing: vehicleData.offersFinancing,
+      financingDetails: vehicleData.financingDetails,
     };
   }
 
@@ -177,25 +185,31 @@ export class VehicleService {
       updatedAt: mongoData.updatedAt,
       views: mongoData.views,
       isFeatured: mongoData.isFeatured,
+      offersFinancing: mongoData.offersFinancing,
+      financingDetails: mongoData.financingDetails,
     };
   }
 
   // Función helper para convertir datos de actualización parciales
-  private convertUpdateDataToMongo(updateData: Partial<VehicleData>): Partial<VehicleDataMongo> {
+  private convertUpdateDataToMongo(
+    updateData: Partial<VehicleData>
+  ): Partial<VehicleDataMongo> {
     const dataWithoutId = { ...updateData };
     delete dataWithoutId._id;
-    
+
     // Solo incluir campos que realmente están presentes en updateData
     const mongoData: Partial<VehicleDataMongo> = {};
-    
+
     // Mapear solo los campos que están definidos
-    (Object.keys(dataWithoutId) as (keyof typeof dataWithoutId)[]).forEach((key) => {
-      const value = dataWithoutId[key];
-      if (value !== undefined) {
-        (mongoData as Record<string, unknown>)[key] = value;
+    (Object.keys(dataWithoutId) as (keyof typeof dataWithoutId)[]).forEach(
+      (key) => {
+        const value = dataWithoutId[key];
+        if (value !== undefined) {
+          (mongoData as Record<string, unknown>)[key] = value;
+        }
       }
-    });
-    
+    );
+
     return mongoData;
   }
 
@@ -208,7 +222,7 @@ export class VehicleService {
     try {
       const now = new Date();
       const mongoData = this.convertToMongo(vehicleData);
-      
+
       const dataToInsert: VehicleDataMongo = {
         ...mongoData,
         postedDate: now,
@@ -234,7 +248,10 @@ export class VehicleService {
         _id: result.insertedId,
       };
 
-      console.log("Vehículo insertado con ID:", insertedVehicle._id!.toString());
+      console.log(
+        "Vehículo insertado con ID:",
+        insertedVehicle._id!.toString()
+      );
 
       const { convertToFrontend } = await import("@/types/types");
       const backendData = this.convertFromMongo(insertedVehicle);
@@ -253,47 +270,52 @@ export class VehicleService {
     }
   }
 
-  async getVehicleById(id: string, approvalStatus?: ApprovalStatus): Promise<ApiResponse<VehicleDataFrontend>> {
-  try {
-    if (!ValidationUtils.isValidObjectId(id)) {
+  async getVehicleById(
+    id: string,
+    approvalStatus?: ApprovalStatus
+  ): Promise<ApiResponse<VehicleDataFrontend>> {
+    try {
+      if (!ValidationUtils.isValidObjectId(id)) {
+        return {
+          success: false,
+          error: "ID de vehículo inválido",
+        };
+      }
+
+      // Construir el filtro base
+      const filter: { _id: ObjectId; status?: ApprovalStatus } = {
+        _id: new ObjectId(id),
+      };
+
+      // Agregar filtro de status si se proporciona
+      if (approvalStatus) {
+        filter.status = approvalStatus;
+      }
+
+      const vehicle = await this.collection.findOne(filter);
+
+      if (!vehicle) {
+        return {
+          success: false,
+          error: "Vehículo no encontrado",
+        };
+      }
+
+      const { convertToFrontend } = await import("@/types/types");
+      const backendData = this.convertFromMongo(vehicle);
+
+      return {
+        success: true,
+        data: convertToFrontend(backendData),
+      };
+    } catch (error) {
+      console.error("Error getting vehicle:", error);
       return {
         success: false,
-        error: "ID de vehículo inválido",
+        error: "Error interno del servidor al obtener el vehículo",
       };
     }
-
-    // Construir el filtro base
-    const filter: { _id: ObjectId; status?: ApprovalStatus } = { _id: new ObjectId(id) };
-    
-    // Agregar filtro de status si se proporciona
-    if (approvalStatus) {
-      filter.status = approvalStatus;
-    }
-
-    const vehicle = await this.collection.findOne(filter);
-
-    if (!vehicle) {
-      return {
-        success: false,
-        error: "Vehículo no encontrado",
-      };
-    }
-
-    const { convertToFrontend } = await import("@/types/types");
-    const backendData = this.convertFromMongo(vehicle);
-
-    return {
-      success: true,
-      data: convertToFrontend(backendData),
-    };
-  } catch (error) {
-    console.error("Error getting vehicle:", error);
-    return {
-      success: false,
-      error: "Error interno del servidor al obtener el vehículo",
-    };
   }
-}
   async updateVehicle(
     id: string,
     updateData: Partial<VehicleData>
@@ -327,12 +349,16 @@ export class VehicleService {
 
       // Disparar notificación de cambio de estado si aplica
       if (updateData.status) {
-        await pusherServer.trigger('private-admin-notifications', 'status-update', {
-          message: `El estado de "${backendData.brand} ${backendData.model}" ha cambiado a ${updateData.status}.`,
-          vehicleId: id,
-          status: updateData.status,
-          timestamp: new Date().toISOString(),
-        });
+        await pusherServer.trigger(
+          "private-admin-notifications",
+          "status-update",
+          {
+            message: `El estado de "${backendData.brand} ${backendData.model}" ha cambiado a ${updateData.status}.`,
+            vehicleId: id,
+            status: updateData.status,
+            timestamp: new Date().toISOString(),
+          }
+        );
       }
 
       return {
@@ -381,7 +407,9 @@ export class VehicleService {
     }
   }
 
-  async incrementVehicleViews(id: string): Promise<ApiResponse<VehicleDataFrontend>> {
+  async incrementVehicleViews(
+    id: string
+  ): Promise<ApiResponse<VehicleDataFrontend>> {
     try {
       if (!ValidationUtils.isValidObjectId(id)) {
         return {
@@ -420,87 +448,97 @@ export class VehicleService {
     }
   }
 
- async getAnalyticsData(): Promise<AnalyticsData | null> {
-  try {
-    const now = new Date();
-    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  async getAnalyticsData(): Promise<AnalyticsData | null> {
+    try {
+      const now = new Date();
+      const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
-    const result = await this.collection.aggregate([
-      {
-        $facet: {
-          // 1. Estadísticas generales
-          generalStats: [
-            {
-              $group: {
-                _id: null,
-                totalVehicles: { $sum: 1 },
-                averagePrice: { $avg: '$price' },
-                totalViews: { $sum: '$views' }
-              }
-            }
-          ],
-          // 2. Conteo de vehículos por estado
-          statusCounts: [
-            { $group: { _id: '$status', count: { $sum: 1 } } }
-          ],
-          // 3. Publicaciones por mes (últimos 6 meses)
-          monthlyPublications: [
-            { $match: { createdAt: { $gte: sixMonthsAgo } } },
-            {
-              $group: {
-                _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
-                count: { $sum: 1 }
-              }
+      const result = await this.collection
+        .aggregate([
+          {
+            $facet: {
+              // 1. Estadísticas generales
+              generalStats: [
+                {
+                  $group: {
+                    _id: null,
+                    totalVehicles: { $sum: 1 },
+                    averagePrice: { $avg: "$price" },
+                    totalViews: { $sum: "$views" },
+                  },
+                },
+              ],
+              // 2. Conteo de vehículos por estado
+              statusCounts: [
+                { $group: { _id: "$status", count: { $sum: 1 } } },
+              ],
+              // 3. Publicaciones por mes (últimos 6 meses)
+              monthlyPublications: [
+                { $match: { createdAt: { $gte: sixMonthsAgo } } },
+                {
+                  $group: {
+                    _id: {
+                      year: { $year: "$createdAt" },
+                      month: { $month: "$createdAt" },
+                    },
+                    count: { $sum: 1 },
+                  },
+                },
+                { $sort: { "_id.year": 1, "_id.month": 1 } },
+              ],
+              // 4. Precio promedio por categoría
+              avgPriceByCategory: [
+                {
+                  $group: {
+                    _id: "$category",
+                    averagePrice: { $avg: "$price" },
+                    count: { $sum: 1 },
+                  },
+                },
+                { $sort: { count: -1 } },
+              ],
             },
-            { $sort: { '_id.year': 1, '_id.month': 1 } }
-          ],
-          // 4. Precio promedio por categoría
-          avgPriceByCategory: [
-            {
-              $group: {
-                _id: '$category',
-                averagePrice: { $avg: '$price' },
-                count: { $sum: 1 }
-              }
-            },
-            { $sort: { count: -1 } }
-          ]
-        }
+          },
+        ])
+        .toArray();
+
+      if (!result[0]) {
+        return null;
       }
-    ]).toArray();
 
-    if (!result[0]) {
-      return null;
-    }
+      const analytics = result[0] as {
+        generalStats: GeneralStats[];
+        statusCounts: StatusCount[];
+        monthlyPublications: MonthlyPublication[];
+        avgPriceByCategory: AvgPriceByCategory[];
+      };
 
-    const analytics = result[0] as {
-      generalStats: GeneralStats[];
-      statusCounts: StatusCount[];
-      monthlyPublications: MonthlyPublication[];
-      avgPriceByCategory: AvgPriceByCategory[];
-    };
-
-    // Procesar y dar formato a los datos
-    const formattedData: AnalyticsData = {
-      generalStats: analytics.generalStats[0] || { totalVehicles: 0, averagePrice: 0, totalViews: 0 },
-      statusCounts: analytics.statusCounts.reduce((acc: Record<string, number>, item: StatusCount) => {
-        acc[item._id] = item.count;
-        return acc;
-      }, {}),
-      monthlyPublications: analytics.monthlyPublications,
-      avgPriceByCategory: analytics.avgPriceByCategory,
-    };
+      // Procesar y dar formato a los datos
+      const formattedData: AnalyticsData = {
+        generalStats: analytics.generalStats[0] || {
+          totalVehicles: 0,
+          averagePrice: 0,
+          totalViews: 0,
+        },
+        statusCounts: analytics.statusCounts.reduce(
+          (acc: Record<string, number>, item: StatusCount) => {
+            acc[item._id] = item.count;
+            return acc;
+          },
+          {}
+        ),
+        monthlyPublications: analytics.monthlyPublications,
+        avgPriceByCategory: analytics.avgPriceByCategory,
+      };
 
       return formattedData;
-  
     } catch (error) {
       console.error("Error obteniendo datos de analytics:", error);
       throw error;
     }
   }
-  
-  
- async findSimilarVehicles(
+
+  async findSimilarVehicles(
     vehicleId: string
   ): Promise<ApiResponse<VehicleDataFrontend[]>> {
     try {
@@ -516,7 +554,7 @@ export class VehicleService {
         return { success: false, error: "Vehículo original no encontrado" };
       }
 
-      const priceTolerance = 0.30; // 30%
+      const priceTolerance = 0.3; // 30%
       const yearTolerance = 3; // +/- 3 años
 
       const pipeline = [
@@ -532,9 +570,43 @@ export class VehicleService {
             similarityScore: {
               $add: [
                 { $cond: [{ $eq: ["$brand", originalVehicle.brand] }, 50, 0] },
-                { $cond: [{ $eq: ["$subcategory", originalVehicle.subcategory] }, 25, 0] },
-                { $cond: [{ $lte: [{ $abs: { $subtract: ["$price", originalVehicle.price] } }, originalVehicle.price * priceTolerance] }, 20, 0] },
-                { $cond: [{ $lte: [{ $abs: { $subtract: ["$year", originalVehicle.year] } }, yearTolerance] }, 15, 0] },
+                {
+                  $cond: [
+                    { $eq: ["$subcategory", originalVehicle.subcategory] },
+                    25,
+                    0,
+                  ],
+                },
+                {
+                  $cond: [
+                    {
+                      $lte: [
+                        {
+                          $abs: {
+                            $subtract: ["$price", originalVehicle.price],
+                          },
+                        },
+                        originalVehicle.price * priceTolerance,
+                      ],
+                    },
+                    20,
+                    0,
+                  ],
+                },
+                {
+                  $cond: [
+                    {
+                      $lte: [
+                        {
+                          $abs: { $subtract: ["$year", originalVehicle.year] },
+                        },
+                        yearTolerance,
+                      ],
+                    },
+                    15,
+                    0,
+                  ],
+                },
               ],
             },
           },
@@ -543,7 +615,9 @@ export class VehicleService {
         { $limit: 4 },
       ];
 
-      const similarVehicles = await this.collection.aggregate(pipeline).toArray();
+      const similarVehicles = await this.collection
+        .aggregate(pipeline)
+        .toArray();
 
       const { convertToFrontend } = await import("@/types/types");
       const frontendData = similarVehicles.map((v) =>
@@ -553,7 +627,10 @@ export class VehicleService {
       return { success: true, data: frontendData };
     } catch (error) {
       console.error("Error encontrando vehículos similares:", error);
-      return { success: false, error: "Error interno del servidor al buscar vehículos similares" };
+      return {
+        success: false,
+        error: "Error interno del servidor al buscar vehículos similares",
+      };
     }
   }
 }

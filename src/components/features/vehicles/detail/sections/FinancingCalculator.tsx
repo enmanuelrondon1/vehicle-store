@@ -1,6 +1,7 @@
+//src/components/features/vehicles/detail/sections/FinancingCalculator.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -8,13 +9,32 @@ import { Calculator } from "lucide-react";
 
 interface FinancingCalculatorProps {
   vehiclePrice: number;
+  financingDetails: {
+    interestRate: number;
+    loanTerm: number;
+  };
   isDarkMode: boolean;
 }
 
-export function FinancingCalculator({ vehiclePrice, isDarkMode }: FinancingCalculatorProps) {
-  const [downPayment, setDownPayment] = useState(Math.round(vehiclePrice * 0.1));
-  const [interestRate, setInterestRate] = useState(7.5);
-  const [loanTerm, setLoanTerm] = useState(60);
+export function FinancingCalculator({
+  vehiclePrice,
+  financingDetails,
+  isDarkMode,
+}: FinancingCalculatorProps) {
+  const [downPayment, setDownPayment] = useState(
+    Math.round(vehiclePrice * 0.1)
+  );
+  const [interestRate, setInterestRate] = useState(
+    financingDetails?.interestRate || 0
+  );
+  const [loanTerm, setLoanTerm] = useState(financingDetails?.loanTerm || 12);
+
+  useEffect(() => {
+    if (financingDetails) {
+      setInterestRate(financingDetails.interestRate);
+      setLoanTerm(financingDetails.loanTerm);
+    }
+  }, [financingDetails]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("es-ES", {

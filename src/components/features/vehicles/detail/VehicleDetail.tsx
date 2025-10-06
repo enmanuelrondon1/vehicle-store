@@ -22,7 +22,7 @@ import { VehicleActions } from "./sections/VehicleActions";
 import { VehicleSummary } from "./sections/VehicleSummary";
 import { ImageGallery } from "./sections/ImageGallery";
 import { TechnicalSpecifications } from "./sections/TechnicalSpecifications";
-// import { FinancingCalculator } from "./sections/FinancingCalculator";
+import { FinancingCalculator } from "./sections/FinancingCalculator";
 
 // Carga diferida para SimilarVehicles
 const SimilarVehicles = lazy(() =>
@@ -60,6 +60,10 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     translatedWarranty,
     translatedStatus,
   } = useVehicleData(vehicleId);
+
+  useEffect(() => {
+    console.log("Vehicle data in VehicleDetail:", vehicle);
+  }, [vehicle]);
 
   useEffect(() => {
     const checkFavoriteStatus = async () => {
@@ -233,13 +237,22 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
             <VehicleFeatures features={vehicle.features} />
             <VehicleDescription description={vehicle.description} />
           </motion.div>
-          <motion.div className="lg:col-span-1 space-y-6 sticky top-24 self-start" variants={itemVariants}>
+          <motion.div
+            className="lg:col-span-1 space-y-6 sticky top-24 self-start"
+            variants={itemVariants}
+          >
             <ContactInfo
               sellerContact={vehicle.sellerContact}
               vehicleName={`${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
               price={vehicle.price}
             />
-            {/* <FinancingCalculator vehiclePrice={vehicle.price} isDarkMode={isDarkMode} /> */}
+            {vehicle.offersFinancing && vehicle.financingDetails && (
+              <FinancingCalculator
+                vehiclePrice={vehicle.price}
+                financingDetails={vehicle.financingDetails}
+                isDarkMode={isDarkMode}
+              />
+            )}
             <VehicleAdditionalInfo
               items={[
                 { label: "Categoría", value: vehicle.category },
@@ -255,6 +268,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
                 },
               ]}
             />
+
             <VehicleWarranty
               warranty={vehicle.warranty}
               translatedWarranty={translatedWarranty || ""}

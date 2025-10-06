@@ -55,25 +55,40 @@ const step1Schema = z.object({
     .max(
       new Date().getFullYear() + 1,
       "El año no puede ser mayor al próximo año"
-    )
+    ),
+});
+
+const FinancingDetailsSchema = z.object({
+  interestRate: z
+    .number()
+    .min(0, "La tasa de interés no puede ser negativa")
+    .max(50, "La tasa de interés es demasiado alta"),
+  loanTerm: z
+    .number()
+    .int("El plazo debe ser un número entero")
+    .min(1, "El plazo debe ser de al menos 1 mes")
+    .max(120, "El plazo no puede exceder 120 meses"),
 });
 
 const step2Schema = z.object({
   price: z
     .number()
     .positive("El precio debe ser mayor a 0")
-    .max(10000000, "El precio no puede exceder 10,000,000").optional(),
-  currency: z
-    .nativeEnum(Currency).optional().default(Currency.USD),
+    .max(10000000, "El precio no puede exceder 10,000,000")
+    .optional(),
+  currency: z.nativeEnum(Currency).optional().default(Currency.USD),
   isNegotiable: z.boolean().optional().default(false),
+  offersFinancing: z.boolean().optional().default(false),
+  financingDetails: FinancingDetailsSchema.optional(),
   mileage: z
     .number()
     .min(0, "El kilometraje no puede ser negativo")
-    .max(1000000, "El kilometraje parece excesivo").optional(),
+    .max(1000000, "El kilometraje parece excesivo")
+    .optional(),
 });
 
 const step3Schema = z.object({
-    color: z
+  color: z
     .string()
     .min(1, "El color es requerido")
     .max(30, "El color no puede exceder 30 caracteres"),
@@ -175,9 +190,20 @@ export const schemasByStep = {
     message: "Debes especificar el modelo si seleccionaste 'Otro'",
     path: ["modelOther"],
   }),
-  2: step2Schema,
+  2: step2Schema.superRefine((data, ctx) => {
+    if (data.offersFinancing && !data.financingDetails) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["financingDetails", "interestRate"],
+        message:
+          "Los detalles de financiación son requeridos si ofreces financiación.",
+      });
+    }
+  }),
   // ✅ CORRECCIÓN: Fusionar con un esquema parcial para obtener el tipo de 'category' de forma segura.
-  3: step3Schema.merge(z.object({ category: z.nativeEnum(VehicleCategory).optional() })).superRefine((data, ctx) => {
+  3: step3Schema
+    .merge(z.object({ category: z.nativeEnum(VehicleCategory).optional() }))
+    .superRefine((data, ctx) => {
     // Ahora 'data.category' es accesible y tiene el tipo correcto.
     const category = data.category;
     const categoriesRequiringDoorsSeats = [VehicleCategory.CAR, VehicleCategory.SUV, VehicleCategory.VAN, VehicleCategory.BUS];
