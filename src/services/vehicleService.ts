@@ -128,7 +128,7 @@ export class VehicleService {
       weight: vehicleData.weight,
       driveType: vehicleData.driveType,
       loadCapacity: vehicleData.loadCapacity,
-      sellerContact: vehicleData.sellerContact, 
+      sellerContact: vehicleData.sellerContact,
       warranty: vehicleData.warranty,
       description: vehicleData.description,
       images: vehicleData.images,
@@ -244,7 +244,7 @@ export class VehicleService {
       }
 
       const insertedVehicle: VehicleDataMongo = {
-        ...dataToInsert,
+...dataToInsert,
         _id: result.insertedId,
       };
 
@@ -535,6 +535,69 @@ export class VehicleService {
     } catch (error) {
       console.error("Error obteniendo datos de analytics:", error);
       throw error;
+    }
+  }
+
+  async getVehiclesBySellerId(
+    sellerId: string
+  ): Promise<ApiResponse<VehicleDataFrontend[]>> {
+    try {
+      console.log(
+        "[VehicleService] Buscando vehículos para el vendedor ID:",
+        sellerId
+      );
+
+      if (!sellerId) {
+        console.error("[VehicleService] Error: El ID del vendedor está vacío.");
+        return {
+          success: false,
+          error: "ID de vendedor inválido",
+        };
+      }
+
+      // El filtro debe usar el sellerId como string, que es como se almacena en la base de datos.
+      const filter = { "sellerContact.userId": sellerId };
+
+      console.log(
+        "[VehicleService] Usando el siguiente filtro para la consulta:",
+        JSON.stringify(filter)
+      );
+
+      const vehicles = await this.collection
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .toArray();
+
+      console.log(
+        `[VehicleService] Se encontraron ${vehicles.length} vehículos.`
+      );
+
+      if (!vehicles || vehicles.length === 0) {
+        return {
+          success: true,
+          data: [],
+          message: "No se encontraron vehículos para este vendedor.",
+        };
+      }
+
+      const { convertToFrontend } = await import("@/types/types");
+      const frontendData = vehicles.map((v) =>
+        convertToFrontend(this.convertFromMongo(v))
+      );
+
+      return {
+        success: true,
+        data: frontendData,
+      };
+    } catch (error) {
+      console.error(
+        "[VehicleService] Error obteniendo vehículos por vendedor:",
+        error
+      );
+      return {
+        success: false,
+        error: "Error interno del servidor al obtener los vehículos",
+      };
     }
   }
 

@@ -22,7 +22,7 @@ import { VehicleActions } from "./sections/VehicleActions";
 import { VehicleSummary } from "./sections/VehicleSummary";
 import { ImageGallery } from "./sections/ImageGallery";
 import { TechnicalSpecifications } from "./sections/TechnicalSpecifications";
-import { FinancingCalculator } from "./sections/FinancingCalculator";
+import { FinancingModal } from "./sections/FinancingModal";
 
 // Carga diferida para SimilarVehicles
 const SimilarVehicles = lazy(() =>
@@ -247,7 +247,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
               price={vehicle.price}
             />
             {vehicle.offersFinancing && vehicle.financingDetails && (
-              <FinancingCalculator
+              <FinancingModal
                 vehiclePrice={vehicle.price}
                 financingDetails={vehicle.financingDetails}
                 isDarkMode={isDarkMode}

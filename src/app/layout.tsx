@@ -71,6 +71,7 @@ export default function RootLayout({
                 },
               }}
             />
+            <Toaster richColors theme="system" />
           </ClientLayout>
         </DarkModeProvider>
       </body>

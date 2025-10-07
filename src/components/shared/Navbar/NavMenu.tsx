@@ -324,9 +324,11 @@ const NavMenu = () => {
                     <DropdownMenuLabel className="font-semibold">Mi Cuenta</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
-                      <DropdownMenuItem className="cursor-pointer hover:bg-opacity-10 transition-colors duration-150">
-                        <User className="w-4 h-4 mr-2" />
-                        Perfil
+                      <DropdownMenuItem asChild className="cursor-pointer hover:bg-opacity-10 transition-colors duration-150">
+                        <Link href="/profile" className="flex items-center w-full">
+                          <User className="w-4 h-4 mr-2" />
+                          Perfil
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="cursor-pointer hover:bg-opacity-10 transition-colors duration-150">
                         <Link href="/my-favorites" className="flex items-center w-full">

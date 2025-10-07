@@ -1,3 +1,4 @@
+//src/components/features/vehicles/detail/sections/ContactInfo.tsx
 "use client";
 
 import React from "react";

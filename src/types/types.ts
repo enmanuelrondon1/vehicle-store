@@ -78,9 +78,10 @@ export interface SellerContactBackend {
   name: string;
   phone: string;
   email: string;
+  userId?: string;
 }
 
-export type OwnershipType = "propio" | "tercero" | "concesionario";
+export type OwnershipType = 'propio' | 'tercero' | 'concesionario';
 
 
 export interface FinancingDetails {

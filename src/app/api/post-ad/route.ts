@@ -3,16 +3,24 @@ import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { pusherServer } from "@/lib/pusher";
 import { VehicleService } from "@/services/vehicleService";
-import { ApiResponseFrontend, VehicleDataBackend, ApprovalStatus, Currency } from "@/types/types";
+import {
+  ApiResponseFrontend,
+  VehicleDataBackend,
+  ApprovalStatus,
+  Currency,
+} from "@/types/types";
 import { sendNewVehicleNotificationEmail } from "@/lib/mailer";
 import { toTitleCase } from "@/lib/utils";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 const SellerContactSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   email: z.string().email("Email inválido"),
   phone: z.string().min(1, "El teléfono es requerido"),
+  userId: z.string().optional(), // Permitir que el userId sea opcional aquí
 });
 
 const FinancingDetailsSchema = z.object({
@@ -160,6 +168,31 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     if (paymentProofUrl) {
       body.paymentProof = paymentProofUrl;
+    }
+
+    // Obtener la sesión del servidor
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      logger.error("No autorizado: se requiere iniciar sesión");
+      return NextResponse.json(
+        createErrorResponse("No autorizado para realizar esta acción"),
+        { status: 401 }
+      );
+    }
+
+    // Añadir el ID del usuario de la sesión a los datos del vendedor
+    if (body.sellerContact) {
+      body.sellerContact.userId = session.user.id;
+    } else {
+      // Si por alguna razón sellerContact no existe, créalo
+      body.sellerContact = {
+        userId: session.user.id,
+        // Deberías considerar si necesitas obtener name, email, phone de la sesión también
+        // o si el frontend siempre los enviará.
+        name: session.user.name || "Nombre no disponible",
+        email: session.user.email || "Email no disponible",
+        phone: "", // El teléfono puede no estar en la sesión
+      };
     }
 
     const validationResult = CreateVehicleSchema.safeParse(body);
