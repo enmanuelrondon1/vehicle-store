@@ -13,7 +13,7 @@ export const filterVehicles = (
       filters.category === "all" || vehicle.category === filters.category;
     const searchMatch =
       !filters.search ||
-      `${vehicle.brand} ${vehicle.model} ${vehicle.year} ${vehicle.sellerContact.name} ${vehicle.sellerContact.email} ${vehicle.referenceNumber || ""}`
+      `${vehicle.brand} ${vehicle.model} ${vehicle.year} ${vehicle.sellerContact?.name || ''} ${vehicle.sellerContact?.email || ''} ${vehicle.referenceNumber || ""}`
         .toLowerCase()
         .includes(filters.search.toLowerCase());
     const priceMatch =
