@@ -1,5 +1,3 @@
-
-
 // src/hooks/use-admin-panel-enhanced.ts
 "use client"
 
@@ -247,13 +245,28 @@ export const useAdminPanelEnhanced = () => {
       })
 
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Error ${response.status}: ${errorText}`)
+        const errorText = await response.text();
+        throw new Error(`Error ${response.status}: ${errorText}`);
       }
 
-      setAllVehicles((prev) =>
-        prev.map((vehicle) => (vehicle._id === vehicleId ? { ...vehicle, status: newStatus } : vehicle)),
-      )
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // ✅ CORRECCIÓN: Reemplazar todo el objeto del vehículo con los datos actualizados de la API
+        // Esto asegura que el rejectionReason y cualquier otro campo se actualicen en la UI.
+        setAllVehicles((prev) =>
+          prev.map((vehicle) =>
+            vehicle._id === vehicleId ? result.data : vehicle
+          )
+        );
+      } else {
+        // Fallback por si la API no devuelve los datos completos
+        setAllVehicles((prev) =>
+          prev.map((vehicle) =>
+            vehicle._id === vehicleId ? { ...vehicle, status: newStatus } : vehicle
+          )
+        );
+      }
 
       // console.log("✅ Status updated successfully")
     } catch (err) {

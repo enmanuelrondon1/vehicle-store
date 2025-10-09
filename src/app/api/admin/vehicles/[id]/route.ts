@@ -1,10 +1,16 @@
-// app/api/admin/vehicles/[id]/route.ts
+//src/app/api/admin/vehicles/[id]/route.ts
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
-import { ApiResponseBackend, ApprovalStatus } from "@/types/types";
+import {
+  ApiResponseBackend,
+  ApprovalStatus,
+  VehicleDataFrontend,
+} from "@/types/types";
 import { getServerSession } from "next-auth";
 import { ObjectId } from "mongodb";
 import { authOptions } from "@/lib/auth";
+// import { sendVehicleRejectionEmail } from "@/lib/mailer";
+import { sendVehicleRejectionEmailGmail } from "@/lib/mailer";
 
 const createErrorResponse = (
   error: string,
@@ -36,7 +42,7 @@ export async function GET(
 
     // Verificar sesión y autorización
     const session = await getServerSession(authOptions);
-    
+
     if (!session || !session.user) {
       return NextResponse.json(createErrorResponse("Acceso no autorizado"), {
         status: 403,
@@ -51,10 +57,9 @@ export async function GET(
 
     // Validar que el ID sea válido
     if (!ObjectId.isValid(resolvedParams.id)) {
-      return NextResponse.json(
-        createErrorResponse("ID de vehículo inválido"),
-        { status: 400 }
-      );
+      return NextResponse.json(createErrorResponse("ID de vehículo inválido"), {
+        status: 400,
+      });
     }
 
     let client;
@@ -70,7 +75,7 @@ export async function GET(
 
     try {
       const db = client.db("vehicle_store");
-      
+
       const vehicle = await db
         .collection("vehicles")
         .findOne({ _id: new ObjectId(resolvedParams.id) });
@@ -92,7 +97,10 @@ export async function GET(
       };
 
       return NextResponse.json(
-        createSuccessResponse(formattedVehicle, "Vehículo obtenido exitosamente"),
+        createSuccessResponse(
+          formattedVehicle,
+          "Vehículo obtenido exitosamente"
+        ),
         { status: 200 }
       );
     } catch (serviceError) {
@@ -126,7 +134,7 @@ export async function PATCH(
     // Verificar sesión y autorización
     const session = await getServerSession(authOptions);
     console.log("Sesión en API:", session);
-    
+
     if (!session || !session.user) {
       console.log("Acceso denegado - No hay sesión");
       return NextResponse.json(createErrorResponse("Acceso no autorizado"), {
@@ -135,7 +143,10 @@ export async function PATCH(
     }
 
     if (session.user.role !== "admin") {
-      console.log("Acceso denegado - No es administrador, rol:", session.user.role);
+      console.log(
+        "Acceso denegado - No es administrador, rol:",
+        session.user.role
+      );
       return NextResponse.json(createErrorResponse("Acceso no autorizado"), {
         status: 403,
       });
@@ -143,22 +154,20 @@ export async function PATCH(
 
     // Obtener datos del cuerpo de la petición
     const body = await request.json();
-    const { status } = body;
+    const { status, rejectionReason } = body;
 
     // Validar que el status sea válido
     if (!Object.values(ApprovalStatus).includes(status)) {
-      return NextResponse.json(
-        createErrorResponse("Estado inválido"),
-        { status: 400 }
-      );
+      return NextResponse.json(createErrorResponse("Estado inválido"), {
+        status: 400,
+      });
     }
 
     // Validar que el ID sea válido
     if (!ObjectId.isValid(resolvedParams.id)) {
-      return NextResponse.json(
-        createErrorResponse("ID de vehículo inválido"),
-        { status: 400 }
-      );
+      return NextResponse.json(createErrorResponse("ID de vehículo inválido"), {
+        status: 400,
+      });
     }
 
     let client;
@@ -177,23 +186,66 @@ export async function PATCH(
       const db = client.db("vehicle_store");
       console.log("Actualizando estado del vehículo...");
 
+      const updateData: {
+        status: ApprovalStatus;
+        updatedAt: Date;
+        rejectionReason?: string;
+      } = {
+        status: status,
+        updatedAt: new Date(),
+      };
+
+      const unsetData: { rejectionReason?: "" } = {};
+
+      if (status === ApprovalStatus.REJECTED && rejectionReason) {
+        updateData.rejectionReason = rejectionReason;
+      } else {
+        unsetData.rejectionReason = "";
+      }
+
+      const updateOperation: {
+        $set: Partial<typeof updateData>;
+        $unset?: Partial<typeof unsetData>;
+      } = {
+        $set: updateData,
+      };
+
+      if (Object.keys(unsetData).length > 0) {
+        updateOperation.$unset = unsetData;
+      }
+
       const result = await db
         .collection("vehicles")
-        .updateOne(
-          { _id: new ObjectId(resolvedParams.id) },
-          { 
-            $set: { 
-              status: status,
-              updatedAt: new Date()
-            }
-          }
-        );
+        .updateOne({ _id: new ObjectId(resolvedParams.id) }, updateOperation);
 
       if (result.matchedCount === 0) {
         return NextResponse.json(
           createErrorResponse("Vehículo no encontrado"),
           { status: 404 }
         );
+      }
+
+      if (status === ApprovalStatus.REJECTED && rejectionReason) {
+        const vehicleFromDb = await db
+          .collection("vehicles")
+          .findOne({ _id: new ObjectId(resolvedParams.id) });
+
+        if (vehicleFromDb) {
+          const formattedVehicle = {
+            ...vehicleFromDb,
+            _id: vehicleFromDb._id.toString(),
+          };
+
+          console.log("Enviando email de rechazo...");
+          await sendVehicleRejectionEmailGmail(
+            formattedVehicle as VehicleDataFrontend,
+            rejectionReason
+          );
+        } else {
+          console.error(
+            "No se pudo encontrar el vehículo después de actualizarlo para enviar el email."
+          );
+        }
       }
 
       console.log("Estado del vehículo actualizado exitosamente");
@@ -235,7 +287,7 @@ export async function DELETE(
 
     // Verificar sesión y autorización
     const session = await getServerSession(authOptions);
-    
+
     if (!session || !session.user) {
       return NextResponse.json(createErrorResponse("Acceso no autorizado"), {
         status: 403,
@@ -250,10 +302,9 @@ export async function DELETE(
 
     // Validar que el ID sea válido
     if (!ObjectId.isValid(resolvedParams.id)) {
-      return NextResponse.json(
-        createErrorResponse("ID de vehículo inválido"),
-        { status: 400 }
-      );
+      return NextResponse.json(createErrorResponse("ID de vehículo inválido"), {
+        status: 400,
+      });
     }
 
     let client;
@@ -269,7 +320,7 @@ export async function DELETE(
 
     try {
       const db = client.db("vehicle_store");
-      
+
       // Primero verificar que el vehículo existe
       const vehicle = await db
         .collection("vehicles")

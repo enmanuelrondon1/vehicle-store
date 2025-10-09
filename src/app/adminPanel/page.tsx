@@ -1,3 +1,4 @@
+//src/app/adminPanel/page.tsx
 import { AdminPanel } from "../../components/features/admin/AdminPanel";
 import ProtectedRoute from "@/components/features/auth/ProtectedRoute";
 

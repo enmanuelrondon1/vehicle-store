@@ -1,16 +1,27 @@
-
 // src/lib/mailer.ts
 import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { VehicleDataFrontend } from '@/types/types';
 import { logger } from './logger';
 import NewVehicleNotificationEmail from '@/components/emails/NewVehicleNotification';
 import WelcomeEmail from '@/components/emails/WelcomeEmail';
 import AdminNewUserNotification from '@/components/emails/AdminNewUserNotification';
-
+import VehicleRejectionEmail from '@/components/emails/VehicleRejectionEmail';
+import React from 'react';
+import { renderAsync } from '@react-email/render';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const recipientEmail = process.env.CONTACT_RECIPIENT_EMAIL;
 const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+
+// Configurar transportador de Gmail para rechazos
+const gmailTransporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASSWORD,
+  },
+});
 
 export async function sendNewVehicleNotificationEmail(vehicle: VehicleDataFrontend) {
   if (!process.env.RESEND_API_KEY) {
@@ -52,7 +63,7 @@ export async function sendWelcomeEmail(userEmail: string, userName: string) {
   try {
     const { data, error } = await resend.emails.send({
       from: `1auto.market <${fromEmail}>`,
-      to: [userEmail], // Se envía solo al nuevo usuario
+      to: [userEmail],
       subject: `🎉 ¡Bienvenido a 1auto.market, ${userName}!`,
       react: WelcomeEmail({ userName }),
     });
@@ -83,7 +94,7 @@ export async function sendAdminNewUserNotification(userEmail: string, userName: 
 
     const { data, error } = await resend.emails.send({
       from: `Notificaciones 1auto.market <${fromEmail}>`,
-      to: [recipientEmail], // Se envía solo a ti
+      to: [recipientEmail],
       subject: `👤 Nuevo Usuario Registrado: ${userName}`,
       react: AdminNewUserNotification({ userName, userEmail, registrationDate }),
     });
@@ -97,5 +108,48 @@ export async function sendAdminNewUserNotification(userEmail: string, userName: 
     return data;
   } catch (error) {
     logger.error('Fallo la función sendAdminNewUserNotification:', error);
+  }
+}
+
+export async function sendVehicleRejectionEmailGmail(
+  vehicle: VehicleDataFrontend,
+  rejectionReason: string
+) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_PASSWORD) {
+    logger.warn('GMAIL_USER o GMAIL_PASSWORD no están configurados. Saltando envío de email de rechazo.');
+    return;
+  }
+
+  const toEmail = vehicle.sellerContact?.email;
+  const userName = vehicle.sellerContact?.name || 'Vendedor';
+  const vehicleTitle = `${vehicle.brand} ${vehicle.model}`;
+
+  if (!toEmail) {
+    logger.warn('No se encontró el email del vendedor para el vehículo:', vehicle._id);
+    return;
+  }
+
+  try {
+    // Renderizar el componente React a HTML
+    const emailHtml = await renderAsync(
+      React.createElement(VehicleRejectionEmail, {
+        userName,
+        vehicleTitle,
+        rejectionReason,
+      })
+    );
+
+    await gmailTransporter.sendMail({
+      from: `1auto.market <${process.env.GMAIL_USER}>`,
+      to: toEmail,
+      subject: `Tu anuncio "${vehicleTitle}" no fue aprobado`,
+      html: emailHtml,
+    });
+
+    logger.info(`Email de rechazo enviado exitosamente a: ${toEmail}`);
+    return { success: true, email: toEmail };
+  } catch (error) {
+    logger.error('Fallo la función sendVehicleRejectionEmailGmail:', error);
+    throw error;
   }
 }

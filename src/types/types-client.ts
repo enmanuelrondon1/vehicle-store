@@ -63,6 +63,7 @@ export interface VehicleData {
   sellerContact?: SellerContact;
   status?: ApprovalStatus;
   warranty?: WarrantyType;
+  rejectionReason?: string;
 }
 
 export interface FormErrors {

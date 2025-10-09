@@ -147,6 +147,7 @@ export interface VehicleDataBackend {
   tiresCondition?: string;
   serialsIntact?: boolean;
   isFeatured?: boolean;
+  rejectionReason?: string;
 }
 
 export interface ApiResponseBackend<T = VehicleDataBackend> {
@@ -244,6 +245,7 @@ export interface VehicleDataGeneric {
   views?: number; // Añadido para el frontend
   documentation?: string[];
   isFeatured?: boolean;
+  rejectionReason?: string;
 }
 
 export const convertToBackend = (
@@ -282,6 +284,7 @@ export const convertToFrontend = (
     status: backendData.status || ApprovalStatus.PENDING,
     views: backendData.views,
     isFeatured: backendData.isFeatured,
+    rejectionReason: backendData.rejectionReason,
   };
 };
 

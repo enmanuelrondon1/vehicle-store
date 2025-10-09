@@ -1,4 +1,4 @@
-//src/components/sections/VehicleList/VehicleGrid.tsx
+//src/components/features/vehicles/common/VehicleGrid.tsx
 "use client";
 
 import type React from "react";

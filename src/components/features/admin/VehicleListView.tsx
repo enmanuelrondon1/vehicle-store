@@ -166,7 +166,7 @@ const VehicleActions = ({
                 </button>
               )}
             </Menu.Item>
-          )}
+)}
           {vehicle.status !== "rejected" && (
             <Menu.Item>
               {({ active }) => (
@@ -470,6 +470,17 @@ export const VehicleListView = ({
                       <span>{vehicle.fuelType}</span>
                     </div>
                   </div>
+
+                  {vehicle.status === "rejected" && vehicle.rejectionReason && (
+                    <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                      <h4 className="font-semibold text-red-800 dark:text-red-200 text-sm mb-1">
+                        Motivo del Rechazo:
+                      </h4>
+                      <p className="text-red-700 dark:text-red-300 text-xs md:text-sm">
+                        {vehicle.rejectionReason}
+                      </p>
+                    </div>
+                  )}
 
                   {vehicle.description && (
                     <p className="text-gray-600 dark:text-gray-400 line-clamp-2 text-sm md:text-base">

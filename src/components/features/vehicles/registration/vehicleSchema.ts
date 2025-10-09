@@ -255,4 +255,5 @@ export const UpdateVehicleBackendSchema =
   VehicleDataBackendObjectSchema.partial().extend({
     _id: z.string(),
     status: z.nativeEnum(ApprovalStatus).optional(),
+    rejectionReason: z.string().optional(),
   });

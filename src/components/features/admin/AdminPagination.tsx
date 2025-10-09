@@ -1,4 +1,4 @@
-// src/components/sections/AdminPanel/components/AdminPagination/AdminPagination.tsx
+// src/components/features/admin/AdminPagination.tsx
 "use client"
 
 import { Button } from "@/components/ui/button"
