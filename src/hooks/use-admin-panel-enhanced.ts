@@ -142,7 +142,7 @@ export const useAdminPanelEnhanced = () => {
     }
 
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
+      // const searchLower = filters.search.toLowerCase();
       // const beforeCount = filtered.length
       filtered = filtered.filter((vehicle) => {
         const searchLower = filters.search.toLowerCase();
