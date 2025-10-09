@@ -1,3 +1,4 @@
+// src/components/emails/VehicleRejectionEmail.tsx
 import {
   Body,
   Container,
@@ -9,8 +10,8 @@ import {
   Preview,
   Section,
   Text,
-} from '@react-email/components';
-import * as React from 'react';
+} from "@react-email/components";
+import * as React from "react";
 
 interface VehicleRejectionEmailProps {
   userName: string;
@@ -41,14 +42,20 @@ export const VehicleRejectionEmail: React.FC<VehicleRejectionEmailProps> = ({
         />
         <Text style={paragraph}>Hola {userName},</Text>
         <Text style={paragraph}>
-          Lamentamos informarte que tu anuncio para el vehículo &quot;{vehicleTitle}&quot; no ha sido aprobado para su publicación en 1auto.market.
+          Lamentamos informarte que tu anuncio para el vehículo &quot;
+          {vehicleTitle}&quot; no ha sido aprobado para su publicación en
+          1auto.market.
         </Text>
         <Section style={reasonSection}>
-          <Heading as="h2" style={reasonHeading}>Motivo del rechazo:</Heading>
+          <Heading as="h2" style={reasonHeading}>
+            Motivo del rechazo:
+          </Heading>
           <Text style={reasonText}>&quot;{rejectionReason}&quot;</Text>
         </Section>
         <Text style={paragraph}>
-          Por favor, revisa nuestras políticas de publicación y realiza los ajustes necesarios. Puedes editar tu anuncio desde tu panel de usuario y volver a enviarlo para revisión.
+          Por favor, revisa nuestras políticas de publicación y realiza los
+          ajustes necesarios. Puedes editar tu anuncio desde tu panel de usuario
+          y volver a enviarlo para revisión.
         </Text>
         <Text style={paragraph}>
           Si tienes alguna pregunta, no dudes en contactarnos.
@@ -68,51 +75,51 @@ export const VehicleRejectionEmail: React.FC<VehicleRejectionEmailProps> = ({
 export default VehicleRejectionEmail;
 
 const main = {
-  backgroundColor: '#ffffff',
+  backgroundColor: "#ffffff",
   fontFamily:
     '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif',
 };
 
 const container = {
-  margin: '0 auto',
-  padding: '20px 0 48px',
+  margin: "0 auto",
+  padding: "20px 0 48px",
 };
 
 const logo = {
-  margin: '0 auto',
+  margin: "0 auto",
 };
 
 const paragraph = {
-  fontSize: '16px',
-  lineHeight: '26px',
+  fontSize: "16px",
+  lineHeight: "26px",
 };
 
 const reasonSection = {
-  backgroundColor: '#f2f3f3',
-  border: '1px solid #e5e5e5',
-  borderRadius: '4px',
-  padding: '20px',
-  margin: '20px 0',
+  backgroundColor: "#f2f3f3",
+  border: "1px solid #e5e5e5",
+  borderRadius: "4px",
+  padding: "20px",
+  margin: "20px 0",
 };
 
 const reasonHeading = {
-  fontSize: '18px',
-  fontWeight: 'bold' as const,
-  marginTop: '0',
+  fontSize: "18px",
+  fontWeight: "bold" as const,
+  marginTop: "0",
 };
 
 const reasonText = {
-  fontSize: '16px',
-  lineHeight: '24px',
-  fontStyle: 'italic' as const,
+  fontSize: "16px",
+  lineHeight: "24px",
+  fontStyle: "italic" as const,
 };
 
 const hr = {
-  borderColor: '#cccccc',
-  margin: '20px 0',
+  borderColor: "#cccccc",
+  margin: "20px 0",
 };
 
 const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
+  color: "#8898aa",
+  fontSize: "12px",
 };
