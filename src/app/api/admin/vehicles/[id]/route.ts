@@ -10,7 +10,10 @@ import { getServerSession } from "next-auth";
 import { ObjectId } from "mongodb";
 import { authOptions } from "@/lib/auth";
 // import { sendVehicleRejectionEmail } from "@/lib/mailer";
-import { sendVehicleRejectionEmailGmail } from "@/lib/mailer";
+import {
+  sendVehicleApprovalEmail,
+  sendVehicleRejectionEmailGmail,
+} from "@/lib/mailer";
 
 const createErrorResponse = (
   error: string,
@@ -216,43 +219,37 @@ export async function PATCH(
 
       const result = await db
         .collection("vehicles")
-        .updateOne({ _id: new ObjectId(resolvedParams.id) }, updateOperation);
+        .findOneAndUpdate(
+          { _id: new ObjectId(resolvedParams.id) },
+          updateOperation,
+          { returnDocument: "after" }
+        );
 
-      if (result.matchedCount === 0) {
+      if (!result) {
         return NextResponse.json(
           createErrorResponse("Vehículo no encontrado"),
           { status: 404 }
         );
       }
 
+      const updatedVehicle = {
+        ...result,
+        _id: result._id.toString(),
+      } as VehicleDataFrontend;
+
       if (status === ApprovalStatus.REJECTED && rejectionReason) {
-        const vehicleFromDb = await db
-          .collection("vehicles")
-          .findOne({ _id: new ObjectId(resolvedParams.id) });
-
-        if (vehicleFromDb) {
-          const formattedVehicle = {
-            ...vehicleFromDb,
-            _id: vehicleFromDb._id.toString(),
-          };
-
-          console.log("Enviando email de rechazo...");
-          await sendVehicleRejectionEmailGmail(
-            formattedVehicle as VehicleDataFrontend,
-            rejectionReason
-          );
-        } else {
-          console.error(
-            "No se pudo encontrar el vehículo después de actualizarlo para enviar el email."
-          );
-        }
+        console.log("Enviando email de rechazo...");
+        await sendVehicleRejectionEmailGmail(updatedVehicle, rejectionReason);
+      } else if (status === ApprovalStatus.APPROVED) {
+        console.log("Enviando email de aprobación...");
+        await sendVehicleApprovalEmail(updatedVehicle);
       }
 
       console.log("Estado del vehículo actualizado exitosamente");
 
       return NextResponse.json(
         createSuccessResponse(
-          { id: resolvedParams.id, status },
+          updatedVehicle,
           "Estado del vehículo actualizado exitosamente"
         ),
         { status: 200 }

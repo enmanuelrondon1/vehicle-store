@@ -21,13 +21,15 @@ interface VehicleRejectionEmailProps {
 }
 
 const logoUrl =
-  "https://res.cloudinary.com/dcdawwvx2/image/upload/v1759938669/Generated_Image_October_08_2025_-_11_45AM_lqjitg.png";
+  "https://res.cloudinary.com/dcdawwvx2/image/upload/v1760032511/photo_2025-10-09_13-50-37_w0w9cr.jpg";
 
 export const VehicleRejectionEmail: React.FC<VehicleRejectionEmailProps> = ({
   userName,
   vehicleTitle,
   rejectionReason,
-}) => (
+}
+
+) => (
   <Html>
     <Head />
     <Preview>Tu anuncio en 1auto.market no fue aprobado</Preview>

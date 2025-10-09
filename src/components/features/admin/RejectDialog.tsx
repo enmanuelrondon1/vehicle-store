@@ -1,4 +1,4 @@
-// src/components/features/admin/dialogs/RejectDialog.tsx
+// src/components/features/admin/RejectDialog.tsx
 "use client";
 
 import {
@@ -14,20 +14,28 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { XCircle } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface RejectDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onConfirm: (reason: string) => void;
-  reason: string;
-  setReason: (reason: string) => void;
+  initialReason?: string;
   isDarkMode: boolean;
 }
 
-export const RejectDialog = ({ isOpen, onOpenChange, onConfirm, reason, setReason, isDarkMode }: RejectDialogProps) => {
+export const RejectDialog = ({ isOpen, onOpenChange, onConfirm, initialReason = "", isDarkMode }: RejectDialogProps) => {
+  const [reason, setReason] = useState(initialReason);
+
+  useEffect(() => {
+    if (isOpen) {
+      setReason(initialReason);
+    }
+  }, [isOpen, initialReason]);
+
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent className={`mx-4 max-w-md sm:max-w-lg ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>
+      <AlertDialogContent className={`mx-4 max-w-md sm:max-w-lg ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}>\
         <AlertDialogHeader>
           <AlertDialogTitle className={`text-base md:text-lg flex items-center gap-2 ${isDarkMode ? "text-slate-100" : "text-slate-900"}`}>
             <XCircle className="w-5 h-5 text-red-500" />

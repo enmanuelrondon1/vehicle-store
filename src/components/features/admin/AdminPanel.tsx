@@ -1,7 +1,7 @@
 // src/components/features/admin/AdminPanel.tsx
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDarkMode } from "@/context/DarkModeContext";
 import { useAdminPanelEnhanced } from "@/hooks/use-admin-panel-enhanced";
@@ -13,7 +13,6 @@ import { AdminFilters } from "./AdminFilters";
 import { VehicleGridView } from "./VehicleGridView";
 import { VehicleListView } from "./VehicleListView";
 import { AdminPagination } from "./AdminPagination";
-import { filterVehicles } from "@/lib/vehicleUtils";
 import { AdminPanelLoading } from "./AdminPanelLoading";
 import { AdminPanelAccessDenied } from "./AdminPanelAccessDenied";
 import { AdminPanelError } from "./AdminPanelError";
@@ -23,7 +22,6 @@ import { RejectDialog } from "./RejectDialog";
 import { CommentDialog } from "./CommentDialog";
 import { HistoryDialog } from "./HistoryDialog";
 import { DeleteDialog } from "./DeleteDialog";
-
 
 // Interfaces para las nuevas funcionalidades
 interface VehicleComment {
@@ -54,6 +52,8 @@ const ApprovalStatus = {
 export const AdminPanel = () => {
   const { isDarkMode } = useDarkMode();
   const {
+    // ✅ vehicles es la lista ya filtrada, ordenada y paginada.
+    vehicles,
     allVehicles,
     isLoading,
     error,
@@ -80,7 +80,6 @@ export const AdminPanel = () => {
     new Set()
   );
   const [showRejectDialog, setShowRejectDialog] = useState(false);
-  const [rejectReason, setRejectReason] = useState("");
   const [vehicleToReject, setVehicleToReject] = useState<string | null>(null);
 
   // Estados para las nuevas funcionalidades
@@ -159,7 +158,10 @@ export const AdminPanel = () => {
     }
   }, [vehicleFromNotification, setAllVehicles]);
 
-  // Lógica centralizada para filtrar, ordenar y paginar los vehículos
+  // ❌ ELIMINADO: Toda esta lógica de filtrado, ordenamiento y paginación
+  // ahora vive exclusivamente en el hook `useAdminPanelEnhanced` para
+  // evitar problemas de sincronización.
+  /*
   const displayedVehicles = useMemo(() => {
     const filtered = filterVehicles(allVehicles, filters);
 
@@ -189,8 +191,11 @@ export const AdminPanel = () => {
 
     return sorted.slice(startIndex, endIndex);
   }, [allVehicles, filters, pagination]);
+  */
 
-  // Efecto para actualizar el total de items en la paginación
+  // ❌ ELIMINADO: El hook `useAdminPanelEnhanced` ya se encarga de
+  // recalcular la paginación cuando los filtros o los datos cambian.
+  /*
   useEffect(() => {
     const filteredCount = filterVehicles(allVehicles, filters).length;
 
@@ -198,6 +203,7 @@ export const AdminPanel = () => {
       updatePagination({ totalItems: filteredCount, currentPage: 1 });
     }
   }, [allVehicles, filters, pagination.totalItems, updatePagination]);
+  */
 
   if (status === "loading" || isLoading) {
     return <AdminPanelLoading />;
@@ -337,7 +343,6 @@ export const AdminPanel = () => {
     try {
       await handleStatusChange(vehicleId, ApprovalStatus.REJECTED, reason);
       setShowRejectDialog(false);
-      setRejectReason("");
       setVehicleToReject(null);
     } catch (error) {
       console.error("Error al rechazar:", error);
@@ -369,7 +374,8 @@ export const AdminPanel = () => {
   };
 
   const selectAllVisible = () => {
-    const allIds = new Set(displayedVehicles.map((v) => v._id!));
+    // ✅ CORREGIDO: Usar `vehicles` (la lista visible) en lugar de `displayedVehicles`.
+    const allIds = new Set(vehicles.map((v) => v._id!));
     setSelectedVehicles(allIds);
   };
 
@@ -446,7 +452,8 @@ export const AdminPanel = () => {
           onFiltersChange={updateFilters}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
-          totalResults={allVehicles.length}
+          // ✅ CORREGIDO: Usar el total de la paginación, que refleja los items filtrados.
+          totalResults={pagination.totalItems}
           isDarkMode={isDarkMode}
           onSelectAll={selectAllVisible}
           onClearSelection={clearSelection}
@@ -455,19 +462,23 @@ export const AdminPanel = () => {
 
         {/* Contenido principal */}
         <Card
-          className={isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"}
+          className={
+            isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"
+          }
         >
           <CardContent className="p-3 md:p-6">
             {viewMode === "grid" ? (
               <VehicleGridView
-                vehicles={displayedVehicles}
+                // ✅ CORREGIDO: Usar `vehicles` del hook.
+                vehicles={vehicles}
                 onStatusChange={handleStatusChange}
                 onVehicleSelect={setSelectedVehicle}
                 isDarkMode={isDarkMode}
               />
             ) : (
               <VehicleListView
-                vehicles={displayedVehicles}
+                // ✅ CORREGIDO: Usar `vehicles` del hook.
+                vehicles={vehicles}
                 selectedVehicles={selectedVehicles}
                 isDarkMode={isDarkMode}
                 onToggleSelection={toggleVehicleSelection}
@@ -523,8 +534,6 @@ export const AdminPanel = () => {
       <RejectDialog
         isOpen={showRejectDialog}
         onOpenChange={setShowRejectDialog}
-        reason={rejectReason}
-        setReason={setRejectReason}
         onConfirm={(reason) =>
           vehicleToReject && handleRejectWithReason(vehicleToReject, reason)
         }

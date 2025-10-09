@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 // ✅ CORRECCIÓN: Importar ApprovalStatus como valor, no solo como tipo
 import type { VehicleDataFrontend } from "@/types/types";
 import { ApprovalStatus } from "@/types/types";
+import { toast } from "sonner"
 
 export interface AdminPanelFilters {
   status: ApprovalStatus | "all";
@@ -35,6 +36,8 @@ export const useAdminPanelEnhanced = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  // ELIMINADO: El estado `recentlyUpdatedVehicleId` y su lógica asociada,
+  // ya que volvemos al enfoque anterior que funcionaba correctamente.
 
   const [filters, setFilters] = useState<AdminPanelFilters>({
     status: "all",
@@ -131,10 +134,9 @@ export const useAdminPanelEnhanced = () => {
     if (filters.status !== "all") {
       // console.log("🎯 Filtering by status:", filters.status)
       // const beforeCount = filtered.length
+      // VOLVEMOS A LA LÓGICA DE FILTRADO ORIGINAL
       filtered = filtered.filter((vehicle) => {
-        const matches = vehicle.status === filters.status;
-        // console.log(`Vehicle ${vehicle._id?.slice(-6)}: status='${vehicle.status}' matches='${matches}'`)
-        return matches;
+        return vehicle.status === filters.status;
       });
       // console.log(`📊 Status filter: ${beforeCount} → ${filtered.length}`)
     } else {
@@ -256,66 +258,87 @@ export const useAdminPanelEnhanced = () => {
     }
   }, [status, session]);
 
-  // ✅ CORRECCIÓN: Ahora ApprovalStatus.REJECTED funcionará correctamente
+  // ✅ SOLUCIÓN: Se reincorpora la lógica del código funcional anterior,
+  // adaptada a la estructura de `toast.promise`.
   const handleStatusChange = async (
     vehicleId: string,
     newStatus: ApprovalStatus,
     reason?: string
   ) => {
-    try {
-      // console.log("🔄 Changing status:", { vehicleId, newStatus, reason })
+    // Obtenemos los datos del vehículo antes de la actualización para usarlos en el toast.
+    const vehicleData = allVehicles.find((v) => v._id === vehicleId);
 
-      const body: { status: ApprovalStatus; rejectionReason?: string } = {
-        status: newStatus,
-      };
-      // ✅ Ahora esto funcionará correctamente
-      if (reason && newStatus === ApprovalStatus.REJECTED) {
-        body.rejectionReason = reason;
-      }
+    const promise = () =>
+      new Promise<VehicleDataFrontend | undefined>(async (resolve, reject) => {
+        try {
+          const body: { status: ApprovalStatus; rejectionReason?: string } = {
+            status: newStatus,
+          };
+          if (reason && newStatus === ApprovalStatus.REJECTED) {
+            body.rejectionReason = reason;
+          }
 
-      const response = await fetch(`/api/admin/vehicles/${vehicleId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+          const response = await fetch(`/api/admin/vehicles/${vehicleId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error ${response.status}: ${errorText}`);
+          }
+
+          // LÓGICA CLAVE DEL CÓDIGO ANTIGUO:
+          // Se actualiza solo el estado en el cliente de forma optimista.
+          setAllVehicles((prev) =>
+            prev.map((vehicle) =>
+              vehicle._id === vehicleId
+                ? { ...vehicle, status: newStatus }
+                : vehicle
+            )
+          );
+
+          // Resolvemos la promesa con los datos del vehículo para el mensaje de éxito.
+          resolve(vehicleData);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Error al actualizar");
+          reject(err);
+        }
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error ${response.status}: ${errorText}`);
-      }
+    toast.promise(promise, {
+      loading: "Actualizando estado...",
+      success: (data: VehicleDataFrontend | undefined) => {
+        let vehicleName = "El vehículo";
+        if (data && data.brand && data.model) {
+          vehicleName = `${data.brand} ${data.model}`;
+        }
 
-      const result = await response.json();
+        let statusText = "";
+        switch (newStatus) {
+          case ApprovalStatus.APPROVED:
+            statusText = "aprobado";
+            break;
+          case ApprovalStatus.REJECTED:
+            statusText = "rechazado";
+            break;
+          case ApprovalStatus.PENDING:
+            statusText = "marcado como pendiente";
+            break;
+        }
 
-      if (result.success && result.data) {
-        // ✅ CORRECCIÓN: Reemplazar todo el objeto del vehículo con los datos actualizados de la API
-        // Esto asegura que el rejectionReason y cualquier otro campo se actualicen en la UI.
-        setAllVehicles((prev) =>
-          prev.map((vehicle) =>
-            vehicle._id === vehicleId ? result.data : vehicle
-          )
-        );
-      } else {
-        // Fallback por si la API no devuelve los datos completos
-        setAllVehicles((prev) =>
-          prev.map((vehicle) =>
-            vehicle._id === vehicleId
-              ? { ...vehicle, status: newStatus }
-              : vehicle
-          )
-        );
-      }
-
-      // console.log("✅ Status updated successfully")
-    } catch (err) {
-      // console.error("❌ Status change error:", err)
-      setError(err instanceof Error ? err.message : "Error al actualizar");
-    }
+        return `${vehicleName} ha sido ${statusText} correctamente.`;
+      },
+      error: "Error al actualizar el estado.",
+    });
   };
 
   const updateFilters = (newFilters: Partial<AdminPanelFilters>) => {
     // console.log("🔄 Updating filters:", newFilters)
     setFilters((prev) => ({ ...prev, ...newFilters }));
     setPagination((prev) => ({ ...prev, currentPage: 1 }));
+    // ELIMINADO: Ya no es necesario resetear `recentlyUpdatedVehicleId`.
   };
 
   const updatePagination = (updates: Partial<PaginationState>) => {

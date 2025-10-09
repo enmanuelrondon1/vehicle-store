@@ -7,6 +7,7 @@ import NewVehicleNotificationEmail from '@/components/emails/NewVehicleNotificat
 import WelcomeEmail from '@/components/emails/WelcomeEmail';
 import AdminNewUserNotification from '@/components/emails/AdminNewUserNotification';
 import VehicleRejectionEmail from '@/components/emails/VehicleRejectionEmail';
+import VehicleApprovalEmail from '@/components/emails/VehicleApprovalEmail';
 import React from 'react';
 import { renderAsync } from '@react-email/render';
 
@@ -108,6 +109,51 @@ export async function sendAdminNewUserNotification(userEmail: string, userName: 
     return data;
   } catch (error) {
     logger.error('Fallo la función sendAdminNewUserNotification:', error);
+  }
+}
+
+export async function sendVehicleApprovalEmail(vehicle: VehicleDataFrontend) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_PASSWORD) {
+    logger.warn(
+      'GMAIL_USER o GMAIL_PASSWORD no están configurados. Saltando envío de email de aprobación.'
+    );
+    return;
+  }
+
+  const toEmail = vehicle.sellerContact?.email;
+  const userName = vehicle.sellerContact?.name || 'Vendedor';
+  const vehicleTitle = `${vehicle.brand} ${vehicle.model}`;
+  const vehicleUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/vehiculo/${vehicle._id}`;
+
+  if (!toEmail) {
+    logger.warn(
+      'No se encontró el email del vendedor para el vehículo:',
+      vehicle._id
+    );
+    return;
+  }
+
+  try {
+    const emailHtml = await renderAsync(
+      React.createElement(VehicleApprovalEmail, {
+        userName,
+        vehicleTitle,
+        vehicleUrl,
+      })
+    );
+
+    await gmailTransporter.sendMail({
+      from: `1auto.market <${process.env.GMAIL_USER}>`,
+      to: toEmail,
+      subject: `✅ ¡Tu anuncio "${vehicleTitle}" ha sido aprobado!`,
+      html: emailHtml,
+    });
+
+    logger.info(`Email de aprobación enviado exitosamente a: ${toEmail}`);
+    return { success: true, email: toEmail };
+  } catch (error) {
+    logger.error('Fallo la función sendVehicleApprovalEmail:', error);
+    throw error;
   }
 }
 
