@@ -1,4 +1,5 @@
-import React from 'react';
+//src/components/emails/VehicleApprovalEmail.tsx
+import React from "react";
 import {
   Body,
   Container,
@@ -10,7 +11,7 @@ import {
   Preview,
   Text,
   Section,
-} from '@react-email/components';
+} from "@react-email/components";
 
 interface VehicleApprovalEmailProps {
   userName: string;
@@ -28,7 +29,9 @@ const VehicleApprovalEmail: React.FC<VehicleApprovalEmailProps> = ({
 }) => (
   <Html>
     <Head />
-    <Preview>¡Tu anuncio ha sido aprobado y ya está visible para todos!</Preview>
+    <Preview>
+      ¡Tu anuncio ha sido aprobado y ya está visible para todos!
+    </Preview>
     <Body style={main}>
       <Container style={container}>
         <Img
@@ -45,8 +48,8 @@ const VehicleApprovalEmail: React.FC<VehicleApprovalEmailProps> = ({
           </Text>
           <Text style={vehicleTitleStyle}>&ldquo;{vehicleTitle}&rdquo;</Text>
           <Text style={paragraph}>
-            ha sido revisado y aprobado por nuestro equipo. Ya está publicado y visible
-            para miles de compradores potenciales en nuestra plataforma.
+            ha sido revisado y aprobado por nuestro equipo. Ya está publicado y
+            visible para miles de compradores potenciales en nuestra plataforma.
           </Text>
           <Text style={paragraph}>
             Puedes ver tu anuncio en el siguiente enlace:
@@ -75,64 +78,64 @@ const VehicleApprovalEmail: React.FC<VehicleApprovalEmailProps> = ({
 export default VehicleApprovalEmail;
 
 const main = {
-  backgroundColor: '#f6f9fc',
+  backgroundColor: "#f6f9fc",
   fontFamily:
     '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
 };
 
 const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  border: '1px solid #f0f0f0',
-  borderRadius: '4px',
+  backgroundColor: "#ffffff",
+  margin: "0 auto",
+  padding: "20px 0 48px",
+  marginBottom: "64px",
+  border: "1px solid #f0f0f0",
+  borderRadius: "4px",
 };
 
 const logo = {
-  margin: '0 auto',
+  margin: "0 auto",
 };
 
 const heading = {
-  fontSize: '28px',
-  fontWeight: 'bold',
-  marginTop: '48px',
-  textAlign: 'center' as const,
-  color: '#2c3e50',
+  fontSize: "28px",
+  fontWeight: "bold",
+  marginTop: "48px",
+  textAlign: "center" as const,
+  color: "#2c3e50",
 };
 
 const contentSection = {
-  padding: '0 40px',
+  padding: "0 40px",
 };
 
 const paragraph = {
-  fontSize: '16px',
-  lineHeight: '26px',
-  color: '#34495e',
+  fontSize: "16px",
+  lineHeight: "26px",
+  color: "#34495e",
 };
 
 const vehicleTitleStyle = {
   ...paragraph,
-  fontWeight: 'bold',
-  textAlign: 'center' as const,
-  margin: '20px 0',
+  fontWeight: "bold",
+  textAlign: "center" as const,
+  margin: "20px 0",
 };
 
 const button = {
-  backgroundColor: '#27ae60',
-  borderRadius: '3px',
-  color: '#fff',
-  fontSize: '16px',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'block',
-  padding: '12px',
-  margin: '20px 0',
+  backgroundColor: "#27ae60",
+  borderRadius: "3px",
+  color: "#fff",
+  fontSize: "16px",
+  textDecoration: "none",
+  textAlign: "center" as const,
+  display: "block",
+  padding: "12px",
+  margin: "20px 0",
 };
 
 const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
-  textAlign: 'center' as const,
+  color: "#8898aa",
+  fontSize: "12px",
+  lineHeight: "16px",
+  textAlign: "center" as const,
 };

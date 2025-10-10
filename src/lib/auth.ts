@@ -118,19 +118,40 @@ export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === 'development',
 };
 
-/**
- * Higher-Order Function para proteger rutas de API que requieren rol de administrador.
- * @param handler El handler de la ruta de API a proteger.
- * @returns Un nuevo handler que primero verifica la autenticación y autorización.
- */
-export const withAdminAuth = (handler: (req?: NextRequest) => Promise<NextResponse>) => {
-  return async (req: NextRequest) => {
+// --- INICIO DE LA SOLUCIÓN DEFINITIVA Y PRAGMÁTICA ---
+
+// Definimos los tipos de handler de forma explícita
+type StaticHandler = (req: NextRequest) => Promise<NextResponse> | NextResponse;
+type DynamicHandler<P> = (req: NextRequest, context: { params: P }) => Promise<NextResponse> | NextResponse;
+
+// Sobrecarga para rutas estáticas. Esto es lo que "ven" los consumidores de la función.
+export function withAdminAuth(handler: StaticHandler): StaticHandler;
+
+// Sobrecarga para rutas dinámicas. Esto también es visible para los consumidores.
+export function withAdminAuth<P>(handler: DynamicHandler<P>): DynamicHandler<P>;
+
+// Implementación REAL. Su firma no es visible desde fuera.
+// Usamos `Function` y deshabilitamos la regla de lint para esta línea específica,
+// ya que es un problema de tipado de HOC muy complejo y las sobrecargas ya nos dan seguridad.
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+export function withAdminAuth(handler: Function) {
+  // La función que devolvemos debe ser capaz de aceptar ambos tipos de argumentos
+  return async (req: NextRequest, context?: { params: unknown }) => {
     const session = await getServerSession(authOptions);
 
     if (!session || session.user?.role !== 'admin') {
-      return NextResponse.json({ success: false, error: 'Acceso no autorizado' }, { status: 403 });
+      return NextResponse.json(
+        { success: false, error: "Acceso no autorizado" },
+        { status: 403 }
+      );
     }
 
+    // Si el contexto existe (es una ruta dinámica), llamamos al handler con ambos argumentos.
+    if (context) {
+      return handler(req, context);
+    }
+
+    // Si no hay contexto (ruta estática), llamamos al handler solo con la request.
     return handler(req);
   };
-};
+}

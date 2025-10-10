@@ -123,7 +123,7 @@ export async function sendVehicleApprovalEmail(vehicle: VehicleDataFrontend) {
   const toEmail = vehicle.sellerContact?.email;
   const userName = vehicle.sellerContact?.name || 'Vendedor';
   const vehicleTitle = `${vehicle.brand} ${vehicle.model}`;
-  const vehicleUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/vehiculo/${vehicle._id}`;
+  const vehicleUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/vehicle/${vehicle._id}`;
 
   if (!toEmail) {
     logger.warn(

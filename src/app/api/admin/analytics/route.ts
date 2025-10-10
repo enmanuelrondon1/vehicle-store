@@ -1,13 +1,13 @@
 // src/app/api/admin/analytics/route.ts
 import { NextResponse } from 'next/server';
-
 import { withAdminAuth } from '@/lib/auth';
 import { getDb } from '@/lib/mongodb';
 import { VehicleService } from '@/services/vehicleService';
+import { NextRequest } from 'next/server';
 
-export const GET = withAdminAuth(async () => {
+export const GET = withAdminAuth(async (req: NextRequest) => {
   try {
-    console.log('API /api/admin/analytics: Recibiendo solicitud GET');
+    console.log('API /api/admin/analytics: Recibiendo solicitud GET para:', req.url);
     const db = await getDb();
     const vehicleService = new VehicleService(db);
     

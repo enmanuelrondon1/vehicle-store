@@ -22,6 +22,7 @@ import { RejectDialog } from "./RejectDialog";
 import { CommentDialog } from "./CommentDialog";
 import { HistoryDialog } from "./HistoryDialog";
 import { DeleteDialog } from "./DeleteDialog";
+import { UsersPanel } from "./UsersPanel";
 
 // Interfaces para las nuevas funcionalidades
 interface VehicleComment {
@@ -49,8 +50,11 @@ const ApprovalStatus = {
   REJECTED: "rejected" as ApprovalStatusType,
 };
 
+type AdminTab = "vehicles" | "users";
+
 export const AdminPanel = () => {
   const { isDarkMode } = useDarkMode();
+  const [activeTab, setActiveTab] = useState<AdminTab>("vehicles");
   const {
     // ✅ vehicles es la lista ya filtrada, ordenada y paginada.
     vehicles,
@@ -163,7 +167,7 @@ export const AdminPanel = () => {
   // evitar problemas de sincronización.
   /*
   const displayedVehicles = useMemo(() => {
-    const filtered = filterVehicles(allVehicles, filters);
+const filtered = filterVehicles(allVehicles, filters);
 
     const sorted = [...filtered].sort((a, b) => {
       switch (filters.sortBy) {
@@ -446,80 +450,110 @@ export const AdminPanel = () => {
           setVehicleFromNotification={setVehicleFromNotification}
         />
 
-        {/* Filtros */}
-        <AdminFilters
-          filters={filters}
-          onFiltersChange={updateFilters}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          // ✅ CORREGIDO: Usar el total de la paginación, que refleja los items filtrados.
-          totalResults={pagination.totalItems}
-          isDarkMode={isDarkMode}
-          onSelectAll={selectAllVisible}
-          onClearSelection={clearSelection}
-          selectedCount={selectedVehicles.size}
-        />
+        {/* Pestañas de navegación */}
+        <div className="flex border-b border-gray-200 dark:border-gray-700">
+          <button
+            className={`px-4 py-2 text-sm font-medium ${
+              activeTab === "vehicles"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("vehicles")}
+          >
+            Vehículos
+          </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium ${
+              activeTab === "users"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+            onClick={() => setActiveTab("users")}
+          >
+            Usuarios
+          </button>
+        </div>
 
-        {/* Contenido principal */}
-        <Card
-          className={
-            isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"
-          }
-        >
-          <CardContent className="p-3 md:p-6">
-            {viewMode === "grid" ? (
-              <VehicleGridView
-                // ✅ CORREGIDO: Usar `vehicles` del hook.
-                vehicles={vehicles}
-                onStatusChange={handleStatusChange}
-                onVehicleSelect={setSelectedVehicle}
-                isDarkMode={isDarkMode}
-              />
-            ) : (
-              <VehicleListView
-                // ✅ CORREGIDO: Usar `vehicles` del hook.
-                vehicles={vehicles}
-                selectedVehicles={selectedVehicles}
-                isDarkMode={isDarkMode}
-                onToggleSelection={toggleVehicleSelection}
-                onClearSelection={clearSelection}
-                onStatusChange={handleStatusChange}
-                onVehicleSelect={setSelectedVehicle}
-                onShowRejectDialog={(id) => {
-                  setVehicleToReject(id);
-                  setShowRejectDialog(true);
-                }}
-                onShowCommentDialog={(id) => {
-                  setVehicleToComment(id);
-                  loadVehicleComments(id);
-                  setShowCommentDialog(true);
-                }}
-                onShowHistoryDialog={() => {
-                  loadVehicleHistory();
-                  setShowHistoryDialog(true);
-                }}
-                onShowDeleteDialog={(id) => {
-                  setVehicleToDelete(id);
-                  setShowDeleteDialog(true);
-                }}
-                onBulkAction={handleBulkAction}
-              />
-            )}
+        {activeTab === "vehicles" && (
+          <>
+            {/* Filtros */}
+            <AdminFilters
+              filters={filters}
+              onFiltersChange={updateFilters}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              // ✅ CORREGIDO: Usar el total de la paginación, que refleja los items filtrados.
+              totalResults={pagination.totalItems}
+              isDarkMode={isDarkMode}
+              onSelectAll={selectAllVisible}
+              onClearSelection={clearSelection}
+              selectedCount={selectedVehicles.size}
+            />
 
-            {/* Paginación */}
-            <div className="mt-6">
-              <AdminPagination
-                pagination={pagination}
-                onPageChange={goToPage}
-                onItemsPerPageChange={(itemsPerPage) =>
-                  updatePagination({ itemsPerPage })
-                }
-                onNextPage={nextPage}
-                onPrevPage={prevPage}
-              />
-            </div>
-          </CardContent>
-        </Card>
+            {/* Contenido principal */}
+            <Card
+              className={
+                isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"
+              }
+            >
+              <CardContent className="p-3 md:p-6">
+                {viewMode === "grid" ? (
+                  <VehicleGridView
+                    // ✅ CORREGIDO: Usar `vehicles` del hook.
+                    vehicles={vehicles}
+                    onStatusChange={handleStatusChange}
+                    onVehicleSelect={setSelectedVehicle}
+                    isDarkMode={isDarkMode}
+                  />
+                ) : (
+                  <VehicleListView
+                    // ✅ CORREGIDO: Usar `vehicles` del hook.
+                    vehicles={vehicles}
+                    selectedVehicles={selectedVehicles}
+                    isDarkMode={isDarkMode}
+                    onToggleSelection={toggleVehicleSelection}
+                    onClearSelection={clearSelection}
+                    onStatusChange={handleStatusChange}
+                    onVehicleSelect={setSelectedVehicle}
+                    onShowRejectDialog={(id) => {
+                      setVehicleToReject(id);
+                      setShowRejectDialog(true);
+                    }}
+                    onShowCommentDialog={(id) => {
+                      setVehicleToComment(id);
+                      loadVehicleComments(id);
+                      setShowCommentDialog(true);
+                    }}
+                    onShowHistoryDialog={() => {
+                      loadVehicleHistory();
+                      setShowHistoryDialog(true);
+                    }}
+                    onShowDeleteDialog={(id) => {
+                      setVehicleToDelete(id);
+                      setShowDeleteDialog(true);
+                    }}
+                    onBulkAction={handleBulkAction}
+                  />
+                )}
+
+                {/* Paginación */}
+                <div className="mt-6">
+                  <AdminPagination
+                    pagination={pagination}
+                    onPageChange={goToPage}
+                    onItemsPerPageChange={(itemsPerPage) =>
+                      updatePagination({ itemsPerPage })
+                    }
+                    onNextPage={nextPage}
+                    onPrevPage={prevPage}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+        {activeTab === "users" && <UsersPanel />}
       </div>
 
       {/* Dialog para ver detalles del vehículo */}
