@@ -6,6 +6,7 @@ import type { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { ObjectId } from "mongodb"; // Importar ObjectId
 
 // Extiende los tipos de NextAuth para incluir 'role' en User y Session
 declare module "next-auth" {
@@ -40,28 +41,22 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          console.log("Intentando conectar a MongoDB...");
           const client = await clientPromise;
           const db = client.db("vehicle_store");
           const users = db.collection("users");
 
-          console.log("Buscando usuario:", credentials.email);
           const user = await users.findOne({ email: credentials.email });
 
           if (!user) {
-            console.log("Usuario no encontrado");
             throw new Error("Usuario no encontrado");
           }
 
-          console.log("Usuario encontrado, verificando contraseña...");
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
 
           if (!isPasswordValid) {
-            console.log("Contraseña inválida");
             throw new Error("Contraseña incorrecta");
           }
 
-          console.log("Login exitoso para:", user.email);
           return {
             id: user._id.toString(),
             _id: user._id.toString(),
@@ -77,28 +72,59 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   pages: {
-    signIn: "/auth/signin",
+    signIn: "/login",
   },
   callbacks: {
     async jwt({ token, user }) {
+      // Al iniciar sesión, se añaden los datos iniciales al token.
       if (user) {
-        token.role = user.role;
         token.id = user.id;
-        token._id = user._id;
+        token.role = user.role;
+        return token;
       }
-      return token;
+
+      // Para todas las peticiones siguientes, se ejecuta esta validación.
+      // Si el token no tiene un ID, es inválido.
+      if (!token.id) {
+        throw new Error("Token inválido: ID de usuario ausente.");
+      }
+
+      try {
+        const client = await clientPromise;
+        const db = client.db("vehicle_store");
+        const userExists = await db.collection("users").findOne({ _id: new ObjectId(token.id as string) });
+
+        // **Punto Crítico de la Solución**
+        // Si el usuario no se encuentra en la base de datos (porque fue eliminado),
+        // lanzamos un error. next-auth interpretará esto como una sesión inválida y la destruirá.
+        if (!userExists) {
+          console.log(`❌ Invalidando sesión: El usuario con ID ${token.id} ya no existe.`);
+          throw new Error("El usuario ha sido eliminado.");
+        }
+
+        // Si el usuario existe, actualizamos su rol (por si cambió) y devolvemos el token válido.
+        token.role = userExists.role;
+        return token;
+
+      } catch (error) {
+        // Si la búsqueda en la DB falla o si lanzamos el error de "usuario no encontrado",
+        // lo registramos y relanzamos para que next-auth lo maneje.
+        console.error("Error durante la validación del JWT, invalidando sesión:", (error as Error).message);
+        throw new Error("La validación de la sesión ha fallado.");
+      }
     },
+
     async session({ session, token }) {
+      // Este callback solo se ejecuta si el callback 'jwt' no lanzó un error.
+      // Por lo tanto, aquí el token siempre es válido.
       if (token && session.user) {
         session.user.id = token.id as string;
-        session.user._id = token._id as string;
         session.user.role = token.role as string;
       }
       return session;
     },
+
     async redirect({ url, baseUrl }) {
-      console.log("Redirect callback - url:", url, "baseUrl:", baseUrl);
-      
       if (url.startsWith("/")) {
         return `${baseUrl}${url}`;
       }
@@ -118,8 +144,8 @@ export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === 'development',
 };
 
-// --- INICIO DE LA SOLUCIÓN DEFINITIVA Y PRAGMÁTICA ---
-
+// El resto del archivo (withAdminAuth) permanece igual
+// --- INICIO DE LA SOLUCIÓN DEFINITIVA Y PRAGMÁTICA ---\n
 // Definimos los tipos de handler de forma explícita
 type StaticHandler = (req: NextRequest) => Promise<NextResponse> | NextResponse;
 type DynamicHandler<P> = (req: NextRequest, context: { params: P }) => Promise<NextResponse> | NextResponse;

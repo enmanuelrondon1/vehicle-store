@@ -67,7 +67,7 @@ export async function PUT(req: NextRequest) {
 }
 
 /**
- * Manejador para la solicitud DELETE: Elimina un usuario.
+ * Manejador para la solicitud DELETE: Elimina un usuario y todas sus publicaciones.
  * NOTA: No usamos el parámetro 'context' para evitar un error de tipos del entorno.
  */
 export async function DELETE(req: NextRequest) {
@@ -84,20 +84,26 @@ export async function DELETE(req: NextRequest) {
     }
 
     try {
-        // 3. Eliminar el usuario de la base de datos
         const client = await clientPromise;
         const db = client.db("vehicle_store");
         const usersCollection = db.collection("users");
+        const vehiclesCollection = db.collection("vehicles");
 
-        const result = await usersCollection.deleteOne({ _id: new ObjectId(id) });
+        // --- NUEVO: Eliminar todas las publicaciones del usuario ---
+        const deleteVehiclesResult = await vehiclesCollection.deleteMany({ "sellerContact.userId": id });
+        console.log(`Se eliminaron ${deleteVehiclesResult.deletedCount} publicaciones para el usuario ${id}`);
+        // --- FIN DEL NUEVO CÓDIGO ---
 
-        if (result.deletedCount === 0) {
+        // 3. Eliminar el usuario de la base de datos
+        const deleteUserResult = await usersCollection.deleteOne({ _id: new ObjectId(id) });
+
+        if (deleteUserResult.deletedCount === 0) {
             return NextResponse.json({ success: false, error: "Usuario no encontrado" }, { status: 404 });
         }
 
-        return NextResponse.json({ success: true, message: "Usuario eliminado correctamente" });
+        return NextResponse.json({ success: true, message: "Usuario y todas sus publicaciones eliminados correctamente" });
     } catch (error) {
-        console.error("Error al eliminar el usuario:", error);
+        console.error("Error al eliminar el usuario y sus publicaciones:", error);
         return NextResponse.json({ success: false, error: "Error Interno del Servidor" }, { status: 500 });
     }
 }

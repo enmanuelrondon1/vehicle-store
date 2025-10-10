@@ -4,6 +4,10 @@ import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
 import { toTitleCase } from "./utils";
+import { ObjectId } from "mongodb";
+import { getServerSession } from "next-auth/next";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 // Extiende los tipos de NextAuth para incluir 'role' en User y Session
 declare module "next-auth" {
@@ -38,28 +42,21 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          console.log("Intentando conectar a MongoDB...");
           const client = await clientPromise;
           const db = client.db("vehicle_store");
           const users = db.collection("users");
-
-          console.log("Buscando usuario:", credentials.email);
           const user = await users.findOne({ email: credentials.email });
 
           if (!user) {
-            console.log("Usuario no encontrado:", credentials.email);
             throw new Error("Credenciales inválidas");
           }
 
-          console.log("Usuario encontrado, verificando contraseña...");
           const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password);
 
           if (!isPasswordCorrect) {
-            console.log("Contraseña incorrecta para el usuario:", credentials.email);
             throw new Error("Credenciales inválidas");
           }
 
-          console.log("¡Autorización exitosa para:", user.email, "con rol:", user.role, "!");
           return {
             id: user._id.toString(),
             email: user.email,
@@ -68,7 +65,6 @@ export const authOptions: NextAuthOptions = {
           };
         } catch (error) {
           console.error("Error en la autorización:", error);
-          // No relanzar el error con detalles internos
           throw new Error("Error de autenticación");
         }
       },
@@ -82,8 +78,26 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        return token;
       }
-      return token;
+      if (!token.id) {
+        throw new Error("Token inválido: ID de usuario ausente.");
+      }
+      try {
+        const client = await clientPromise;
+        const db = client.db("vehicle_store");
+        const userExists = await db.collection("users").findOne({ _id: new ObjectId(token.id as string) });
+
+        if (!userExists) {
+          console.log(`❌ Invalidando sesión: El usuario con ID ${token.id} ya no existe.`);
+          throw new Error("El usuario ha sido eliminado.");
+        }
+        token.role = userExists.role;
+        return token;
+      } catch (error) {
+        console.error("Error durante la validación del JWT, invalidando sesión:", (error as Error).message);
+        throw new Error("La validación de la sesión ha fallado.");
+      }
     },
     async session({ session, token }) {
       if (session.user) {
@@ -99,3 +113,30 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
+
+// --- HOC for Admin Route Protection ---
+
+type StaticHandler = (req: NextRequest) => Promise<NextResponse> | NextResponse;
+type DynamicHandler<P> = (req: NextRequest, context: { params: P }) => Promise<NextResponse> | NextResponse;
+
+export function withAdminAuth(handler: StaticHandler): StaticHandler;
+export function withAdminAuth<P>(handler: DynamicHandler<P>): DynamicHandler<P>;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+export function withAdminAuth(handler: Function) {
+  return async (req: NextRequest, context?: { params: unknown }) => {
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user?.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, error: "Acceso no autorizado" },
+        { status: 403 }
+      );
+    }
+
+    if (context) {
+      return handler(req, context);
+    }
+
+    return handler(req);
+  };
+}
