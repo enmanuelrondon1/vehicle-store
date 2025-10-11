@@ -23,8 +23,15 @@ import { CommentDialog } from "./CommentDialog";
 import { HistoryDialog } from "./HistoryDialog";
 import { DeleteDialog } from "./DeleteDialog";
 import { UsersPanel } from "./UsersPanel";
+import {
+  getVehicleComments,
+  addVehicleComment,
+  getVehicleHistory,
+} from "@/lib/api/admin";
+import type { VehicleComment, VehicleHistoryEntry } from "@/types/types"; // AÑADIDO: Importar tipos
 
-// Interfaces para las nuevas funcionalidades
+// Interfaces para las nuevas funcionalidades - ELIMINADAS
+/*
 interface VehicleComment {
   id: string;
   text: string;
@@ -42,6 +49,7 @@ interface VehicleHistoryEntry {
   oldValue?: string;
   newValue?: string;
 }
+*/
 
 // Mapeo explícito
 const ApprovalStatus = {
@@ -223,32 +231,17 @@ const filtered = filterVehicles(allVehicles, filters);
 
   // Funciones para manejar comentarios
   const handleAddComment = async (vehicleId: string, comment: string) => {
+    setIsLoadingComments(true);
     try {
-      setIsLoadingComments(true);
-
-      const newComment: VehicleComment = {
-        id: Date.now().toString(),
-        text: comment,
-        author: "Admin",
-        createdAt: new Date().toISOString(),
-        type: "admin",
-      };
-
-      setVehicleComments((prev) => [newComment, ...prev]);
-      setCommentText("");
-      setShowCommentDialog(false);
-
-      const historyEntry: VehicleHistoryEntry = {
-        id: Date.now().toString(),
-        action: "Comentario agregado",
-        details: `Se agregó un comentario: "${comment.substring(0, 50)}${
-          comment.length > 50 ? "..." : ""
-        }"`,
-        author: "Admin",
-        timestamp: new Date().toISOString(),
-      };
-
-      setVehicleHistory((prev) => [historyEntry, ...prev]);
+      const result = await addVehicleComment(vehicleId, comment);
+      if (result.success && result.newComment && result.newHistoryEntry) {
+        setVehicleComments((prev) => [result.newComment!, ...prev]);
+        setVehicleHistory((prev) => [result.newHistoryEntry!, ...prev]);
+        setCommentText("");
+        setShowCommentDialog(false);
+      } else {
+        console.error("Error al agregar comentario desde la API");
+      }
     } catch (error) {
       console.error("Error al agregar comentario:", error);
     } finally {
@@ -258,28 +251,10 @@ const filtered = filterVehicles(allVehicles, filters);
 
   // Función para cargar comentarios
   const loadVehicleComments = async (vehicleId: string) => {
+    setIsLoadingComments(true);
     try {
-      setIsLoadingComments(true);
-
-      console.log(`Cargando comentarios para el vehículo: ${vehicleId}`);
-      const mockComments: VehicleComment[] = [
-        {
-          id: "1",
-          text: "Vehículo revisado, documentación completa",
-          author: "Admin",
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          type: "admin",
-        },
-        {
-          id: "2",
-          text: "Estado cambiado automáticamente a pendiente",
-          author: "Sistema",
-          createdAt: new Date(Date.now() - 172800000).toISOString(),
-          type: "system",
-        },
-      ];
-
-      setVehicleComments(mockComments);
+      const comments = await getVehicleComments(vehicleId);
+      setVehicleComments(comments);
     } catch (error) {
       console.error("Error al cargar comentarios:", error);
     } finally {
@@ -288,37 +263,11 @@ const filtered = filterVehicles(allVehicles, filters);
   };
 
   // Función para cargar historial
-  const loadVehicleHistory = async () => {
+  const loadVehicleHistory = async (vehicleId: string) => {
+    setIsLoadingHistory(true);
     try {
-      setIsLoadingHistory(true);
-
-      const mockHistory: VehicleHistoryEntry[] = [
-        {
-          id: "1",
-          action: "Estado cambiado",
-          details: "Estado cambiado de 'pendiente' a 'aprobado'",
-          author: "Admin",
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          oldValue: "pending",
-          newValue: "approved",
-        },
-        {
-          id: "2",
-          action: "Vehículo creado",
-          details: "Vehículo registrado en el sistema",
-          author: "Sistema",
-          timestamp: new Date(Date.now() - 86400000).toISOString(),
-        },
-        {
-          id: "3",
-          action: "Comprobante subido",
-          details: "Comprobante de pago adjuntado",
-          author: "Usuario",
-          timestamp: new Date(Date.now() - 90000000).toISOString(),
-        },
-      ];
-
-      setVehicleHistory(mockHistory);
+      const history = await getVehicleHistory(vehicleId);
+      setVehicleHistory(history);
     } catch (error) {
       console.error("Error al cargar historial:", error);
     } finally {
@@ -524,8 +473,8 @@ const filtered = filterVehicles(allVehicles, filters);
                       loadVehicleComments(id);
                       setShowCommentDialog(true);
                     }}
-                    onShowHistoryDialog={() => {
-                      loadVehicleHistory();
+                    onShowHistoryDialog={(id) => {
+                      loadVehicleHistory(id);
                       setShowHistoryDialog(true);
                     }}
                     onShowDeleteDialog={(id) => {

@@ -1,6 +1,6 @@
 // src/app/api/admin/analytics/route.ts
 import { NextResponse } from 'next/server';
-import { withAdminAuth } from '@/lib/auth';
+import { withAdminAuth } from '@/lib/authOptions';
 import { getDb } from '@/lib/mongodb';
 import { VehicleService } from '@/services/vehicleService';
 import { NextRequest } from 'next/server';

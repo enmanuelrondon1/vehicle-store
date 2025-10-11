@@ -8,7 +8,7 @@ import {
 } from "@/types/types";
 import { getServerSession } from "next-auth";
 import { ObjectId } from "mongodb";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/authOptions";
 // import { sendVehicleRejectionEmail } from "@/lib/mailer";
 import {
   sendVehicleApprovalEmail,

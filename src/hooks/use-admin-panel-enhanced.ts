@@ -11,9 +11,11 @@ import { toast } from "sonner"
 export interface AdminPanelFilters {
   status: ApprovalStatus | "all";
   search: string;
-  category: string;
+  category: string[];
   priceRange: [number, number];
   sortBy: SortByType;
+  dateRange: [Date | null, Date | null];
+  featured: boolean | "all";
 }
 export type SortByType =
   | "newest"
@@ -42,9 +44,11 @@ export const useAdminPanelEnhanced = () => {
   const [filters, setFilters] = useState<AdminPanelFilters>({
     status: "all",
     search: "",
-    category: "all",
+    category: [],
     priceRange: [0, 1000000],
     sortBy: "newest",
+    dateRange: [null, null],
+    featured: "all",
   });
 
   const [pagination, setPagination] = useState<PaginationState>({
@@ -125,28 +129,16 @@ export const useAdminPanelEnhanced = () => {
   };
 
   const filteredAndSortedVehicles = useMemo(() => {
-    // console.log("🔍 Starting filter process...")
-    // console.log("📋 Current filters:", filters)
-    // console.log("🏗️ All vehicles count:", allVehicles.length)
-
     let filtered = [...allVehicles];
 
     if (filters.status !== "all") {
-      // console.log("🎯 Filtering by status:", filters.status)
-      // const beforeCount = filtered.length
-      // VOLVEMOS A LA LÓGICA DE FILTRADO ORIGINAL
       filtered = filtered.filter((vehicle) => {
         return vehicle.status === filters.status;
       });
-      // console.log(`📊 Status filter: ${beforeCount} → ${filtered.length}`)
-    } else {
-      // console.log("🌐 Showing all statuses")
     }
 
     if (filters.search) {
-      // const searchLower = filters.search.toLowerCase();
-      // const beforeCount = filtered.length
-      filtered = filtered.filter((vehicle) => {
+      filtered = filtered.filter((vehicle: VehicleDataFrontend) => {
         const searchLower = filters.search.toLowerCase();
         return (
           (vehicle.brand?.toLowerCase() ?? "").includes(searchLower) ||
@@ -160,21 +152,35 @@ export const useAdminPanelEnhanced = () => {
       });
     }
 
-    if (filters.category !== "all") {
-      // const beforeCount = filtered.length
+    if (filters.category.length > 0) {
       filtered = filtered.filter(
-        (vehicle) => vehicle.category === filters.category
+        (vehicle) => vehicle.category && filters.category.includes(vehicle.category)
       );
-      // console.log(`🏷️ Category filter: ${beforeCount} → ${filtered.length}`)
     }
 
-    // const beforePriceCount = filtered.length
     filtered = filtered.filter(
       (vehicle) =>
         vehicle.price >= filters.priceRange[0] &&
         vehicle.price <= filters.priceRange[1]
     );
-    // console.log(`💰 Price filter: ${beforePriceCount} → ${filtered.length}`)
+
+    if (filters.dateRange[0] && filters.dateRange[1]) {
+      const [startDate, endDate] = filters.dateRange;
+      const start = new Date(startDate.setHours(0, 0, 0, 0));
+      const end = new Date(endDate.setHours(23, 59, 59, 999));
+
+      filtered = filtered.filter((vehicle: VehicleDataFrontend) => {
+        const vehicleDate = getValidDate(vehicle.createdAt, vehicle.postedDate);
+        return vehicleDate >= start && vehicleDate <= end;
+      });
+    }
+
+    // Filtrado por destacado
+    if (filters.featured !== "all") {
+      filtered = filtered.filter(
+        (vehicle: VehicleDataFrontend) => vehicle.isFeatured === filters.featured
+      );
+    }
 
     filtered.sort((a, b) => {
       switch (filters.sortBy) {

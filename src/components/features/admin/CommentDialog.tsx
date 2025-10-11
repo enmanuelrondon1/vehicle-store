@@ -14,14 +14,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, RefreshCw, Plus, User } from "lucide-react";
-
-interface VehicleComment {
-  id: string;
-  text: string;
-  author: string;
-  createdAt: string;
-  type: "admin" | "system";
-}
+import type { VehicleComment } from "@/types/types";
 
 interface CommentDialogProps {
   isOpen: boolean;
@@ -64,12 +57,20 @@ export const CommentDialog = ({
               ) : comments.length > 0 ? (
                 <div className="space-y-3">
                   {comments.map((comment) => (
-                    <div key={comment.id} className={`p-4 rounded-lg border-l-4 ${comment.type === "admin" ? (isDarkMode ? "bg-blue-900/30 border-blue-500" : "bg-blue-50 border-blue-500") : (isDarkMode ? "bg-slate-700/50 border-slate-500" : "bg-slate-100 border-slate-400")}`}>
+                    <div key={comment.id} className={`p-4 rounded-lg border-l-4 ${
+                      comment.type === "rejection" 
+                        ? (isDarkMode ? "bg-red-900/30 border-red-500" : "bg-red-50 border-red-500") 
+                        : comment.author === "Admin" 
+                          ? (isDarkMode ? "bg-blue-900/30 border-blue-500" : "bg-blue-50 border-blue-500") 
+                          : (isDarkMode ? "bg-slate-700/50 border-slate-500" : "bg-slate-100 border-slate-400")
+                    }`}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <User className={`w-4 h-4 ${isDarkMode ? "text-slate-300" : "text-slate-600"}`} />
                           <span className={`font-medium text-sm ${isDarkMode ? "text-slate-200" : "text-slate-800"}`}>{comment.author}</span>
-                          <Badge variant={comment.type === "admin" ? "default" : "secondary"} className="text-xs">{comment.type === "admin" ? "Admin" : "Sistema"}</Badge>
+                          <Badge variant={comment.type === 'rejection' ? 'destructive' : comment.author === 'Admin' ? 'default' : 'secondary'} className="text-xs">
+                            {comment.type === 'rejection' ? 'Rechazo' : comment.author}
+                          </Badge>
                         </div>
                         <span className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>{new Date(comment.createdAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}</span>
                       </div>

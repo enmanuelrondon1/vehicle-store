@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { VehicleService } from "@/services/vehicleService";
 import { ApprovalStatus } from "@/types/types";
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
-import { ObjectId } from 'mongodb';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/authOptions";
+import { ObjectId } from "mongodb";
 
 export async function GET(
   req: NextRequest,
@@ -16,11 +16,14 @@ export async function GET(
     const { id } = await params;
 
     if (!id || !ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, error: 'Invalid Vehicle ID' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Invalid Vehicle ID" },
+        { status: 400 }
+      );
     }
 
     const session = await getServerSession(authOptions);
-    const isAdmin = session?.user?.role === 'admin';
+    const isAdmin = session?.user?.role === "admin";
 
     const client = await clientPromise;
     const db = client.db("vehicle_store");
@@ -35,7 +38,7 @@ export async function GET(
       response.data.isFavorited = false;
 
       if (session?.user?._id) {
-        const favoritesCollection = db.collection('favorites');
+        const favoritesCollection = db.collection("favorites");
         const favorite = await favoritesCollection.findOne({
           userId: new ObjectId(session.user._id),
           vehicleId: new ObjectId(id),
@@ -47,10 +50,13 @@ export async function GET(
       }
     }
 
-    return NextResponse.json(response, { status: response.success ? 200 : 404 });
+    return NextResponse.json(response, {
+      status: response.success ? 200 : 404,
+    });
   } catch (error) {
     console.error("Error general en GET /api/vehicles/[id]:", error);
-    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+    const errorMessage =
+      error instanceof Error ? error.message : "Error desconocido";
     return NextResponse.json(
       { success: false, error: `Error interno del servidor: ${errorMessage}` },
       { status: 500 }

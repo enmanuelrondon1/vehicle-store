@@ -1,5 +1,6 @@
+//src/app/profile/page.tsx
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import UserProfileCard from "@/components/features/profile/UserProfileCard";
 import UserVehicleList from "@/components/features/profile/UserVehicleList";

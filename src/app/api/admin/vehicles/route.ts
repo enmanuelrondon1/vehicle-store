@@ -4,7 +4,7 @@ import clientPromise from "@/lib/mongodb"
 import type { ApiResponseBackend,  } from "@/types/types"
 import type { WithId, Document } from "mongodb"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "@/lib/authOptions"
 
 // Tipo específico para documentos de MongoDB
 

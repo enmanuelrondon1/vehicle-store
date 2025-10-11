@@ -14,7 +14,7 @@ import { toTitleCase } from "@/lib/utils";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/authOptions";
 
 const SellerContactSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),

@@ -1,6 +1,6 @@
 //src/app/my-favorites/page.tsx
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
 import FavoritesList from "@/components/features/vehicles/common/FavoritesList";
 import { Vehicle } from "@/types/types";

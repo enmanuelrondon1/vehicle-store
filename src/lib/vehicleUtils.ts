@@ -10,7 +10,7 @@ export const filterVehicles = (
     const statusMatch =
       filters.status === "all" || vehicle.status === filters.status;
     const categoryMatch =
-      filters.category === "all" || vehicle.category === filters.category;
+      filters.category.length === 0 || filters.category.includes(vehicle.category);
     const searchMatch =
       !filters.search ||
       `${vehicle.brand} ${vehicle.model} ${vehicle.year} ${vehicle.sellerContact?.name || ''} ${vehicle.sellerContact?.email || ''} ${vehicle.referenceNumber || ""}`

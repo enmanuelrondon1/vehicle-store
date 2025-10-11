@@ -397,3 +397,19 @@ export const SORT_OPTIONS = [
     order: "desc" as const,
   },
 ];
+
+export interface VehicleComment {
+  id: string;
+  author: string;
+  text: string; // CORREGIDO: de 'content' a 'text'
+  type: "comment" | "rejection";
+  createdAt: string;
+}
+
+export interface VehicleHistoryEntry {
+  id: string;
+  action: string; // AÑADIDO: La propiedad que faltaba y que usa el diálogo
+  author: string;
+  details: string;
+  timestamp: string;
+}

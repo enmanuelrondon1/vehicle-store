@@ -1,6 +1,6 @@
 // src/app/api/admin/users/route.ts
 import { NextResponse } from "next/server";
-import { withAdminAuth } from "@/lib/auth";
+import { withAdminAuth } from "@/lib/authOptions";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 

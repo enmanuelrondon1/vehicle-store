@@ -1,30 +1,51 @@
 //src/components/features/admin/AdminFilters.tsx
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, Fragment } from "react"
-import { Listbox, Transition } from "@headlessui/react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Slider } from "@/components/ui/slider"
-import { Badge } from "@/components/ui/badge"
-import { Search, Filter, X, Grid, List, CheckSquare, Square, Check, ChevronDown } from "lucide-react"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import type { AdminPanelFilters, SortByType } from "@/hooks/use-admin-panel-enhanced"
+import type React from "react";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import {
+  Search,
+  Filter,
+  X,
+  Grid,
+  List,
+  CheckSquare,
+  Square,
+} from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
+import { DateRange } from "react-day-picker";
+import { VEHICLE_CATEGORIES_LABELS } from "@/types/shared";
+import { SortSelector } from "@/components/ui/seraui-selector";
+import { MultiSelectFilter } from "@/components/ui/MultiSelectFilter";
+
+import {
+  AdminPanelFilters,
+  SortByType,
+} from "@/hooks/use-admin-panel-enhanced";
 
 interface AdminFiltersProps {
-  filters: AdminPanelFilters
-  onFiltersChange: (filters: Partial<AdminPanelFilters>) => void
-  viewMode: "grid" | "list"
-  onViewModeChange: (mode: "grid" | "list") => void
-  totalResults: number
-  isDarkMode: boolean
-  onSelectAll: () => void
-  onClearSelection: () => void
-  selectedCount: number
+  filters: AdminPanelFilters;
+  onFiltersChange: (filters: Partial<AdminPanelFilters>) => void;
+  viewMode: "grid" | "list";
+  onViewModeChange: (mode: "grid" | "list") => void;
+  totalResults: number;
+  isDarkMode: boolean;
+  onSelectAll: () => void;
+  onClearSelection: () => void;
+  selectedCount: number;
 }
-
+ 
 export const AdminFilters = ({
   filters,
   onFiltersChange,
@@ -36,35 +57,66 @@ export const AdminFilters = ({
   onClearSelection,
   selectedCount,
 }: AdminFiltersProps) => {
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
-  const [searchInput, setSearchInput] = useState(filters.search)
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState(filters.search);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onFiltersChange({ search: searchInput })
-  }
+  const sortOptions: { value: SortByType; label: string }[] = [
+    { value: "newest", label: "Más nuevos" },
+    { value: "oldest", label: "Más antiguos" },
+    { value: "price-low", label: "Precio: Bajo a Alto" },
+    { value: "price-high", label: "Precio: Alto a Bajo" },
+    { value: "views", label: "Más vistos" },
+  ];
+
+  const categoryOptions = [
+    { value: "all", label: "Todas las categorías" },
+    ...Object.entries(VEHICLE_CATEGORIES_LABELS).map(([value, label]) => ({
+      value,
+      label,
+    })),
+  ];
+
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchInput !== filters.search) {
+        onFiltersChange({ search: searchInput });
+      }
+    }, 500); // 500ms delay
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchInput, onFiltersChange, filters.search]);
 
   const clearFilters = () => {
-    setSearchInput("")
+    setSearchInput("");
     onFiltersChange({
       search: "",
-      category: "all",
+      status: "all",
+      category: [],
       priceRange: [0, 1000000],
       sortBy: "newest",
-    })
-  }
+      dateRange: [null, null],
+      featured: "all",
+    });
+  };
 
   const activeFiltersCount = [
-    filters.search,
-    filters.category !== "all" ? filters.category : null,
-    filters.priceRange[0] > 0 || filters.priceRange[1] < 1000000 ? "price" : null,
-  ].filter(Boolean).length
+    filters.search !== "",
+    filters.category.length > 0,
+    filters.priceRange[0] !== 0 || filters.priceRange[1] !== 1000000,
+    filters.status !== "all",
+    filters.sortBy !== "newest",
+    filters.dateRange[0] !== null || filters.dateRange[1] !== null,
+    filters.featured !== "all",
+  ].filter(Boolean).length;
 
   return (
-    <Card className={isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"}>
-      <CardHeader>
+    <Card className={isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}>
+      <CardHeader className={isDarkMode ? "border-gray-700" : "border-gray-200"}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl">
             <Filter className="w-5 h-5" />
             Filtros y Búsqueda
             {activeFiltersCount > 0 && (
@@ -74,17 +126,17 @@ export const AdminFilters = ({
             )}
           </CardTitle>
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-3">
+            <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
               {totalResults} resultado{totalResults !== 1 ? "s" : ""}
             </span>
 
-            <div className="flex items-center border rounded-lg p-1">
+            <div className={`flex items-center border rounded-lg p-1 ${isDarkMode ? "border-gray-600 bg-gray-700" : "border-gray-300 bg-gray-100"}`}>
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => onViewModeChange("list")}
-                className="p-2"
+                className="p-2 h-8 w-8"
               >
                 <List className="w-4 h-4" />
               </Button>
@@ -92,7 +144,7 @@ export const AdminFilters = ({
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => onViewModeChange("grid")}
-                className="p-2"
+                className="p-2 h-8 w-8"
               >
                 <Grid className="w-4 h-4" />
               </Button>
@@ -101,28 +153,25 @@ export const AdminFilters = ({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5 pt-6">
         {/* Búsqueda */}
-        <form onSubmit={handleSearchSubmit} className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Buscar por marca, modelo, vendedor, referencia..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Button type="submit">Buscar</Button>
-        </form>
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            placeholder="Buscar por marca, modelo, vendedor, referencia..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className={`pl-10 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400" : "bg-white border-gray-300"}`}
+          />
+        </div>
 
         {/* Acciones de selección masiva */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 py-2">
           <Button
             variant="outline"
             size="sm"
             onClick={onSelectAll}
-            className="flex items-center gap-2"
+            className={`flex items-center gap-2 ${isDarkMode ? "border-gray-600 hover:bg-gray-700" : ""}`}
           >
             <CheckSquare className="w-4 h-4" />
             Seleccionar todos
@@ -133,20 +182,20 @@ export const AdminFilters = ({
                 variant="outline"
                 size="sm"
                 onClick={onClearSelection}
-                className="flex items-center gap-2"
+                className={`flex items-center gap-2 ${isDarkMode ? "border-gray-600 hover:bg-gray-700" : ""}`}
               >
                 <Square className="w-4 h-4" />
                 Limpiar selección
               </Button>
-              <Badge variant="secondary">
-                {selectedCount} seleccionado{selectedCount !== 1 ? 's' : ''}
+              <Badge variant="secondary" className={isDarkMode ? "bg-gray-600" : ""}>
+                {selectedCount} seleccionado{selectedCount !== 1 ? "s" : ""}
               </Badge>
             </>
           )}
         </div>
 
         {/* Filtros rápidos por estado */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 py-2">
           {[
             { value: "all", label: "Todos" },
             { value: "pending", label: "Pendientes" },
@@ -157,7 +206,12 @@ export const AdminFilters = ({
               key={status.value}
               variant={filters.status === status.value ? "default" : "outline"}
               size="sm"
-              onClick={() => onFiltersChange({ status: status.value as AdminPanelFilters['status'] })}
+              onClick={() =>
+                onFiltersChange({
+                  status: status.value as AdminPanelFilters["status"],
+                })
+              }
+              className={isDarkMode && filters.status !== status.value ? "border-gray-600 hover:bg-gray-700" : ""}
             >
               {status.label}
             </Button>
@@ -167,323 +221,135 @@ export const AdminFilters = ({
         {/* Filtros avanzados */}
         <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
           <CollapsibleTrigger asChild>
-            <Button variant="outline" className="w-full bg-transparent">
+            <Button
+              variant="outline"
+              className={`w-full bg-transparent ${isDarkMode ? "border-gray-600 hover:bg-gray-700 text-white" : "hover:bg-gray-50"}`}
+            >
               <Filter className="w-4 h-4 mr-2" />
               Filtros Avanzados
               {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant="secondary" className={`ml-2 ${isDarkMode ? "bg-gray-600" : ""}`}>
                   {activeFiltersCount}
                 </Badge>
               )}
             </Button>
           </CollapsibleTrigger>
 
-          <CollapsibleContent className="space-y-4 mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <CollapsibleContent className="space-y-6 mt-4 pt-4 border-t-2 border-gray-400 dark:border-gray-600">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Categoría */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Categoría</label>
-                <Listbox value={filters.category} onChange={(value) => onFiltersChange({ category: value })}>
-                  <div className="relative">
-                    <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <span className="block truncate">
-                        {filters.category === "all"
-                          ? "Todas las categorías"
-                          : filters.category === "car"
-                          ? "Automóviles"
-                          : filters.category === "motorcycle"
-                          ? "Motocicletas"
-                          : filters.category === "truck"
-                          ? "Camiones"
-                          : "Camionetas"}
-                      </span>
-                      <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                        <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                      </span>
-                    </Listbox.Button>
-                    <Transition
-                      as={Fragment}
-                      leave="transition ease-in duration-100"
-                      leaveFrom="opacity-100"
-                      leaveTo="opacity-0"
-                    >
-                      <Listbox.Options className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dropdown-no-zoom">
-                        <Listbox.Option
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200" : "text-gray-900 dark:text-gray-200"
-                            }`
-                          }
-                          value="all"
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                Todas las categorías
-                              </span>
-                              {selected ? (
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400">
-                                  <Check className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Listbox.Option>
-                        <Listbox.Option
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200" : "text-gray-900 dark:text-gray-200"
-                            }`
-                          }
-                          value="car"
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                Automóviles
-                              </span>
-                              {selected ? (
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400">
-                                  <Check className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Listbox.Option>
-                        <Listbox.Option
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200" : "text-gray-900 dark:text-gray-200"
-                            }`
-                          }
-                          value="motorcycle"
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                Motocicletas
-                              </span>
-                              {selected ? (
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400">
-                                  <Check className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Listbox.Option>
-                        <Listbox.Option
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200" : "text-gray-900 dark:text-gray-200"
-                            }`
-                          }
-                          value="truck"
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                Camiones
-                              </span>
-                              {selected ? (
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400">
-                                  <Check className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Listbox.Option>
-                        <Listbox.Option
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200" : "text-gray-900 dark:text-gray-200"
-                            }`
-                          }
-                          value="van"
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                Camionetas
-                              </span>
-                              {selected ? (
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400">
-                                  <Check className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Listbox.Option>
-                      </Listbox.Options>
-                    </Transition>
-                  </div>
-                </Listbox>
+              <div className={`p-5 rounded-lg border-2 ${isDarkMode ? "bg-blue-900 border-blue-600" : "bg-blue-100 border-blue-500"}`}>
+                <label className={`text-sm font-semibold mb-3 block ${isDarkMode ? "text-blue-200" : "text-blue-900"}`}>
+                  Categoría
+                </label>
+                <MultiSelectFilter
+                  options={categoryOptions.filter(o => o.value !== 'all')}
+                  selectedValues={filters.category}
+                  onChange={(selected) => onFiltersChange({ category: selected })}
+                  placeholder="Seleccionar categorías"
+                  className={`w-full ${isDarkMode ? "bg-gray-600 border-blue-500 text-white" : "bg-white border-blue-300"}`}
+                />
               </div>
 
               {/* Ordenamiento */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Ordenar por</label>
-                <Listbox value={filters.sortBy} onChange={(value: SortByType) => onFiltersChange({ sortBy: value })}>
-                  <div className="relative">
-                    <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <span className="block truncate">
-                        {filters.sortBy === "newest"
-                          ? "Más recientes"
-                          : filters.sortBy === "oldest"
-                          ? "Más antiguos"
-                          : filters.sortBy === "price-low"
-                          ? "Precio: menor a mayor"
-                          : filters.sortBy === "price-high"
-                          ? "Precio: mayor a menor"
-                          : "Más vistos"}
-                      </span>
-                      <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                        <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                      </span>
-                    </Listbox.Button>
-                    <Transition
-                      as={Fragment}
-                      leave="transition ease-in duration-100"
-                      leaveFrom="opacity-100"
-                      leaveTo="opacity-0"
+              <div className={`p-5 rounded-lg border-2 ${isDarkMode ? "bg-purple-900 border-purple-600" : "bg-purple-100 border-purple-500"}`}>
+                <label className={`text-sm font-semibold mb-3 block ${isDarkMode ? "text-purple-200" : "text-purple-900"}`}>
+                  Ordenar por
+                </label>
+                <div className={isDarkMode ? "bg-purple-800 rounded-md" : "bg-white rounded-md"}>
+                  <SortSelector
+                    value={filters.sortBy}
+                    onChange={(value) =>
+                      onFiltersChange({ sortBy: value as SortByType })
+                    }
+                    placeholder="Ordenar por"
+                    options={sortOptions}
+                  />
+                </div>
+              </div>
+
+              {/* Filtro Destacado */}
+              <div className={`p-5 rounded-lg border-2 ${isDarkMode ? "bg-orange-900 border-orange-600" : "bg-orange-100 border-orange-500"}`}>
+                <label className={`text-sm font-semibold mb-3 block ${isDarkMode ? "text-orange-200" : "text-orange-900"}`}>
+                  Destacado
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: "all", label: "Todos" },
+                    { value: true, label: "Sí" },
+                    { value: false, label: "No" },
+                  ].map((item) => (
+                    <Button
+                      key={String(item.value)}
+                      variant={
+                        filters.featured === item.value ? "default" : "outline"
+                      }
+                      size="sm"
+                      onClick={() =>
+                        onFiltersChange({
+                          featured: item.value as boolean | "all",
+                        })
+                      }
+                      className={isDarkMode && filters.featured !== item.value ? "border-gray-500 hover:bg-gray-600 text-gray-200" : ""}
                     >
-                      <Listbox.Options className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dropdown-no-zoom">
-                        <Listbox.Option
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200" : "text-gray-900 dark:text-gray-200"
-                            }`
-                          }
-                          value="newest"
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                Más recientes
-                              </span>
-                              {selected ? (
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400">
-                                  <Check className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Listbox.Option>
-                        <Listbox.Option
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200" : "text-gray-900 dark:text-gray-200"
-                            }`
-                          }
-                          value="oldest"
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                Más antiguos
-                              </span>
-                              {selected ? (
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400">
-                                  <Check className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Listbox.Option>
-                        <Listbox.Option
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200" : "text-gray-900 dark:text-gray-200"
-                            }`
-                          }
-                          value="price-low"
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                Precio: menor a mayor
-                              </span>
-                              {selected ? (
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400">
-                                  <Check className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Listbox.Option>
-                        <Listbox.Option
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200" : "text-gray-900 dark:text-gray-200"
-                            }`
-                          }
-                          value="price-high"
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                Precio: mayor a menor
-                              </span>
-                              {selected ? (
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400">
-                                  <Check className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Listbox.Option>
-                        <Listbox.Option
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200" : "text-gray-900 dark:text-gray-200"
-                            }`
-                          }
-                          value="views"
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
-                                Más vistos
-                              </span>
-                              {selected ? (
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400">
-                                  <Check className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Listbox.Option>
-                      </Listbox.Options>
-                    </Transition>
-                  </div>
-                </Listbox>
+                      {item.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Rango de Fechas */}
+              <div className={`lg:col-span-2 p-5 rounded-lg border-2 ${isDarkMode ? "bg-green-900 border-green-600" : "bg-green-100 border-green-500"}`}>
+                <label className={`text-sm font-semibold mb-3 block ${isDarkMode ? "text-green-200" : "text-green-900"}`}>
+                  Rango de Fechas
+                </label>
+                <div className={`rounded-md border-2 p-4 ${isDarkMode ? "border-green-600 bg-green-800" : "border-green-300 bg-white"}`}>
+                  <DateRangePicker
+                    date={{
+                      from: filters.dateRange[0] || undefined,
+                      to: filters.dateRange[1] || undefined,
+                    }}
+                    onDateChange={(range: DateRange | undefined) => {
+                      onFiltersChange({
+                        dateRange: [range?.from || null, range?.to || null],
+                      });
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Rango de precio */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">
-                  Rango de precio: ${filters.priceRange[0].toLocaleString()} - ${filters.priceRange[1].toLocaleString()}
+              <div className={`md:col-span-2 lg:col-span-3 p-5 rounded-lg border-2 ${isDarkMode ? "bg-yellow-900 border-yellow-600" : "bg-yellow-100 border-yellow-500"}`}>
+                <label className={`text-sm font-semibold mb-4 block ${isDarkMode ? "text-yellow-200" : "text-yellow-900"}`}>
+                  Rango de precio: <span className={`font-bold ${isDarkMode ? "text-yellow-300" : "text-yellow-800"}`}>${filters.priceRange[0].toLocaleString()}</span> - <span className={`font-bold ${isDarkMode ? "text-yellow-300" : "text-yellow-800"}`}>${filters.priceRange[1].toLocaleString()}</span>
                 </label>
                 <Slider
                   value={filters.priceRange}
-                  onValueChange={(value) => onFiltersChange({ priceRange: value as [number, number] })}
+                  onValueChange={(value) =>
+                    onFiltersChange({ priceRange: value as [number, number] })
+                  }
                   max={1000000}
                   min={0}
                   step={5000}
-                  className="mt-2"
+                  className="mt-3"
                 />
               </div>
             </div>
 
             {/* Limpiar filtros */}
             {activeFiltersCount > 0 && (
-              <Button variant="outline" onClick={clearFilters} className="w-full bg-transparent">
+              <Button
+                variant="outline"
+                onClick={clearFilters}
+                className={`w-full bg-transparent ${isDarkMode ? "border-red-600/50 hover:bg-red-600/10 text-red-400 hover:text-red-300" : "border-red-300 text-red-600 hover:bg-red-50"}`}
+              >
                 <X className="w-4 h-4 mr-2" />
-                Limpiar filtros
+                Limpiar {activeFiltersCount} filtros
               </Button>
             )}
           </CollapsibleContent>
         </Collapsible>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

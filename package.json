@@ -74,6 +74,7 @@
     "pusher-js": "^8.4.0",
     "qrcode": "^1.5.4",
     "react": "^19.0.0",
+    "react-day-picker": "^9.11.1",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
     "react-email": "4.2.8",

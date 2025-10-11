@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { History, RefreshCw, Plus, MessageSquare, FileText, Calendar, User } from "lucide-react";
+import type { VehicleHistoryEntry } from "@/types/types"; // AÑADIDO: Importar el tipo global
 
+/* ELIMINADO: La interfaz local que causa el conflicto
 interface VehicleHistoryEntry {
   id: string;
   action: string;
@@ -22,6 +23,7 @@ interface VehicleHistoryEntry {
   oldValue?: string;
   newValue?: string;
 }
+*/
 
 interface HistoryDialogProps {
   isOpen: boolean;
@@ -78,13 +80,7 @@ export const HistoryDialog = ({ isOpen, onOpenChange, history, isLoading, isDark
                           </div>
                         </div>
                         <p className={`text-sm mb-2 ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>{entry.details}</p>
-                        {entry.oldValue && entry.newValue && (
-                          <div className="flex items-center gap-2 text-xs mb-2">
-                            <Badge variant="outline" className={`${isDarkMode ? "bg-red-900/30 text-red-300 border-red-700" : "bg-red-50 text-red-700 border-red-200"}`}>{entry.oldValue}</Badge>
-                            <span className={isDarkMode ? "text-slate-500" : "text-slate-400"}>→</span>
-                            <Badge variant="outline" className={`${isDarkMode ? "bg-green-900/30 text-green-300 border-green-700" : "bg-green-50 text-green-700 border-green-200"}`}>{entry.newValue}</Badge>
-                          </div>
-                        )}
+                        
                         <div className={`flex items-center gap-1.5 text-xs ${isDarkMode ? "text-slate-500" : "text-slate-500"}`}>
                           <User className="w-3.5 h-3.5" />
                           <span>por {entry.author}</span>

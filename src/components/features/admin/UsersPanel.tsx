@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDarkMode } from "@/context/DarkModeContext";
 import { useUsersPanel } from "@/hooks/use-users-panel";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,10 +18,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Users, Search, Trash2, Edit2, AlertCircle } from "lucide-react";
+import { Users, Search, Trash2, Edit2, AlertCircle, Copy } from "lucide-react";
+import { toast } from "sonner";
+import { SortSelector } from "@/components/ui/seraui-selector";
 
 export const UsersPanel = () => {
-  const { isDarkMode } = useDarkMode();
   const {
     users,
     isLoading,
@@ -43,6 +43,18 @@ export const UsersPanel = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const handleCopy = (text: string, fieldName: string) => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        toast.success(`${fieldName} copiado al portapapeles.`);
+      },
+      (err) => {
+        console.error("Error al copiar el texto:", err);
+        toast.error("No se pudo copiar el texto.");
+      }
+    );
+  };
+
   const handleRoleChange = async (userId: string, newRole: string) => {
     setUserToEdit(null);
     setIsUpdating(true);
@@ -57,9 +69,11 @@ export const UsersPanel = () => {
         throw new Error(result.error || 'Failed to update role');
       }
       updateUserRoleInState(userId, newRole);
+      toast.success(`El rol de ${userToEdit?.fullName} se ha actualizado a ${newRole}.`);
     } catch (err: unknown) {
       const error = err instanceof Error ? err.message : 'Error desconocido';
       console.error("Failed to update user role:", error);
+      toast.error(`Error al actualizar el rol: ${error}`);
     } finally {
       setIsUpdating(false);
     }
@@ -76,9 +90,11 @@ export const UsersPanel = () => {
         throw new Error(result.error || 'Failed to delete user');
       }
       removeUserFromState(userId);
+      toast.success(`El usuario ${userToDelete?.fullName} ha sido eliminado.`);
     } catch (err: unknown) {
       const error = err instanceof Error ? err.message : 'Error desconocido';
       console.error("Failed to delete user:", error);
+      toast.error(`Error al eliminar el usuario: ${error}`);
     } finally {
       setIsDeleting(false);
       setUserToDelete(null);
@@ -87,7 +103,7 @@ export const UsersPanel = () => {
 
   if (isLoading) {
     return (
-      <Card className={isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"}>
+      <Card className="bg-white dark:bg-slate-800/60 dark:border-slate-700">
         <CardContent className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin mb-4">
@@ -102,7 +118,7 @@ export const UsersPanel = () => {
 
   if (error) {
     return (
-      <Card className={`${isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"} border-red-300 dark:border-red-800`}>
+      <Card className="border-red-300 bg-white dark:border-red-800 dark:bg-slate-800/60">
         <CardContent className="flex items-center gap-3 pt-6 text-red-600 dark:text-red-400">
           <AlertCircle className="w-5 h-5" />
           <span>Error: {error}</span>
@@ -112,86 +128,95 @@ export const UsersPanel = () => {
   }
 
   return (
-    <Card className={isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white shadow-lg"}>
-      <CardHeader className={isDarkMode ? "border-b border-slate-700" : "border-b border-gray-200"}>
+    <Card className="bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800/60">
+      <CardHeader className="border-b border-gray-200 dark:border-slate-700">
         <div className="flex items-center gap-2 mb-2">
           <Users className="w-6 h-6 text-blue-500" />
           <CardTitle className="text-2xl">Gestión de Usuarios</CardTitle>
         </div>
-        <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           {pagination.totalItems} usuarios encontrados.
         </p>
       </CardHeader>
 
       <CardContent className="space-y-6 pt-6">
         {/* Filtros */}
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col gap-4 md:flex-row">
           <div className="relative flex-1 max-w-sm">
-            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${isDarkMode ? "text-gray-500" : "text-gray-400"}`} />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <Input
               placeholder="Buscar por nombre o email..."
               value={filters.searchTerm}
               onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-              className={`pl-10 ${isDarkMode ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-gray-400" : "bg-gray-50 border-gray-200"}`}
+              className="border-gray-200 bg-gray-50 pl-10 dark:border-slate-600 dark:bg-slate-700/50 dark:text-white dark:placeholder:text-gray-400"
             />
           </div>
 
-          <Select
+          <SortSelector
             value={filters.sortBy}
-            onValueChange={(value) => updateFilters({ sortBy: value })}
-          >
-            <SelectTrigger className={`w-full md:w-[200px] ${isDarkMode ? "bg-slate-700/50 border-slate-600 text-white" : "bg-gray-50"}`}>
-              <SelectValue placeholder="Ordenar por" />
-            </SelectTrigger>
-            <SelectContent className={isDarkMode ? "bg-slate-700 border-slate-600" : ""}>
-              <SelectItem value="newest">Más nuevos</SelectItem>
-              <SelectItem value="oldest">Más antiguos</SelectItem>
-              <SelectItem value="name-asc">Nombre (A-Z)</SelectItem>
-              <SelectItem value="name-desc">Nombre (Z-A)</SelectItem>
-            </SelectContent>
-          </Select>
+            onChange={(value) => updateFilters({ sortBy: value })}
+            placeholder="Ordenar por"
+            options={[
+              { value: "newest", label: "Más nuevos" },
+              { value: "oldest", label: "Más antiguos" },
+              { value: "name-asc", label: "Nombre (A-Z)" },
+              { value: "name-desc", label: "Nombre (Z-A)" },
+            ]}
+          />
         </div>
 
         {/* Tabla */}
-        <div className={`overflow-x-auto rounded-lg border ${isDarkMode ? "border-slate-600" : "border-gray-200"}`}>
+        <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-slate-600">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-600">
-            <thead className={isDarkMode ? "bg-slate-700/80" : "bg-gray-50"}>
+            <thead className="bg-gray-50 dark:bg-slate-700/80">
               <tr>
-                <th scope="col" className={`px-6 py-4 text-left text-xs font-semibold tracking-wider ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Nombre</th>
-                <th scope="col" className={`px-6 py-4 text-left text-xs font-semibold tracking-wider ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Email</th>
-                <th scope="col" className={`px-6 py-4 text-left text-xs font-semibold tracking-wider ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Rol</th>
-                <th scope="col" className={`px-6 py-4 text-left text-xs font-semibold tracking-wider ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Miembro desde</th>
-                <th scope="col" className={`px-6 py-4 text-left text-xs font-semibold tracking-wider ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Último acceso</th>
-                <th scope="col" className={`px-6 py-4 text-left text-xs font-semibold tracking-wider ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>Acciones</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Nombre</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Email</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Rol</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Miembro desde</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Último acceso</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Acciones</th>
               </tr>
             </thead>
-            <tbody className={`divide-y ${isDarkMode ? "bg-slate-800/50 divide-slate-600" : "bg-white divide-gray-200"}`}>
+            <tbody className="divide-y divide-gray-200 bg-white dark:divide-slate-600 dark:bg-slate-800/50">
               {users.map((user) => (
-                <tr key={user.id} className={`hover:bg-opacity-50 transition-colors ${isDarkMode ? "hover:bg-slate-700" : "hover:bg-gray-50"}`}>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDarkMode ? "text-gray-200" : "text-gray-900"}`}>{user.fullName}</td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>{user.email}</td>
+                <tr key={user.id} className="transition-colors hover:bg-gray-50 dark:hover:bg-slate-700">
+                  <td
+                    className="group cursor-pointer whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-200"
+                    onClick={() => handleCopy(user.fullName, "Nombre")}
+                  >
+                    <span className="flex items-center gap-2">
+                      {user.fullName}
+                      <Copy className="h-4 w-4 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100" />
+                    </span>
+                  </td>
+                  <td
+                    className="group cursor-pointer whitespace-nowrap px-6 py-4 text-sm text-gray-600 dark:text-gray-400"
+                    onClick={() => handleCopy(user.email, "Email")}
+                  >
+                    <span className="flex items-center gap-2">
+                      {user.email}
+                      <Copy className="h-4 w-4 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100" />
+                    </span>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                       user.role === "admin"
-                        ? isDarkMode
-                          ? "bg-purple-900/40 text-purple-300"
-                          : "bg-purple-100 text-purple-800"
-                        : isDarkMode
-                        ? "bg-blue-900/40 text-blue-300"
-                        : "bg-blue-100 text-blue-800"
+                        ? "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300"
+                        : "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"
                     }`}>
                       {user.role === "admin" ? "👑 Admin" : "👤 Usuario"}
                     </span>
                   </td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>{new Date(user.createdAt).toLocaleDateString("es-ES")}</td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>{user.lastSignInAt ? new Date(user.lastSignInAt).toLocaleString("es-ES") : "N/A"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2 flex flex-wrap gap-2">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">{new Date(user.createdAt).toLocaleDateString("es-ES")}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">{user.lastSignInAt ? new Date(user.lastSignInAt).toLocaleString("es-ES") : "N/A"}</td>
+                  <td className="flex flex-wrap gap-2 px-6 py-4 space-x-2 text-sm font-medium whitespace-nowrap">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setUserToEdit({ id: user.id, role: user.role, fullName: user.fullName })}
                       disabled={isUpdating || isDeleting}
-                      className={isDarkMode ? "border-slate-600 text-gray-300 hover:bg-slate-700 hover:text-white" : ""}
+                      className="dark:border-slate-600 dark:text-gray-300 dark:hover:bg-slate-700 dark:hover:text-white"
                     >
                       <Edit2 className="w-4 h-4 mr-1" />
                       Editar
@@ -223,14 +248,14 @@ export const UsersPanel = () => {
 
         {/* Edit Role Dialog */}
         <AlertDialog open={!!userToEdit} onOpenChange={() => setUserToEdit(null)}>
-          <AlertDialogContent className={`${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white"} border shadow-lg`}>
+          <AlertDialogContent className="border bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
             <AlertDialogHeader>
-              <AlertDialogTitle className={isDarkMode ? "text-white" : ""}>Editar Rol de Usuario</AlertDialogTitle>
-              <AlertDialogDescription className={isDarkMode ? "text-gray-300" : ""}>
-                Selecciona el nuevo rol para <strong className={isDarkMode ? "text-blue-400" : "text-blue-600"}>{userToEdit?.fullName}</strong>. 
+              <AlertDialogTitle className="dark:text-white">Editar Rol de Usuario</AlertDialogTitle>
+              <AlertDialogDescription className="dark:text-gray-300">
+                Selecciona el nuevo rol para <strong className="text-blue-600 dark:text-blue-400">{userToEdit?.fullName}</strong>. 
                 <br />
-                <span className="inline-flex items-center gap-1 mt-2">
-                  <AlertCircle className="w-4 h-4 text-yellow-500" />
+                <span className="mt-2 inline-flex items-center gap-1">
+                  <AlertCircle className="h-4 w-4 text-yellow-500" />
                  Ten cuidado, asignar el rol de &apos;admin&apos; otorga privilegios elevados.
                 </span>
               </AlertDialogDescription>
@@ -238,17 +263,17 @@ export const UsersPanel = () => {
 
             <div className="grid gap-4 py-6">
               <div>
-                <label className={`text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"} block mb-2`}>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Seleccionar nuevo rol
                 </label>
                 <Select
                     value={userToEdit?.role || ""}
                     onValueChange={(value) => setUserToEdit(prev => prev ? {...prev, role: value} : null)}
                 >
-                    <SelectTrigger className={isDarkMode ? "bg-slate-800 border-slate-600 text-white" : ""}>
+                    <SelectTrigger className="dark:border-slate-600 dark:bg-slate-800 dark:text-white">
                         <SelectValue placeholder="Seleccionar rol" />
                     </SelectTrigger>
-                    <SelectContent className={isDarkMode ? "bg-slate-800 border-slate-600" : ""}>
+                    <SelectContent className="dark:border-slate-600 dark:bg-slate-800">
                         <SelectItem value="user">
                           <span className="flex items-center gap-2">
                             👤 Usuario
@@ -265,7 +290,7 @@ export const UsersPanel = () => {
             </div>
 
             <AlertDialogFooter>
-              <AlertDialogCancel className={isDarkMode ? "bg-slate-700 text-white border-slate-600 hover:bg-slate-600" : ""}>
+              <AlertDialogCancel className="dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600">
                 Cancelar
               </AlertDialogCancel>
               <AlertDialogAction
@@ -281,20 +306,20 @@ export const UsersPanel = () => {
 
         {/* Delete User Dialog */}
         <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
-          <AlertDialogContent className={`${isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white"} border shadow-lg`}>
+          <AlertDialogContent className="border bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
             <AlertDialogHeader>
               <div className="flex items-center gap-3">
-                <AlertCircle className="w-6 h-6 text-red-500" />
-                <AlertDialogTitle className={isDarkMode ? "text-white" : ""}>¿Estás seguro?</AlertDialogTitle>
+                <AlertCircle className="h-6 w-6 text-red-500" />
+                <AlertDialogTitle className="dark:text-white">¿Estás seguro?</AlertDialogTitle>
               </div>
-              <AlertDialogDescription className={isDarkMode ? "text-gray-300" : ""}>
+              <AlertDialogDescription className="dark:text-gray-300">
                 Esta acción es <strong>irreversible</strong>. Se eliminará permanentemente al usuario 
-                <strong className={isDarkMode ? "text-red-400" : "text-red-600"}> {userToDelete?.fullName}</strong> de la base de datos.
+                <strong className="text-red-600 dark:text-red-400"> {userToDelete?.fullName}</strong> de la base de datos.
               </AlertDialogDescription>
             </AlertDialogHeader>
 
             <AlertDialogFooter>
-              <AlertDialogCancel className={isDarkMode ? "bg-slate-700 text-white border-slate-600 hover:bg-slate-600" : ""}>
+              <AlertDialogCancel className="dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600">
                 Cancelar
               </AlertDialogCancel>
               <AlertDialogAction

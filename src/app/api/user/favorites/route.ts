@@ -1,7 +1,7 @@
 // src/app/api/user/favorites/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/authOptions";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
