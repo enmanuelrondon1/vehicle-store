@@ -6,6 +6,7 @@ import React, { useState, useRef, useEffect } from 'react';
 interface Option {
   value: string;
   label: string;
+  count?: number;
 }
 
 // Icon for the close button on tags (lucide-react style)
@@ -124,7 +125,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
         <div className={`w-full ${className}`} ref={wrapperRef}>
             <div className="relative">
                 <div
-                    className="flex flex-wrap items-center gap-2 p-2 min-h-[40px] text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-black rounded-md shadow-sm cursor-text transition-colors focus-within:ring-2 focus-within:ring-slate-900 dark:focus-within:ring-slate-100 focus-within:ring-offset-2"
+                    className="flex flex-wrap items-center gap-2 p-2 min-h-[40px] text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-md shadow-sm cursor-text transition-colors focus-within:ring-2 focus-within:ring-slate-400 dark:focus-within:ring-slate-100 focus-within:ring-offset-2"
                     onClick={() => {
                         setIsOpen(true);
                         inputRef.current?.focus();
@@ -158,7 +159,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
                 </div>
 
                 {isOpen && (
-                    <div className="absolute z-10 w-full mt-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-black rounded-md shadow-lg max-h-60 overflow-y-auto animate-popover-in">
+                    <div className="absolute z-10 w-full mt-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 rounded-md shadow-lg max-h-60 overflow-y-auto animate-popover-in">
                          <style>{`
                             @keyframes popover-in {
                                 from { opacity: 0; transform: scale(0.95) translateY(-10px); }
@@ -178,7 +179,14 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
                                         onClick={() => toggleOption(option)}
                                         onMouseEnter={() => setHighlightedIndex(index)}
                                     >
-                                        {option.label}
+                                        <div className="flex-1 flex justify-between items-center mr-2">
+                                            <span>{option.label}</span>
+                                            {option.count !== undefined && (
+                                                <span className="ml-2 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                                                    {option.count}
+                                                </span>
+                                            )}
+                                        </div>
                                         {selectedValues.includes(option.value) && (
                                             <CheckIcon />
                                         )}

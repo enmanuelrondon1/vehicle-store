@@ -166,7 +166,7 @@ export const GlobalNotificationHandler = () => {
         localStorage.setItem("adminUnreadCount", newCount.toString());
 
         // Disparar evento para otros componentes
-        window.dispatchEvent(new Event("storage"));
+        // window.dispatchEvent(new Event("storage"));
 
         // 🔊 Reproducir sonido de forma segura
         await playNotificationSound();

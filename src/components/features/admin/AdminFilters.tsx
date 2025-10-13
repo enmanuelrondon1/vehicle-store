@@ -14,7 +14,6 @@ import {
   X,
   Grid,
   List,
-  CheckSquare,
   Square,
 } from "lucide-react";
 import {
@@ -23,8 +22,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-import { DateRangePicker } from "@/components/ui/DateRangePicker";
-import { DateRange } from "react-day-picker";
+// import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { VEHICLE_CATEGORIES_LABELS } from "@/types/shared";
 import { SortSelector } from "@/components/ui/seraui-selector";
 import { MultiSelectFilter } from "@/components/ui/MultiSelectFilter";
@@ -33,6 +31,8 @@ import {
   AdminPanelFilters,
   SortByType,
 } from "@/hooks/use-admin-panel-enhanced";
+import { DatePicker } from "@/components/ui/DateRangePicker";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface AdminFiltersProps {
   filters: AdminPanelFilters;
@@ -44,6 +44,7 @@ interface AdminFiltersProps {
   onSelectAll: () => void;
   onClearSelection: () => void;
   selectedCount: number;
+  categoryCounts: Record<string, number>;
 }
  
 export const AdminFilters = ({
@@ -56,6 +57,7 @@ export const AdminFilters = ({
   onSelectAll,
   onClearSelection,
   selectedCount,
+  categoryCounts,
 }: AdminFiltersProps) => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [searchInput, setSearchInput] = useState(filters.search);
@@ -73,6 +75,7 @@ export const AdminFilters = ({
     ...Object.entries(VEHICLE_CATEGORIES_LABELS).map(([value, label]) => ({
       value,
       label,
+      count: categoryCounts?.[value] || 0,
     })),
   ];
 
@@ -111,6 +114,9 @@ export const AdminFilters = ({
     filters.dateRange[0] !== null || filters.dateRange[1] !== null,
     filters.featured !== "all",
   ].filter(Boolean).length;
+
+  const isAllSelected = totalResults > 0 && selectedCount === totalResults;
+  const isPartiallySelected = selectedCount > 0 && !isAllSelected;
 
   return (
     <Card className={isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}>
@@ -167,15 +173,31 @@ export const AdminFilters = ({
 
         {/* Acciones de selección masiva */}
         <div className="flex flex-wrap items-center gap-2 py-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onSelectAll}
-            className={`flex items-center gap-2 ${isDarkMode ? "border-gray-600 hover:bg-gray-700" : ""}`}
+          <label
+            htmlFor="select-all"
+            className={`inline-flex items-center gap-2 cursor-pointer rounded-md border px-3 text-sm h-9 font-medium transition-colors
+              ${isDarkMode
+                ? "border-gray-600 hover:bg-gray-700"
+                : "border-gray-300 hover:bg-gray-100"
+              }
+            `}
           >
-            <CheckSquare className="w-4 h-4" />
-            Seleccionar todos
-          </Button>
+            <Checkbox
+              id="select-all"
+              checked={isAllSelected ? true : isPartiallySelected ? 'indeterminate' : false}
+              onCheckedChange={(checked) => {
+                if (checked === true) {
+                  onSelectAll();
+                } else {
+                  onClearSelection();
+                }
+              }}
+              aria-label="Seleccionar o deseleccionar todos"
+            />
+            <span>
+              Seleccionar todos
+            </span>
+          </label>
           {selectedCount > 0 && (
             <>
               <Button
@@ -187,7 +209,7 @@ export const AdminFilters = ({
                 <Square className="w-4 h-4" />
                 Limpiar selección
               </Button>
-              <Badge variant="secondary" className={isDarkMode ? "bg-gray-600" : ""}>
+              <Badge variant="secondary" className={isDarkMode ? "bg-graydiv0" : ""}>
                 {selectedCount} seleccionado{selectedCount !== 1 ? "s" : ""}
               </Badge>
             </>
@@ -235,7 +257,7 @@ export const AdminFilters = ({
             </Button>
           </CollapsibleTrigger>
 
-          <CollapsibleContent className="space-y-6 mt-4 pt-4 border-t-2 border-gray-400 dark:border-gray-600">
+          <CollapsibleContent className="space-y-6 mt-4 pt-4 border-t-2 border-gray-400 dark:border-gray-00">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Categoría */}
               <div className={`p-5 rounded-lg border-2 ${isDarkMode ? "bg-blue-900 border-blue-600" : "bg-blue-100 border-blue-500"}`}>
@@ -299,23 +321,23 @@ export const AdminFilters = ({
               </div>
 
               {/* Rango de Fechas */}
-              <div className={`lg:col-span-2 p-5 rounded-lg border-2 ${isDarkMode ? "bg-green-900 border-green-600" : "bg-green-100 border-green-500"}`}>
+              <div className={`p-5 rounded-lg border-2 ${isDarkMode ? "bg-green-900 border-green-600" : "bg-green-100 border-green-500"}`}>
                 <label className={`text-sm font-semibold mb-3 block ${isDarkMode ? "text-green-200" : "text-green-900"}`}>
                   Rango de Fechas
                 </label>
-                <div className={`rounded-md border-2 p-4 ${isDarkMode ? "border-green-600 bg-green-800" : "border-green-300 bg-white"}`}>
-                  <DateRangePicker
-                    date={{
-                      from: filters.dateRange[0] || undefined,
-                      to: filters.dateRange[1] || undefined,
-                    }}
-                    onDateChange={(range: DateRange | undefined) => {
-                      onFiltersChange({
-                        dateRange: [range?.from || null, range?.to || null],
-                      });
-                    }}
-                  />
-                </div>
+                <DatePicker
+                  onDateChange={(range) => {
+                    if (range) {
+                      onFiltersChange({ dateRange: [range.from ?? null, range.to ?? null] });
+                    } else {
+                      onFiltersChange({ dateRange: [null, null] });
+                    }
+                  }}
+                  date={{
+                    from: filters.dateRange[0] ?? undefined,
+                    to: filters.dateRange[1] ?? undefined,
+                  }}
+                />
               </div>
 
               {/* Rango de precio */}

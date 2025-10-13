@@ -185,6 +185,7 @@ export interface VehicleDataFrontend
   createdAt?: string;
   updatedAt?: string;
   status: ApprovalStatus;
+  approvalStatus?: ApprovalStatus;
   referenceNumber?: string;
   views?: number; // Añadido para el frontend
   isFeatured?: boolean;
@@ -399,17 +400,19 @@ export const SORT_OPTIONS = [
 ];
 
 export interface VehicleComment {
-  id: string;
-  author: string;
-  text: string; // CORREGIDO: de 'content' a 'text'
-  type: "comment" | "rejection";
+  _id: string;
+  username: string;
+  userId?: string;
+  text: string;
   createdAt: string;
+  type?: "rejection" | "comment";
 }
 
 export interface VehicleHistoryEntry {
   id: string;
-  action: string; // AÑADIDO: La propiedad que faltaba y que usa el diálogo
+  action: string;
+  details?: string;
   author: string;
-  details: string;
+  authorId?: string; // <-- AÑADIR ESTA LÍNEA
   timestamp: string;
 }

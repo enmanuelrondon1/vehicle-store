@@ -15,6 +15,15 @@ import {
   sendVehicleRejectionEmailGmail,
 } from "@/lib/mailer";
 
+interface Comment {
+  _id: ObjectId;
+  userId: ObjectId;
+  username: string;
+  text: string;
+  createdAt: Date;
+  type: "rejection";
+}
+
 const createErrorResponse = (
   error: string,
   validationErrors?: Record<string, string[]>
@@ -199,9 +208,19 @@ export async function PATCH(
       };
 
       const unsetData: { rejectionReason?: "" } = {};
+      const pushData: { comments?: Comment } = {};
 
       if (status === ApprovalStatus.REJECTED && rejectionReason) {
         updateData.rejectionReason = rejectionReason;
+        const rejectionComment: Comment = {
+          _id: new ObjectId(),
+          userId: new ObjectId(session.user.id),
+          username: session.user.name || "Admin",
+          text: `Motivo del rechazo: ${rejectionReason}`,
+          createdAt: new Date(),
+          type: "rejection",
+        };
+        pushData.comments = rejectionComment;
       } else {
         unsetData.rejectionReason = "";
       }
@@ -209,6 +228,7 @@ export async function PATCH(
       const updateOperation: {
         $set: Partial<typeof updateData>;
         $unset?: Partial<typeof unsetData>;
+        $push?: Partial<typeof pushData>;
       } = {
         $set: updateData,
       };
@@ -216,9 +236,12 @@ export async function PATCH(
       if (Object.keys(unsetData).length > 0) {
         updateOperation.$unset = unsetData;
       }
+      if (Object.keys(pushData).length > 0) {
+        updateOperation.$push = pushData;
+      }
 
       const result = await db
-        .collection("vehicles")
+        .collection<{ comments?: Comment[] }>("vehicles")
         .findOneAndUpdate(
           { _id: new ObjectId(resolvedParams.id) },
           updateOperation,
@@ -320,7 +343,7 @@ export async function DELETE(
 
       // Primero verificar que el vehículo existe
       const vehicle = await db
-        .collection("vehicles")
+        .collection<{ comments?: Comment[] }>("vehicles")
         .findOne({ _id: new ObjectId(resolvedParams.id) });
 
       if (!vehicle) {

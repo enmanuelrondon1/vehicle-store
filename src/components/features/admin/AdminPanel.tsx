@@ -1,7 +1,7 @@
 // src/components/features/admin/AdminPanel.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDarkMode } from "@/context/DarkModeContext";
 import { useAdminPanelEnhanced } from "@/hooks/use-admin-panel-enhanced";
@@ -23,33 +23,16 @@ import { CommentDialog } from "./CommentDialog";
 import { HistoryDialog } from "./HistoryDialog";
 import { DeleteDialog } from "./DeleteDialog";
 import { UsersPanel } from "./UsersPanel";
+import { MassApproveDialog } from "./MassApproveDialog";
+import { MassRejectDialog } from "./MassRejectDialog";
+import { MassDeleteDialog } from "./MassDeleteDialog";
 import {
   getVehicleComments,
   addVehicleComment,
   getVehicleHistory,
 } from "@/lib/api/admin";
 import type { VehicleComment, VehicleHistoryEntry } from "@/types/types"; // AÑADIDO: Importar tipos
-
-// Interfaces para las nuevas funcionalidades - ELIMINADAS
-/*
-interface VehicleComment {
-  id: string;
-  text: string;
-  author: string;
-  createdAt: string;
-  type: "admin" | "system";
-}
-
-interface VehicleHistoryEntry {
-  id: string;
-  action: string;
-  details: string;
-  author: string;
-  timestamp: string;
-  oldValue?: string;
-  newValue?: string;
-}
-*/
+import { Button } from "@/components/ui/button";
 
 // Mapeo explícito
 const ApprovalStatus = {
@@ -59,6 +42,13 @@ const ApprovalStatus = {
 };
 
 type AdminTab = "vehicles" | "users";
+
+type DialogType = "reject" | "comment" | "history" | "delete";
+
+interface DialogState {
+  type: DialogType | null;
+  vehicle: VehicleDataFrontend | null;
+}
 
 export const AdminPanel = () => {
   const { isDarkMode } = useDarkMode();
@@ -86,21 +76,34 @@ export const AdminPanel = () => {
     setAllVehicles,
   } = useAdminPanelEnhanced();
 
+  const categoryCounts = useMemo(() => {
+    return allVehicles.reduce(
+      (acc, vehicle) => {
+        if (vehicle.category) {
+          acc[vehicle.category] = (acc[vehicle.category] || 0) + 1;
+        }
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+  }, [allVehicles]);
+
   const [selectedVehicle, setSelectedVehicle] =
     useState<VehicleDataFrontend | null>(null);
   const [selectedVehicles, setSelectedVehicles] = useState<Set<string>>(
     new Set()
   );
-  const [showRejectDialog, setShowRejectDialog] = useState(false);
-  const [vehicleToReject, setVehicleToReject] = useState<string | null>(null);
+  const [dialogState, setDialogState] = useState<DialogState>({
+    type: null,
+    vehicle: null,
+  });
+
+  // Estados para diálogos de acciones masivas
+  const [showMassApproveDialog, setShowMassApproveDialog] = useState(false);
+  const [showMassRejectDialog, setShowMassRejectDialog] = useState(false);
+  const [showMassDeleteDialog, setShowMassDeleteDialog] = useState(false);
 
   // Estados para las nuevas funcionalidades
-  const [showCommentDialog, setShowCommentDialog] = useState(false);
-  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [commentText, setCommentText] = useState("");
-  const [vehicleToComment, setVehicleToComment] = useState<string | null>(null);
-  const [vehicleToDelete, setVehicleToDelete] = useState<string | null>(null);
   const [vehicleComments, setVehicleComments] = useState<VehicleComment[]>([]);
   const [vehicleHistory, setVehicleHistory] = useState<VehicleHistoryEntry[]>(
     []
@@ -109,6 +112,28 @@ export const AdminPanel = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [vehicleFromNotification, setVehicleFromNotification] =
     useState<VehicleDataFrontend | null>(null);
+
+  const handleShowRejectDialog = (vehicle: VehicleDataFrontend) => {
+    setDialogState({ type: "reject", vehicle });
+  };
+
+  const handleShowCommentDialog = (vehicle: VehicleDataFrontend) => {
+    setDialogState({ type: "comment", vehicle });
+    loadVehicleComments(vehicle._id!);
+  };
+
+  const handleShowHistoryDialog = (vehicle: VehicleDataFrontend) => {
+    setDialogState({ type: "history", vehicle });
+    loadVehicleHistory(vehicle._id!);
+  };
+
+  const handleShowDeleteDialog = (vehicle: VehicleDataFrontend) => {
+    setDialogState({ type: "delete", vehicle });
+  };
+
+  const handleCloseDialog = () => {
+    setDialogState({ type: null, vehicle: null });
+  };
 
   // Efecto para asegurar que se cargan TODOS los vehículos al inicio
   useEffect(() => {
@@ -170,54 +195,8 @@ export const AdminPanel = () => {
     }
   }, [vehicleFromNotification, setAllVehicles]);
 
-  // ❌ ELIMINADO: Toda esta lógica de filtrado, ordenamiento y paginación
-  // ahora vive exclusivamente en el hook `useAdminPanelEnhanced` para
-  // evitar problemas de sincronización.
-  /*
-  const displayedVehicles = useMemo(() => {
-const filtered = filterVehicles(allVehicles, filters);
 
-    const sorted = [...filtered].sort((a, b) => {
-      switch (filters.sortBy) {
-        case "newest":
-          return (
-            new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
-          );
-        case "oldest":
-          return (
-            new Date(a.createdAt!).getTime() - new Date(b.createdAt!).getTime()
-          );
-        case "price-low":
-          return a.price - b.price;
-        case "price-high":
-          return b.price - a.price;
-        case "views":
-          return (b.views || 0) - (a.views || 0);
-        default:
-          return 0;
-      }
-    });
-
-    const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage;
-    const endIndex = startIndex + pagination.itemsPerPage;
-
-    return sorted.slice(startIndex, endIndex);
-  }, [allVehicles, filters, pagination]);
-  */
-
-  // ❌ ELIMINADO: El hook `useAdminPanelEnhanced` ya se encarga de
-  // recalcular la paginación cuando los filtros o los datos cambian.
-  /*
-  useEffect(() => {
-    const filteredCount = filterVehicles(allVehicles, filters).length;
-
-    if (pagination.totalItems !== filteredCount) {
-      updatePagination({ totalItems: filteredCount, currentPage: 1 });
-    }
-  }, [allVehicles, filters, pagination.totalItems, updatePagination]);
-  */
-
-  if (status === "loading" || isLoading) {
+if (status === "loading" || isLoading) {
     return <AdminPanelLoading />;
   }
 
@@ -227,23 +206,26 @@ const filtered = filterVehicles(allVehicles, filters);
 
   if (error) {
     return <AdminPanelError error={error} onRetry={fetchVehicles} />;
-  }
+}
 
   // Funciones para manejar comentarios
   const handleAddComment = async (vehicleId: string, comment: string) => {
     setIsLoadingComments(true);
     try {
       const result = await addVehicleComment(vehicleId, comment);
-      if (result.success && result.newComment && result.newHistoryEntry) {
-        setVehicleComments((prev) => [result.newComment!, ...prev]);
-        setVehicleHistory((prev) => [result.newHistoryEntry!, ...prev]);
-        setCommentText("");
-        setShowCommentDialog(false);
+      if (result.success) {
+        // El diálogo de comentarios limpia su propio campo de texto.
+        // Solo necesitamos volver a cargar los comentarios para mostrar el nuevo.
+        await loadVehicleComments(vehicleId);
       } else {
-        console.error("Error al agregar comentario desde la API");
+        console.error(
+          "Error al agregar comentario desde la API. La operación no tuvo éxito."
+        );
+        // Aquí podrías mostrar una notificación de error al usuario.
       }
     } catch (error) {
       console.error("Error al agregar comentario:", error);
+      // Aquí también podrías mostrar una notificación de error.
     } finally {
       setIsLoadingComments(false);
     }
@@ -272,7 +254,7 @@ const filtered = filterVehicles(allVehicles, filters);
       console.error("Error al cargar historial:", error);
     } finally {
       setIsLoadingHistory(false);
-    }
+}
   };
 
   // Función para eliminar vehículo
@@ -281,30 +263,60 @@ const filtered = filterVehicles(allVehicles, filters);
       const result = await deleteVehicle(vehicleId);
 
       if (result.success) {
-        setShowDeleteDialog(false);
-        setVehicleToDelete(null);
+        handleCloseDialog();
         console.log("Vehículo eliminado exitosamente");
       } else {
         console.error("Error al eliminar:", result.error);
       }
     } catch (error) {
       console.error("Error al eliminar vehículo:", error);
-    }
+}
   };
 
   const handleRejectWithReason = async (vehicleId: string, reason: string) => {
-    try {
+try {
       await handleStatusChange(vehicleId, ApprovalStatus.REJECTED, reason);
-      setShowRejectDialog(false);
-      setVehicleToReject(null);
+      handleCloseDialog();
     } catch (error) {
       console.error("Error al rechazar:", error);
     }
   };
 
+  const handleMassApprove = async () => {
+    await handleBulkAction(ApprovalStatus.APPROVED);
+    setShowMassApproveDialog(false);
+  };
+
+  const handleMassReject = async (reason: string) => {
+    if (selectedVehicles.size === 0) return;
+    try {
+      const promises = Array.from(selectedVehicles).map((vehicleId) =>
+        handleStatusChange(vehicleId, ApprovalStatus.REJECTED, reason)
+      );
+      await Promise.all(promises);
+      setSelectedVehicles(new Set());
+    } catch (error) {
+      console.error("Error en rechazo masivo:", error);
+    }
+    setShowMassRejectDialog(false);
+  };
+
+  const handleMassDelete = async () => {
+    if (selectedVehicles.size === 0) return;
+    try {
+      const promises = Array.from(selectedVehicles).map((vehicleId) =>
+        deleteVehicle(vehicleId)
+      );
+      await Promise.all(promises);
+      setSelectedVehicles(new Set());
+} catch (error) {
+      console.error("Error en eliminación masiva:", error);
+    }
+    setShowMassDeleteDialog(false);
+  };
+
   const handleBulkAction = async (action: ApprovalStatusType) => {
     if (selectedVehicles.size === 0) return;
-
     try {
       const promises = Array.from(selectedVehicles).map((vehicleId) =>
         handleStatusChange(vehicleId, action)
@@ -437,7 +449,47 @@ const filtered = filterVehicles(allVehicles, filters);
               onSelectAll={selectAllVisible}
               onClearSelection={clearSelection}
               selectedCount={selectedVehicles.size}
+              categoryCounts={categoryCounts}
             />
+
+            {/* Acciones masivas */}
+            {selectedVehicles.size > 0 && (
+              <Card
+                className={
+                  isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"
+                }
+              >
+                <CardContent className="p-4 flex flex-wrap items-center gap-3">
+                  <span className="text-sm font-semibold">
+                    {selectedVehicles.size} vehículo(s) seleccionado(s)
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
+                    onClick={() => setShowMassApproveDialog(true)}
+                  >
+                    Aprobar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white"
+                    onClick={() => setShowMassRejectDialog(true)}
+                  >
+                    Rechazar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                    onClick={() => setShowMassDeleteDialog(true)}
+                  >
+                    Eliminar
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Contenido principal */}
             <Card
@@ -448,15 +500,19 @@ const filtered = filterVehicles(allVehicles, filters);
               <CardContent className="p-3 md:p-6">
                 {viewMode === "grid" ? (
                   <VehicleGridView
-                    // ✅ CORREGIDO: Usar `vehicles` del hook.
                     vehicles={vehicles}
                     onStatusChange={handleStatusChange}
                     onVehicleSelect={setSelectedVehicle}
                     isDarkMode={isDarkMode}
+                    selectedVehicles={selectedVehicles}
+                    onToggleSelection={toggleVehicleSelection}
+                    onShowRejectDialog={handleShowRejectDialog}
+                    onShowCommentDialog={handleShowCommentDialog}
+                    onShowHistoryDialog={handleShowHistoryDialog}
+                    onShowDeleteDialog={handleShowDeleteDialog}
                   />
                 ) : (
                   <VehicleListView
-                    // ✅ CORREGIDO: Usar `vehicles` del hook.
                     vehicles={vehicles}
                     selectedVehicles={selectedVehicles}
                     isDarkMode={isDarkMode}
@@ -464,24 +520,10 @@ const filtered = filterVehicles(allVehicles, filters);
                     onClearSelection={clearSelection}
                     onStatusChange={handleStatusChange}
                     onVehicleSelect={setSelectedVehicle}
-                    onShowRejectDialog={(id) => {
-                      setVehicleToReject(id);
-                      setShowRejectDialog(true);
-                    }}
-                    onShowCommentDialog={(id) => {
-                      setVehicleToComment(id);
-                      loadVehicleComments(id);
-                      setShowCommentDialog(true);
-                    }}
-                    onShowHistoryDialog={(id) => {
-                      loadVehicleHistory(id);
-                      setShowHistoryDialog(true);
-                    }}
-                    onShowDeleteDialog={(id) => {
-                      setVehicleToDelete(id);
-                      setShowDeleteDialog(true);
-                    }}
-                    onBulkAction={handleBulkAction}
+                    onShowRejectDialog={handleShowRejectDialog}
+                    onShowCommentDialog={handleShowCommentDialog}
+                    onShowHistoryDialog={handleShowHistoryDialog}
+                    onShowDeleteDialog={handleShowDeleteDialog}
                   />
                 )}
 
@@ -515,32 +557,33 @@ const filtered = filterVehicles(allVehicles, filters);
 
       {/* Dialog para rechazar con razón - MEJORADO */}
       <RejectDialog
-        isOpen={showRejectDialog}
-        onOpenChange={setShowRejectDialog}
+        isOpen={dialogState.type === "reject"}
+        onOpenChange={handleCloseDialog}
         onConfirm={(reason) =>
-          vehicleToReject && handleRejectWithReason(vehicleToReject, reason)
+          dialogState.vehicle &&
+          handleRejectWithReason(dialogState.vehicle._id!, reason)
         }
         isDarkMode={isDarkMode}
       />
 
       {/* Dialog para agregar comentarios - MEJORADO */}
       <CommentDialog
-        isOpen={showCommentDialog}
-        onOpenChange={setShowCommentDialog}
+        isOpen={dialogState.type === "comment"}
+        onOpenChange={handleCloseDialog}
         comments={vehicleComments}
         isLoading={isLoadingComments}
-        commentText={commentText}
-        setCommentText={setCommentText}
-        onAddComment={() =>
-          vehicleToComment && handleAddComment(vehicleToComment, commentText)
-        }
+        onAddComment={(comment) => {
+          if (dialogState.vehicle) {
+            handleAddComment(dialogState.vehicle._id!, comment);
+          }
+        }}
         isDarkMode={isDarkMode}
       />
 
       {/* Dialog para ver historial - MEJORADO */}
       <HistoryDialog
-        isOpen={showHistoryDialog}
-        onOpenChange={setShowHistoryDialog}
+        isOpen={dialogState.type === "history"}
+        onOpenChange={handleCloseDialog}
         history={vehicleHistory}
         isLoading={isLoadingHistory}
         isDarkMode={isDarkMode}
@@ -548,12 +591,32 @@ const filtered = filterVehicles(allVehicles, filters);
 
       {/* Dialog para confirmar eliminación - MEJORADO */}
       <DeleteDialog
-        isOpen={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
+        isOpen={dialogState.type === "delete"}
+        onOpenChange={handleCloseDialog}
         onConfirm={() =>
-          vehicleToDelete && handleDeleteVehicle(vehicleToDelete)
+          dialogState.vehicle && handleDeleteVehicle(dialogState.vehicle._id!)
         }
         isDarkMode={isDarkMode}
+      />
+
+      {/* Diálogos de acciones masivas */}
+      <MassApproveDialog
+        isOpen={showMassApproveDialog}
+        onOpenChange={setShowMassApproveDialog}
+        onConfirm={handleMassApprove}
+        count={selectedVehicles.size}
+      />
+      <MassRejectDialog
+        isOpen={showMassRejectDialog}
+        onOpenChange={setShowMassRejectDialog}
+        onConfirm={handleMassReject}
+        count={selectedVehicles.size}
+      />
+      <MassDeleteDialog
+        isOpen={showMassDeleteDialog}
+        onOpenChange={setShowMassDeleteDialog}
+        onConfirm={handleMassDelete}
+        count={selectedVehicles.size}
       />
     </div>
   );

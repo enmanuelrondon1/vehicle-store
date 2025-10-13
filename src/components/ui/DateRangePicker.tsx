@@ -1,3 +1,4 @@
+// src/components/ui/DateRangePicker.tsx
 "use client";
 
 import * as React from "react";
@@ -15,12 +16,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-interface DateRangePickerProps extends React.HTMLAttributes<HTMLDivElement> {
+interface DateRangePickerProps {
   date: DateRange | undefined;
   onDateChange: (date: DateRange | undefined) => void;
+  className?: string;
 }
 
-export function DateRangePicker({
+export function DatePicker({
   className,
   date,
   onDateChange,
@@ -33,7 +35,7 @@ export function DateRangePicker({
             id="date"
             variant={"outline"}
             className={cn(
-              "w-[300px] justify-start text-left font-normal",
+              "w-full justify-start text-left font-normal",
               !date && "text-muted-foreground"
             )}
           >
@@ -41,18 +43,18 @@ export function DateRangePicker({
             {date?.from ? (
               date.to ? (
                 <>
-                  {format(date.from, "LLL dd, y", { locale: es })} -{" "}
-                  {format(date.to, "LLL dd, y", { locale: es })}
+                  {format(date.from, "dd LLL, y", { locale: es })} -{" "}
+                  {format(date.to, "dd LLL, y", { locale: es })}
                 </>
               ) : (
-                format(date.from, "LLL dd, y", { locale: es })
+                format(date.from, "dd LLL, y", { locale: es })
               )
             ) : (
-              <span>Selecciona un rango</span>
+              <span>Seleccione un rango</span>
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 border border-slate-200 dark:border-slate-700 bg-white dark:bg-black rounded-md shadow-lg" align="start">
+        <PopoverContent className="w-auto p-0 bg-background" align="start">
           <Calendar
             initialFocus
             mode="range"

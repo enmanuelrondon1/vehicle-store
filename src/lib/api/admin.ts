@@ -5,49 +5,54 @@ import type { VehicleComment, VehicleHistoryEntry } from "@/types/types";
 
 export const getVehicleComments = async (vehicleId: string): Promise<VehicleComment[]> => {
   console.log(`Cargando comentarios para el vehículo: ${vehicleId}`);
-  // TODO: Reemplazar con una llamada real a la API
-  const mockComments: VehicleComment[] = [
-    {
-      id: "1",
-      text: "Vehículo revisado, documentación completa",
-      author: "Admin",
-      createdAt: new Date(Date.now() - 86400000).toISOString(),
-      type: "comment",
-    },
-    {
-      id: "2",
-      text: "Estado cambiado automáticamente a pendiente",
-      author: "Sistema",
-      createdAt: new Date(Date.now() - 172800000).toISOString(),
-      type: "comment",
-    },
-  ];
-  return Promise.resolve(mockComments);
+  try {
+    const response = await fetch(`/api/admin/vehicles/${vehicleId}/comments`);
+    if (!response.ok) {
+      throw new Error("Error al obtener los comentarios del vehículo.");
+    }
+    const data = await response.json();
+    return data.comments || [];
+  } catch (error) {
+    console.error("Error en getVehicleComments:", error);
+    return [];
+  }
 };
 
-export const addVehicleComment = async (vehicleId: string, comment: string): Promise<{ success: boolean; newComment?: VehicleComment; newHistoryEntry?: VehicleHistoryEntry }> => {
+export const addVehicleComment = async (
+  vehicleId: string,
+  comment: string
+): Promise<{
+  success: boolean;
+  newComment?: VehicleComment;
+  newHistoryEntry?: VehicleHistoryEntry;
+}> => {
   console.log(`Agregando comentario al vehículo ${vehicleId}: ${comment}`);
-  // TODO: Reemplazar con una llamada real a la API
-  const newComment: VehicleComment = {
-    id: Date.now().toString(),
-    text: comment,
-    author: "Admin",
-    createdAt: new Date().toISOString(),
-    type: "comment",
-  };
+  try {
+    const response = await fetch(`/api/admin/vehicles/${vehicleId}/comments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ comment }),
+    });
 
-  const newHistoryEntry: VehicleHistoryEntry = {
-    id: Date.now().toString(),
-    action: "Comentario agregado", // AÑADIDO: La propiedad que faltaba
-    details: `Se agregó un comentario: "${comment.substring(0, 50)}${
-      comment.length > 50 ? "..." : ""
-    }"`,
-    author: "Admin",
-    timestamp: new Date().toISOString(),
-  };
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Error al agregar el comentario.");
+    }
 
-  return Promise.resolve({ success: true, newComment, newHistoryEntry });
+    const data = await response.json();
+    return {
+      success: true,
+      newComment: data.newComment,
+      newHistoryEntry: data.newHistoryEntry,
+    };
+  } catch (error) {
+    console.error("Error en addVehicleComment:", error);
+    return { success: false };
+  }
 };
+
 
 // --- Funciones de Historial ---
 

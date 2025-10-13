@@ -4,37 +4,37 @@
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogTrigger } from "@/components/ui/dialog"
-import { CheckCircle, XCircle, Clock, Eye, DollarSign, Gauge, MapPin, Car } from "lucide-react"
+import { Eye, DollarSign, Gauge, MapPin, Car } from "lucide-react"
 import { VehicleDataFrontend, ApprovalStatus } from "@/types/types"
+import { Checkbox } from "@/components/ui/checkbox";
+import { StatusBadge } from "./shared/StatusBadge";
+import { VehicleActions } from "./VehicleActions";
 
 interface VehicleGridViewProps {
-  vehicles: VehicleDataFrontend[]
-  onStatusChange: (vehicleId: string, status: ApprovalStatus) => void
-  onVehicleSelect: (vehicle: VehicleDataFrontend) => void
-  isDarkMode: boolean
+  vehicles: VehicleDataFrontend[];
+  onStatusChange: (vehicleId: string, status: ApprovalStatus) => void;
+  onVehicleSelect: (vehicle: VehicleDataFrontend) => void;
+  isDarkMode: boolean;
+  selectedVehicles: Set<string>;
+  onToggleSelection: (id: string) => void;
+  onShowRejectDialog: (vehicle: VehicleDataFrontend) => void;
+  onShowCommentDialog: (vehicle: VehicleDataFrontend) => void;
+  onShowHistoryDialog: (vehicle: VehicleDataFrontend) => void;
+  onShowDeleteDialog: (vehicle: VehicleDataFrontend) => void;
 }
 
-export const VehicleGridView = ({ vehicles, onStatusChange, onVehicleSelect, isDarkMode }: VehicleGridViewProps) => {
-  const getStatusBadge = (status: ApprovalStatus) => {
-    const variants = {
-      [ApprovalStatus.PENDING]: { variant: "secondary" as const, icon: Clock, text: "Pendiente" },
-      [ApprovalStatus.APPROVED]: { variant: "default" as const, icon: CheckCircle, text: "Aprobado" },
-      [ApprovalStatus.REJECTED]: { variant: "destructive" as const, icon: XCircle, text: "Rechazado" },
-      [ApprovalStatus.UNDER_REVIEW]: { variant: "default" as const, icon: Eye, text: "En Revisión" },
-    }
-    const config = variants[status] || variants[ApprovalStatus.PENDING]
-    const Icon = config.icon
-
-    return (
-      <Badge variant={config.variant} className="flex items-center gap-1">
-        <Icon className="w-3 h-3" />
-        {config.text}
-      </Badge>
-    )
-  }
-
+export const VehicleGridView = ({
+  vehicles,
+  onStatusChange,
+  onVehicleSelect,
+  isDarkMode,
+  selectedVehicles,
+  onToggleSelection,
+  onShowRejectDialog,
+  onShowCommentDialog,
+  onShowHistoryDialog,
+  onShowDeleteDialog,
+}: VehicleGridViewProps) => {
   if (vehicles.length === 0) {
     return (
       <div className="text-center py-12">
@@ -50,9 +50,11 @@ export const VehicleGridView = ({ vehicles, onStatusChange, onVehicleSelect, isD
       {vehicles.map((vehicle) => (
         <Card
           key={vehicle._id}
-          className={`${
-            isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
-          } hover:shadow-lg transition-all duration-200 hover:scale-105`}
+          className={`
+            ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"}
+            hover:shadow-lg transition-all duration-200 hover:scale-105
+            ${selectedVehicles.has(vehicle._id!) ? "ring-2 ring-blue-500" : ""}
+          `}
         >
           <CardContent className="p-4">
             {/* Imagen */}
@@ -63,21 +65,41 @@ export const VehicleGridView = ({ vehicles, onStatusChange, onVehicleSelect, isD
                 fill
                 className="object-cover"
               />
+               <div className="absolute top-2 left-2 z-10">
+                <Checkbox
+                  checked={selectedVehicles.has(vehicle._id!)}
+                  onCheckedChange={() => onToggleSelection(vehicle._id!)}
+                  className="bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-500"
+                  aria-label="Seleccionar vehículo"
+                />
+              </div>
               {vehicle.images.length > 1 && (
                 <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
                   +{vehicle.images.length - 1}
                 </div>
               )}
-              <div className="absolute top-2 left-2">{getStatusBadge(vehicle.status)}</div>
+              <div className="absolute bottom-2 left-2"><StatusBadge status={vehicle.status} /></div>
             </div>
 
             {/* Información básica */}
             <div className="space-y-3">
-              <div>
-                <h3 className="font-bold text-lg line-clamp-1">
-                  {vehicle.brand} {vehicle.model}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{vehicle.year}</p>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-bold text-lg line-clamp-1">
+                    {vehicle.brand} {vehicle.model}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{vehicle.year}</p>
+                </div>
+                <VehicleActions
+                  vehicle={vehicle}
+                  isDarkMode={isDarkMode}
+                  onVehicleSelect={onVehicleSelect}
+                  onStatusChange={onStatusChange}
+                  onShowRejectDialog={onShowRejectDialog}
+                  onShowCommentDialog={onShowCommentDialog}
+                  onShowHistoryDialog={() => onShowHistoryDialog(vehicle)}
+                  onShowDeleteDialog={onShowDeleteDialog}
+                />
               </div>
 
               <div className="space-y-2">
@@ -99,41 +121,20 @@ export const VehicleGridView = ({ vehicles, onStatusChange, onVehicleSelect, isD
 
               {/* Acciones */}
               <div className="flex flex-col gap-2 pt-2 border-t">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={() => onVehicleSelect(vehicle)} className="w-full">
-                      <Eye className="w-4 h-4 mr-2" />
-                      Ver detalles
-                    </Button>
-                  </DialogTrigger>
-                </Dialog>
-
-                {/* ✅ CORREGIDO: Usar el enum ApprovalStatus */}
-                {(vehicle.status === ApprovalStatus.PENDING ||
-                  vehicle.status === ApprovalStatus.UNDER_REVIEW) && (
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => onStatusChange(vehicle._id!, ApprovalStatus.APPROVED)}
-                      className="bg-green-600 hover:bg-green-700 flex-1"
-                      size="sm"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      onClick={() => onStatusChange(vehicle._id!, ApprovalStatus.REJECTED)}
-                      variant="destructive"
-                      size="sm"
-                      className="flex-1"
-                    >
-                      <XCircle className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onVehicleSelect(vehicle)}
+                  className="w-full"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Ver detalles
+                </Button>
               </div>
             </div>
           </CardContent>
         </Card>
       ))}
     </div>
-  )
-}
+  );
+};
