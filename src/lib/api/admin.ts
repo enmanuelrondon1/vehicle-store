@@ -60,26 +60,18 @@ export const getVehicleHistory = async (
   vehicleId: string
 ): Promise<VehicleHistoryEntry[]> => {
   console.log(`Fetching history for vehicle ${vehicleId}...`);
-  // Simula un retraso de red
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // Datos mock
-  const history: VehicleHistoryEntry[] = [
-    {
-      id: "hist1",
-      action: "Publicación Creada", // AÑADIDO: La propiedad que faltaba
-      details: "Publicación creada",
-      author: "Sistema",
-      timestamp: "2023-10-26T10:00:00Z",
-    },
-    {
-      id: "hist2",
-      action: "Estado Cambiado", // AÑADIDO: La propiedad que faltaba
-      details: "Aprobado por el administrador",
-      author: "admin@example.com",
-      timestamp: "2023-10-26T12:30:00Z",
-    },
-  ];
-
-  return history;
+  try {
+    const response = await fetch(`/api/admin/vehicles/${vehicleId}/history`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || "Error al obtener el historial del vehículo."
+      );
+    }
+    const data = await response.json();
+    return data.history || [];
+  } catch (error) {
+    console.error("Error en getVehicleHistory:", error);
+    return []; // Devuelve un array vacío en caso de error para evitar que la UI falle.
+  }
 };

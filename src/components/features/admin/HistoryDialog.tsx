@@ -53,7 +53,7 @@ export const HistoryDialog = ({ isOpen, onOpenChange, history, isLoading, isDark
             ) : history.length > 0 ? (
               <div className="space-y-6">
                 {history.map((entry, index) => (
-                  <div key={entry.id} className="relative">
+                  <div key={index} className="relative">
                     {index < history.length - 1 && (
                       <div className={`absolute left-4 top-10 w-0.5 h-full ${isDarkMode ? "bg-slate-600" : "bg-slate-300"}`}></div>
                     )}

@@ -5,6 +5,7 @@ import {
   ApiResponseBackend,
   ApprovalStatus,
   VehicleDataFrontend,
+  VehicleHistoryEntry,
 } from "@/types/types";
 import { getServerSession } from "next-auth";
 import { ObjectId } from "mongodb";
@@ -208,7 +209,10 @@ export async function PATCH(
       };
 
       const unsetData: { rejectionReason?: "" } = {};
-      const pushData: { comments?: Comment } = {};
+      const pushData: {
+        comments?: Comment;
+        history?: VehicleHistoryEntry;
+      } = {};
 
       if (status === ApprovalStatus.REJECTED && rejectionReason) {
         updateData.rejectionReason = rejectionReason;
@@ -224,6 +228,19 @@ export async function PATCH(
       } else {
         unsetData.rejectionReason = "";
       }
+
+      // Crear entrada de historial para el cambio de estado
+      const historyEntry: VehicleHistoryEntry = {
+        id: new ObjectId().toString(),
+        action: `Estado cambiado a ${status}`,
+        details:
+          status === ApprovalStatus.REJECTED
+            ? `Rechazado con motivo: ${rejectionReason}`
+            : `El vehículo ha sido ${status.toLowerCase()}.`,
+        author: session.user.name || "Admin",
+        timestamp: new Date().toISOString(),
+      };
+      pushData.history = historyEntry;
 
       const updateOperation: {
         $set: Partial<typeof updateData>;
