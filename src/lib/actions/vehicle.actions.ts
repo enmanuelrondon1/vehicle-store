@@ -1,9 +1,11 @@
+//src/lib/actions/vehicle.actions.ts
 "use server";
 
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+
+import { FinancingDetailsSchema } from "@/lib/vehicleSchema";
 import { revalidatePath } from "next/cache";
-import { FinancingDetailsSchema } from "@/schemas/vehicleSchema";
 
 // Tipos para los parámetros
 interface UpdateFinancingDetailsParams {

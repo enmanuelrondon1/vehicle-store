@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useDarkMode } from "@/context/DarkModeContext";
+// import { useDarkMode } from "@/context/DarkModeContext"; // ❌ REMOVED
 import { formatDate, formatMileage, DOCUMENTATION_MAP } from "@/lib/utils";
 import { Documentation } from "@/types/types";
 import { useVehicleData } from "@/hooks/useVehicleData";
@@ -40,7 +40,7 @@ declare module "next-auth" {
 
 // Componente principal
 const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
-  const { isDarkMode } = useDarkMode();
+  // const { isDarkMode } = useDarkMode(); // ❌ REMOVED
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -83,45 +83,19 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     checkFavoriteStatus();
   }, [session, vehicle?._id, setIsFavorited]);
 
-  const backgroundStyle = {
-    background: isDarkMode
-      ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)"
-      : "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)",
-  };
-
   if (isLoading) {
     return (
-      <div className="min-h-screen py-8 px-4" style={backgroundStyle}>
+      <div className="min-h-screen py-8 px-4 bg-background">
         <div className="max-w-7xl mx-auto">
-          <Skeleton
-            className={`h-8 w-32 ${
-              isDarkMode ? "bg-gray-700" : "bg-gray-200"
-            } animate-pulse rounded mb-8`}
-          />
+          <Skeleton className="h-8 w-32 bg-muted animate-pulse rounded mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <div
-                className={`aspect-video ${
-                  isDarkMode ? "bg-gray-800" : "bg-gray-200"
-                } animate-pulse rounded-xl mb-6`}
-              />
-              <Skeleton
-                className={`h-64 ${
-                  isDarkMode ? "bg-gray-800" : "bg-gray-200"
-                } animate-pulse rounded-xl`}
-              />
+              <div className="aspect-video bg-muted animate-pulse rounded-xl mb-6" />
+              <Skeleton className="h-64 bg-muted animate-pulse rounded-xl" />
             </div>
             <div className="space-y-6">
-              <Skeleton
-                className={`h-48 ${
-                  isDarkMode ? "bg-gray-800" : "bg-gray-200"
-                } animate-pulse rounded-xl`}
-              />
-              <Skeleton
-                className={`h-32 ${
-                  isDarkMode ? "bg-gray-800" : "bg-gray-200"
-                } animate-pulse rounded-xl`}
-              />
+              <Skeleton className="h-48 bg-muted animate-pulse rounded-xl" />
+              <Skeleton className="h-32 bg-muted animate-pulse rounded-xl" />
             </div>
           </div>
         </div>
@@ -131,30 +105,16 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
 
   if (error || !vehicle) {
     return (
-      <div className="min-h-screen py-8 px-4" style={backgroundStyle}>
+      <div className="min-h-screen py-8 px-4 bg-background">
         <div className="max-w-2xl mx-auto text-center">
-          <div
-            className={`p-8 rounded-2xl backdrop-blur-sm ${
-              isDarkMode
-                ? "bg-gray-800/30 border-gray-700"
-                : "bg-white/30 border-gray-200"
-            } border shadow-2xl`}
-          >
+          <div className="p-8 rounded-2xl backdrop-blur-sm bg-card/30 border border-border shadow-2xl">
             <div className="text-6xl mb-6">😔</div>
-            <h2
-              className={`text-3xl font-bold mb-4 ${
-                isDarkMode ? "text-gray-100" : "text-gray-800"
-              }`}
-            >
+            <h2 className="text-3xl font-bold mb-4 text-foreground">
               {error === "Vehículo no encontrado"
                 ? "Vehículo no encontrado"
                 : "Error al cargar"}
             </h2>
-            <p
-              className={`mb-8 text-lg ${
-                isDarkMode ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
+            <p className="mb-8 text-lg text-muted-foreground">
               {error || "No se pudo cargar la información del vehículo"}
             </p>
             <div className="flex justify-center gap-4">
@@ -179,7 +139,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4" style={backgroundStyle}>
+    <div className="min-h-screen py-8 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
         {vehicle?._id && (
           <VehicleActions
@@ -250,7 +210,6 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
               <FinancingModal
                 vehiclePrice={vehicle.price}
                 financingDetails={vehicle.financingDetails}
-                isDarkMode={isDarkMode}
               />
             )}
             <VehicleAdditionalInfo

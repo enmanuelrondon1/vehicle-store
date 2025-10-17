@@ -7,21 +7,17 @@ import { X } from "lucide-react";
 interface FilterChipProps {
   label: string;
   onRemove: () => void;
-  isDarkMode: boolean;
+  // isDarkMode: boolean; // ❌ REMOVED
 }
 
-const FilterChip: FC<FilterChipProps> = ({ label, onRemove, isDarkMode }) => (
+const FilterChip: FC<FilterChipProps> = ({ label, onRemove }) => (
   <div
-    className={`flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full text-sm font-medium transition-colors animate-in fade-in-0 zoom-in-95 ${
-      isDarkMode
-        ? "bg-blue-900/50 text-blue-200"
-        : "bg-blue-100 text-blue-800"
-    }`}
+    className="flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full text-sm font-medium transition-colors animate-in fade-in-0 zoom-in-95 bg-primary/10 text-primary"
   >
     <span>{label}</span>
     <button
       onClick={onRemove}
-      className={`p-0.5 rounded-full ${isDarkMode ? "hover:bg-blue-700/50" : "hover:bg-blue-200"}`}
+      className="p-0.5 rounded-full hover:bg-primary/20"
       aria-label={`Remover filtro: ${label}`}
     >
       <X className="w-3.5 h-3.5" />

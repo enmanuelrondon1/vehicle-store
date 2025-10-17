@@ -2,41 +2,37 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { FC } from "react";
 
 interface CheckboxFilterProps {
-  // Permitir que las opciones tengan un contador opcional
   options: { value: string; label: string; count?: number }[];
   selected: string[];
   onChange: (value: string) => void;
-  isDarkMode: boolean;
+  // isDarkMode: boolean; // ❌ REMOVED
   maxHeight?: string;
 }
 
-const CheckboxFilter: FC<CheckboxFilterProps> = ({ options, selected, onChange, isDarkMode, maxHeight = 'max-h-32' }) => (
-  <div className={`${maxHeight} overflow-y-auto space-y-1 border rounded p-2 ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+const CheckboxFilter: FC<CheckboxFilterProps> = ({ options, selected, onChange, maxHeight = 'max-h-32' }) => (
+  <div className={`${maxHeight} overflow-y-auto space-y-1 border rounded p-2 border-border`}>
     {options.map((option) => {
       const hasCount = option.count !== undefined && option.count > 0;
       return (
-        <label key={option.value} className="flex items-center justify-between space-x-2 cursor-pointer p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+        <label key={option.value} className="flex items-center justify-between space-x-2 cursor-pointer p-1 rounded hover:bg-accent">
           <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={selected.includes(option.value)}
-              onChange={() => onChange(option.value)}
-              className="rounded"
+              onCheckedChange={() => onChange(option.value)}
+              id={`checkbox-${option.value}`}
             />
-            <span className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+            <span className="text-sm text-foreground">
               {option.label}
             </span>
           </div>
           {hasCount && (
             <Badge
-              className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                isDarkMode
-                  ? "bg-blue-600 text-white"
-                  : "bg-blue-500 text-white"
-              }`}
+              variant="default"
+              className="text-xs font-semibold"
             >
               {option.count}
             </Badge>

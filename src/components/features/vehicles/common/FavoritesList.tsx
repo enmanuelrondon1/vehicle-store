@@ -4,7 +4,6 @@
 import { useState } from "react";
 import { Vehicle } from "@/types/types";
 import VehicleCard from "./VehicleCard";
-import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface FavoritesListProps {
@@ -16,7 +15,6 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
   const [favoritedIds, setFavoritedIds] = useState<Set<string>>(
     new Set(initialVehicles.map((v) => v._id))
   );
-  const { resolvedTheme } = useTheme();
 
   const handleFavoriteToggle = (vehicleId: string, isNowFavorited: boolean) => {
     setFavoritedIds((prev) => {
@@ -74,7 +72,6 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
           >
             <VehicleCard
               vehicle={vehicle}
-              isDarkMode={resolvedTheme === "dark"}
               viewMode="grid"
               onToggleCompare={toggleCompare}
               isInCompareList={compareList.includes(vehicle._id)}

@@ -5,20 +5,14 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, DollarSign, Gauge } from "lucide-react";
-import { useDarkMode } from "@/context/DarkModeContext";
 import type { VehicleDataFrontend } from "@/types/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Un componente de tarjeta simple para mostrar cada vehículo
-const VehicleCard = ({ vehicle, isDarkMode }: { vehicle: VehicleDataFrontend, isDarkMode: boolean }) => {
+const VehicleCard = ({ vehicle }: { vehicle: VehicleDataFrontend }) => {
   return (
     <Link href={`/vehicle/${vehicle._id}`} className="block group">
-      <div
-        className={`overflow-hidden rounded-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col ${
-          isDarkMode
-            ? "bg-gray-800/50 border border-gray-700 backdrop-blur-sm"
-            : "bg-white shadow-md"
-        }`}
-      >
+      <div className="overflow-hidden rounded-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col bg-card/50 border border-border backdrop-blur-sm">
         <div className="relative w-full aspect-video">
           <Image
             src={vehicle.images[0] || "/placeholder.svg"}
@@ -29,28 +23,29 @@ const VehicleCard = ({ vehicle, isDarkMode }: { vehicle: VehicleDataFrontend, is
           />
         </div>
         <div className="p-4 flex flex-col flex-grow">
-          <h3 className={`text-lg font-bold truncate ${isDarkMode ? "text-gray-100" : "text-gray-900"}`}>
+          <h3 className="text-lg font-bold truncate text-foreground">
             {vehicle.brand} {vehicle.model}
           </h3>
-          <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>{vehicle.year}</p>
+          <p className="text-sm text-muted-foreground">{vehicle.year}</p>
           <div className="mt-4 flex-grow space-y-2 text-sm">
             <div className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-green-500" />
-              <span className={`${isDarkMode ? "text-gray-200" : "text-gray-800"}`}>
+              <span className="text-foreground">
                 ${vehicle.price.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Gauge className="w-4 h-4 text-blue-500" />
-              <span className={`${isDarkMode ? "text-gray-200" : "text-gray-800"}`}>
+              <span className="text-foreground">
                 {vehicle.mileage.toLocaleString()} km
               </span>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-             <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 group-hover:underline flex items-center gap-1">
-                Ver más <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
-             </span>
+          <div className="mt-4 pt-4 border-t border-border flex justify-end">
+            <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 group-hover:underline flex items-center gap-1">
+              Ver más{" "}
+              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+            </span>
           </div>
         </div>
       </div>
@@ -59,39 +54,40 @@ const VehicleCard = ({ vehicle, isDarkMode }: { vehicle: VehicleDataFrontend, is
 };
 
 // Componente para el esqueleto de carga
-const SkeletonCard = ({ isDarkMode }: { isDarkMode: boolean }) => (
-  <div className={`rounded-lg p-4 ${isDarkMode ? "bg-gray-800" : "bg-white"}`}>
-    <div className={`w-full aspect-video rounded-md mb-4 animate-pulse ${isDarkMode ? "bg-gray-700" : "bg-gray-300"}`}></div>
-    <div className={`h-5 w-3/4 rounded-md mb-2 animate-pulse ${isDarkMode ? "bg-gray-700" : "bg-gray-300"}`}></div>
-    <div className={`h-4 w-1/4 rounded-md mb-4 animate-pulse ${isDarkMode ? "bg-gray-700" : "bg-gray-300"}`}></div>
+const SkeletonCard = () => (
+  <div className="rounded-lg p-4 bg-card">
+    <Skeleton className="w-full aspect-video rounded-md mb-4" />
+    <Skeleton className="h-5 w-3/4 rounded-md mb-2" />
+    <Skeleton className="h-4 w-1/4 rounded-md mb-4" />
     <div className="space-y-2">
-      <div className={`h-4 w-1/2 rounded-md animate-pulse ${isDarkMode ? "bg-gray-700" : "bg-gray-300"}`}></div>
-      <div className={`h-4 w-1/2 rounded-md animate-pulse ${isDarkMode ? "bg-gray-700" : "bg-gray-300"}`}></div>
+      <Skeleton className="h-4 w-1/2 rounded-md" />
+      <Skeleton className="h-4 w-1/2 rounded-md" />
     </div>
   </div>
 );
 
 // El componente principal que muestra la sección de vehículos similares
-const SimilarVehiclesComponent: React.FC<{ vehicles: VehicleDataFrontend[], isLoading: boolean }> = ({ vehicles, isLoading }) => {
-  const { isDarkMode } = useDarkMode();
-
+const SimilarVehiclesComponent: React.FC<{
+  vehicles: VehicleDataFrontend[];
+  isLoading: boolean;
+}> = ({ vehicles, isLoading }) => {
   // Si no está cargando y no hay vehículos, no renderizar nada.
   if (!isLoading && vehicles.length === 0) {
     return null;
   }
 
   return (
-    <div className={`mt-12 py-8 ${isDarkMode ? "bg-gray-800/50" : "bg-white/50"} rounded-xl p-6 border ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
-      <h2 className={`text-3xl font-bold mb-6 text-center ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+    <div className="mt-12 py-8 bg-card/50 rounded-xl p-6 border border-border">
+      <h2 className="text-3xl font-bold mb-6 text-center text-foreground">
         Vehículos Similares
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {isLoading
           ? Array.from({ length: 4 }).map((_, index) => (
-              <SkeletonCard key={index} isDarkMode={isDarkMode} />
+              <SkeletonCard key={index} />
             ))
           : vehicles.map((vehicle) => (
-              <VehicleCard key={vehicle._id} vehicle={vehicle} isDarkMode={isDarkMode} />
+              <VehicleCard key={vehicle._id} vehicle={vehicle} />
             ))}
       </div>
     </div>

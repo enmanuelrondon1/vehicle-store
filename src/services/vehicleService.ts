@@ -169,7 +169,7 @@ export class VehicleService {
       doors: mongoData.doors,
       seats: mongoData.seats,
       weight: mongoData.weight,
-      driveType: mongoData.driveType,
+      driveType: mongoData.driveType as VehicleData["driveType"],
       loadCapacity: mongoData.loadCapacity,
       sellerContact: mongoData.sellerContact,
       postedDate: mongoData.postedDate,

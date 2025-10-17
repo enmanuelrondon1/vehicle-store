@@ -4,20 +4,21 @@
 import type React from "react";
 import { X } from "lucide-react";
 import { IoMdGitCompare } from "react-icons/io";
-import { useRouter } from "next/navigation"; // ✅ MEJORA: Importar el router
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface CompareBarProps {
   compareList: string[];
   setCompareList: (list: string[]) => void;
-  isDarkMode: boolean;
+  // isDarkMode: boolean; // ❌ REMOVED
 }
 
 const CompareBar: React.FC<CompareBarProps> = ({
   compareList,
   setCompareList,
-  isDarkMode,
+  // isDarkMode, // ❌ REMOVED
 }) => {
-  const router = useRouter(); // ✅ MEJORA: Inicializar el router
+  const router = useRouter();
 
   const handleCompare = () => {
     const params = new URLSearchParams();
@@ -27,27 +28,21 @@ const CompareBar: React.FC<CompareBarProps> = ({
 
   return (
     <div className="mb-6 flex items-center justify-center gap-3">
-      <span
-        className={`text-sm ${
-          isDarkMode ? "text-gray-400" : "text-gray-600"
-        }`}
-      >
+      <span className="text-sm text-muted-foreground">
         {compareList.length} vehículos para comparar
       </span>
-      <button
-        onClick={handleCompare}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center gap-2"
-      >
-        <IoMdGitCompare className="w-4 h-4" />
+      <Button onClick={handleCompare}>
+        <IoMdGitCompare className="w-4 h-4 mr-2" />
         Comparar ({compareList.length})
-      </button>
-      <button
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() => setCompareList([])}
-        className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
         title="Limpiar comparación"
       >
         <X className="w-4 h-4" />
-      </button>
+      </Button>
     </div>
   );
 };

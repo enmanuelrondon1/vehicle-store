@@ -3,13 +3,14 @@
 
 import type React from "react";
 import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button"; // ✨ ADDED: Import Button component
 
+// ❌ REMOVED: isDarkMode prop from interface
 interface ErrorMessageProps {
   error: string;
   handleRetry: () => void;
   isLoading: boolean;
   retryCount: number;
-  isDarkMode: boolean;
 }
 
 const ErrorMessage: React.FC<ErrorMessageProps> = ({
@@ -17,38 +18,29 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({
   handleRetry,
   isLoading,
   retryCount,
-  isDarkMode,
-}) => {
+}) => { // ❌ REMOVED: isDarkMode from props
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-8 px-4 flex items-center justify-center">
       <div className="max-w-2xl mx-auto text-center">
         <div
-          className={`p-8 rounded-2xl backdrop-blur-sm ${
-            isDarkMode
-              ? "bg-gray-800/30 border-gray-700"
-              : "bg-white/30 border-gray-200"
-          } border shadow-2xl`}
+          className="p-8 rounded-2xl bg-card border border-border shadow-2xl"
         >
           <div className="text-6xl mb-6 animate-bounce">😔</div>
           <h2
-            className={`text-3xl font-bold mb-4 ${
-              isDarkMode ? "text-gray-100" : "text-gray-800"
-            }`}
+            className="text-3xl font-bold mb-4 text-foreground"
           >
             ¡Oops! Algo salió mal
           </h2>
           <p
-            className={`mb-8 text-lg ${
-              isDarkMode ? "text-gray-400" : "text-gray-600"
-            }`}
+            className="mb-8 text-lg text-muted-foreground"
           >
             {error}
           </p>
           <div className="flex justify-center gap-4">
-            <button
+            <Button
               onClick={handleRetry}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg rounded-lg transition-all duration-300 disabled:opacity-50"
               disabled={isLoading}
+              size="lg"
             >
               <RefreshCw
                 className={`w-5 h-5 mr-2 inline ${
@@ -56,23 +48,22 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({
                 }`}
               />
               {isLoading ? "Reintentando..." : "Reintentar"}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => {
                 console.log("🔍 Debug Info:");
                 console.log("Error:", error);
                 console.log("Retry count:", retryCount);
               }}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 text-lg rounded-lg transition-all duration-300"
+              variant="secondary"
+              size="lg"
             >
               🔍 Debug
-            </button>
+            </Button>
           </div>
           {retryCount > 0 && (
             <p
-              className={`mt-4 text-sm ${
-                isDarkMode ? "text-gray-500" : "text-gray-500"
-              }`}
+              className="mt-4 text-sm text-muted-foreground"
             >
               Intentos: {retryCount}
             </p>

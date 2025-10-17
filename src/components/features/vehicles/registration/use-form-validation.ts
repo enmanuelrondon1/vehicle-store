@@ -2,9 +2,9 @@
 "use client";
 
 import { useCallback } from "react";
-import { schemasByStep } from "@/components/features/vehicles/registration/vehicleSchema";
 import type { VehicleDataBackend } from "@/types/types";
 import type { Bank } from "@/constants/form-constants";
+import { schemasByStep } from "@/lib/vehicleSchema";
 
 export const useFormValidation = () => {
   const validateStep = useCallback(

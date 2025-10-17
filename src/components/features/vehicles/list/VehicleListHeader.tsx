@@ -1,29 +1,30 @@
-//src/components/sections/VehicleList/VehicleListHeader.tsx
+//src/components/features/vehicles/list/VehicleListHeader.tsx
 "use client";
 
-import type React from "react";
+import { Vortex } from "@/components/ui/vortex";
+import { motion } from "framer-motion";
 
-interface VehicleListHeaderProps {
-  isDarkMode: boolean;
-}
-
-const VehicleListHeader: React.FC<VehicleListHeaderProps> = ({ isDarkMode }) => {
+const VehicleListHeader = () => {
   return (
     <div className="text-center mb-8">
-      <h1
-        className={`text-5xl md:text-6xl font-bold mb-4 ${
-          isDarkMode ? "text-gray-100" : "text-gray-800"
-        }`}
-      >
-        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Encuentra tu Vehículo Perfecto
-        </span>
-      </h1>
-      <p
-        className={`text-xl ${
-          isDarkMode ? "text-gray-400" : "text-gray-600"
-        } mb-6`}
-      >
+      <div className="rounded-xl overflow-hidden mb-4 bg-slate-100 dark:bg-slate-900">
+        <Vortex
+          particleCount={150}
+          rangeY={50}
+          baseHue={240}
+          className="flex items-center flex-col justify-center px-4 py-6 w-full h-full"
+        >
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-5xl md:text-6xl font-bold text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent dark:text-white dark:bg-none"
+          >
+            Encuentra tu Vehículo Perfecto
+          </motion.h1>
+        </Vortex>
+      </div>
+      <p className="text-xl text-muted-foreground mb-6">
         Búsqueda avanzada con filtros inteligentes y comparación de vehículos
       </p>
     </div>

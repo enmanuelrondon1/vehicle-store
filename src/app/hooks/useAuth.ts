@@ -4,6 +4,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { siteConfig } from "@/config/site"; // 1. Importar siteConfig
 
 export const useAuth = () => {
   const { data: session, status } = useSession();
@@ -64,9 +65,14 @@ export const useAuth = () => {
     if (typeof window === 'undefined') return;
 
     const validateAuth = () => {
-      // Solo validar para rutas protegidas
-      const protectedRoutes = ['/postAd', '/AdminPanel', '/upload-payment-proof'];
-      const isProtectedRoute = protectedRoutes.some(route => 
+      // CAMBIO: Construir el array de rutas protegidas desde siteConfig
+      const protectedClientRoutes = [
+        siteConfig.paths.publishAd,
+        siteConfig.paths.adminPanel,
+        siteConfig.paths.uploadPaymentProof,
+      ];
+      
+      const isProtectedRoute = protectedClientRoutes.some(route => 
         window.location.pathname.startsWith(route)
       );
 
@@ -103,33 +109,23 @@ export const useAuth = () => {
     };
   }, [isUnauthenticated, validateSession]);
 
+  // const checkAuth = useCallback(() => {
+  //   if (status === "unauthenticated") {
+  //     // 2. Usar la ruta desde siteConfig como redirección por defecto
+  //     router.push(`/login?callbackUrl=${encodeURIComponent(siteConfig.paths.publishAd)}`);
+  //   }
+  // }, [status, router]);
+
   const requireAuth = useCallback(
-    (callback?: () => void, redirectTo: string = '/postAd') => {
-      console.log('🔐 RequireAuth llamado:', {
-        isLoading,
-        isAuthenticated,
-        status,
-        redirectTo,
-      });
-
-      if (isLoading || isValidating) {
-        console.log('⏳ Autenticación en curso, esperando...');
-        return false;
+    // 3. Usar la ruta desde siteConfig como valor por defecto
+    (callback?: () => void, redirectTo: string = siteConfig.paths.publishAd) => {
+      if (status === "authenticated") {
+        callback?.();
+      } else if (status === "unauthenticated") {
+        router.push(`/login?callbackUrl=${encodeURIComponent(redirectTo)}`);
       }
-
-      if (!isAuthenticated) {
-        console.log('❌ No autenticado, redirigiendo a login...');
-        redirectToLogin(redirectTo);
-        return false;
-      }
-
-      if (callback) {
-        console.log('✅ Ejecutando callback para usuario autenticado');
-        callback();
-      }
-      return true;
     },
-    [isAuthenticated, isLoading, isValidating, redirectToLogin, status]
+    [status, router]
   );
 
   return {

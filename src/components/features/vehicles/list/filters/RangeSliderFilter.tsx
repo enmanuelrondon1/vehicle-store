@@ -10,7 +10,7 @@ interface RangeSliderFilterProps {
   step: number;
   value: [number, number];
   onChange: (value: [number, number]) => void;
-  isDarkMode: boolean;
+  // isDarkMode: boolean; // ❌ REMOVED
 }
 
 const RangeSliderFilter: FC<RangeSliderFilterProps> = ({
@@ -19,7 +19,7 @@ const RangeSliderFilter: FC<RangeSliderFilterProps> = ({
   step,
   value,
   onChange,
-  isDarkMode,
+  // isDarkMode, // ❌ REMOVED
 }) => (
   <div className="py-3">
     <Slider.Root
@@ -31,11 +31,11 @@ const RangeSliderFilter: FC<RangeSliderFilterProps> = ({
       step={step}
       minStepsBetweenThumbs={1}
     >
-      <Slider.Track className={`relative grow rounded-full h-1.5 ${isDarkMode ? "bg-gray-600" : "bg-gray-200"}`}>
-        <Slider.Range className={`absolute rounded-full h-full ${isDarkMode ? "bg-blue-400" : "bg-blue-600"}`} />
+      <Slider.Track className="relative grow rounded-full h-1.5 bg-muted">
+        <Slider.Range className="absolute rounded-full h-full bg-primary" />
       </Slider.Track>
-      <Slider.Thumb className={`block h-5 w-5 rounded-full cursor-grab focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${isDarkMode ? "bg-blue-400 focus:ring-blue-300 focus:ring-offset-gray-800" : "bg-blue-600 focus:ring-blue-500 focus:ring-offset-white"}`} aria-label="Valor mínimo" />
-      <Slider.Thumb className={`block h-5 w-5 rounded-full cursor-grab focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${isDarkMode ? "bg-blue-400 focus:ring-blue-300 focus:ring-offset-gray-800" : "bg-blue-600 focus:ring-blue-500 focus:ring-offset-white"}`} aria-label="Valor máximo" />
+      <Slider.Thumb className="block h-5 w-5 rounded-full cursor-grab focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors bg-primary ring-offset-background" aria-label="Valor mínimo" />
+      <Slider.Thumb className="block h-5 w-5 rounded-full cursor-grab focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-colors bg-primary ring-offset-background" aria-label="Valor máximo" />
     </Slider.Root>
   </div>
 );

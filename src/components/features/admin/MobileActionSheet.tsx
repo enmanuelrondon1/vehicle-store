@@ -22,7 +22,6 @@ import { VehicleDataFrontend, ApprovalStatus } from "@/types/types";
 
 interface MobileActionSheetProps {
   vehicle: VehicleDataFrontend;
-  isDarkMode: boolean;
   onVehicleSelect: (vehicle: VehicleDataFrontend) => void;
   onStatusChange: (vehicleId: string, status: ApprovalStatus) => void;
   onShowRejectDialog: (vehicle: VehicleDataFrontend) => void;
@@ -33,7 +32,6 @@ interface MobileActionSheetProps {
 
 export const MobileActionSheet = ({
   vehicle,
-  isDarkMode,
   onVehicleSelect,
   onStatusChange,
   onShowRejectDialog,
@@ -48,7 +46,7 @@ export const MobileActionSheet = ({
           <MoreVertical className="h-4 w-4" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className={isDarkMode ? "dark" : ""}>
+      <SheetContent side="bottom">
         <SheetHeader>
           <SheetTitle>
             Acciones para: {vehicle.brand} {vehicle.model}
@@ -77,7 +75,7 @@ export const MobileActionSheet = ({
             className="justify-start"
             onClick={() => onShowRejectDialog(vehicle)}
           >
-            <XCircle className="mr-2 h-4 w-4 text-red-500" />
+            <XCircle className="mr-2 h-4 w-4 text-destructive" />
             Rechazar
           </Button>
           <Button

@@ -21,7 +21,6 @@ import { VehicleDataFrontend, ApprovalStatus } from "@/types/types";
 
 interface VehicleActionsProps {
   vehicle: VehicleDataFrontend;
-  isDarkMode: boolean;
   onVehicleSelect: (vehicle: VehicleDataFrontend) => void;
   onStatusChange: (vehicleId: string, status: ApprovalStatus) => void;
   onShowRejectDialog: (vehicle: VehicleDataFrontend) => void;
@@ -32,7 +31,6 @@ interface VehicleActionsProps {
 
 export const VehicleActions = ({
   vehicle,
-  isDarkMode,
   onVehicleSelect,
   onStatusChange,
   onShowRejectDialog,
@@ -53,11 +51,7 @@ export const VehicleActions = ({
         <Button
           variant="ghost"
           size="sm"
-          className={`h-9 w-9 p-0 rounded-lg transition-all duration-200 ${
-            isDarkMode
-              ? "hover:bg-gray-700 text-gray-300 hover:text-gray-100"
-              : "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
-          }`}
+          className="h-9 w-9 p-0 rounded-lg transition-all duration-200 hover:bg-accent text-muted-foreground"
           aria-label="Abrir menú de acciones"
         >
           <MoreHorizontal className="h-5 w-5" />
@@ -66,37 +60,22 @@ export const VehicleActions = ({
       <PopoverContent
         align="end"
         side="left"
-        className={`w-56 p-0 border-2 rounded-lg shadow-lg ${
-          isDarkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-gray-200"
-        }`}
+        className="w-56 p-0 border rounded-lg shadow-lg bg-popover text-popover-foreground"
       >
         <div className="space-y-1 py-2">
           {/* Ver detalles */}
           <button
             onClick={() => handleAction(() => onVehicleSelect(vehicle))}
-            className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left ${
-              isDarkMode
-                ? "hover:bg-blue-500/20 text-gray-100"
-                : "hover:bg-blue-50 text-gray-900"
-            }`}
+            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left hover:bg-accent"
           >
-            <Eye className="h-4 w-4 text-blue-500 flex-shrink-0" />
+            <Eye className="h-4 w-4 text-primary flex-shrink-0" />
             <span className="font-medium">Ver detalles</span>
           </button>
 
-          <div
-            className={isDarkMode ? "bg-gray-700" : "bg-gray-200"}
-            style={{ height: "1px" }}
-          />
+          <div className="border-t" />
 
           {/* Sección de aprobación */}
-          <div
-            className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider ${
-              isDarkMode ? "text-gray-400" : "text-gray-500"
-            }`}
-          >
+          <div className="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Acciones
           </div>
 
@@ -107,15 +86,7 @@ export const VehicleActions = ({
               )
             }
             disabled={vehicle.status === ApprovalStatus.APPROVED}
-            className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed ${
-              vehicle.status === ApprovalStatus.APPROVED
-                ? isDarkMode
-                  ? "text-gray-500"
-                  : "text-gray-400"
-                : isDarkMode
-                  ? "hover:bg-green-500/20 text-gray-100 hover:text-green-300"
-                  : "hover:bg-green-50 text-gray-900 hover:text-green-700"
-            }`}
+            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
           >
             <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
             <span className="font-medium flex-1">Aprobar</span>
@@ -126,27 +97,16 @@ export const VehicleActions = ({
 
           <button
             onClick={() => handleAction(() => onShowRejectDialog(vehicle))}
-            className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left ${
-              isDarkMode
-                ? "hover:bg-red-500/20 text-gray-100 hover:text-red-300"
-                : "hover:bg-red-50 text-gray-900 hover:text-red-700"
-            }`}
+            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left hover:bg-accent"
           >
-            <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+            <XCircle className="h-4 w-4 text-destructive flex-shrink-0" />
             <span className="font-medium">Rechazar</span>
           </button>
 
-          <div
-            className={isDarkMode ? "bg-gray-700" : "bg-gray-200"}
-            style={{ height: "1px" }}
-          />
+          <div className="border-t" />
 
           {/* Sección de información */}
-          <div
-            className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider ${
-              isDarkMode ? "text-gray-400" : "text-gray-500"
-            }`}
-          >
+          <div className="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Información
           </div>
 
@@ -154,13 +114,9 @@ export const VehicleActions = ({
             onClick={() =>
               handleAction(() => onShowCommentDialog(vehicle))
             }
-            className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left ${
-              isDarkMode
-                ? "hover:bg-purple-500/20 text-gray-100 hover:text-purple-300"
-                : "hover:bg-purple-50 text-gray-900 hover:text-purple-700"
-            }`}
+            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left hover:bg-accent"
           >
-            <MessageSquare className="h-4 w-4 text-purple-500 flex-shrink-0" />
+            <MessageSquare className="h-4 w-4 text-primary flex-shrink-0" />
             <span className="font-medium">Comentarios</span>
           </button>
 
@@ -168,29 +124,18 @@ export const VehicleActions = ({
             onClick={() =>
               handleAction(() => onShowHistoryDialog(vehicle))
             }
-            className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left ${
-              isDarkMode
-                ? "hover:bg-amber-500/20 text-gray-100 hover:text-amber-300"
-                : "hover:bg-amber-50 text-gray-900 hover:text-amber-700"
-            }`}
+            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left hover:bg-accent"
           >
-            <History className="h-4 w-4 text-amber-500 flex-shrink-0" />
+            <History className="h-4 w-4 text-primary flex-shrink-0" />
             <span className="font-medium">Historial</span>
           </button>
 
-          <div
-            className={isDarkMode ? "bg-gray-700" : "bg-gray-200"}
-            style={{ height: "1px" }}
-          />
+          <div className="border-t" />
 
           {/* Eliminar */}
           <button
             onClick={() => handleAction(() => onShowDeleteDialog(vehicle))}
-            className={`w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left ${
-              isDarkMode
-                ? "hover:bg-red-600/30 text-red-400 hover:text-red-300"
-                : "hover:bg-red-50 text-red-600 hover:text-red-700"
-            }`}
+            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left text-destructive hover:bg-destructive hover:text-destructive-foreground"
           >
             <Trash2 className="h-4 w-4 flex-shrink-0" />
             <span className="font-medium">Eliminar</span>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useDarkMode } from "@/context/DarkModeContext";
 import React from "react";
 
 interface InfoItem {
@@ -16,39 +15,33 @@ const InfoRow: React.FC<{ label: string; value: string | number; }> = ({
   label,
   value,
 }) => {
-  const { isDarkMode } = useDarkMode();
-  return (<div className="flex justify-between items-center">
-    <span className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>{label}</span>
-    <span className={`font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>{value}</span>
-  </div>);
-}
+  return (
+    <div className="flex justify-between items-center">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium text-foreground">{value}</span>
+    </div>
+  );
+};
 
 const VehicleAdditionalInfoComponent: React.FC<VehicleAdditionalInfoProps> = ({
   items,
 }) => {
-  const { isDarkMode } = useDarkMode();
   return (
-    <div
-      className={`p-6 rounded-xl border ${
-        isDarkMode
-          ? "bg-gray-800/50 border-gray-700"
-          : "bg-white/50 border-gray-200"
-      } backdrop-blur-sm`}
-    >
-      <h3
-        className={`text-xl font-bold mb-4 ${
-          isDarkMode ? "text-white" : "text-gray-900"
-        }`}
-      >
+    <div className="p-6 rounded-xl border bg-card/50 border-border backdrop-blur-sm">
+      <h3 className="text-xl font-bold mb-4 text-foreground">
         Información Adicional
       </h3>
       <div className="space-y-3">
         {items.map((item) =>
-          item.value ? <InfoRow key={item.label} label={item.label} value={item.value} /> : null
+          item.value ? (
+            <InfoRow key={item.label} label={item.label} value={item.value} />
+          ) : null
         )}
       </div>
     </div>
   );
 };
 
-export const VehicleAdditionalInfo = React.memo(VehicleAdditionalInfoComponent);
+export const VehicleAdditionalInfo = React.memo(
+  VehicleAdditionalInfoComponent
+);

@@ -14,7 +14,6 @@ interface VehicleGridViewProps {
   vehicles: VehicleDataFrontend[];
   onStatusChange: (vehicleId: string, status: ApprovalStatus) => void;
   onVehicleSelect: (vehicle: VehicleDataFrontend) => void;
-  isDarkMode: boolean;
   selectedVehicles: Set<string>;
   onToggleSelection: (id: string) => void;
   onShowRejectDialog: (vehicle: VehicleDataFrontend) => void;
@@ -27,7 +26,6 @@ export const VehicleGridView = ({
   vehicles,
   onStatusChange,
   onVehicleSelect,
-  isDarkMode,
   selectedVehicles,
   onToggleSelection,
   onShowRejectDialog,
@@ -38,11 +36,13 @@ export const VehicleGridView = ({
   if (vehicles.length === 0) {
     return (
       <div className="text-center py-12">
-        <Car className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <Car className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
         <h3 className="text-lg font-semibold mb-2">No hay vehículos</h3>
-        <p className="text-gray-600 dark:text-gray-400">No se encontraron vehículos con los filtros seleccionados.</p>
+        <p className="text-muted-foreground">
+          No se encontraron vehículos con los filtros seleccionados.
+        </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -51,25 +51,26 @@ export const VehicleGridView = ({
         <Card
           key={vehicle._id}
           className={`
-            ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"}
+            bg-card border
             hover:shadow-lg transition-all duration-200 hover:scale-105
-            ${selectedVehicles.has(vehicle._id!) ? "ring-2 ring-blue-500" : ""}
+            ${selectedVehicles.has(vehicle._id!) ? "ring-2 ring-primary" : ""}
           `}
         >
           <CardContent className="p-4">
             {/* Imagen */}
-            <div className="relative w-full h-48 mb-4 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+            <div className="relative w-full h-48 mb-4 overflow-hidden rounded-lg bg-muted">
               <Image
-                src={vehicle.images[0] || "/placeholder.svg?height=200&width=300"}
+                src={
+                  vehicle.images[0] || "/placeholder.svg?height=200&width=300"
+                }
                 alt={`${vehicle.brand} ${vehicle.model}`}
                 fill
                 className="object-cover"
               />
-               <div className="absolute top-2 left-2 z-10">
+              <div className="absolute top-2 left-2 z-10">
                 <Checkbox
                   checked={selectedVehicles.has(vehicle._id!)}
                   onCheckedChange={() => onToggleSelection(vehicle._id!)}
-                  className="bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-500"
                   aria-label="Seleccionar vehículo"
                 />
               </div>
@@ -78,21 +79,24 @@ export const VehicleGridView = ({
                   +{vehicle.images.length - 1}
                 </div>
               )}
-              <div className="absolute bottom-2 left-2"><StatusBadge status={vehicle.status} /></div>
+              <div className="absolute bottom-2 left-2">
+                <StatusBadge status={vehicle.status} />
+              </div>
             </div>
 
             {/* Información básica */}
             <div className="space-y-3">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-bold text-lg line-clamp-1">
+                  <h3 className="font-bold text-lg line-clamp-1 text-foreground">
                     {vehicle.brand} {vehicle.model}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{vehicle.year}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {vehicle.year}
+                  </p>
                 </div>
                 <VehicleActions
                   vehicle={vehicle}
-                  isDarkMode={isDarkMode}
                   onVehicleSelect={onVehicleSelect}
                   onStatusChange={onStatusChange}
                   onShowRejectDialog={onShowRejectDialog}
@@ -105,16 +109,18 @@ export const VehicleGridView = ({
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-green-600" />
-                  <span className="font-semibold text-green-600">${vehicle.price.toLocaleString()}</span>
+                  <span className="font-semibold text-green-600">
+                    ${vehicle.price.toLocaleString()}
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm">
-                  <Gauge className="w-4 h-4 text-blue-600" />
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Gauge className="w-4 h-4 text-primary" />
                   <span>{vehicle.mileage.toLocaleString()} km</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="w-4 h-4 text-red-600" />
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="w-4 h-4 text-destructive" />
                   <span className="line-clamp-1">{vehicle.location}</span>
                 </div>
               </div>

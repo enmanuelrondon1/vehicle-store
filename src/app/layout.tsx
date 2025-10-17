@@ -1,9 +1,10 @@
+//src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
-import { DarkModeProvider } from "@/context/DarkModeContext";
 import ClientLayout from "@/components/shared/layout/ClientLayout";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/ui/theme-provider"; // Importa el nuevo provider
 
 export const metadata: Metadata = {
   title: "VehicleStore",
@@ -47,9 +48,14 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} antialiased min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 pt-16`}
+        className={`${GeistSans.variable} ${GeistMono.variable} antialiased flex flex-col items-center min-h-screen pt-24`}
       >
-        <DarkModeProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <ClientLayout>
             {children}
             <Toaster
@@ -73,7 +79,7 @@ export default function RootLayout({
             />
             <Toaster richColors theme="system" />
           </ClientLayout>
-        </DarkModeProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

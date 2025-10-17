@@ -1,4 +1,4 @@
-// src/components/features/admin/dialogs/VehicleDetailsDialog.tsx
+// src/components/features/admin/VehicleDetailsDialog.tsx
 "use client";
 
 import Image from "next/image";
@@ -8,23 +8,21 @@ import { Badge } from "@/components/ui/badge";
 import { FileText } from "lucide-react";
 import type { VehicleDataFrontend } from "@/types/types";
 import { PdfViewer } from "../payment/pdf-viewer";
-// import { PdfViewer } from "../../payment/pdf-viewer";
 
 interface VehicleDetailsDialogProps {
   vehicle: VehicleDataFrontend | null;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  isDarkMode: boolean;
 }
 
-export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange, isDarkMode }: VehicleDetailsDialogProps) => {
+export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange }: VehicleDetailsDialogProps) => {
   if (!vehicle) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={`max-w-4xl max-h-[90vh] ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white"}`}>
+      <DialogContent className="max-w-4xl max-h-[90vh] bg-card border">
         <DialogHeader>
-          <DialogTitle className={isDarkMode ? "text-slate-100" : "text-slate-900"}>
+          <DialogTitle className="text-card-foreground">
             {vehicle.brand} {vehicle.model} ({vehicle.year})
           </DialogTitle>
         </DialogHeader>
@@ -44,10 +42,10 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange, isDarkMode
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className={`font-semibold mb-2 border-b pb-2 ${isDarkMode ? "text-slate-200 border-slate-600" : "text-slate-900 border-slate-200"}`}>
+                <h4 className="font-semibold mb-2 border-b pb-2 text-card-foreground border-border">
                   Especificaciones
                 </h4>
-                <ul className={`space-y-1 text-sm ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>
+                <ul className="space-y-1 text-sm text-muted-foreground">
                   <li><strong>Categoría:</strong> {vehicle.category}</li>
                   <li><strong>Subcategoría:</strong> {vehicle.subcategory}</li>
                   <li><strong>Motor:</strong> {vehicle.engine}</li>
@@ -63,7 +61,7 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange, isDarkMode
                 </ul>
               </div>
               <div>
-                <h4 className={`font-semibold mb-2 border-b pb-2 ${isDarkMode ? "text-slate-200 border-slate-600" : "text-slate-900 border-slate-200"}`}>
+                <h4 className="font-semibold mb-2 border-b pb-2 text-card-foreground border-border">
                   Características
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -73,42 +71,42 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange, isDarkMode
                     </Badge>
                   ))}
                 </div>
-                <h4 className={`font-semibold mt-4 mb-2 border-b pb-2 ${isDarkMode ? "text-slate-200 border-slate-600" : "text-slate-900 border-slate-200"}`}>
+                <h4 className="font-semibold mt-4 mb-2 border-b pb-2 text-card-foreground border-border">
                   Documentación
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {vehicle.documentation && vehicle.documentation.length > 0 ? (
                     vehicle.documentation.map((doc, index) => (
-                      <Badge key={index} variant="outline" className="border-green-500 text-green-700 dark:text-green-400">
+                      <Badge key={index} variant="outline" className="border-green-500 text-green-600">
                         {doc}
                       </Badge>
                     ))
                   ) : (
-                    <p className="text-sm text-gray-500">No se especificó documentación.</p>
+                    <p className="text-sm text-muted-foreground">No se especificó documentación.</p>
                   )}
                 </div>
               </div>
             </div>
             <div>
-              <h4 className={`font-semibold mb-2 border-b pb-2 ${isDarkMode ? "text-slate-200 border-slate-600" : "text-slate-900 border-slate-200"}`}>
+              <h4 className="font-semibold mb-2 border-b pb-2 text-card-foreground border-border">
                 Descripción
               </h4>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-muted-foreground">
                 {vehicle.description}
               </p>
             </div>
 
             {(vehicle.paymentProof || vehicle.referenceNumber) && (
               <div>
-                <h4 className={`font-semibold mb-2 border-b pb-2 ${isDarkMode ? "text-slate-200 border-slate-600" : "text-slate-900 border-slate-200"}`}>
+                <h4 className="font-semibold mb-2 border-b pb-2 text-card-foreground border-border">
                   Información de Pago
                 </h4>
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg space-y-4">
+                <div className="bg-primary/10 p-4 rounded-lg space-y-4">
                   {vehicle.referenceNumber && (
-                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <FileText className="w-4 h-4" />
                       <span className="text-sm font-medium">Número de Referencia:</span>
-                      <span className="text-sm font-mono bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
+                      <span className="text-sm font-mono bg-muted px-2 py-1 rounded">
                         {vehicle.referenceNumber}
                       </span>
                     </div>
@@ -117,7 +115,6 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange, isDarkMode
                     <PdfViewer
                       url={vehicle.paymentProof}
                       vehicleId={vehicle._id!}
-                      isDarkMode={isDarkMode}
                     />
                   )}
                 </div>
@@ -129,4 +126,3 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange, isDarkMode
     </Dialog>
   );
 };
-

@@ -1,6 +1,5 @@
 "use client";
 
-import { useDarkMode } from "@/context/DarkModeContext";
 import type React from "react";
 import { useState } from "react";
 import Image from "next/image";
@@ -21,7 +20,6 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   images,
   vehicleName,
 }) => {
-  const { isDarkMode } = useDarkMode();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [imageErrors, setImageErrors] = useState<boolean[]>(
@@ -48,18 +46,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
   if (validImages.length === 0) {
     return (
-      <div
-        className={`aspect-video rounded-xl ${
-          isDarkMode ? "bg-gray-800" : "bg-gray-200"
-        } flex items-center justify-center`}
-      >
+      <div className="aspect-video rounded-xl bg-muted flex items-center justify-center">
         <div className="text-center">
-          <Car
-            className={`w-16 h-16 mx-auto mb-4 ${
-              isDarkMode ? "text-gray-600" : "text-gray-400"
-            }`}
-          />
-          <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+          <Car className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">
             No hay imágenes disponibles
           </p>
         </div>

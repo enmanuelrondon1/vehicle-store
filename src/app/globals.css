@@ -1,9 +1,4 @@
-/* globals.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Monsieur+La+Doulaise&family=Playwrite+ID+Guides&display=swap');
-
+/* src/app/globals.css  */
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -12,8 +7,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Inter", sans-serif;
-  --font-heading: "Montserrat", sans-serif;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -50,353 +45,94 @@
   --animate-marquee: marquee var(--duration) infinite linear;
   --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
   @keyframes marquee {
-    from {
-      transform: translateX(0);
+  from {
+    transform: translateX(0);
     }
-    to {
-      transform: translateX(calc(-100% - var(--gap)));
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
     }
   }
   @keyframes marquee-vertical {
-    from {
-      transform: translateY(0);
+  from {
+    transform: translateY(0);
     }
-    to {
-      transform: translateY(calc(-100% - var(--gap)));
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
     }
   }
 }
 
 :root {
-  --radius: 0.5rem; /* Bordes un poco más nítidos */
-  --background: 0 0% 100%; /* Blanco puro */
-  --foreground: 222.2 84% 4.9%; /* Negro azulado */
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 210 40% 25%; /* Azul oscuro profesional */
-  --primary-foreground: 210 40% 98%; /* Blanco para texto sobre azul */
-  --secondary: 210 40% 96.1%; /* Gris azulado muy claro */
-  --secondary-foreground: 210 40% 25%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 175 100% 34%; /* Verde azulado (Teal) vibrante */
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 84.2% 60.2%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 175 100% 34%; /* El anillo de foco usará el color de acento */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.5rem; /* Un radio ligeramente más estándar */
+  --background: oklch(0.99 0.005 240); /* Blanco ligeramente azulado */
+  --foreground: oklch(0.15 0.01 240); /* Negro azulado oscuro para texto */
+  --card: oklch(1 0 0); /* Blanco puro para tarjetas */
+  --card-foreground: oklch(0.15 0.01 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.01 240);
+  --primary: oklch(0.55 0.15 250); /* Azul primario corporativo */
+  --primary-foreground: oklch(0.99 0.005 240); /* Texto claro sobre el azul */
+  --secondary: oklch(0.94 0.01 240); /* Gris claro para elementos secundarios */
+  --secondary-foreground: oklch(0.25 0.01 240); /* Texto oscuro sobre el gris */
+  --muted: oklch(0.94 0.01 240);
+  --muted-foreground: oklch(0.45 0.01 240); /* Texto más apagado */
+  --accent: oklch(0.97 0.01 240);
+  --accent-foreground: oklch(0.25 0.01 240);
+  --destructive: oklch(0.65 0.22 25); /* Rojo para acciones destructivas */
+  --border: oklch(0.88 0.01 240); /* Borde gris claro */
+  --input: oklch(0.88 0.01 240);
+  --ring: oklch(0.55 0.15 250); /* Anillo de foco azul */
+  --chart-1: oklch(0.55 0.15 250); /* Azul */
+  --chart-2: oklch(0.6 0.118 184.704); /* Cian */
+  --chart-3: oklch(0.769 0.188 70.08); /* Verde */
+  --chart-4: oklch(0.828 0.189 84.429); /* Amarillo */
+  --chart-5: oklch(0.645 0.246 16.439); /* Naranja */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
-  --background: 222.2 84% 4.9%; /* Negro azulado */
-  --foreground: 210 40% 98%; /* Blanco casi puro */
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 210 40% 98%; /* El primario oscuro es blanco */
-  --primary-foreground: 210 40% 25%; /* Texto azul oscuro sobre blanco */
-  --secondary: 217.2 32.6% 17.5%; /* Gris oscuro azulado */
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 175 100% 40%; /* Teal un poco más brillante para modo oscuro */
-  --accent-foreground: 222.2 84% 4.9%;
-  --destructive: 0 62.8% 30.6%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 175 100% 40%;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
+  --radius: 0.5rem;
+  --background: oklch(0.1 0.02 240); /* Azul muy oscuro de fondo */
+  --foreground: oklch(0.95 0.01 240); /* Texto casi blanco */
+  --card: oklch(0.15 0.02 240); /* Tarjetas de azul oscuro */
+  --card-foreground: oklch(0.95 0.01 240);
+  --popover: oklch(0.15 0.02 240);
+  --popover-foreground: oklch(0.95 0.01 240);
+  --primary: oklch(0.6 0.18 250); /* Azul primario más brillante */
+  --primary-foreground: oklch(0.1 0.02 240); /* Texto oscuro sobre azul */
+  --secondary: oklch(0.25 0.02 240); /* Gris oscuro para elementos secundarios */
+  --secondary-foreground: oklch(0.95 0.01 240);
+  --muted: oklch(0.25 0.02 240);
+  --muted-foreground: oklch(0.6 0.01 240); /* Texto apagado */
+  --accent: oklch(0.25 0.02 240);
+  --accent-foreground: oklch(0.95 0.01 240);
+  --destructive: oklch(0.7 0.25 25); /* Rojo más brillante */
+  --border: oklch(0.3 0.02 240); /* Borde gris claro */
+  --input: oklch(0.3 0.02 240);
+  --ring: oklch(0.6 0.18 250); /* Anillo de foco azul */
+  --chart-1: oklch(0.6 0.18 250); /* Azul */
+  --chart-2: oklch(0.696 0.17 162.48); /* Cian */
+  --chart-3: oklch(0.769 0.188 70.08); /* Verde */
+  --chart-4: oklch(0.627 0.265 303.9); /* Magenta */
+  --chart-5: oklch(0.645 0.246 16.439); /* Naranja */
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-html {
-  overflow-y: scroll;
-}
-
-/* 
-  Solución para el "salto/zoom" de ShadCN/Radix.
-  Cuando un diálogo o menú se abre, la librería añade `padding-right` al body
-  para compensar la desaparición de la barra de scroll. Forzamos a que ese padding sea siempre 0.
-*/
-body[data-scroll-locked="true"] {
-  padding-right: 0 !important;
-}
-
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-  }
-  button, input, select, textarea {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground font-sans;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading;
-  }
-}
-
-.company-name {
-  font-family: 'Dancing Script', cursive;
-  font-size: 2.8rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  background: linear-gradient(90deg, #1a1a1a, #003087);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-  transition: text-shadow 0.3s ease;
-  display: inline-block;
-}
-
-.dark .company-name {
-  background: linear-gradient(90deg, #ffffff, #66b0ff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.2);
-}
-
-.globe-container canvas {
-  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.3));
-}
-
-.dark .globe-container canvas {
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-}
-
-.globe-canvas {
-  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.2));
-}
-
-.dark .globe-canvas {
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
-}
-
- .max-padd-container {
-    @apply mx-auto max-w-[1440px] px-6 lg:px-12;
-  }
-
-/* Mantener el layout estable cuando un Select está abierto */
-body.select-open {
-  padding-right: 0 !important; /* El padding-right se establece dinámicamente en el useEffect */
-  overflow: hidden; /* Esto es añadido por Radix, pero lo mantenemos para evitar conflictos */
-}
-
-/* Asegurar que el contenedor principal no se vea afectado */
-.container {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Estilos previos que ya tenías */
-.no-scroll-on-open {
-  overflow: visible !important;
-}
-
-.filters-panel {
-  overflow: visible !important;
-}
-
-/* 🔧 SOLUCIÓN PARA EL PROBLEMA DE ZOOM EN COMPONENTES SHADCN */
-@layer base {
-  /* Prevenir zoom automático en inputs en dispositivos móviles */
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="search"],
-  input[type="tel"],
-  input[type="url"],
-  select,
-  textarea {
-    font-size: 16px !important;
-  }
-
-  /* Controlar animaciones problemáticas en dropdowns */
-  [data-radix-select-content],
-  [data-radix-dropdown-menu-content] {
-    transform-origin: var(--radix-dropdown-menu-content-transform-origin);
-    animation-duration: 150ms !important;
-    animation-timing-function: ease-out !important;
-  }
-
-  /* Prevenir transformaciones que causan el efecto de zoom */
-  [data-radix-select-content] {
-    will-change: auto !important;
-    transform: none !important;
-  }
-
-  /* Asegurar que los portals se rendericen correctamente */
-  [data-radix-portal] {
-    z-index: 9999 !important;
-  }
-}
-
-/* Estilos específicos para mejorar la experiencia de los dropdowns */
-@layer components {
-  .dropdown-content-fix {
-    @apply z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md;
-    animation-duration: 150ms !important;
-    transform: none !important;
-  }
-}
-
-/* Mejoras adicionales para móviles */
-@media (max-width: 768px) {
-  [data-radix-select-content],
-  [data-radix-dropdown-menu-content] {
-    max-height: 60vh !important;
-    overflow-y: auto !important;
-  }
-}
-
-/* 🔧 SOLUCIÓN PARA EL PROBLEMA DE ZOOM EN COMPONENTES SHADCN */
-@layer base {
-  /* Prevenir zoom automático en inputs en dispositivos móviles */
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="search"],
-  input[type="tel"],
-  input[type="url"],
-  input[type="number"],
-  select,
-  textarea {
-    font-size: 16px !important;
-    transform: translateZ(0);
-    -webkit-appearance: none;
-  }
-
-  /* Controlar animaciones problemáticas en dropdowns */
-  [data-radix-select-content],
-  [data-radix-dropdown-menu-content] {
-    transform-origin: var(--radix-dropdown-menu-content-transform-origin);
-    animation-duration: 150ms !important;
-    animation-timing-function: ease-out !important;
-    will-change: auto !important;
-  }
-
-  /* Prevenir transformaciones que causan el efecto de zoom */
-  [data-radix-select-content] {
-    will-change: auto !important;
-    transform: none !important;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  [data-radix-dropdown-menu-content] {
-    will-change: auto !important;
-    transform: none !important;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  /* Asegurar que los portals se rendericen correctamente */
-  [data-radix-portal] {
-    z-index: 9999 !important;
-  }
-
-  /* Prevenir el zoom en Safari iOS */
-  @supports (-webkit-touch-callout: none) {
-    input,
-    select,
-    textarea {
-      font-size: 16px !important;
-    }
-  }
-}
-
-/* Estilos específicos para mejorar la experiencia de los dropdowns */
-@layer components {
-  /* Clase para aplicar a dropdowns problemáticos */
-  .dropdown-no-zoom {
-    animation-duration: 150ms !important;
-    transform: none !important;
-    will-change: auto !important;
-  }
-
-  /* Prevenir scroll del body cuando los dropdowns están abiertos */
-  .dropdown-open {
-    overflow: hidden;
-  }
-}
-
-/* Mejoras adicionales para móviles */
-@media (max-width: 768px) {
-  [data-radix-select-content],
-  [data-radix-dropdown-menu-content] {
-    max-height: 60vh !important;
-    overflow-y: auto !important;
-    transform: none !important;
-    animation: none !important;
-  }
-
-  /* Forzar font-size en móviles para prevenir zoom */
-  input,
-  select,
-  textarea {
-    font-size: 16px !important;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
-}
-
-/* Específico para Webkit (Safari/Chrome en iOS) */
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="search"],
-  select,
-  textarea {
-    font-size: 16px !important;
-  }
-}
-
-.example-class {
-  will-change: transform;
-}
-
-/* Prevenir zoom en focus para iOS */
-@media screen and (max-width: 767px) {
-  input:focus,
-  select:focus,
-  textarea:focus {
-    font-size: 16px !important;
-    transform: translateZ(0);
-    -webkit-user-select: text;
-  }
-}
-
-@layer base {
+@layer base  {
   * {
     @apply border-border outline-ring/50;
   }

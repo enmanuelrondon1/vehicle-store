@@ -18,6 +18,7 @@ const initialFormData: Partial<VehicleDataBackend> = {
   year: new Date().getFullYear(),
   documentation: [], // Array de strings, no de enums
   offersFinancing: false,
+  isFeatured: false, // ✅ Añadido: Campo para vehículo destacado
   financingDetails: {
     interestRate: 18, // Un valor inicial razonable
     loanTerm: 36, // Un plazo común en meses
@@ -87,6 +88,14 @@ export const useVehicleForm = () => {
     const validation = validateStep(currentStep, formData, selectedBank, paymentProof, referenceNumber);
     setIsCurrentStepValid(validation.isValid);
   }, [formData, currentStep, selectedBank, paymentProof, referenceNumber, validateStep]);
+
+
+  const handleSwitchChange = useCallback((field: keyof VehicleDataBackend, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: checked,
+    }));
+  }, []);
 
 
   const handleInputChange = useCallback(
@@ -329,6 +338,7 @@ export const useVehicleForm = () => {
     handleDocumentationToggle,
     isDocumentationSelected,
     handleImagesChange,
+    handleSwitchChange,
     nextStep,
     prevStep,
     manualSave,

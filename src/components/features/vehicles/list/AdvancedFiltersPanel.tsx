@@ -16,7 +16,7 @@ interface AdvancedFiltersPanelProps {
   onClearFilters: () => void;
   isOpen: boolean;
   onToggle: () => void;
-  isDarkMode: boolean;
+  // isDarkMode: boolean; // ❌ REMOVED
   showOnlyPublishedBrands: boolean;
   setShowOnlyPublishedBrands: (value: boolean) => void;
   showOnlyPublishedColors: boolean;
@@ -33,7 +33,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
   onClearFilters,
   isOpen,
   onToggle,
-  isDarkMode,
+  // isDarkMode, // ❌ REMOVED
   showOnlyPublishedBrands,
   setShowOnlyPublishedBrands,
   showOnlyPublishedColors,
@@ -93,17 +93,11 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
 
   return (
     <div
-      className={`p-6 rounded-xl border shadow-2xl ${
-        isDarkMode
-          ? "bg-gray-800/90 border-gray-700"
-          : "bg-white/80 border-gray-200"
-      } backdrop-blur-lg`}
+      className="p-6 rounded-xl border shadow-2xl bg-card/90 border-border backdrop-blur-lg"
     >
       <div className="flex items-center justify-between mb-6">
         <h3
-          className={`text-lg font-semibold ${
-            isDarkMode ? "text-white" : "text-gray-900"
-          }`}
+          className="text-lg font-semibold text-foreground"
         >
           Filtros Avanzados{" "}
           {activeFiltersCount > 0 && `(${activeFiltersCount} activos)`}
@@ -112,16 +106,14 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
           {activeFiltersCount > 0 && (
             <button
               onClick={onClearFilters}
-              className="text-sm text-red-600 hover:text-red-700 transition-colors px-3 py-1 rounded border border-red-200 hover:bg-red-50"
+              className="text-sm text-destructive hover:text-destructive/80 transition-colors px-3 py-1 rounded border border-destructive/20 hover:bg-destructive/10"
             >
               Limpiar Todo
             </button>
           )}
           <button
             onClick={onToggle}
-            className={`p-1 rounded ${
-              isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
-            }`}
+            className="p-1 rounded hover:bg-muted"
           >
             <X className="w-4 h-4" />
           </button>
@@ -133,7 +125,6 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
           label={`Categoría (${
             filters.category !== "all" ? "1 seleccionada" : "ninguna"
           })`}
-          isDarkMode={isDarkMode}
         >
           <MultiSelectFilter
             options={[{ value: "all", label: "Todas las categorías", count: totalVehicles }, ...filterOptions.categories]}
@@ -148,7 +139,6 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
                 updateFilter("category", singleSelection);
               }
             }}
-            isDarkMode={isDarkMode}
             placeholder="Seleccionar categoría..."
             singleSelect={true} // Prop para modo de selección única
           />
@@ -156,7 +146,6 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
 
         <FilterGroup
           label={`Precio: $${filters.priceRange[0].toLocaleString()} - $${filters.priceRange[1].toLocaleString()}`}
-          isDarkMode={isDarkMode}
         >
           <RangeSliderFilter
             min={0}
@@ -166,13 +155,11 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
             onChange={(value) =>
               updateFilter("priceRange", value as [number, number])
             }
-            isDarkMode={isDarkMode}
           />
         </FilterGroup>
 
         <FilterGroup
           label={`Año: ${filters.yearRange[0]} - ${filters.yearRange[1]}`}
-          isDarkMode={isDarkMode}
         >
           <RangeSliderFilter
             min={2000}
@@ -182,13 +169,11 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
             onChange={(value) =>
               updateFilter("yearRange", value as [number, number])
             }
-            isDarkMode={isDarkMode}
           />
         </FilterGroup>
 
         <FilterGroup
           label={`Kilometraje: ${filters.mileageRange[0].toLocaleString()} - ${filters.mileageRange[1].toLocaleString()} km`}
-          isDarkMode={isDarkMode}
         >
           <RangeSliderFilter
             min={0}
@@ -198,19 +183,16 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
             onChange={(value) =>
               updateFilter("mileageRange", value as [number, number])
             }
-            isDarkMode={isDarkMode}
           />
         </FilterGroup>
 
         <FilterGroup
           label={`Marcas (${filters.brands.length} seleccionadas)`}
-          isDarkMode={isDarkMode}
         >
           <MultiSelectFilter
             options={filterOptions.brands}
             selected={filters.brands}
             onChange={(newSelection) => updateFilter("brands", newSelection)}
-            isDarkMode={isDarkMode}
             placeholder="Seleccionar marcas..."
             showPublishedToggle={true}
             isPublishedOnly={showOnlyPublishedBrands}
@@ -221,13 +203,11 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
 
         <FilterGroup
           label={`Color (${filters.colors.length} seleccionados)`}
-          isDarkMode={isDarkMode}
         >
           <MultiSelectFilter
             options={filterOptions.colors}
             selected={filters.colors}
             onChange={(newSelection) => updateFilter("colors", newSelection)}
-            isDarkMode={isDarkMode}
             placeholder="Seleccionar colores..."
             showPublishedToggle={true}
             isPublishedOnly={showOnlyPublishedColors}
@@ -238,7 +218,6 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
 
         <FilterGroup
           label={`Condición (${filters.condition.length} seleccionadas)`}
-          isDarkMode={isDarkMode}
         >
           <CheckboxFilter
             options={filterOptions.conditions}
@@ -246,14 +225,12 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
             onChange={(condition) =>
               toggleArrayFilter("condition", condition, filters.condition)
             }
-            isDarkMode={isDarkMode}
             maxHeight="max-h-full"
           />
         </FilterGroup>
 
         <FilterGroup
           label={`Combustible (${filters.fuelType.length} seleccionadas)`}
-          isDarkMode={isDarkMode}
         >
           <CheckboxFilter
             options={filterOptions.fuelTypes}
@@ -261,14 +238,12 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
             onChange={(fuel) =>
               toggleArrayFilter("fuelType", fuel, filters.fuelType)
             }
-            isDarkMode={isDarkMode}
             maxHeight="max-h-full"
           />
         </FilterGroup>
 
         <FilterGroup
           label={`Transmisión (${filters.transmission.length} seleccionadas)`}
-          isDarkMode={isDarkMode}
         >
           <CheckboxFilter
             options={filterOptions.transmissions}
@@ -280,20 +255,17 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
                 filters.transmission
               )
             }
-            isDarkMode={isDarkMode}
             maxHeight="max-h-full"
           />
         </FilterGroup>
 
         <FilterGroup
           label={`Ubicación (${filters.location.length} seleccionadas)`}
-          isDarkMode={isDarkMode}
         >
           <MultiSelectFilter
             options={filterOptions.locations}
             selected={filters.location}
             onChange={(newSelection) => updateFilter("location", newSelection)}
-            isDarkMode={isDarkMode}
             placeholder="Seleccionar ubicaciones..."
             showPublishedToggle={true}
             isPublishedOnly={showOnlyPublishedLocations}
@@ -301,14 +273,13 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
             publishedOnlyLabel="Mostrar solo ubicaciones con vehículos publicados"
           />
         </FilterGroup>
-        <FilterGroup label="Tipo de Tracción" isDarkMode={isDarkMode}>
+        <FilterGroup label="Tipo de Tracción">
           <CheckboxFilter
             options={filterOptions.driveTypes}
             selected={filters.driveType}
             onChange={(driveType) =>
               toggleArrayFilter("driveType", driveType, filters.driveType)
             }
-            isDarkMode={isDarkMode}
             maxHeight="max-h-full"
           />
         </FilterGroup>

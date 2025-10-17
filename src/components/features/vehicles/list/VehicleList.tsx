@@ -1,7 +1,7 @@
 // src/components/features/vehicles/list/VehicleList.tsx
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react"; // ✅ CAMBIO: Añadimos useEffect
+import { useState, useCallback, useEffect } from "react"; // ✅ CAMBIO: Añadimos useEffect
 import VehicleListHeader from "./VehicleListHeader";
 import VehicleStats from "../common/VehicleStats";
 import SearchBar from "./SearchBar";
@@ -14,7 +14,6 @@ import CompareBar from "../common/CompareBar";
 import AdvancedFiltersPanel from "./AdvancedFiltersPanel";
 import ActiveFiltersDisplay from "./ActiveFiltersDisplay";
 import type { Vehicle } from "@/types/types";
-import { useDarkMode } from "@/context/DarkModeContext";
 import VehicleGrid from "../common/VehicleGrid"; // ✅ CORRECCIÓN: La ruta del hook ahora es global
 import { useVehicleFiltering } from "@/hooks/useVehicleFiltering";
 import { useDebounce } from "@/hooks/useDebounce"; // ✅ MEJORA: Importar hook para debouncing
@@ -22,7 +21,7 @@ import { useDebounce } from "@/hooks/useDebounce"; // ✅ MEJORA: Importar hook 
 const VehicleList: React.FC<{
   initialVehicles: Vehicle[];
 }> = ({ initialVehicles }) => {
-  const { isDarkMode } = useDarkMode();
+  // const { isDarkMode } = useDarkMode(); // ❌ REMOVED
   const [vehicles] = useState<Vehicle[]>(initialVehicles);
   const [isLoading] = useState(false);
   const [error] = useState<string | null>(null);
@@ -87,40 +86,32 @@ const VehicleList: React.FC<{
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const backgroundStyle = useMemo(
-    () => ({
-      background: isDarkMode
-        ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)"
-        : "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)",
-    }),
-    [isDarkMode]
-  );
+  // ❌ REMOVED: backgroundStyle useMemo is no longer needed.
+  // We will use semantic Tailwind classes for a consistent look.
 
   if (isLoading) {
-    return <LoadingSkeleton isDarkMode={isDarkMode} />;
+    return <LoadingSkeleton />; // ❌ REMOVED: isDarkMode prop
   }
 
   if (error) {
-    // ✅ CAMBIO: Simplificamos el manejo de errores, ya que el error crítico se maneja en la página del servidor.
-    // Esto podría ser para errores de filtrado o acciones futuras.
     return (
       <ErrorMessage
         error={error}
         handleRetry={handleRetry}
         isLoading={isLoading}
-        retryCount={0} // Ya no tenemos reintentos, pasamos 0
-        isDarkMode={isDarkMode}
+        retryCount={0}
+        // ❌ REMOVED: isDarkMode prop
       />
     );
   }
 
   return (
-    <div className="min-h-screen py-8 px-4" style={backgroundStyle}>
+    <div className="bg-background text-foreground min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <VehicleListHeader isDarkMode={isDarkMode} />
+        <VehicleListHeader /> {/* ❌ REMOVED: isDarkMode prop */}
         <VehicleStats
           filteredVehicles={filteredVehicles}
-          isDarkMode={isDarkMode}
+          // ❌ REMOVED: isDarkMode prop
         />
         <SearchBar
           onSearch={(term) => setFilters((prev) => ({ ...prev, search: term }))}
@@ -129,13 +120,12 @@ const VehicleList: React.FC<{
           sortBy={sortBy}
           onSortChange={setSortBy}
         />
-        {/* ✅ AÑADIR: Renderizar los chips de filtros activos */}
         <ActiveFiltersDisplay
-          filterOptions={filterOptions} // ✅ AÑADIR: Pasar las opciones de filtro
+          filterOptions={filterOptions}
           filters={filters}
           onFiltersChange={setFilters}
           onClearFilters={clearAllFilters}
-          isDarkMode={isDarkMode}
+          // ❌ REMOVED: isDarkMode prop
         />
         <AdvancedFiltersPanel
           filters={filters}
@@ -144,7 +134,7 @@ const VehicleList: React.FC<{
           onClearFilters={clearAllFilters}
           isOpen={showAdvancedFilters}
           onToggle={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          isDarkMode={isDarkMode}
+          // ❌ REMOVED: isDarkMode prop
           showOnlyPublishedBrands={showOnlyPublishedBrands}
           setShowOnlyPublishedBrands={setShowOnlyPublishedBrands}
           showOnlyPublishedColors={showOnlyPublishedColors}
@@ -153,12 +143,11 @@ const VehicleList: React.FC<{
           setShowOnlyPublishedLocations={setShowOnlyPublishedLocations}
           totalVehicles={vehicles.length}
         />
-
         {compareList.length > 0 && (
           <CompareBar
             compareList={compareList}
             setCompareList={setCompareList}
-            isDarkMode={isDarkMode}
+            // ❌ REMOVED: isDarkMode prop
           />
         )}
         {filteredVehicles.length === 0 ? (
@@ -166,14 +155,14 @@ const VehicleList: React.FC<{
             vehicles={vehicles.length}
             clearAllFilters={clearAllFilters}
             handleRetry={handleRetry}
-            isDarkMode={isDarkMode}
+            // ❌ REMOVED: isDarkMode prop
           />
         ) : (
           <>
             <VehicleGrid
               vehicles={paginatedVehicles}
               viewMode={viewMode}
-              isDarkMode={isDarkMode}
+              // ❌ REMOVED: isDarkMode prop
               compareList={compareList}
               toggleCompare={toggleCompare}
             />
@@ -185,7 +174,7 @@ const VehicleList: React.FC<{
                 totalVehicles={filteredVehicles.length}
                 goToPage={goToPage}
                 setItemsPerPage={setItemsPerPage}
-                isDarkMode={isDarkMode}
+                // ❌ REMOVED: isDarkMode prop
               />
             )}
           </>

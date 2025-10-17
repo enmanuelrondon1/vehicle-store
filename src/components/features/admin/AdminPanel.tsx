@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useDarkMode } from "@/context/DarkModeContext";
 import { useAdminPanelEnhanced } from "@/hooks/use-admin-panel-enhanced";
 import type {
   VehicleDataFrontend,
@@ -51,7 +50,6 @@ interface DialogState {
 }
 
 export const AdminPanel = () => {
-  const { isDarkMode } = useDarkMode();
   const [activeTab, setActiveTab] = useState<AdminTab>("vehicles");
   const {
     // ✅ vehicles es la lista ya filtrada, ordenada y paginada.
@@ -226,7 +224,7 @@ if (status === "loading" || isLoading) {
     } catch (error) {
       console.error("Error al agregar comentario:", error);
       // Aquí también podrías mostrar una notificación de error.
-    } finally {
+} finally {
       setIsLoadingComments(false);
     }
   };
@@ -394,17 +392,10 @@ try {
   };
 
   return (
-    <div
-      className={`min-h-screen p-2 sm:p-4 lg:p-6 ${
-        isDarkMode
-          ? "bg-slate-900 text-slate-200"
-          : "bg-gradient-to-br from-gray-50 via-white to-gray-100"
-      }`}
-    >
+    <div className="bg-background text-foreground min-h-screen p-2 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Header mejorado */}
         <AdminPanelHeader
-          isDarkMode={isDarkMode}
           isLoading={isLoading}
           exportData={exportData}
           fetchVehicles={fetchVehicles}
@@ -412,22 +403,22 @@ try {
         />
 
         {/* Pestañas de navegación */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700">
+        <div className="flex border-b border-border">
           <button
-            className={`px-4 py-2 text-sm font-medium ${
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === "vehicles"
-                ? "border-b-2 border-blue-500 text-blue-600"
-                : "text-gray-500 hover:text-gray-700"
+                ? "border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:text-foreground"
             }`}
             onClick={() => setActiveTab("vehicles")}
           >
             Vehículos
           </button>
           <button
-            className={`px-4 py-2 text-sm font-medium ${
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === "users"
-                ? "border-b-2 border-blue-500 text-blue-600"
-                : "text-gray-500 hover:text-gray-700"
+                ? "border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:text-foreground"
             }`}
             onClick={() => setActiveTab("users")}
           >
@@ -443,9 +434,7 @@ try {
               onFiltersChange={updateFilters}
               viewMode={viewMode}
               onViewModeChange={setViewMode}
-              // ✅ CORREGIDO: Usar el total de la paginación, que refleja los items filtrados.
               totalResults={pagination.totalItems}
-              isDarkMode={isDarkMode}
               onSelectAll={selectAllVisible}
               onClearSelection={clearSelection}
               selectedCount={selectedVehicles.size}
@@ -454,11 +443,7 @@ try {
 
             {/* Acciones masivas */}
             {selectedVehicles.size > 0 && (
-              <Card
-                className={
-                  isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"
-                }
-              >
+              <Card>
                 <CardContent className="p-4 flex flex-wrap items-center gap-3">
                   <span className="text-sm font-semibold">
                     {selectedVehicles.size} vehículo(s) seleccionado(s)
@@ -481,8 +466,7 @@ try {
                   </Button>
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                    variant="destructive"
                     onClick={() => setShowMassDeleteDialog(true)}
                   >
                     Eliminar
@@ -492,18 +476,13 @@ try {
             )}
 
             {/* Contenido principal */}
-            <Card
-              className={
-                isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"
-              }
-            >
+            <Card>
               <CardContent className="p-3 md:p-6">
                 {viewMode === "grid" ? (
                   <VehicleGridView
                     vehicles={vehicles}
                     onStatusChange={handleStatusChange}
                     onVehicleSelect={setSelectedVehicle}
-                    isDarkMode={isDarkMode}
                     selectedVehicles={selectedVehicles}
                     onToggleSelection={toggleVehicleSelection}
                     onShowRejectDialog={handleShowRejectDialog}
@@ -515,7 +494,6 @@ try {
                   <VehicleListView
                     vehicles={vehicles}
                     selectedVehicles={selectedVehicles}
-                    isDarkMode={isDarkMode}
                     onToggleSelection={toggleVehicleSelection}
                     onClearSelection={clearSelection}
                     onStatusChange={handleStatusChange}
@@ -552,7 +530,6 @@ try {
         vehicle={selectedVehicle}
         isOpen={!!selectedVehicle}
         onOpenChange={(open) => !open && setSelectedVehicle(null)}
-        isDarkMode={isDarkMode}
       />
 
       {/* Dialog para rechazar con razón - MEJORADO */}
@@ -563,7 +540,6 @@ try {
           dialogState.vehicle &&
           handleRejectWithReason(dialogState.vehicle._id!, reason)
         }
-        isDarkMode={isDarkMode}
       />
 
       {/* Dialog para agregar comentarios - MEJORADO */}
@@ -577,7 +553,6 @@ try {
             handleAddComment(dialogState.vehicle._id!, comment);
           }
         }}
-        isDarkMode={isDarkMode}
       />
 
       {/* Dialog para ver historial - MEJORADO */}
@@ -586,7 +561,6 @@ try {
         onOpenChange={handleCloseDialog}
         history={vehicleHistory}
         isLoading={isLoadingHistory}
-        isDarkMode={isDarkMode}
       />
 
       {/* Dialog para confirmar eliminación - MEJORADO */}
@@ -596,7 +570,6 @@ try {
         onConfirm={() =>
           dialogState.vehicle && handleDeleteVehicle(dialogState.vehicle._id!)
         }
-        isDarkMode={isDarkMode}
       />
 
       {/* Diálogos de acciones masivas */}

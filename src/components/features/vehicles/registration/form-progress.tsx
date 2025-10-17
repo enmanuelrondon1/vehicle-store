@@ -2,6 +2,7 @@
 "use client";
 
 import React from 'react';
+import { Car, DollarSign, FileText, MapPin, Camera, CheckCircle } from "lucide-react";
 
 const formSteps = [
   { label: "Información Básica", description: "Marca, modelo y año", iconName: "Car" },
@@ -10,7 +11,6 @@ const formSteps = [
   { label: "Contacto", description: "Tus datos de vendedor", iconName: "MapPin" },
   { label: "Multimedia y Extras", description: "Fotos y características", iconName: "Camera" },
 ];
-import { Car, DollarSign, FileText, MapPin, Camera, CheckCircle } from "lucide-react";
 
 const iconMap = {
   Car,
@@ -24,18 +24,15 @@ const iconMap = {
 interface FormProgressProps {
   currentStep: number;
   highestCompletedStep: number;
-  isDarkMode: boolean;
   onStepClick: (step: number) => void;
 }
 
 export const FormProgress: React.FC<FormProgressProps> = ({
   currentStep,
   highestCompletedStep,
-  isDarkMode,
   onStepClick,
 }) => {
   const handleStepClick = (stepIndex: number) => {
-    // Permite navegar a cualquier paso ya completado o al actual.
     if (stepIndex + 1 <= highestCompletedStep) {
       onStepClick(stepIndex + 1);
     }
@@ -57,16 +54,10 @@ export const FormProgress: React.FC<FormProgressProps> = ({
             ${isReachable ? "cursor-pointer" : "cursor-not-allowed"} 
             ${
               isActive
-                ? isDarkMode
-                  ? "bg-blue-900/50 border-2 border-blue-600 shadow-lg"
-                  : "bg-blue-50 border-2 border-blue-500 shadow-lg"
+                ? "bg-blue-50 dark:bg-blue-900/50 border-2 border-blue-500 dark:border-blue-600 shadow-lg"
                 : isCompleted
-                  ? isDarkMode
-                    ? "bg-gray-700/50 hover:bg-gray-700/80"
-                    : "bg-gray-100 hover:bg-gray-200/80"
-                  : isDarkMode
-                  ? "bg-gray-800 opacity-50"
-                  : "bg-gray-50 opacity-50"
+                  ? "bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200/80 dark:hover:bg-gray-700/80"
+                  : "bg-gray-50 dark:bg-gray-800 opacity-50"
             }
           `;
 
@@ -74,16 +65,10 @@ export const FormProgress: React.FC<FormProgressProps> = ({
             w-10 h-10 p-2 rounded-full transition-all duration-300
             ${
               isActive
-                ? isDarkMode
-                  ? "bg-blue-600 text-white"
-                  : "bg-blue-500 text-white"
+                ? "bg-blue-500 dark:bg-blue-600 text-white"
                 : isCompleted
-                ? isDarkMode
-                  ? "bg-green-700 text-white"
-                  : "bg-green-500 text-white"
-                : isDarkMode
-                ? "bg-gray-700 text-gray-500"
-                : "bg-gray-200 text-gray-400"
+                ? "bg-green-500 dark:bg-green-700 text-white"
+                : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
             }
           `;
 
@@ -91,16 +76,10 @@ export const FormProgress: React.FC<FormProgressProps> = ({
             transition-colors duration-300
             ${
               isActive
-                ? isDarkMode
-                  ? "text-blue-300"
-                  : "text-blue-700"
+                ? "text-blue-700 dark:text-blue-300"
                 : isCompleted
-                ? isDarkMode
-                  ? "text-gray-200"
-                  : "text-gray-800"
-                : isDarkMode
-                ? "text-gray-500"
-                : "text-gray-400"
+                ? "text-gray-800 dark:text-gray-200"
+                : "text-gray-400 dark:text-gray-500"
             }
           `;
 

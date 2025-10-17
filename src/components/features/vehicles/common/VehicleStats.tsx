@@ -4,15 +4,13 @@
 import type React from "react";
 import { useMemo } from "react";
 import { Vehicle } from "@/types/types";
-import { BarChart } from "lucide-react"; // CORRECCIÓN: Se eliminó el texto extra que causaba el error de sintaxis.
+import { BarChart } from "lucide-react";
 
 const VehicleStats = ({
   filteredVehicles,
-  isDarkMode,
 }: {
   filteredVehicles: Vehicle[];
-  isDarkMode: boolean;
-}) => {
+}) => { // ❌ REMOVED: isDarkMode prop
   const averagePrice = useMemo(() => {
     if (filteredVehicles.length === 0) return 0;
     const total = filteredVehicles.reduce((sum, v) => sum + v.price, 0);
@@ -27,35 +25,31 @@ const VehicleStats = ({
 
   return (
     <div
-      className={`flex flex-wrap items-center justify-between gap-x-8 gap-y-4 p-4 rounded-xl mb-6 shadow-md ${
-        isDarkMode ? "bg-gray-800/30" : "bg-white/30"
-      } backdrop-blur-sm border ${
-        isDarkMode ? "border-gray-700" : "border-gray-200"
-      }`}
+      className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 p-4 rounded-xl mb-6 shadow-md bg-card/80 backdrop-blur-sm border border-border"
     >
       <div className="flex items-center gap-2">
-        <BarChart className="w-5 h-5 text-blue-500" />
-        <p className={`${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
-          <span className="font-bold">{filteredVehicles.length.toLocaleString()}</span> vehículos
+        <BarChart className="w-5 h-5 text-primary" />
+        <p className="text-muted-foreground">
+          <span className="font-bold text-foreground">{filteredVehicles.length.toLocaleString()}</span> vehículos
           encontrados
         </p>
       </div>
       <div className="flex items-center gap-2 text-sm">
-        <span className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+        <span className="text-muted-foreground">
           Precio Promedio:
         </span>
         <span
-          className={`font-semibold ${isDarkMode ? "text-green-400" : "text-green-600"}`}
+          className="font-semibold text-green-600 dark:text-green-400"
         >
           ${averagePrice.toLocaleString()}
         </span>
       </div>
       <div className="flex items-center gap-2 text-sm">
-        <span className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+        <span className="text-muted-foreground">
           Año Promedio:
         </span>
         <span
-          className={`font-semibold ${isDarkMode ? "text-purple-400" : "text-purple-600"}`}
+          className="font-semibold text-purple-600 dark:text-purple-400"
         >
           {averageYear}
         </span>

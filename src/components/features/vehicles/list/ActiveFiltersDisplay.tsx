@@ -10,7 +10,7 @@ interface ActiveFiltersDisplayProps {
   filterOptions: FilterOptions;
   onFiltersChange: (filters: AdvancedFilters | ((prev: AdvancedFilters) => AdvancedFilters)) => void;
   onClearFilters: () => void;
-  isDarkMode: boolean;
+  // isDarkMode: boolean; // ❌ REMOVED
 }
 
 const ActiveFiltersDisplay: FC<ActiveFiltersDisplayProps> = ({
@@ -18,7 +18,7 @@ const ActiveFiltersDisplay: FC<ActiveFiltersDisplayProps> = ({
   filterOptions,
   onFiltersChange,
   onClearFilters,
-  isDarkMode,
+  // isDarkMode, // ❌ REMOVED
 }) => {
   const activeChips: { label: string; onRemove: () => void }[] = [];
 
@@ -123,12 +123,12 @@ const ActiveFiltersDisplay: FC<ActiveFiltersDisplayProps> = ({
   return (
     <div className="flex items-center flex-wrap gap-2 mb-6">
       {activeChips.map((chip) => (
-        <FilterChip key={chip.label} label={chip.label} onRemove={chip.onRemove} isDarkMode={isDarkMode} />
+        <FilterChip key={chip.label} label={chip.label} onRemove={chip.onRemove} /> // ❌ REMOVED: isDarkMode prop
       ))}
       {activeChips.length > 1 && (
         <button
           onClick={onClearFilters}
-          className="text-sm text-red-600 hover:underline ml-2"
+          className="text-sm text-destructive hover:underline ml-2"
         >
           Limpiar todo
         </button>

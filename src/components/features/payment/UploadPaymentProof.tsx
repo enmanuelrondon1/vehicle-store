@@ -1,4 +1,4 @@
-// src//components/sections/PostAd/UploadPaymentProof.tsx
+// src//components/features/payment/UploadPaymentProof.tsx
 "use client";
 import React, { useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";

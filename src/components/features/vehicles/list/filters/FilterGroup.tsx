@@ -5,13 +5,13 @@ import type { FC, ReactNode } from "react";
 
 interface FilterGroupProps {
   label: string;
-  isDarkMode: boolean;
+  // isDarkMode: boolean; // ❌ REMOVED
   children: ReactNode;
 }
 
-const FilterGroup: FC<FilterGroupProps> = ({ label, isDarkMode, children }) => (
+const FilterGroup: FC<FilterGroupProps> = ({ label, children }) => (
   <div>
-    <label className={`block text-sm font-medium mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+    <label className="block text-sm font-medium mb-2 text-muted-foreground">
       {label}
     </label>
     {children}

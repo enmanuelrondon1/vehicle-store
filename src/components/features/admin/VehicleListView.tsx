@@ -27,7 +27,6 @@ import { MobileActionSheet } from "./MobileActionSheet";
 interface VehicleListViewProps {
   vehicles: VehicleDataFrontend[];
   selectedVehicles: Set<string>;
-  isDarkMode: boolean;
   onToggleSelection: (id: string) => void;
   onClearSelection: () => void;
   onStatusChange: (id: string, status: ApprovalStatus, reason?: string) => void;
@@ -41,7 +40,6 @@ interface VehicleListViewProps {
 export const VehicleListView = ({
   vehicles,
   selectedVehicles,
-  isDarkMode,
   onToggleSelection,
   onStatusChange,
   onVehicleSelect,
@@ -53,11 +51,11 @@ export const VehicleListView = ({
   if (vehicles.length === 0) {
     return (
       <div className="text-center py-8 md:py-12">
-        <Car className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-4" />
+        <Car className="w-12 h-12 md:w-16 md:h-16 text-muted-foreground mx-auto mb-4" />
         <h3 className="text-base md:text-lg font-semibold mb-2">
           No hay vehículos
         </h3>
-        <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base px-4">
+        <p className="text-muted-foreground text-sm md:text-base px-4">
           No se encontraron vehículos con los filtros seleccionados.
         </p>
       </div>
@@ -70,11 +68,11 @@ export const VehicleListView = ({
         <Card
           key={vehicle._id}
           id={vehicle._id} // Añadimos el ID para el anclaje
-          className={`${
-            isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
-          } hover:shadow-lg transition-all duration-200 ${
-            selectedVehicles.has(vehicle._id!) ? "ring-2 ring-blue-500" : ""
-          }`}
+          className={`
+            bg-card border
+            hover:shadow-lg transition-all duration-200
+            ${selectedVehicles.has(vehicle._id!) ? "ring-2 ring-primary" : ""}
+          `}
         >
           <CardContent className="p-3 md:p-6">
             <div className="flex flex-col space-y-4">
@@ -94,7 +92,6 @@ export const VehicleListView = ({
                   <div className="hidden md:flex items-center justify-end space-x-2">
                     <VehicleActions
                       vehicle={vehicle}
-                      isDarkMode={isDarkMode}
                       onVehicleSelect={onVehicleSelect}
                       onStatusChange={onStatusChange}
                       onShowRejectDialog={onShowRejectDialog}
@@ -107,7 +104,6 @@ export const VehicleListView = ({
                   <div className="md:hidden">
                     <MobileActionSheet
                       vehicle={vehicle}
-                      isDarkMode={isDarkMode}
                       onVehicleSelect={onVehicleSelect}
                       onStatusChange={onStatusChange}
                       onShowRejectDialog={onShowRejectDialog}
@@ -121,7 +117,7 @@ export const VehicleListView = ({
 
               <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
                 {/* Imagen del vehículo */}
-                <div className="relative w-full lg:w-64 h-48 lg:h-40 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                <div className="relative w-full lg:w-64 h-48 lg:h-40 overflow-hidden rounded-lg bg-muted flex-shrink-0">
                   <Image
                     src={
                       vehicle.images[0] ||
@@ -147,47 +143,47 @@ export const VehicleListView = ({
                         ${vehicle.price.toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Gauge className="w-3 h-3 md:w-4 md:h-4 text-blue-600" />
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Gauge className="w-3 h-3 md:w-4 md:h-4 text-primary" />
                       <span>{vehicle.mileage.toLocaleString()} km</span>
                     </div>
-                    <div className="flex items-center gap-2 col-span-2 md:col-span-1">
-                      <MapPin className="w-3 h-3 md:w-4 md:h-4 text-red-600" />
+                    <div className="flex items-center gap-2 col-span-2 md:col-span-1 text-muted-foreground">
+                      <MapPin className="w-3 h-3 md:w-4 md:h-4 text-destructive" />
                       <span className="truncate">{vehicle.location}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Palette className="w-3 h-3 md:w-4 md:h-4 text-purple-600" />
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Palette className="w-3 h-3 md:w-4 md:h-4 text-primary" />
                       <span>{vehicle.color}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Settings className="w-3 h-3 md:w-4 md:h-4 text-gray-600" />
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Settings className="w-3 h-3 md:w-4 md:h-4" />
                       <span className="truncate">{vehicle.transmission}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <Fuel className="w-3 h-3 md:w-4 md:h-4 text-orange-600" />
                       <span>{vehicle.fuelType}</span>
                     </div>
                   </div>
 
                   {vehicle.status === "rejected" && vehicle.rejectionReason && (
-                    <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                      <h4 className="font-semibold text-red-800 dark:text-red-200 text-sm mb-1">
+                    <div className="mt-3 p-3 bg-destructive/10 rounded-lg border border-destructive/20">
+                      <h4 className="font-semibold text-destructive text-sm mb-1">
                         Motivo del Rechazo:
                       </h4>
-                      <p className="text-red-700 dark:text-red-300 text-xs md:text-sm">
+                      <p className="text-destructive/90 text-xs md:text-sm">
                         {vehicle.rejectionReason}
                       </p>
                     </div>
                   )}
 
                   {vehicle.description && (
-                    <p className="text-gray-600 dark:text-gray-400 line-clamp-2 text-sm md:text-base">
+                    <p className="text-muted-foreground line-clamp-2 text-sm md:text-base">
                       {vehicle.description}
                     </p>
                   )}
 
                   {/* Información del vendedor */}
-                  <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                  <div className="bg-accent p-3 rounded-lg">
                     <h4 className="font-semibold mb-2 text-sm md:text-base">
                       Información del vendedor:
                     </h4>
@@ -229,7 +225,6 @@ export const VehicleListView = ({
                           <PdfViewer
                             url={vehicle.paymentProof}
                             vehicleId={vehicle._id!}
-                            isDarkMode={isDarkMode}
                           />
                         </div>
                       )}

@@ -1,5 +1,6 @@
 // src/types/types.ts - Solo para el cliente
 
+
 import {
   ApprovalStatus,
   VehicleCategory,
@@ -9,7 +10,9 @@ import {
   WarrantyType,
   Currency,
   FuelType,
+  DriveType,
 } from "./shared";
+
 
 export {
   VehicleCategory,
@@ -113,7 +116,7 @@ export interface VehicleDataBackend {
   color: string;
   engine: string;
   displacement?: string;
-  driveType?: string;
+  driveType?: DriveType;
   transmission: TransmissionType;
   condition: VehicleCondition;
   location: string;
@@ -219,7 +222,7 @@ export interface VehicleDataGeneric {
   color: string;
   engine: string;
   displacement?: string; // Nuevo: Cilindraje
-  driveType?: string; // Nuevo: Tracción
+  driveType?: DriveType; // Nuevo: Tracción
   transmission: TransmissionType;
   condition: VehicleCondition;
   location: string;

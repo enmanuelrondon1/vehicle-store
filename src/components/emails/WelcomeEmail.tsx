@@ -39,10 +39,10 @@ export const WelcomeEmail = ({ userName }: WelcomeEmailProps) => (
         </Text>
         <Section style={{ textAlign: 'center' }}>
           <Button
-            style={button}
-            href={`${baseUrl}/postAd`}
+            className="bg-brand text-white rounded-lg py-3 px-6 font-semibold"
+            href={`${baseUrl}/publicar-anuncio`} // <-- CAMBIO AQUÍ
           >
-            Publicar un Anuncio
+            Publicar tu primer vehículo
           </Button>
         </Section>
         <Text style={paragraph}>
@@ -67,17 +67,6 @@ const container = { backgroundColor: '#ffffff', margin: '0 auto', padding: '20px
 const logo = { margin: '0 auto' };
 const heading = { fontSize: '24px', fontWeight: 'bold', textAlign: 'center' as const, color: '#333' };
 const paragraph = { fontSize: '16px', lineHeight: '24px', textAlign: 'center' as const, color: '#555', padding: '0 20px' };
-const button = {
-  backgroundColor: '#007bff',
-  borderRadius: '5px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'inline-block',
-  padding: '12px 20px',
-  margin: '20px auto',
-};
+
 const hr = { borderColor: '#e6ebf1', margin: '20px 0' };
 const footer = { color: '#8898aa', fontSize: '12px', lineHeight: '16px', textAlign: 'center' as const };

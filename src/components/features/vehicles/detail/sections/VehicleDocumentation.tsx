@@ -1,6 +1,5 @@
 "use client";
 
-import { useDarkMode } from "@/context/DarkModeContext";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle } from "lucide-react";
@@ -10,24 +9,13 @@ interface VehicleDocumentationProps {
 }
 
 const VehicleDocumentationComponent: React.FC<VehicleDocumentationProps> = ({ documentation }) => {
-  const { isDarkMode } = useDarkMode();
   if (!documentation || documentation.length === 0) {
     return null;
   }
 
   return (
-    <div
-      className={`p-6 rounded-xl border ${
-        isDarkMode
-          ? "bg-gray-800/50 border-gray-700"
-          : "bg-white/50 border-gray-200"
-      } backdrop-blur-sm`}
-    >
-      <h3
-        className={`text-2xl font-bold mb-6 ${
-          isDarkMode ? "text-white" : "text-gray-900"
-        }`}
-      >
+    <div className="p-6 rounded-xl border bg-card/50 border-border backdrop-blur-sm">
+      <h3 className="text-2xl font-bold mb-6 text-foreground">
         Documentación Incluida
       </h3>
       <div className="flex flex-wrap gap-3">

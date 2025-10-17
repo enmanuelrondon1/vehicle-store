@@ -26,10 +26,12 @@ import {
   TRANSMISSION_TYPES_LABELS,
   WARRANTY_LABELS,
 } from "@/types/shared";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { siteConfig } from "@/config/site";
 
 const VehicleCard = ({
   vehicle,
-  isDarkMode,
   viewMode,
   onToggleCompare,
   isInCompareList,
@@ -37,7 +39,6 @@ const VehicleCard = ({
   onFavoriteToggle,
 }: {
   vehicle: Vehicle;
-  isDarkMode: boolean;
   viewMode: "grid" | "list";
   onToggleCompare: (vehicleId: string) => void;
   isInCompareList: boolean;
@@ -95,20 +96,11 @@ const VehicleCard = ({
         const data = await response.json();
         const isNowFavorited = data.action === "added";
         onFavoriteToggle(vehicle._id, isNowFavorited);
-        if (isNowFavorited) {
-          toast.success("Añadido a favoritos", {
-            description: "Este vehículo ahora está en tu lista de favoritos.",
-          });
-        } else {
-          toast.info("Eliminado de favoritos", {
-            description:
-              "Este vehículo ha sido eliminado de tu lista de favoritos.",
-          });
-        }
+        toast.success(
+          isNowFavorited ? "Añadido a favoritos" : "Eliminado de favoritos"
+        );
       } else {
-        toast.error("No se pudo actualizar favoritos", {
-          description: "Por favor, inténtalo de nuevo más tarde.",
-        });
+        toast.error("No se pudo actualizar favoritos");
       }
     } catch (error) {
       toast.error("Error al actualizar favoritos");
@@ -121,7 +113,7 @@ const VehicleCard = ({
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    const vehicleUrl = `${window.location.origin}/vehicle/${vehicle._id}`;
+    const vehicleUrl = `${window.location.origin}${siteConfig.paths.vehicleDetail(vehicle._id)}`;
     const shareData = {
       title: `${vehicle.brand} ${vehicle.model}`,
       text: `Mira este ${vehicle.brand} ${vehicle.model} ${vehicle.year}`,
@@ -137,18 +129,16 @@ const VehicleCard = ({
     } else {
       try {
         await navigator.clipboard.writeText(vehicleUrl);
-        toast.success("Enlace copiado al portapapeles", {
-          description: "El enlace del vehículo se ha copiado correctamente.",
-        });
-      } catch (err) {
-        console.error("Failed to copy: ", err);
-        toast.error("No se pudo copiar el enlace.", { description: "Hubo un problema al intentar copiar el enlace." });
+        toast.success("Enlace copiado al portapapeles");
+      } catch {
+        toast.error("No se pudo copiar el enlace.");
       }
     }
   };
 
   const handleCompare = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     onToggleCompare(vehicle._id);
   };
 
@@ -169,31 +159,68 @@ const VehicleCard = ({
     TRANSMISSION_TYPES_LABELS
   );
 
+  const ActionButtons = ({ isGrid = false }: { isGrid?: boolean }) => (
+    <div
+      className={cn(
+        "flex gap-2",
+        isGrid
+          ? "absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
+          : "absolute bottom-3 right-3"
+      )}
+    >
+      <Button
+        variant={isInCompareList ? "default" : "secondary"}
+        size="icon"
+        className="rounded-full shadow-lg"
+        onClick={handleCompare}
+        title="Comparar"
+      >
+        <Layers className="w-4 h-4" />
+      </Button>
+      <Button
+        variant="secondary"
+        size="icon"
+        className="rounded-full shadow-lg"
+        onClick={handleFavorite}
+        title="Añadir a favoritos"
+        disabled={isLoadingFavorite}
+      >
+        <Heart
+          className={cn(
+            "w-4 h-4 transition-colors",
+            isFavorited ? "fill-red-500 text-red-500" : "text-muted-foreground"
+          )}
+        />
+      </Button>
+      <Button
+        variant="secondary"
+        size="icon"
+        className="rounded-full shadow-lg"
+        onClick={handleShare}
+        title="Compartir"
+      >
+        <Share2 className="w-4 h-4 text-muted-foreground" />
+      </Button>
+    </div>
+  );
+
   if (viewMode === "list") {
     return (
       <Link
-        href={`/vehicle/${vehicle._id}`}
-        className={`${
-          isDarkMode
-            ? "bg-gray-800/50 border-gray-700 hover:bg-gray-800"
-            : "bg-white/50 border-gray-200 hover:bg-white"
-        } transition-all duration-300 hover:shadow-xl backdrop-blur-sm group rounded-lg border relative block`}
+        href={siteConfig.paths.vehicleDetail(vehicle._id)}
+        className="bg-card border-border hover:bg-accent/50 transition-all duration-300 hover:shadow-xl group rounded-lg border relative block"
       >
         {vehicle.isFeatured && (
-          <div className="absolute top-3 left-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
-            <Star className="w-3 h-3 inline mr-1" />
+          <div className="absolute top-3 left-3 bg-accent text-accent-foreground px-2 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
+            <Star className="w-3 h-3 inline" />
             Destacado
           </div>
         )}
         <div className="flex flex-col md:flex-row">
-          <div className="relative w-full md:w-80 h-48 md:h-40 overflow-hidden rounded-l-lg">
+          <div className="relative w-full md:w-80 h-48 md:h-auto overflow-hidden rounded-t-lg md:rounded-l-lg md:rounded-t-none">
             {isImageLoading && (
-              <div
-                className={`absolute inset-0 ${
-                  isDarkMode ? "bg-gray-700" : "bg-gray-200"
-                } animate-pulse flex items-center justify-center`}
-              >
-                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
             )}
             <Image
@@ -205,77 +232,27 @@ const VehicleCard = ({
               alt={`${vehicle.brand} ${vehicle.model}`}
               width={320}
               height={200}
-              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+              className={cn(
+                "w-full h-full object-cover transition-all duration-500 group-hover:scale-105",
                 isImageLoading ? "opacity-0" : "opacity-100"
-              }`}
+              )}
               onError={handleImageError}
               onLoad={handleImageLoad}
-              priority={false}
             />
             {vehicle.condition === VehicleCondition.NEW && (
               <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
                 Nuevo
               </span>
             )}
-            <div className="absolute bottom-3 right-3 flex gap-2">
-              <button
-                onClick={handleCompare}
-                className={`w-8 h-8 p-0 rounded-full flex items-center justify-center ${
-                  isInCompareList
-                    ? "bg-blue-600 text-white"
-                    : isDarkMode
-                    ? "bg-gray-900/70 hover:bg-gray-800 text-gray-300"
-                    : "bg-white/70 hover:bg-white text-gray-600"
-                } backdrop-blur-sm transition-colors`}
-                title="Comparar"
-              >
-                <Layers className="w-4 h-4" />
-              </button>
-              <button
-                onClick={handleFavorite}
-                className={`w-8 h-8 p-0 rounded-full flex items-center justify-center ${
-                  isDarkMode
-                    ? "bg-gray-900/70 hover:bg-gray-800"
-                    : "bg-white/70 hover:bg-white"
-                } backdrop-blur-sm`}
-              >
-                <Heart
-                  className={`w-4 h-4 ${
-                    isFavorited
-                      ? "fill-red-500 text-red-500"
-                      : isDarkMode
-                      ? "text-gray-300"
-                      : "text-gray-600"
-                  }`}
-                />
-              </button>
-              <button
-                onClick={handleShare}
-                className={`w-8 h-8 p-0 rounded-full flex items-center justify-center ${
-                  isDarkMode
-                    ? "bg-gray-900/70 hover:bg-gray-800"
-                    : "bg-white/70 hover:bg-white"
-                } backdrop-blur-sm`}
-              >
-                <Share2
-                  className={`w-4 h-4 ${
-                    isDarkMode ? "text-gray-300" : "text-gray-600"
-                  }`}
-                />
-              </button>
-            </div>
+            <ActionButtons />
           </div>
           <div className="flex-1 p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3
-                  className={`text-2xl font-bold mb-2 ${
-                    isDarkMode ? "text-gray-100" : "text-gray-800"
-                  } group-hover:text-blue-500 transition-colors`}
-                >
+                <h3 className="text-2xl font-bold mb-2 text-foreground group-hover:text-primary transition-colors">
                   {`${vehicle.brand} ${vehicle.model}`}
                 </h3>
-                <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mb-3">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
                     <span>{vehicle.year}</span>
@@ -288,7 +265,8 @@ const VehicleCard = ({
                     <MapPin className="w-4 h-4" />
                     <span>{vehicle.location}</span>
                   </div>
-                  {vehicle.views && (
+                  {/* FIX: Add explicit check for vehicle.views */}
+                  {vehicle.views !== undefined && vehicle.views > 0 && (
                     <div className="flex items-center gap-1">
                       <Eye className="w-4 h-4" />
                       <span>{vehicle.views} vistas</span>
@@ -296,73 +274,37 @@ const VehicleCard = ({
                   )}
                 </div>
               </div>
-              <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <p className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                 {formatPrice(vehicle.price)}
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div className="flex flex-col">
-                <span
-                  className={`${
-                    isDarkMode ? "text-gray-400" : "text-gray-600"
-                  } text-xs`}
-                >
-                  Condición
-                </span>
-                <span
-                  className={`font-medium ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
+                <span className="text-muted-foreground text-xs">Condición</span>
+                <span className="font-medium text-foreground">
                   {translatedCondition}
                 </span>
               </div>
               <div className="flex flex-col">
-                <span
-                  className={`${
-                    isDarkMode ? "text-gray-400" : "text-gray-600"
-                  } text-xs`}
-                >
+                <span className="text-muted-foreground text-xs">
                   Transmisión
                 </span>
-                <span
-                  className={`font-medium ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
+                <span className="font-medium text-foreground">
                   {translatedTransmission}
                 </span>
               </div>
               <div className="flex flex-col">
-                <span
-                  className={`${
-                    isDarkMode ? "text-gray-400" : "text-gray-600"
-                  } text-xs`}
-                >
+                <span className="text-muted-foreground text-xs">
                   Combustible
                 </span>
-                <span
-                  className={`font-medium ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
+                <span className="font-medium text-foreground">
                   {translatedFuelType}
                 </span>
               </div>
               <div className="flex flex-col">
-                <span
-                  className={`${
-                    isDarkMode ? "text-gray-400" : "text-gray-600"
-                  } text-xs`}
-                >
-                  Estado
-                </span>
-                <span
-                  className={`font-medium ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  {/* {translatedStatus} */}
+                <span className="text-muted-foreground text-xs">Estado</span>
+                <span className="font-medium text-foreground">
+                  {vehicle.status}
                 </span>
               </div>
             </div>
@@ -372,13 +314,13 @@ const VehicleCard = ({
                   {vehicle.features.slice(0, 3).map((feature: string) => (
                     <span
                       key={feature}
-                      className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded"
+                      className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded"
                     >
                       {feature}
                     </span>
                   ))}
                   {vehicle.features.length > 3 && (
-                    <span className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">
+                    <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded">
                       +{vehicle.features.length - 3}
                     </span>
                   )}
@@ -387,7 +329,7 @@ const VehicleCard = ({
             )}
             {vehicle.warranty && WARRANTY_LABELS[vehicle.warranty] && (
               <div className="mt-3">
-                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded">
                   {WARRANTY_LABELS[vehicle.warranty]}
                 </span>
               </div>
@@ -400,27 +342,20 @@ const VehicleCard = ({
 
   // Grid View
   return (
-    <div
-      className={`flex flex-col ${
-        isDarkMode
-          ? "bg-gray-800/50 border-gray-700 hover:bg-gray-800"
-          : "bg-white/50 border-gray-200 hover:bg-white"
-      } transition-all duration-300 hover:shadow-xl hover:-translate-y-2 backdrop-blur-sm group cursor-pointer overflow-hidden rounded-lg border relative`}
+    <Link
+      href={siteConfig.paths.vehicleDetail(vehicle._id)}
+      className="flex flex-col bg-card/80 border-border hover:bg-card transition-all duration-300 hover:shadow-xl hover:-translate-y-1 backdrop-blur-sm group overflow-hidden rounded-lg border relative"
     >
       {vehicle.isFeatured && (
-        <div className="absolute top-3 left-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold z-10">
-          <Star className="w-3 h-3 inline mr-1" />
+        <div className="absolute top-3 left-3 bg-accent text-accent-foreground px-2 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
+          <Star className="w-3 h-3 inline" />
           Destacado
         </div>
       )}
       <div className="relative w-full h-56 overflow-hidden">
         {isImageLoading && (
-          <div
-            className={`absolute inset-0 ${
-              isDarkMode ? "bg-gray-700" : "bg-gray-200"
-            } animate-pulse flex items-center justify-center`}
-          >
-            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         )}
         <Image
@@ -432,12 +367,12 @@ const VehicleCard = ({
           alt={`${vehicle.brand} ${vehicle.model}`}
           width={300}
           height={224}
-          className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
+          className={cn(
+            "w-full h-full object-cover transition-all duration-500 group-hover:scale-110",
             isImageLoading ? "opacity-0" : "opacity-100"
-          }`}
+          )}
           onError={handleImageError}
           onLoad={handleImageLoad}
-          priority={false}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         {vehicle.condition === VehicleCondition.NEW && (
@@ -445,109 +380,41 @@ const VehicleCard = ({
             Nuevo
           </span>
         )}
-        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-          <button
-            onClick={handleCompare}
-            className={`w-9 h-9 p-0 rounded-full flex items-center justify-center ${
-              isInCompareList
-                ? "bg-blue-600 text-white"
-                : isDarkMode
-                ? "bg-gray-900/70 hover:bg-gray-800 text-gray-300"
-                : "bg-white/70 hover:bg-white text-gray-600"
-            } backdrop-blur-sm shadow-lg transition-colors`}
-            title="Comparar"
-          >
-            <Layers className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleFavorite}
-            className={`w-9 h-9 p-0 rounded-full flex items-center justify-center ${
-              isDarkMode
-                ? "bg-gray-900/70 hover:bg-gray-800"
-                : "bg-white/70 hover:bg-white"
-            } backdrop-blur-sm shadow-lg`}
-          >
-            <Heart
-              className={`w-4 h-4 ${
-                isFavorited
-                  ? "fill-red-500 text-red-500"
-                  : isDarkMode
-                  ? "text-gray-300"
-                  : "text-gray-600"
-              }`}
-            />
-          </button>
-          <button
-            onClick={handleShare}
-            className={`w-9 h-9 p-0 rounded-full flex items-center justify-center ${
-              isDarkMode
-                ? "bg-gray-900/70 hover:bg-gray-800"
-                : "bg-white/70 hover:bg-white"
-            } backdrop-blur-sm shadow-lg`}
-          >
-            <Share2
-              className={`w-4 h-4 ${
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              }`}
-            />
-          </button>
-        </div>
+        <ActionButtons isGrid />
       </div>
       <div className="p-6 flex-grow flex flex-col">
-        <h3
-          className={`text-xl font-bold mb-3 ${
-            isDarkMode ? "text-gray-100" : "text-gray-800"
-          } group-hover:text-blue-500 transition-colors line-clamp-1`}
-        >
+        <h3 className="text-xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-1">
           {`${vehicle.brand} ${vehicle.model} (${vehicle.year})`}
         </h3>
-        <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <p className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
           {formatPrice(vehicle.price)}
         </p>
-        <div
-          className={`grid grid-cols-4 gap-2 text-center border-t border-b ${
-            isDarkMode ? "border-gray-700" : "border-gray-200"
-          } py-3 my-4`}
-        >
+        <div className="grid grid-cols-4 gap-2 text-center border-t border-b border-border py-3 my-4">
           <div>
             <Car
-              className={`w-5 h-5 mx-auto ${
-                isDarkMode ? "text-gray-400" : "text-gray-500"
-              }`}
+              className="w-5 h-5 mx-auto text-muted-foreground"
+              // Removed title prop from Lucide icon
             />
             <p
-              className={`text-xs mt-1 ${
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              } line-clamp-1`}
+              className="text-xs mt-1 text-muted-foreground line-clamp-1"
               title={translatedTransmission}
             >
               {translatedTransmission}
             </p>
           </div>
           <div>
-            <Settings2
-              className={`w-5 h-5 mx-auto ${
-                isDarkMode ? "text-gray-400" : "text-gray-500"
-              }`}
-            />
-            <p
-              className={`text-xs mt-1 ${
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              } line-clamp-1`}
-            >
+            <Settings2 className="w-5 h-5 mx-auto text-muted-foreground" />
+            <p className="text-xs mt-1 text-muted-foreground line-clamp-1">
               {formatMileage(vehicle.mileage)} km
             </p>
           </div>
           <div>
             <Fuel
-              className={`w-5 h-5 mx-auto ${
-                isDarkMode ? "text-gray-400" : "text-gray-500"
-              }`}
+              className="w-5 h-5 mx-auto text-muted-foreground"
+              // Removed title prop from Lucide icon
             />
             <p
-              className={`text-xs mt-1 ${
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              } line-clamp-1`}
+              className="text-xs mt-1 text-muted-foreground line-clamp-1"
               title={translatedFuelType}
             >
               {translatedFuelType}
@@ -555,14 +422,12 @@ const VehicleCard = ({
           </div>
           <div>
             <MapPin
-              className={`w-5 h-5 mx-auto ${
-                isDarkMode ? "text-gray-400" : "text-gray-500"
-              }`}
+              className="w-5 h-5 mx-auto text-muted-foreground"
+              // Removed title prop from Lucide icon
             />
             <p
-              className={`text-xs mt-1 ${
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              } line-clamp-1`}
+              className="text-xs mt-1 text-muted-foreground line-clamp-1"
+              title={vehicle.location}
             >
               {vehicle.location}
             </p>
@@ -570,14 +435,11 @@ const VehicleCard = ({
         </div>
       </div>
       <div className="p-6 pt-0 mt-auto">
-        <Link
-          href={`/vehicle/${vehicle._id}`}
-          className="flex items-center justify-center w-full p-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl rounded"
-        >
+        <div className="flex items-center justify-center w-full p-2 bg-gradient-to-r from-primary to-purple-600 text-primary-foreground transition-all duration-300 transform group-hover:scale-105 shadow-lg group-hover:shadow-xl rounded">
           Ver Detalles
-        </Link>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

@@ -11,7 +11,7 @@ import VehicleCard from "./VehicleCard";
 interface VehicleGridProps {
   vehicles: Vehicle[];
   viewMode: "grid" | "list";
-  isDarkMode: boolean;
+  // isDarkMode: boolean; // ❌ REMOVED
   compareList: string[];
   toggleCompare: (vehicleId: string) => void;
 }
@@ -19,7 +19,7 @@ interface VehicleGridProps {
 const VehicleGrid: React.FC<VehicleGridProps> = ({
   vehicles,
   viewMode,
-  isDarkMode,
+  // isDarkMode, // ❌ REMOVED
   compareList,
   toggleCompare,
 }) => {
@@ -83,7 +83,7 @@ const VehicleGrid: React.FC<VehicleGridProps> = ({
             >
               <VehicleCard
                 vehicle={vehicle}
-                isDarkMode={isDarkMode}
+                // isDarkMode={isDarkMode} // ❌ REMOVED
                 viewMode={viewMode}
                 onToggleCompare={toggleCompare}
                 isInCompareList={compareList.includes(vehicle._id)}

@@ -19,13 +19,11 @@ interface FinancingModalProps {
     interestRate: number;
     loanTerm: number;
   };
-  isDarkMode: boolean;
 }
 
 export function FinancingModal({
   vehiclePrice,
   financingDetails,
-  isDarkMode,
 }: FinancingModalProps) {
   return (
     <Dialog>
@@ -38,20 +36,19 @@ export function FinancingModal({
           Calcular Crédito Directo
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-white dark:bg-slate-900 border-2 border-gray-200 dark:border-gray-700">
-        <DialogHeader className="space-y-3 pb-4 border-b border-gray-200 dark:border-gray-700">
-          <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-gray-900 dark:text-white">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-background border-border">
+        <DialogHeader className="space-y-3 pb-4 border-b border-border">
+          <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-foreground">
             <Calculator className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             Calculadora de Crédito Directo
           </DialogTitle>
-          <DialogDescription className="text-base text-gray-600 dark:text-gray-400">
+          <DialogDescription className="text-base text-muted-foreground">
             Plan de pago directo con el vendedor.
           </DialogDescription>
         </DialogHeader>
         <FinancingCalculator
           vehiclePrice={vehiclePrice}
           financingDetails={financingDetails}
-          isDarkMode={isDarkMode}
           compact={true}
         />
       </DialogContent>

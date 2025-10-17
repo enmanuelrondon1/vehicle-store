@@ -13,14 +13,12 @@ interface FinancingCalculatorProps {
     interestRate: number;
     loanTerm: number;
   };
-  isDarkMode: boolean;
   compact?: boolean; // Nueva prop para versión compacta
 }
 
 export function FinancingCalculator({
   vehiclePrice,
   financingDetails,
-  isDarkMode,
   compact = false, // Por defecto false para no romper otros usos
 }: FinancingCalculatorProps) {
   const [downPayment, setDownPayment] = useState(
@@ -82,30 +80,55 @@ export function FinancingCalculator({
   const downPaymentPercentage = ((downPayment / vehiclePrice) * 100).toFixed(0);
 
   return (
-    <Card className={`${isDarkMode ? "bg-slate-800 border-gray-700" : "bg-white border-gray-200"} ${compact ? 'shadow-none border-0' : 'shadow-lg'} transition-all`}>
+    <Card
+      className={`${
+        compact ? "shadow-none border-0" : "shadow-lg"
+      } transition-all bg-card`}
+    >
       <CardHeader className={compact ? "pb-2 pt-0" : "pb-4"}>
-        <CardTitle className={`flex items-center gap-3 ${isDarkMode ? "text-white" : "text-gray-900"} ${compact ? 'text-lg' : 'text-xl'}`}>
+        <CardTitle
+          className={`flex items-center gap-3 text-foreground ${
+            compact ? "text-lg" : "text-xl"
+          }`}
+        >
           {!compact && (
             <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-950 dark:to-purple-950">
               <Calculator className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
           )}
-          <span className="font-bold">{compact ? 'Configura tu financiación' : 'Calculadora de Financiación'}</span>
+          <span className="font-bold">
+            {compact
+              ? "Configura tu financiación"
+              : "Calculadora de Financiación"}
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent className={compact ? "space-y-4" : "space-y-6"}>
         {/* Entrada */}
         <div className={compact ? "space-y-2" : "space-y-3"}>
           <div className="flex justify-between items-center">
-            <Label htmlFor="down-payment" className={`${compact ? 'text-xs' : 'text-sm'} font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"} flex items-center gap-2`}>
-              <DollarSign className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} text-green-600 dark:text-green-400`} />
+            <Label
+              htmlFor="down-payment"
+              className={`${
+                compact ? "text-xs" : "text-sm"
+              } font-semibold text-muted-foreground flex items-center gap-2`}
+            >
+              <DollarSign
+                className={`${
+                  compact ? "w-3 h-3" : "w-4 h-4"
+                } text-green-600 dark:text-green-400`}
+              />
               Entrada
             </Label>
             <div className="text-right">
-              <span className={`font-bold ${compact ? 'text-base' : 'text-lg'} ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+              <span
+                className={`font-bold ${
+                  compact ? "text-base" : "text-lg"
+                } text-foreground`}
+              >
                 {formatCurrency(downPayment)}
               </span>
-              <span className={`text-xs ml-2 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+              <span className={`text-xs ml-2 text-muted-foreground`}>
                 ({downPaymentPercentage}%)
               </span>
             </div>
@@ -117,10 +140,10 @@ export function FinancingCalculator({
             step={100}
             value={[downPayment]}
             onValueChange={(value) => setDownPayment(value[0])}
-            className="[&_[role=slider]]:bg-green-600 [&_[role=slider]]:border-green-600 dark:[&_[role=slider]]:bg-green-500 dark:[&_[role=slider]]:border-green-500 [&_[role=slider]]:shadow-lg [&_.relative]:bg-gray-300 dark:[&_.relative]:bg-gray-600 [&_.relative]:h-2"
+            className="[&_[role=slider]]:bg-green-600 [&_[role=slider]]:border-green-600 dark:[&_[role=slider]]:bg-green-500 dark:[&_[role=slider]]:border-green-500 [&_[role=slider]]:shadow-lg [&_.relative]:bg-muted [&_.relative]:h-2"
           />
           {!compact && (
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>$0</span>
               <span>{formatCurrency(vehiclePrice / 2)}</span>
               <span>{formatCurrency(vehiclePrice)}</span>
@@ -131,11 +154,24 @@ export function FinancingCalculator({
         {/* Tasa de Interés */}
         <div className={compact ? "space-y-2" : "space-y-3"}>
           <div className="flex justify-between items-center">
-            <Label htmlFor="interest-rate" className={`${compact ? 'text-xs' : 'text-sm'} font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"} flex items-center gap-2`}>
-              <Percent className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} text-orange-600 dark:text-orange-400`} />
-             Tasa de Interés (ganancia del vendedor)
+            <Label
+              htmlFor="interest-rate"
+              className={`${
+                compact ? "text-xs" : "text-sm"
+              } font-semibold text-muted-foreground flex items-center gap-2`}
+            >
+              <Percent
+                className={`${
+                  compact ? "w-3 h-3" : "w-4 h-4"
+                } text-orange-600 dark:text-orange-400`}
+              />
+              Tasa de Interés (ganancia del vendedor)
             </Label>
-            <span className={`font-bold ${compact ? 'text-base' : 'text-lg'} ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+            <span
+              className={`font-bold ${
+                compact ? "text-base" : "text-lg"
+              } text-foreground`}
+            >
               {interestRate.toFixed(1)}%
             </span>
           </div>
@@ -146,10 +182,10 @@ export function FinancingCalculator({
             step={0.1}
             value={[interestRate]}
             onValueChange={(value) => setInterestRate(value[0])}
-            className="[&_[role=slider]]:bg-orange-600 [&_[role=slider]]:border-orange-600 dark:[&_[role=slider]]:bg-orange-500 dark:[&_[role=slider]]:border-orange-500 [&_[role=slider]]:shadow-lg [&_.relative]:bg-gray-300 dark:[&_.relative]:bg-gray-600 [&_.relative]:h-2"
+            className="[&_[role=slider]]:bg-orange-600 [&_[role=slider]]:border-orange-600 dark:[&_[role=slider]]:bg-orange-500 dark:[&_[role=slider]]:border-orange-500 [&_[role=slider]]:shadow-lg [&_.relative]:bg-muted [&_.relative]:h-2"
           />
           {!compact && (
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>0%</span>
               <span>15%</span>
               <span>30%</span>
@@ -160,12 +196,25 @@ export function FinancingCalculator({
         {/* Plazo del Préstamo */}
         <div className={compact ? "space-y-2" : "space-y-3"}>
           <div className="flex justify-between items-center">
-            <Label htmlFor="loan-term" className={`${compact ? 'text-xs' : 'text-sm'} font-semibold ${isDarkMode ? "text-gray-300" : "text-gray-700"} flex items-center gap-2`}>
-              <Calendar className={`${compact ? 'w-3 h-3' : 'w-4 h-4'} text-blue-600 dark:text-blue-400`} />
+            <Label
+              htmlFor="loan-term"
+              className={`${
+                compact ? "text-xs" : "text-sm"
+              } font-semibold text-muted-foreground flex items-center gap-2`}
+            >
+              <Calendar
+                className={`${
+                  compact ? "w-3 h-3" : "w-4 h-4"
+                } text-blue-600 dark:text-blue-400`}
+              />
               Plazo del Préstamo
             </Label>
-            <span className={`font-bold ${compact ? 'text-base' : 'text-lg'} ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-              {loanTerm} {loanTerm === 1 ? 'mes' : 'meses'}
+            <span
+              className={`font-bold ${
+                compact ? "text-base" : "text-lg"
+              } text-foreground`}
+            >
+              {loanTerm} {loanTerm === 1 ? "mes" : "meses"}
             </span>
           </div>
           <Slider
@@ -175,10 +224,10 @@ export function FinancingCalculator({
             step={1}
             value={[loanTerm]}
             onValueChange={(value) => setLoanTerm(value[0])}
-            className="[&_[role=slider]]:bg-blue-600 [&_[role=slider]]:border-blue-600 dark:[&_[role=slider]]:bg-blue-500 dark:[&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-lg [&_.relative]:bg-gray-300 dark:[&_.relative]:bg-gray-600 [&_.relative]:h-2"
+            className="[&_[role=slider]]:bg-blue-600 [&_[role=slider]]:border-blue-600 dark:[&_[role=slider]]:bg-blue-500 dark:[&_[role=slider]]:border-blue-500 [&_[role=slider]]:shadow-lg [&_.relative]:bg-muted [&_.relative]:h-2"
           />
           {!compact && (
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>1 mes</span>
               <span>42 meses</span>
               <span>84 meses</span>
@@ -187,29 +236,55 @@ export function FinancingCalculator({
         </div>
 
         {/* Separador */}
-        <div className={`border-t-2 ${isDarkMode ? "border-gray-700" : "border-gray-200"} ${compact ? 'my-3' : 'my-6'}`}></div>
+        <div
+          className={`border-t-2 border-border ${compact ? "my-3" : "my-6"}`}
+        ></div>
 
         {/* Resumen de Cálculos */}
         <div className={compact ? "space-y-2" : "space-y-3"}>
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} ${isDarkMode ? "text-gray-300" : "text-gray-700"}`} />
-            <h3 className={`${compact ? 'text-xs' : 'text-sm'} font-bold ${isDarkMode ? "text-gray-200" : "text-gray-800"}`}>
+            <TrendingUp
+              className={`${
+                compact ? "w-4 h-4" : "w-5 h-5"
+              } text-muted-foreground`}
+            />
+            <h3
+              className={`${
+                compact ? "text-xs" : "text-sm"
+              } font-bold text-foreground`}
+            >
               Resumen de Financiación
             </h3>
           </div>
 
           {/* Monto a Financiar */}
-          <div className={`flex justify-between items-center ${compact ? 'p-2' : 'p-3'} rounded-lg ${isDarkMode ? "bg-slate-700/50" : "bg-gray-50"}`}>
-            <span className={`${compact ? 'text-xs' : 'text-sm'} ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
+          <div
+            className={`flex justify-between items-center ${
+              compact ? "p-2" : "p-3"
+            } rounded-lg bg-muted`}
+          >
+            <span
+              className={`${
+                compact ? "text-xs" : "text-sm"
+              } text-muted-foreground`}
+            >
               Monto a financiar
             </span>
-            <span className={`${compact ? 'text-sm' : 'text-base'} font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+            <span
+              className={`${
+                compact ? "text-sm" : "text-base"
+              } font-semibold text-foreground`}
+            >
               {formatCurrency(calculations.amountToFinance)}
             </span>
           </div>
 
           {/* Cuota Mensual - DESTACADA */}
-          <div className={`${compact ? 'p-3' : 'p-5'} rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-xl`}>
+          <div
+            className={`${
+              compact ? "p-3" : "p-5"
+            } rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-xl`}
+          >
             <div className="text-center">
               <p className={`${compact ? 'text-xs' : 'text-sm'} font-medium text-white/90 mb-1`}>
                 Cuota Mensual Estimada
@@ -224,26 +299,50 @@ export function FinancingCalculator({
           </div>
 
           {/* Total a Pagar */}
-          <div className={`flex justify-between items-center ${compact ? 'p-2' : 'p-3'} rounded-lg ${isDarkMode ? "bg-slate-700/50" : "bg-gray-50"}`}>
-            <span className={`${compact ? 'text-xs' : 'text-sm'} ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
+          <div
+            className={`flex justify-between items-center ${
+              compact ? "p-2" : "p-3"
+            } rounded-lg bg-muted`}
+          >
+            <span
+              className={`${
+                compact ? "text-xs" : "text-sm"
+              } text-muted-foreground`}
+            >
               Total a pagar
             </span>
-            <span className={`${compact ? 'text-sm' : 'text-base'} font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+            <span
+              className={`${
+                compact ? "text-sm" : "text-base"
+              } font-semibold text-foreground`}
+            >
               {formatCurrency(calculations.totalPayment)}
             </span>
           </div>
 
           {/* Intereses Totales */}
-          <div className={`flex justify-between items-center ${compact ? 'p-2' : 'p-3'} rounded-lg ${isDarkMode ? "bg-amber-950/30 border border-amber-900" : "bg-amber-50 border border-amber-200"}`}>
-            <span className={`${compact ? 'text-xs' : 'text-sm'} font-medium ${isDarkMode ? "text-amber-400" : "text-amber-700"}`}>
+          <div
+            className={`flex justify-between items-center ${
+              compact ? "p-2" : "p-3"
+            } rounded-lg bg-amber-950/30 border border-amber-900`}
+          >
+            <span
+              className={`${
+                compact ? "text-xs" : "text-sm"
+              } font-medium text-amber-400`}
+            >
               Intereses totales
             </span>
-            <span className={`${compact ? 'text-sm' : 'text-base'} font-bold ${isDarkMode ? "text-amber-300" : "text-amber-800"}`}>
+            <span
+              className={`${
+                compact ? "text-sm" : "text-base"
+              } font-bold text-amber-300`}
+            >
               +{formatCurrency(calculations.totalInterest)}
             </span>
           </div>
         </div>
-        <p className="text-xs text-center text-gray-500 dark:text-gray-400 pt-4">
+        <p className="text-xs text-center text-muted-foreground pt-4">
           *Plan de pago directo con el vendedor. Sujeto a aprobación.
         </p>
       </CardContent>

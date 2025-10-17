@@ -1,4 +1,4 @@
-// src/components/shared/Navbar/components/AnimatedPostButton.tsx
+// src/components/shared/Navbar/AnimatedPostButton.tsx
 "use client";
 
 import React, { useCallback, useMemo } from "react";
@@ -10,12 +10,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useSession } from "next-auth/react";
 import { useDarkMode } from "@/context/DarkModeContext";
 import { useRouter } from "next/navigation";
+import { siteConfig } from "@/config/site"; // 1. Importar siteConfig
 
 interface AnimatedPostButtonProps {
   isMobile?: boolean;
+  onClick?: () => void;
 }
 
-const AnimatedPostButton = ({ isMobile = false }: AnimatedPostButtonProps) => {
+const AnimatedPostButton = ({ isMobile = false, onClick }: AnimatedPostButtonProps) => {
   const { isDarkMode } = useDarkMode();
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -31,7 +33,7 @@ const AnimatedPostButton = ({ isMobile = false }: AnimatedPostButtonProps) => {
     }
     if (isAuthenticated) {
       e.preventDefault();
-      router.push("/postAd");
+      router.push(siteConfig.paths.publishAd); // 2. Usar siteConfig
     } else {
       e.preventDefault();
       setOpen(true);
@@ -40,7 +42,7 @@ const AnimatedPostButton = ({ isMobile = false }: AnimatedPostButtonProps) => {
 
   const handleGoToLogin = useCallback(() => {
     setOpen(false);
-    window.location.href = "/login?callbackUrl=" + encodeURIComponent("/postAd");
+    window.location.href = "/login?callbackUrl=" + encodeURIComponent(siteConfig.paths.publishAd); // 3. Usar siteConfig
   }, []);
 
   const buttonClasses = useMemo(() => {
@@ -67,7 +69,7 @@ const AnimatedPostButton = ({ isMobile = false }: AnimatedPostButtonProps) => {
   return (
     <motion.div className={`relative ${isMobile ? "w-full" : ""}`} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
       {isAuthenticated ? (
-        <Link href="/postAd" className={`block ${isMobile ? "w-full" : ""}`} aria-label="Publicar nuevo anuncio de vehículo">
+        <Link href={siteConfig.paths.publishAd} onClick={onClick} className={`block ${isMobile ? "w-full" : ""}`} aria-label="Publicar nuevo anuncio de vehículo">
           <div className={buttonClasses}>
             <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" animate={{ x: ["-100%", "100%"] }} transition={{ duration: 2, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }} />
             <div className="relative flex items-center justify-center gap-3 text-white font-bold">
@@ -127,7 +129,7 @@ const AnimatedPostButton = ({ isMobile = false }: AnimatedPostButtonProps) => {
             <div className="mt-4 text-center">
               <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                 ¿No tienes cuenta?{" "}
-                <button onClick={() => { setOpen(false); window.location.href = "/login?callbackUrl=" + encodeURIComponent("/postAd"); }} className="text-blue-500 hover:text-blue-600 font-medium underline">
+                <button onClick={() => { setOpen(false); window.location.href = "/login?callbackUrl=" + encodeURIComponent(siteConfig.paths.publishAd); }} className="text-blue-500 hover:text-blue-600 font-medium underline">
                   Regístrate aquí
                 </button>
               </p>

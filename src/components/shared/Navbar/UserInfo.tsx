@@ -1,4 +1,4 @@
-// src/components/shared/Navbar/components/UserInfo.tsx
+// src/components/shared/Navbar/UserInfo.tsx
 "use client";
 
 import React from "react";

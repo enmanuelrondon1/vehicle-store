@@ -1,6 +1,6 @@
+//src/components/features/vehicles/detail/sections/VehicleDescription.tsx
 "use client";
 
-import { useDarkMode } from "@/context/DarkModeContext";
 import React from "react";
 
 interface VehicleDescriptionProps {
@@ -8,23 +8,16 @@ interface VehicleDescriptionProps {
 }
 
 const VehicleDescriptionComponent: React.FC<VehicleDescriptionProps> = ({ description }) => {
-  const { isDarkMode } = useDarkMode();
   if (!description) {
     return null;
   }
 
   return (
-    <div
-      className={`p-6 rounded-xl border ${
-        isDarkMode
-          ? "bg-gray-800/50 border-gray-700"
-          : "bg-white/50 border-gray-200"
-      } backdrop-blur-sm`}
-    >
-      <h3 className={`text-2xl font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+    <div className="p-6 rounded-xl border bg-card/50 border-border backdrop-blur-sm">
+      <h3 className="text-2xl font-bold mb-4 text-foreground">
         Descripción
       </h3>
-      <p className={`text-lg leading-relaxed ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+      <p className="text-lg leading-relaxed text-muted-foreground">
         {description}
       </p>
     </div>

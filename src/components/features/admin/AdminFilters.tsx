@@ -40,20 +40,18 @@ interface AdminFiltersProps {
   viewMode: "grid" | "list";
   onViewModeChange: (mode: "grid" | "list") => void;
   totalResults: number;
-  isDarkMode: boolean;
   onSelectAll: () => void;
   onClearSelection: () => void;
   selectedCount: number;
   categoryCounts: Record<string, number>;
 }
- 
+
 export const AdminFilters = ({
   filters,
   onFiltersChange,
   viewMode,
   onViewModeChange,
   totalResults,
-  isDarkMode,
   onSelectAll,
   onClearSelection,
   selectedCount,
@@ -119,8 +117,8 @@ export const AdminFilters = ({
   const isPartiallySelected = selectedCount > 0 && !isAllSelected;
 
   return (
-    <Card className={isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}>
-      <CardHeader className={isDarkMode ? "border-gray-700" : "border-gray-200"}>
+    <Card>
+      <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <CardTitle className="flex items-center gap-2 text-xl">
             <Filter className="w-5 h-5" />
@@ -133,11 +131,11 @@ export const AdminFilters = ({
           </CardTitle>
 
           <div className="flex items-center gap-3">
-            <span className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+            <span className="text-sm text-muted-foreground">
               {totalResults} resultado{totalResults !== 1 ? "s" : ""}
             </span>
 
-            <div className={`flex items-center border rounded-lg p-1 ${isDarkMode ? "border-gray-600 bg-gray-700" : "border-gray-300 bg-gray-100"}`}>
+            <div className="flex items-center border rounded-lg p-1 bg-muted">
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
@@ -162,12 +160,12 @@ export const AdminFilters = ({
       <CardContent className="space-y-5 pt-6">
         {/* Búsqueda */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por marca, modelo, vendedor, referencia..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className={`pl-10 ${isDarkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400" : "bg-white border-gray-300"}`}
+            className="pl-10"
           />
         </div>
 
@@ -175,16 +173,13 @@ export const AdminFilters = ({
         <div className="flex flex-wrap items-center gap-2 py-2">
           <label
             htmlFor="select-all"
-            className={`inline-flex items-center gap-2 cursor-pointer rounded-md border px-3 text-sm h-9 font-medium transition-colors
-              ${isDarkMode
-                ? "border-gray-600 hover:bg-gray-700"
-                : "border-gray-300 hover:bg-gray-100"
-              }
-            `}
+            className="inline-flex items-center gap-2 cursor-pointer rounded-md border px-3 text-sm h-9 font-medium transition-colors hover:bg-muted"
           >
             <Checkbox
               id="select-all"
-              checked={isAllSelected ? true : isPartiallySelected ? 'indeterminate' : false}
+              checked={
+                isAllSelected ? true : isPartiallySelected ? "indeterminate" : false
+              }
               onCheckedChange={(checked) => {
                 if (checked === true) {
                   onSelectAll();
@@ -194,9 +189,7 @@ export const AdminFilters = ({
               }}
               aria-label="Seleccionar o deseleccionar todos"
             />
-            <span>
-              Seleccionar todos
-            </span>
+            <span>Seleccionar todos</span>
           </label>
           {selectedCount > 0 && (
             <>
@@ -204,12 +197,12 @@ export const AdminFilters = ({
                 variant="outline"
                 size="sm"
                 onClick={onClearSelection}
-                className={`flex items-center gap-2 ${isDarkMode ? "border-gray-600 hover:bg-gray-700" : ""}`}
+                className="flex items-center gap-2"
               >
                 <Square className="w-4 h-4" />
                 Limpiar selección
               </Button>
-              <Badge variant="secondary" className={isDarkMode ? "bg-graydiv0" : ""}>
+              <Badge variant="secondary">
                 {selectedCount} seleccionado{selectedCount !== 1 ? "s" : ""}
               </Badge>
             </>
@@ -233,7 +226,6 @@ export const AdminFilters = ({
                   status: status.value as AdminPanelFilters["status"],
                 })
               }
-              className={isDarkMode && filters.status !== status.value ? "border-gray-600 hover:bg-gray-700" : ""}
             >
               {status.label}
             </Button>
@@ -243,42 +235,39 @@ export const AdminFilters = ({
         {/* Filtros avanzados */}
         <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
           <CollapsibleTrigger asChild>
-            <Button
-              variant="outline"
-              className={`w-full bg-transparent ${isDarkMode ? "border-gray-600 hover:bg-gray-700 text-white" : "hover:bg-gray-50"}`}
-            >
+            <Button variant="outline" className="w-full">
               <Filter className="w-4 h-4 mr-2" />
               Filtros Avanzados
               {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className={`ml-2 ${isDarkMode ? "bg-gray-600" : ""}`}>
+                <Badge variant="secondary" className="ml-2">
                   {activeFiltersCount}
                 </Badge>
               )}
             </Button>
           </CollapsibleTrigger>
 
-          <CollapsibleContent className="space-y-6 mt-4 pt-4 border-t-2 border-gray-400 dark:border-gray-00">
+          <CollapsibleContent className="space-y-6 mt-4 pt-4 border-t">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Categoría */}
-              <div className={`p-5 rounded-lg border-2 ${isDarkMode ? "bg-blue-900 border-blue-600" : "bg-blue-100 border-blue-500"}`}>
-                <label className={`text-sm font-semibold mb-3 block ${isDarkMode ? "text-blue-200" : "text-blue-900"}`}>
+              <div className="p-5 rounded-lg border bg-card">
+                <label className="text-sm font-semibold mb-3 block text-foreground">
                   Categoría
                 </label>
                 <MultiSelectFilter
-                  options={categoryOptions.filter(o => o.value !== 'all')}
+                  options={categoryOptions.filter((o) => o.value !== "all")}
                   selectedValues={filters.category}
                   onChange={(selected) => onFiltersChange({ category: selected })}
                   placeholder="Seleccionar categorías"
-                  className={`w-full ${isDarkMode ? "bg-gray-600 border-blue-500 text-white" : "bg-white border-blue-300"}`}
+                  className="w-full"
                 />
               </div>
 
               {/* Ordenamiento */}
-              <div className={`p-5 rounded-lg border-2 ${isDarkMode ? "bg-purple-900 border-purple-600" : "bg-purple-100 border-purple-500"}`}>
-                <label className={`text-sm font-semibold mb-3 block ${isDarkMode ? "text-purple-200" : "text-purple-900"}`}>
+              <div className="p-5 rounded-lg border bg-card">
+                <label className="text-sm font-semibold mb-3 block text-foreground">
                   Ordenar por
                 </label>
-                <div className={isDarkMode ? "bg-purple-800 rounded-md" : "bg-white rounded-md"}>
+                <div>
                   <SortSelector
                     value={filters.sortBy}
                     onChange={(value) =>
@@ -291,8 +280,8 @@ export const AdminFilters = ({
               </div>
 
               {/* Filtro Destacado */}
-              <div className={`p-5 rounded-lg border-2 ${isDarkMode ? "bg-orange-900 border-orange-600" : "bg-orange-100 border-orange-500"}`}>
-                <label className={`text-sm font-semibold mb-3 block ${isDarkMode ? "text-orange-200" : "text-orange-900"}`}>
+              <div className="p-5 rounded-lg border bg-card">
+                <label className="text-sm font-semibold mb-3 block text-foreground">
                   Destacado
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -312,7 +301,6 @@ export const AdminFilters = ({
                           featured: item.value as boolean | "all",
                         })
                       }
-                      className={isDarkMode && filters.featured !== item.value ? "border-gray-500 hover:bg-gray-600 text-gray-200" : ""}
                     >
                       {item.label}
                     </Button>
@@ -321,14 +309,16 @@ export const AdminFilters = ({
               </div>
 
               {/* Rango de Fechas */}
-              <div className={`p-5 rounded-lg border-2 ${isDarkMode ? "bg-green-900 border-green-600" : "bg-green-100 border-green-500"}`}>
-                <label className={`text-sm font-semibold mb-3 block ${isDarkMode ? "text-green-200" : "text-green-900"}`}>
+              <div className="p-5 rounded-lg border bg-card">
+                <label className="text-sm font-semibold mb-3 block text-foreground">
                   Rango de Fechas
                 </label>
                 <DatePicker
                   onDateChange={(range) => {
                     if (range) {
-                      onFiltersChange({ dateRange: [range.from ?? null, range.to ?? null] });
+                      onFiltersChange({
+                        dateRange: [range.from ?? null, range.to ?? null],
+                      });
                     } else {
                       onFiltersChange({ dateRange: [null, null] });
                     }
@@ -341,9 +331,16 @@ export const AdminFilters = ({
               </div>
 
               {/* Rango de precio */}
-              <div className={`md:col-span-2 lg:col-span-3 p-5 rounded-lg border-2 ${isDarkMode ? "bg-yellow-900 border-yellow-600" : "bg-yellow-100 border-yellow-500"}`}>
-                <label className={`text-sm font-semibold mb-4 block ${isDarkMode ? "text-yellow-200" : "text-yellow-900"}`}>
-                  Rango de precio: <span className={`font-bold ${isDarkMode ? "text-yellow-300" : "text-yellow-800"}`}>${filters.priceRange[0].toLocaleString()}</span> - <span className={`font-bold ${isDarkMode ? "text-yellow-300" : "text-yellow-800"}`}>${filters.priceRange[1].toLocaleString()}</span>
+              <div className="md:col-span-2 lg:col-span-3 p-5 rounded-lg border bg-card">
+                <label className="text-sm font-semibold mb-4 block text-foreground">
+                  Rango de precio:{" "}
+                  <span className="font-bold text-primary">
+                    ${filters.priceRange[0].toLocaleString()}
+                  </span>{" "}
+                  -{" "}
+                  <span className="font-bold text-primary">
+                    ${filters.priceRange[1].toLocaleString()}
+                  </span>
                 </label>
                 <Slider
                   value={filters.priceRange}
@@ -361,9 +358,9 @@ export const AdminFilters = ({
             {/* Limpiar filtros */}
             {activeFiltersCount > 0 && (
               <Button
-                variant="outline"
+                variant="destructive"
                 onClick={clearFilters}
-                className={`w-full bg-transparent ${isDarkMode ? "border-red-600/50 hover:bg-red-600/10 text-red-400 hover:text-red-300" : "border-red-300 text-red-600 hover:bg-red-50"}`}
+                className="w-full"
               >
                 <X className="w-4 h-4 mr-2" />
                 Limpiar {activeFiltersCount} filtros

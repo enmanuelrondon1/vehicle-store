@@ -4,7 +4,6 @@ import React, {  useMemo } from 'react';
 import { Car, Check, AlertCircle, Search, Calendar, Tag, Layers, Award } from 'lucide-react';
 import { VehicleCategory, VEHICLE_CATEGORIES_LABELS } from "@/types/shared";
 import { VehicleDataBackend } from "@/types/types";
-import { useDarkMode } from "@/context/DarkModeContext";
 import { CATEGORY_DATA } from "@/constants/form-constants";
 import { useFieldValidation } from '@/hooks/useFieldValidation';
 import { InputField } from '@/components/shared/forms/InputField';
@@ -27,8 +26,7 @@ interface StepProps {
 const SmartSuggestions: React.FC<{
   category?: VehicleCategory;
   brand?: string;
-  isDarkMode: boolean;
-}> = ({ category,  isDarkMode }) => {
+}> = ({ category }) => {
   const getSuggestions = () => {
     if (!category) return [];
     
@@ -53,17 +51,11 @@ const SmartSuggestions: React.FC<{
   if (suggestions.length === 0 || !category) return null;
 
   return (
-    <div className={`mt-4 p-3 rounded-xl ${
-      isDarkMode ? "bg-blue-900/20 border-blue-700" : "bg-blue-50 border-blue-200"
-    } border`}>
-      <h4 className={`text-sm font-semibold mb-2 ${
-        isDarkMode ? "text-blue-300" : "text-blue-800"
-      }`}>
+    <div className="mt-4 p-3 rounded-xl border bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-700">
+      <h4 className="text-sm font-semibold mb-2 text-blue-800 dark:text-blue-300">
         💡 Consejos para tu {VEHICLE_CATEGORIES_LABELS[category] || "vehículo"}:
       </h4>
-      <ul className={`text-xs space-y-1 ${
-        isDarkMode ? "text-blue-200" : "text-blue-700"
-      }`}>
+      <ul className="text-xs space-y-1 text-blue-700 dark:text-blue-200">
         {suggestions.map((suggestion, index) => (
           <li key={index}>• {suggestion}</li>
         ))}
@@ -72,18 +64,19 @@ const SmartSuggestions: React.FC<{
   );
 };
 
+
 // Componente de Progreso (estandarizado)
-const ProgressBar: React.FC<{ progress: number; isDarkMode: boolean }> = ({ progress, isDarkMode }) => (
+const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => (
   <div className="mb-6">
     <div className="flex justify-between items-center mb-2">
-      <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+      <span className="text-sm font-medium text-foreground/80">
         Progreso del formulario
       </span>
-      <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+      <span className="text-sm text-foreground/60">
         {Math.round(progress)}%
       </span>
     </div>
-    <div className={`w-full h-2 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+    <div className="w-full h-2 rounded-full bg-muted">
       <div 
         className="h-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all duration-500 ease-out"
         style={{ width: `${progress}%` }}
@@ -93,12 +86,12 @@ const ProgressBar: React.FC<{ progress: number; isDarkMode: boolean }> = ({ prog
 );
 
 
+
 const Step1_BasicInfo: React.FC<StepProps> = ({
   formData,
   errors,
   handleInputChange,
 }) => {
-  const { isDarkMode } = useDarkMode();
 
   // Hooks de validación para cada campo
   const categoryValidation = useFieldValidation(formData.category, errors.category);
@@ -109,11 +102,9 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
   const versionValidation = useFieldValidation(formData.version, errors.version);
   const yearValidation = useFieldValidation(formData.year, errors.year);
 
-  const inputClass = `w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
-    isDarkMode
-      ? "bg-gray-700 text-gray-200"
-      : "bg-white text-gray-900"
-  }`;
+
+  const inputClass = "w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 bg-background text-foreground";
+
 
 
 
@@ -128,12 +119,15 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
     return { completedRequiredFields: completed, progressPercentage: progress };
   }, [formData, errors]);
 
+
   const categoryOptions = Object.values(VehicleCategory).map((cat) => ({
     value: cat,
     label: VEHICLE_CATEGORIES_LABELS[cat],
   }));
 
+
   const currentCategory = formData.category as VehicleCategory | undefined;
+
 
   const brandOptions = useMemo(() => {
     if (!currentCategory || !CATEGORY_DATA[currentCategory]) return [];
@@ -153,36 +147,36 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
     }));
   }, [currentCategory, formData.brand]);
 
+
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: currentYear - 1899 }, (_, i) => {
     const year = currentYear + 1 - i;
     return { value: year.toString(), label: year.toString() };
   });
 
+
   return (
-    <div className={`max-w-2xl mx-auto ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}>
+    <div className="max-w-2xl mx-auto text-foreground">
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
-          <div className={`p-3 rounded-xl shadow-lg ${
-            isDarkMode
-              ? "bg-gradient-to-br from-gray-600 to-gray-700"
-              : "bg-gradient-to-br from-blue-500 to-blue-600"
-          }`}>
-            <Car className={`w-6 h-6 ${isDarkMode ? "text-gray-200" : "text-white"}`} />
+          <div className="p-3 rounded-xl shadow-lg bg-gradient-to-br from-blue-500 to-blue-600">
+            <Car className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className={`text-2xl font-bold ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}>
+            <h2 className="text-2xl font-bold text-foreground">
               Información Básica
             </h2>
-            <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+            <p className="text-sm text-muted-foreground">
               Completa los datos principales de tu vehículo
             </p>
           </div>
         </div>
 
+
         {/* Barra de progreso */}
-        <ProgressBar progress={progressPercentage} isDarkMode={isDarkMode} />
+        <ProgressBar progress={progressPercentage} />
       </div>
+
 
       <div className="space-y-6">
         <InputField
@@ -208,10 +202,11 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             placeholder="Selecciona el tipo de vehículo"
             onBlur={categoryValidation.handleBlur}
             options={categoryOptions}
-            className={`${inputClass} ${categoryValidation.getBorderColor(isDarkMode)}`}
+            className={`${inputClass} ${categoryValidation.getBorderClassName()}`}
             error={errors.category}
           />
         </InputField>
+
 
         <InputField 
           label="Marca" 
@@ -241,10 +236,11 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
                 : "Selecciona la marca"
             }
             options={brandOptions}
-            className={`${inputClass} ${brandValidation.getBorderColor(isDarkMode)}`}
+            className={`${inputClass} ${brandValidation.getBorderClassName()}`}
             error={errors.brand}
           />
         </InputField>
+
 
         {/* Campo condicional para especificar otra marca */}
         {formData.brand === "Otra" && (
@@ -263,11 +259,12 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
               onChange={(e) => handleInputChange("brandOther", e.target.value)}
               onBlur={brandOtherValidation.handleBlur}
               maxLength={50}
-              className={`${inputClass} ${brandOtherValidation.getBorderColor(isDarkMode)}`}
+              className={`${inputClass} ${brandOtherValidation.getBorderClassName()}`}
               placeholder="Ej: Empire Keeway, Skygo, Lifan"
             />
           </InputField>
         )}
+
 
         <InputField 
           label="Modelo" 
@@ -293,10 +290,11 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
                 : "Selecciona el modelo"
             }
             options={modelOptions}
-            className={`${inputClass} ${modelValidation.getBorderColor(isDarkMode)}`}
+            className={`${inputClass} ${modelValidation.getBorderClassName()}`}
             error={errors.model}
           />
         </InputField>
+
 
         {/* Campo condicional para especificar otro modelo */}
         {formData.model === "Otro" && (
@@ -315,11 +313,12 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
               onChange={(e) => handleInputChange("modelOther", e.target.value)}
               onBlur={modelOtherValidation.handleBlur}
               maxLength={50}
-              className={`${inputClass} ${modelOtherValidation.getBorderColor(isDarkMode)}`}
+              className={`${inputClass} ${modelOtherValidation.getBorderClassName()}`}
               placeholder="Ej: Corolla Cross, F-250, etc."
             />
           </InputField>
         )}
+
 
         <InputField
           label="Versión / Edición (Opcional)"
@@ -335,12 +334,13 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             onChange={(e) => handleInputChange("version", e.target.value)}
             onBlur={versionValidation.handleBlur}
             maxLength={100}
-            className={`${inputClass} ${versionValidation.getBorderColor(isDarkMode)}`}
+            className={`${inputClass} ${versionValidation.getBorderClassName()}`}
             placeholder="Ej: XEI, Limited, Sport, 4x4"
             autoComplete="off"
             disabled={!formData.model}
           />
         </InputField>
+
 
         <InputField 
           label="Año" 
@@ -363,24 +363,25 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             onBlur={yearValidation.handleBlur}
             placeholder="Selecciona el año"
             options={yearOptions}
-            className={`${inputClass} ${yearValidation.getBorderColor(isDarkMode)}`}
+            className={`${inputClass} ${yearValidation.getBorderClassName()}`}
             error={errors.year}
           />
         </InputField>
+
 
         {/* Sugerencias inteligentes */}
         <SmartSuggestions 
           category={currentCategory}
           brand={formData.brand}
-          isDarkMode={isDarkMode}
         />
 
+
         {/* Resumen de completitud */}
-        <div className={`mt-6 p-4 rounded-xl ${
+        <div className={`mt-6 p-4 rounded-xl border ${
           completedRequiredFields >= 4
-            ? (isDarkMode ? "bg-green-900/20 border-green-700" : "bg-green-50 border-green-200")
-            : (isDarkMode ? "bg-orange-900/20 border-orange-700" : "bg-orange-50 border-orange-200")
-        } border`}>
+            ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700"
+            : "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-700"
+        }`}>
           <div className="flex items-center space-x-2">
             {completedRequiredFields >= 4 ? (
               <Check className="w-5 h-5 text-green-500" />
@@ -389,8 +390,8 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             )}
             <span className={`font-medium ${
               completedRequiredFields >= 4
-                ? "text-green-700"
-                : "text-orange-700"
+                ? "text-green-700 dark:text-green-400"
+                : "text-orange-700 dark:text-orange-400"
             }`}>
               {completedRequiredFields >= 4
                 ? "¡Información básica completa!"
@@ -398,9 +399,7 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
               }
             </span>
           </div>
-          <div className={`text-xs mt-2 ${
-            isDarkMode ? "text-gray-400" : "text-gray-600"
-          }`}>
+          <div className="text-xs mt-2 text-muted-foreground">
             Progreso: {completedRequiredFields}/4 campos requeridos
           </div>
         </div>
@@ -408,5 +407,6 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
     </div>
   );
 };
+
 
 export default Step1_BasicInfo;

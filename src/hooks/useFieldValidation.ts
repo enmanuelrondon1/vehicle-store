@@ -14,14 +14,13 @@ export const useFieldValidation = (value: FormFieldValue, error: string | undefi
   const showValidation = isTouched || !!error;
   const isValid = showValidation && !error && (value !== undefined && value !== '');
 
-  const getBorderColor = (isDarkMode: boolean) => {
+  const getBorderClassName = () => {
     if (showValidation) {
-      if (error) return 'border-red-400 focus:ring-red-500/20';
-      if (isValid) return 'border-green-400 focus:ring-green-500/20';
+      if (error) return 'border-destructive focus:ring-destructive/20';
+      if (isValid) return 'border-primary focus:ring-primary/20';
     }
-    return isDarkMode ? 'border-gray-600 focus:ring-blue-500/20' : 'border-gray-200 focus:ring-blue-500/20';
+    return 'border-input focus:ring-blue-500/20 dark:focus:ring-blue-400/20';
   };
 
-  return { handleBlur, showValidation, isValid, getBorderColor };
+  return { handleBlur, showValidation, isValid, getBorderClassName };
 };
-

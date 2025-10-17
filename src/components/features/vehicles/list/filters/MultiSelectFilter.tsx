@@ -27,12 +27,12 @@ interface MultiSelectFilterProps {
   selected: string[];
   onChange: (selected: string[]) => void;
   placeholder?: string;
-  isDarkMode: boolean;
+  // isDarkMode: boolean; // ❌ REMOVED
   showPublishedToggle?: boolean;
   isPublishedOnly?: boolean;
   onPublishedOnlyChange?: (value: boolean) => void;
   publishedOnlyLabel?: string;
-  singleSelect?: boolean; // Añadir esta línea
+  singleSelect?: boolean;
 }
 
 export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
@@ -40,7 +40,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
   selected,
   onChange,
   placeholder = "Seleccionar...",
-  isDarkMode,
+  // isDarkMode, // ❌ REMOVED
   showPublishedToggle = false,
   isPublishedOnly = false,
   onPublishedOnlyChange,
@@ -94,7 +94,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
               })
             ) : (
               <span
-                className={isDarkMode ? "text-gray-400" : "text-gray-500"}
+                className="text-muted-foreground"
               >
                 {placeholder}
               </span>
@@ -104,13 +104,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className={cn(
-          "w-[var(--radix-popover-trigger-width)] p-0 z-50",
-          "border rounded-md shadow-lg",
-          isDarkMode
-            ? "bg-gray-800 border-gray-700 text-white"
-            : "bg-white border-gray-200 text-black"
-        )}
+        className="w-[var(--radix-popover-trigger-width)] p-0 z-50"
       >
         <Command>
           {showPublishedToggle && onPublishedOnlyChange && (
@@ -169,12 +163,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
                   <span className="flex-1">{option.label}</span>
                   {option.count !== undefined && option.count > 0 && (
                     <span
-                      className={cn(
-                        "ml-2 text-xs px-1.5 py-0.5 rounded-full",
-                        isDarkMode
-                          ? "bg-blue-800 text-white"
-                          : "bg-blue-500 text-white"
-                      )}
+                      className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground"
                     >
                       {option.count}
                     </span>

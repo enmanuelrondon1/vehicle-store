@@ -1,13 +1,13 @@
 //src/components/features/vehicles/detail/sections/VehicleActions.tsx
 "use client";
 
-import { useDarkMode } from "@/context/DarkModeContext";
 import type React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { ArrowLeft, Heart, Share2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface VehicleActionsProps {
   vehicleId: string;
@@ -23,7 +23,6 @@ export const VehicleActions: React.FC<VehicleActionsProps> = ({
   onShare,
 }) => {
   const router = useRouter();
-  const { isDarkMode } = useDarkMode();
   const { data: session } = useSession();
   const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
 
@@ -81,41 +80,29 @@ export const VehicleActions: React.FC<VehicleActionsProps> = ({
 
   return (
     <div className="flex items-center justify-between mb-8">
-      <button
-        onClick={() => router.back()}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-          isDarkMode
-            ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-            : "bg-white hover:bg-gray-50 text-gray-700"
-        } border ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}
-      >
-        <ArrowLeft className="w-4 h-4" />
+      <Button variant="outline" onClick={() => router.back()}>
+        <ArrowLeft className="w-4 h-4 mr-2" />
         Volver
-      </button>
+      </Button>
       <div className="flex items-center gap-2">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={handleFavorite}
           disabled={isLoadingFavorite}
-          className={`p-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-            isFavorited
-              ? "bg-red-100 text-red-600"
-              : isDarkMode
-              ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-              : "bg-white hover:bg-gray-50 text-gray-700"
-          } border ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}
+          className={`disabled:opacity-50 disabled:cursor-not-allowed ${
+            isFavorited ? "text-red-600 hover:text-red-700" : ""
+          }`}
         >
-          <Heart className={`w-5 h-5 ${isFavorited ? "fill-current" : ""}`} />
-        </button>
-        <button
-          onClick={onShare}
-          className={`p-2 rounded-lg transition-colors ${
-            isDarkMode
-              ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-              : "bg-white hover:bg-gray-50 text-gray-700"
-          } border ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}
-        >
+          <Heart
+            className={`w-5 h-5 ${
+              isFavorited ? "fill-current" : "group-hover:fill-red-100"
+            }`}
+          />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={onShare}>
           <Share2 className="w-5 h-5" />
-        </button>
+        </Button>
       </div>
     </div>
   );

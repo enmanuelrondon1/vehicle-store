@@ -1,5 +1,4 @@
-// src/components/features/vehicles/registration/Step2_PriceAndCondition.tsx
-
+//src/components/features/vehicles/registration/Step2_PriceAndCondition.tsx
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
@@ -11,7 +10,7 @@ import {
   Info,
   Eye,
 } from "lucide-react";
-import { Switch } from "@/components/ui/switch"; // Importar el componente Switch
+import { Switch } from "@/components/ui/switch";
 import {
   VehicleCondition,
   WarrantyType,
@@ -20,7 +19,6 @@ import {
   WARRANTY_LABELS,
 } from "@/types/shared";
 import type { VehicleDataBackend } from "@/types/types";
-import { useDarkMode } from "@/context/DarkModeContext";
 import { useFieldValidation } from "@/hooks/useFieldValidation";
 import { InputField } from "@/components/shared/forms/InputField";
 import { SelectField } from "@/components/shared/forms/SelectField";
@@ -48,7 +46,6 @@ interface StepProps {
   handleInputChange: (field: string, value: FormFieldValue) => void;
 }
 
-// Configuración de validación
 const VALIDATION_CONFIG = {
   price: {
     min: 100,
@@ -76,43 +73,29 @@ const VALIDATION_CONFIG = {
   },
 };
 
-// Componente de Progreso
-const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => {
-  const { isDarkMode } = useDarkMode();
-
-  return (
-    <div className="mb-6">
-      <div className="flex justify-between items-center mb-2">
-        <span
-          className={`text-sm font-medium ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}
-        >
-          Progreso del formulario
-        </span>
-        <span
-          className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}
-        >
-          {Math.round(progress)}%
-        </span>
-      </div>
-      <div
-        className={`w-full h-2 rounded-full ${isDarkMode ? "bg-gray-700" : "bg-gray-200"}`}
-      >
-        <div
-          className="h-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${progress}%` }}
-        ></div>
-      </div>
+const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => (
+  <div className="mb-6">
+    <div className="flex justify-between items-center mb-2">
+      <span className="text-sm font-medium text-foreground/80">
+        Progreso del formulario
+      </span>
+      <span className="text-sm text-muted-foreground">
+        {Math.round(progress)}%
+      </span>
     </div>
-  );
-};
+    <div className="w-full h-2 rounded-full bg-secondary">
+      <div
+        className="h-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all duration-500 ease-out"
+        style={{ width: `${progress}%` }}
+      ></div>
+    </div>
+  </div>
+);
 
-// Componente de Vista Previa
 const PreviewCard: React.FC<{
   formData: Partial<VehicleDataBackend>;
   exchangeRate: number | null;
 }> = ({ formData, exchangeRate }) => {
-  const { isDarkMode } = useDarkMode();
-
   const priceInVes = useMemo(() => {
     if (formData.price && exchangeRate && formData.currency === Currency.USD) {
       return (formData.price * exchangeRate).toLocaleString("es-VE", {
@@ -126,25 +109,13 @@ const PreviewCard: React.FC<{
   }, [formData.price, exchangeRate, formData.currency]);
 
   return (
-    <div
-      className={`mt-6 p-4 rounded-xl border-2 border-dashed transition-all duration-300 ${
-        isDarkMode
-          ? "border-gray-600 bg-gray-800/50"
-          : "border-gray-300 bg-gray-50"
-      }`}
-    >
-      <h3
-        className={`flex items-center text-sm font-semibold mb-3 ${
-          isDarkMode ? "text-gray-300" : "text-gray-700"
-        }`}
-      >
+    <div className="mt-6 p-4 rounded-xl border-2 border-dashed transition-all duration-300 border-border bg-card/50">
+      <h3 className="flex items-center text-sm font-semibold mb-3 text-foreground/90">
         <Eye className="w-4 h-4 mr-2" />
         Vista Previa del Anuncio
       </h3>
 
-      <div
-        className={`space-y-2 text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}
-      >
+      <div className="space-y-2 text-sm text-muted-foreground">
         <div className="flex justify-between">
           <span>Precio:</span>
           <span className="font-semibold text-green-600">
@@ -197,12 +168,10 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
   errors,
   handleInputChange,
 }) => {
-  const { isDarkMode } = useDarkMode();
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [isLoadingRate, setIsLoadingRate] = useState(false);
   const [showFinancingTips, setShowFinancingTips] = useState(false);
 
-  // Hooks de validación
   const priceValidation = useFieldValidation(formData.price, errors.price);
   const mileageValidation = useFieldValidation(
     formData.mileage,
@@ -217,11 +186,6 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
     errors.warranty
   );
 
-  const inputClass = `w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 ${
-    isDarkMode ? "bg-gray-700 text-gray-200" : "bg-white text-gray-900"
-  }`;
-
-  // Calcular progreso del formulario
   const formProgress = useMemo(() => {
     const fields = ["price", "mileage", "condition"];
     const completedFields = fields.filter((field) => {
@@ -232,14 +196,12 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
     return (completedFields / fields.length) * 100;
   }, [formData]);
 
-  // Establecer USD como moneda por defecto al cargar el componente
   useEffect(() => {
     if (!formData.currency) {
       handleInputChange("currency", Currency.USD);
     }
   }, [formData.currency, handleInputChange]);
 
-  // Efecto para obtener la tasa de cambio al cargar el componente
   useEffect(() => {
     const fetchRate = async () => {
       setIsLoadingRate(true);
@@ -252,7 +214,6 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
         }
       } catch (error) {
         console.error("Error al obtener la tasa de cambio:", error);
-        // Tasa de respaldo en caso de que la API falle
         setExchangeRate(126.28);
       } finally {
         setIsLoadingRate(false);
@@ -262,7 +223,6 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
     fetchRate();
   }, []);
 
-  // Cálculo del precio en Bolívares
   const priceInVes = useMemo(() => {
     if (formData.price && exchangeRate && formData.currency === Currency.USD) {
       return (formData.price * exchangeRate).toLocaleString("es-VE", {
@@ -275,18 +235,15 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
     return null;
   }, [formData.price, exchangeRate, formData.currency]);
 
-  // Función mejorada para manejar el input de kilometraje con formateo
   const handleMileageChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      // Solo permitir números y limitar a un número razonable de dígitos
       const numericValue = value.replace(/[^0-9]/g, "").slice(0, 8);
 
       if (numericValue === "") {
         handleInputChange("mileage", undefined);
       } else {
         const parsedValue = parseInt(numericValue, 10);
-        // Validar que el kilometraje sea razonable (máximo 999,999 km)
         if (parsedValue <= 999999) {
           handleInputChange("mileage", parsedValue);
         }
@@ -295,17 +252,14 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
     [handleInputChange]
   );
 
-  // Función para formatear el kilometraje con separadores de miles
   const formatMileage = (value: number | undefined): string => {
     if (!value) return "";
     return value.toLocaleString("es-VE");
   };
 
-  // Función mejorada para el precio con validación
   const handlePriceChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const rawValue = e.target.value;
-      // Eliminar todo excepto los dígitos
       const numericValue = rawValue.replace(/[^0-9]/g, "");
 
       if (numericValue === "") {
@@ -328,39 +282,20 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
-          <div
-            className={`p-3 rounded-xl shadow-lg ${
-              isDarkMode
-                ? "bg-gray-700"
-                : "bg-gradient-to-br from-green-500 to-green-600"
-            }`}
-          >
-            <DollarSign
-              className={`w-6 h-6 ${
-                isDarkMode ? "text-gray-200" : "text-white"
-              }`}
-            />
+          <div className="p-3 rounded-xl shadow-lg bg-gradient-to-br from-green-500 to-green-600">
+            <DollarSign className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2
-              className={`text-2xl font-bold ${
-                isDarkMode ? "text-gray-100" : "text-gray-800"
-              }`}
-            >
+            <h2 className="text-2xl font-bold text-foreground">
               Precio y Condición
             </h2>
-            <p
-              className={`text-gray-600 text-sm ${
-                isDarkMode ? "text-gray-400" : ""
-              }`}
-            >
+            <p className="text-sm text-muted-foreground">
               Define el precio y estado del vehículo
             </p>
           </div>
         </div>
       </div>
 
-      {/* Barra de Progreso */}
       <ProgressBar progress={formProgress} />
 
       <div className="space-y-6">
@@ -374,12 +309,8 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
           tips={VALIDATION_CONFIG.price.tips}
         >
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <span
-                className={`text-sm font-medium ${
-                  isDarkMode ? "text-gray-400" : "text-gray-500"
-                }`}
-              >
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+              <span className="text-sm font-medium text-muted-foreground">
                 $
               </span>
             </div>
@@ -387,65 +318,50 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
               type="text"
               value={formatPrice(formData.price)}
               onChange={handlePriceChange}
-              className={`${inputClass} pl-8 ${priceValidation.getBorderColor(isDarkMode)}`}
+              className={`w-full rounded-xl border-2 bg-background px-4 py-3 pl-8 text-foreground transition-all duration-200 focus:outline-none focus:ring-4 ${priceValidation.getBorderClassName()}`}
               placeholder="25,000"
               onBlur={priceValidation.handleBlur}
               inputMode="numeric"
             />
           </div>
 
-          {/* Mostrar el precio convertido y el estado de carga */}
           {isLoadingRate && (
-            <p className="text-xs mt-2 text-gray-500 dark:text-gray-400 flex items-center">
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+            <p className="mt-2 flex items-center text-xs text-muted-foreground">
+              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
               Obteniendo tasa del día...
             </p>
           )}
           {priceInVes && !isLoadingRate && (
-            <div
-              className={`mt-2 p-3 rounded-lg border ${
-                isDarkMode
-                  ? "bg-gray-800 border-gray-700"
-                  : "bg-gray-50 border-gray-200"
-              }`}
-            >
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="mt-2 rounded-lg border bg-secondary/50 p-3">
+              <p className="text-xs text-muted-foreground">
                 Equivalente aproximado:{" "}
                 <span className="font-semibold text-green-600 dark:text-green-400">
                   {priceInVes}
                 </span>
               </p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="mt-1 text-xs text-muted-foreground/80">
                 💡 Los compradores verán ambas monedas
               </p>
             </div>
           )}
         </InputField>
 
-        <div className="flex items-center justify-between rounded-lg p-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800/50">
-          <label className="flex items-center space-x-2 cursor-pointer group">
-            <span
-              className={`text-sm font-medium transition-colors group-hover:text-blue-600 ${
-                isDarkMode
-                  ? "text-gray-300 group-hover:text-blue-400"
-                  : "text-gray-700"
-              }`}
-            >
+        <div className="flex items-center justify-between rounded-lg p-3 transition-colors hover:bg-secondary/50">
+          <label className="group flex cursor-pointer items-center space-x-2">
+            <span className="text-sm font-medium text-foreground transition-colors group-hover:text-primary">
               ¿Precio Negociable?
             </span>
             <Handshake
-              className={`w-4 h-4 transition-colors group-hover:scale-110 ${
+              className={`h-4 w-4 transition-colors group-hover:scale-110 ${
                 formData.isNegotiable
-                  ? "text-blue-500"
-                  : isDarkMode
-                    ? "text-gray-500"
-                    : "text-gray-400"
+                  ? "text-primary"
+                  : "text-muted-foreground"
               }`}
             />
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info className="w-3 h-3 text-gray-400" />
+                  <Info className="h-3 w-3 text-muted-foreground" />
                 </TooltipTrigger>
                 <TooltipContent>
                   Marcar como negociable puede atraer más compradores
@@ -462,46 +378,33 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
           />
         </div>
 
-        {/* Offers Financing Section */}
         <div className="space-y-1">
           <div className="flex justify-end">
             <button
               type="button"
               onClick={() => setShowFinancingTips(!showFinancingTips)}
-              className={`text-xs px-2 py-1 rounded-full transition-colors ${
-                isDarkMode
-                  ? "bg-blue-900/50 text-blue-300 hover:bg-blue-800/70"
-                  : "bg-blue-100 text-blue-600 hover:bg-blue-200"
-              }`}
+              className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/20"
             >
               Tips
             </button>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg p-3 -mt-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800/50">
-            <label className="flex items-center space-x-2 cursor-pointer group">
-              <span
-                className={`text-sm font-medium transition-colors group-hover:text-blue-600 ${
-                  isDarkMode
-                    ? "text-gray-300 group-hover:text-blue-400"
-                    : "text-gray-700"
-                }`}
-              >
+          <div className="-mt-2 flex items-center justify-between rounded-lg p-3 transition-colors hover:bg-secondary/50">
+            <label className="group flex cursor-pointer items-center space-x-2">
+              <span className="text-sm font-medium text-foreground transition-colors group-hover:text-primary">
                 ¿Ofrece Financiación?
               </span>
               <Handshake
-                className={`w-4 h-4 transition-colors group-hover:scale-110 ${
+                className={`h-4 w-4 transition-colors group-hover:scale-110 ${
                   formData.offersFinancing
-                    ? "text-blue-500"
-                    : isDarkMode
-                      ? "text-gray-500"
-                      : "text-gray-400"
+                    ? "text-primary"
+                    : "text-muted-foreground"
                 }`}
               />
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="w-3 h-3 text-gray-400 cursor-help" />
+                    <Info className="h-3 w-3 cursor-help text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>
@@ -521,20 +424,9 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
           </div>
 
           {showFinancingTips && (
-            <div
-              className={`p-3 rounded-lg space-y-1 ${
-                isDarkMode
-                  ? "bg-blue-900/20 border border-blue-800/30"
-                  : "bg-blue-50 border border-blue-200"
-              }`}
-            >
+            <div className="space-y-1 rounded-lg border border-primary/20 bg-primary/10 p-3">
               {VALIDATION_CONFIG.offersFinancing.tips.map((tip, index) => (
-                <p
-                  key={index}
-                  className={`text-xs ${
-                    isDarkMode ? "text-blue-300" : "text-blue-700"
-                  }`}
-                >
+                <p key={index} className="text-xs text-primary/90">
                   {tip}
                 </p>
               ))}
@@ -543,8 +435,8 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
         </div>
 
         {formData.offersFinancing && (
-          <div className="p-4 border rounded-lg mt-4 space-y-4 bg-gray-50 dark:bg-gray-800/20 dark:border-gray-700">
-            <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200">
+          <div className="mt-4 space-y-4 rounded-lg border bg-secondary/20 p-4">
+            <h3 className="text-md font-semibold text-foreground">
               Detalles de la Financiación
             </h3>
             <InputField
@@ -562,7 +454,7 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
                   })
                 }
                 placeholder="Ej: 18"
-                className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600"
+                className="w-full rounded-md border bg-background p-2"
               />
             </InputField>
             <InputField
@@ -580,7 +472,7 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
                   })
                 }
                 placeholder="Ej: 36"
-                className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600"
+                className="w-full rounded-md border bg-background p-2"
               />
             </InputField>
           </div>
@@ -600,19 +492,13 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
               type="text"
               value={formatMileage(formData.mileage)}
               onChange={handleMileageChange}
-              className={`${inputClass} pr-12 ${mileageValidation.getBorderColor(isDarkMode)}`}
+              className={`w-full rounded-xl border-2 bg-background px-4 py-3 pr-12 text-foreground transition-all duration-200 focus:outline-none focus:ring-4 ${mileageValidation.getBorderClassName()}`}
               placeholder="85,000"
               onBlur={mileageValidation.handleBlur}
               inputMode="numeric"
             />
-            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-              <span
-                className={`text-sm ${
-                  isDarkMode ? "text-gray-400" : "text-gray-500"
-                }`}
-              >
-                km
-              </span>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+              <span className="text-sm text-muted-foreground">km</span>
             </div>
           </div>
         </InputField>
@@ -637,7 +523,7 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
             )}
             placeholder="Selecciona la condición"
             error={errors.condition}
-            className={`${inputClass} ${conditionValidation.getBorderColor(isDarkMode)}`}
+            className={`w-full rounded-xl border-2 bg-background px-4 py-3 text-foreground transition-all duration-200 focus:outline-none focus:ring-4 ${conditionValidation.getBorderClassName()}`}
           />
         </InputField>
 
@@ -660,40 +546,24 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
             }))}
             placeholder="Selecciona tipo de garantía"
             error={errors.warranty}
-            className={`${inputClass} ${warrantyValidation.getBorderColor(isDarkMode)}`}
+            className={`w-full rounded-xl border-2 bg-background px-4 py-3 text-foreground transition-all duration-200 focus:outline-none focus:ring-4 ${warrantyValidation.getBorderClassName()}`}
           />
         </InputField>
 
-        {/* Vista Previa */}
         <PreviewCard formData={formData} exchangeRate={exchangeRate} />
 
-        {/* Resumen de Completitud */}
-        <div
-          className={`mt-6 p-4 rounded-xl ${
-            isDarkMode
-              ? "bg-gray-800 border border-gray-700"
-              : "bg-blue-50 border border-blue-200"
-          }`}
-        >
-          <h3
-            className={`text-sm font-semibold mb-2 ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
+        <div className="mt-6 rounded-xl border bg-secondary/50 p-4">
+          <h3 className="mb-2 text-sm font-semibold text-foreground">
             Estado del Formulario
           </h3>
           <div className="flex items-center justify-between">
-            <span
-              className={`text-xs ${
-                isDarkMode ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
+            <span className="text-xs text-muted-foreground">
               {formProgress === 100
                 ? "🎉 ¡Formulario completo!"
                 : `📝 ${Math.round(formProgress)}% completado`}
             </span>
             {formProgress === 100 && (
-              <span className="text-xs text-green-600 font-medium">
+              <span className="text-xs font-medium text-green-600">
                 ✅ Listo para continuar
               </span>
             )}

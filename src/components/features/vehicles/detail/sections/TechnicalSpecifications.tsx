@@ -1,6 +1,5 @@
 "use client";
 
-import { useDarkMode } from "@/context/DarkModeContext";
 import React from "react";
 
 interface Spec {
@@ -16,42 +15,24 @@ const SpecRow: React.FC<{ label: string; value: string | number }> = ({
   label,
   value,
 }) => {
-  const { isDarkMode } = useDarkMode();
-  return (<div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
-    <span
-      className={`font-medium ${
-        isDarkMode ? "text-gray-300" : "text-gray-700"
-      }`}
-    >
-      {label}
-    </span>
-    <span className={`${isDarkMode ? "text-white" : "text-gray-900"}`}>
-      {value}
-    </span>
-  </div>);
-}
+  return (
+    <div className="flex justify-between items-center py-3 border-b border-border">
+      <span className="font-medium text-muted-foreground">{label}</span>
+      <span className="text-foreground">{value}</span>
+    </div>
+  );
+};
 
-const TechnicalSpecificationsComponent: React.FC<TechnicalSpecificationsProps> = ({
-  specs,
-}) => {
-  const { isDarkMode } = useDarkMode();
+const TechnicalSpecificationsComponent: React.FC<
+  TechnicalSpecificationsProps
+> = ({ specs }) => {
   const midPoint = Math.ceil(specs.length / 2);
   const firstHalf = specs.slice(0, midPoint);
   const secondHalf = specs.slice(midPoint);
 
   return (
-    <div
-      className={`p-6 rounded-xl border ${
-        isDarkMode
-          ? "bg-gray-800/50 border-gray-700"
-          : "bg-white/50 border-gray-200"
-      } backdrop-blur-sm`}
-    >
-      <h3
-        className={`text-2xl font-bold mb-6 ${
-          isDarkMode ? "text-white" : "text-gray-900"
-        }`}
-      >
+    <div className="p-6 rounded-xl border bg-card/50 border-border backdrop-blur-sm">
+      <h3 className="text-2xl font-bold mb-6 text-foreground">
         Especificaciones Técnicas
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">

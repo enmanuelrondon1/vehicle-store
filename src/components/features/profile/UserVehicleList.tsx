@@ -19,6 +19,7 @@ import {
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { siteConfig } from "@/config/site"; // 1. Importar siteConfig
 
 const UserVehicleList = () => {
   const { status } = useSession();
@@ -125,9 +126,13 @@ const UserVehicleList = () => {
         <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md">
           ¡Empieza a vender ahora! Publica tu primer vehículo para que miles de personas lo vean.
         </p>
-        <Button asChild size="lg" className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600">
-          <Link href="/postAd">Publicar Vehículo</Link>
-        </Button>
+        <div className="text-center">
+          <p className="mb-4">Aún no has publicado ningún vehículo.</p>
+          {/* 2. Usar la ruta desde siteConfig */}
+          <Button asChild>
+            <Link href={siteConfig.paths.publishAd}>Publicar Vehículo</Link>
+          </Button>
+        </div>
       </div>
     );
   }

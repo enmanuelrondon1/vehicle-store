@@ -1,7 +1,6 @@
 // src/componentes/features/vehicles/registration/Step5_FeaturesAndMedia
 "use client";
-import React, { useState, useMemo,  } from "react";
-import { useDarkMode } from "@/context/DarkModeContext";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   FileText,
   Image as ImageIcon,
@@ -15,36 +14,50 @@ import {
   Navigation,
   Wrench,
   Truck,
-  ChevronDown,
-  ChevronUp,
+  Star, // ✅ Añadido: Ícono para destacar
 } from "lucide-react";
 import { getAvailableFeatures } from "@/constants/form-constants";
 import { ImageUploader } from "@/components/shared/forms/ImageUploader";
 import { SelectableChip } from "@/components/shared/forms/SelectableChip";
+import { Progress } from "@/components/ui/progress";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Switch } from "@/components/ui/switch"; // ✅ Añadido: Importar Switch
+import { Label } from "@/components/ui/label"; // ✅ Añadido: Importar Label
 
 // Importaciones corregidas - usar re-exportaciones de types.ts
-import { Documentation, VehicleCategory } from "@/types/types";
+import { Documentation, VehicleCategory, VehicleDataBackend } from "@/types/types";
 
 // Función para obtener el ícono - versión mejorada y segura
 import { InputField } from "@/components/shared/forms/InputField";
 const iconMap = {
-  Car, Shield, Users, Package, Zap, Navigation, Wrench, Truck
+  Car,
+  Shield,
+  Users,
+  Package,
+  Zap,
+  Navigation,
+  Wrench,
+  Truck,
 } as const;
 
-const getDynamicIcon = (iconName: keyof typeof iconMap = 'Car') => {
+const getDynamicIcon = (iconName: keyof typeof iconMap = "Car") => {
   const IconComponent = iconMap[iconName] || iconMap.Car;
   return <IconComponent className="w-4 h-4" />;
 };
 
-// Tipos
-interface VehicleDataBackend {
-  category?: VehicleCategory;
-  features?: string[];
-  documentation?: string[];
-  description?: string;
-  images?: string[];
-}
 
+// Tipos
 interface FormErrors {
   [key: string]: string | undefined;
 }
@@ -53,32 +66,12 @@ interface StepProps {
   formData: Partial<VehicleDataBackend>;
   errors: FormErrors;
   handleInputChange: (field: string, value: string | string[]) => void;
+  handleSwitchChange: (field: keyof VehicleDataBackend, value: boolean) => void;
   handleFeatureToggle: (feature: string) => void;
   handleDocumentationToggle: (doc: Documentation) => void;
   isDocumentationSelected: (doc: Documentation) => boolean;
   handleImagesChange: (urls: string[]) => void;
 }
-
-// --- Sub-componente para la Barra de Progreso ---
-const ProgressBar: React.FC<{ progress: number; isDarkMode: boolean }> = ({ progress, isDarkMode }) => (
-  <div className="mt-6">
-    <div className="flex justify-between items-center mb-1">
-      <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-        Progreso de la sección
-      </span>
-      <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-        {Math.round(progress)}%
-      </span>
-    </div>
-    <div className={`w-full h-2 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-      <div
-        className="h-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all duration-500 ease-out"
-        style={{ width: `${progress}%` }}
-      ></div>
-    </div>
-  </div>
-);
-
 
 // Opciones de documentación - usar valores del enum
 const DOCUMENTATION_OPTIONS = [
@@ -93,13 +86,12 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
   formData,
   errors,
   handleInputChange,
+  handleSwitchChange,
   handleFeatureToggle,
   handleDocumentationToggle,
   isDocumentationSelected,
   handleImagesChange,
 }) => {
-  const { isDarkMode } = useDarkMode();
-
   // --- CÁLCULO DE PROGRESO ---
   const progress = useMemo(() => {
     const fields = [
@@ -122,7 +114,12 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
     const totalFields = fields.length;
 
     return totalFields > 0 ? (completedCount / totalFields) * 100 : 0;
-  }, [formData.description, formData.images, formData.category, formData.features]);
+  }, [
+    formData.description,
+    formData.images,
+    formData.category,
+    formData.features,
+  ]);
 
   // Obtener características dinámicamente según la categoría
   const availableFeatures = useMemo(() => {
@@ -138,10 +135,11 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
   // Si no hay categoría, mostrar mensaje de error
   if (!formData.category) {
     return (
-      <div className={`p-6 rounded-xl border-2 border-dashed ${isDarkMode ? "border-gray-700 text-gray-500" : "border-gray-300 text-gray-500"}`}>
+      <div className="p-6 rounded-xl border-2 border-dashed border-border text-muted-foreground">
         <AlertCircle className="w-6 h-6 mx-auto mb-2" />
         <p className="text-center">
-          Por favor, regresa al paso 1 y selecciona una categoría para continuar.
+          Por favor, regresa al paso 1 y selecciona una categoría para
+          continuar.
         </p>
       </div>
     );
@@ -151,18 +149,28 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
     <div className="max-w-6xl mx-auto">
       {/* --- SECCIÓN DE TÍTULO CENTRADA --- */}
       <div className="mb-8 text-center">
-        <div className={`inline-flex items-center justify-center p-3 rounded-xl shadow-lg mb-3 ${isDarkMode ? "bg-gray-700" : "bg-gradient-to-br from-teal-500 to-teal-600"}`}>
-          <FileBadge className="w-6 h-6 text-white" />
+        <div className="inline-flex items-center justify-center p-3 rounded-xl shadow-lg mb-3 bg-primary/10">
+          <FileBadge className="w-6 h-6 text-primary" />
         </div>
-        <h2 className={`text-2xl font-bold ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}>
+        <h2 className="text-2xl font-bold text-foreground">
           Características y Multimedia
         </h2>
-        <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"} text-sm`}>
+        <p className="text-muted-foreground text-sm">
           Completa los detalles que enamorarán a los compradores.
         </p>
 
         {/* --- BARRA DE PROGRESO --- */}
-        <ProgressBar progress={progress} isDarkMode={isDarkMode} />
+        <div className="mt-6">
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-sm font-medium text-foreground">
+              Progreso de la sección
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {Math.round(progress)}%
+            </span>
+          </div>
+          <Progress value={progress} className="h-2" />
+        </div>
       </div>
 
       {/* --- CONTENIDO PRINCIPAL --- */}
@@ -186,7 +194,9 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
 
           <DescriptionSection
             description={formData.description || ""}
-            onDescriptionChange={(value) => handleInputChange("description", value)}
+            onDescriptionChange={(value) =>
+              handleInputChange("description", value)
+            }
             error={errors.description}
           />
 
@@ -198,6 +208,11 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
         </div>
 
         <div className="space-y-6">
+          {/* ✅ Nuevo: Sección de Opciones de Publicación */}
+          <PublicationOptionsSection
+            isFeatured={formData.isFeatured || false}
+            onFeaturedToggle={(value) => handleSwitchChange("isFeatured", value)}
+          />
           <CategoryTips category={formData.category} />
         </div>
       </div>
@@ -207,88 +222,70 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
 
 // --- Sub-componentes especializados ---
 
-const SectionWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isDarkMode } = useDarkMode();
-  return (
-    <div className={`p-6 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
-      {children}
-    </div>
-  );
-};
-
-const CollapsibleSection: React.FC<{
-  title: React.ReactNode;
-  children: React.ReactNode;
-}> = ({ title, children }) => {
-  const { isDarkMode } = useDarkMode();
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  return (
-    <>
-      <div className="flex justify-between items-center">
-        {title}
-        <button
-          type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className={`lg:hidden p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-          aria-expanded={isExpanded}
-        >
-          {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-        </button>
-      </div>
-      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isExpanded ? 'max-h-screen mt-3' : 'max-h-0 lg:max-h-screen lg:mt-3'}`}>
-        {children}
-      </div>
-    </>
-  );
-};
-
 const FeaturesSection: React.FC<{
   category: VehicleCategory;
   availableFeatures: ReturnType<typeof getAvailableFeatures>;
   selectedFeatures: string[];
   onFeatureToggle: (feature: string) => void;
   error?: string;
-}> = ({ category, availableFeatures, selectedFeatures, onFeatureToggle, error }) => {
-  const { isDarkMode } = useDarkMode();
+}> = ({
+  category,
+  availableFeatures,
+  selectedFeatures,
+  onFeatureToggle,
+  error,
+}) => {
   const firstCategoryData = Object.values(availableFeatures)[0];
 
   return (
-    <SectionWrapper>
-      <CollapsibleSection
-        title={
-          <InputField
-            label={`Características del ${getCategoryName(category)}`}
-            icon={firstCategoryData ? getDynamicIcon(firstCategoryData.iconName as keyof typeof iconMap) : getDynamicIcon('Car')}
-            tooltip="Selecciona todo lo que aplique. Más detalles generan más interés."
-            error={error}
-          ><></></InputField>
-        }
-      >
-        <div className="space-y-6">
-          {Object.entries(availableFeatures).map(([categoryName, categoryData]) => (
-            <div key={categoryName}>
-              <h4 className={`text-md font-semibold mb-3 flex items-center ${isDarkMode ? "text-gray-200" : "text-gray-800"}`}>
-                <span className={`mr-2 ${categoryData.color}`}>
-                  {getDynamicIcon(categoryData.iconName as keyof typeof iconMap)}
-                </span>
-                {categoryName}
-              </h4>
-              <div className="flex flex-wrap gap-3">
-                {categoryData.features.map((feature) => (
-                  <SelectableChip
-                    key={feature}
-                    label={feature}
-                    isSelected={selectedFeatures.includes(feature)}
-                    onToggle={() => onFeatureToggle(feature)}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </CollapsibleSection>
-    </SectionWrapper>
+    <Card>
+      <CardHeader>
+        <InputField
+          label={`Características del ${getCategoryName(category)}`}
+          icon={
+            firstCategoryData
+              ? getDynamicIcon(firstCategoryData.iconName as keyof typeof iconMap)
+              : getDynamicIcon("Car")
+          }
+          tooltip="Selecciona todo lo que aplique. Más detalles generan más interés."
+          error={error}
+        >
+          <></>
+        </InputField>
+      </CardHeader>
+      <CardContent>
+        <Accordion type="multiple" defaultValue={Object.keys(availableFeatures)}>
+          {Object.entries(availableFeatures).map(
+            ([categoryName, categoryData]) => (
+              <AccordionItem value={categoryName} key={categoryName}>
+                <AccordionTrigger>
+                  <h4 className="text-md font-semibold flex items-center text-foreground">
+                    <span className={`mr-2 ${categoryData.color}`}>
+                      {getDynamicIcon(
+                        categoryData.iconName as keyof typeof iconMap
+                      )}
+                    </span>
+                    {categoryName}
+                  </h4>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-wrap gap-3 pt-4">
+                    {categoryData.features.map((feature) => (
+                      <SelectableChip
+                        key={feature}
+                        label={feature}
+                        isSelected={selectedFeatures.includes(feature)}
+                        onToggle={() => onFeatureToggle(feature)}
+                      />
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )
+          )}
+        </Accordion>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -297,17 +294,18 @@ const DocumentationSection: React.FC<{
   onDocumentationToggle: (doc: Documentation) => void;
   error?: string;
 }> = ({ isDocumentationSelected, onDocumentationToggle, error }) => (
-  <SectionWrapper>
-    <CollapsibleSection
-      title={
-        <InputField
-          label="Documentación del Vehículo"
-          icon={<FileBadge className="w-4 h-4 text-indigo-600" />}
-          tooltip="Tener la documentación en regla es crucial para una venta rápida y segura."
-          error={error}
-        ><></></InputField>
-      }
-    >
+  <Card>
+    <CardHeader>
+      <InputField
+        label="Documentación del Vehículo"
+        icon={<FileBadge className="w-4 h-4 text-primary" />}
+        tooltip="Tener la documentación en regla es crucial para una venta rápida y segura."
+        error={error}
+      >
+        <></>
+      </InputField>
+    </CardHeader>
+    <CardContent>
       <div className="flex flex-wrap gap-3">
         {DOCUMENTATION_OPTIONS.map(({ label, value }) => (
           <SelectableChip
@@ -318,8 +316,41 @@ const DocumentationSection: React.FC<{
           />
         ))}
       </div>
-    </CollapsibleSection>
-  </SectionWrapper>
+    </CardContent>
+  </Card>
+);
+
+{/* ✅ Nuevo: Sub-componente para Opciones de Publicación */}
+const PublicationOptionsSection: React.FC<{
+  isFeatured: boolean;
+  onFeaturedToggle: (value: boolean) => void;
+}> = ({ isFeatured, onFeaturedToggle }) => (
+  <Card>
+    <CardHeader>
+      <InputField
+        label="Opciones de Publicación"
+        icon={<Star className="w-4 h-4 text-primary" />}
+        tooltip="Destaca tu vehículo para que aparezca en la sección principal y atraiga más miradas."
+      >
+        <></>
+      </InputField>
+    </CardHeader>
+    <CardContent>
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <Label htmlFor="featured-switch" className="flex flex-col space-y-1">
+          <span className="font-semibold text-foreground">Destacar Vehículo</span>
+          <span className="text-sm text-muted-foreground">
+            Aparecerá en la página de inicio y tendrá prioridad en las búsquedas.
+          </span>
+        </Label>
+        <Switch
+          id="featured-switch"
+          checked={isFeatured}
+          onCheckedChange={onFeaturedToggle}
+        />
+      </div>
+    </CardContent>
+  </Card>
 );
 
 const DescriptionSection: React.FC<{
@@ -327,32 +358,60 @@ const DescriptionSection: React.FC<{
   onDescriptionChange: (value: string) => void;
   error?: string;
 }> = ({ description, onDescriptionChange, error }) => {
-  const { isDarkMode } = useDarkMode();
+  const [localDescription, setLocalDescription] = useState(description);
+
+  // Sincroniza el estado local si la prop externa cambia
+  useEffect(() => {
+    setLocalDescription(description);
+  }, [description]);
+
+  // Debounce para actualizar el estado global
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (localDescription !== description) {
+        onDescriptionChange(localDescription);
+      }
+    }, 500); // 500ms de retraso
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [localDescription, onDescriptionChange, description]);
+
+  const handleBlur = () => {
+    if (localDescription !== description) {
+      onDescriptionChange(localDescription);
+    }
+  };
+
   return (
-    <SectionWrapper>
-      <InputField
-        label="Descripción del Vehículo"
-        required
-        error={error}
-        icon={<FileText className="w-4 h-4 text-teal-600" />}
-        tooltip="Sé detallado: menciona mantenimientos, extras, historial, o cualquier detalle único."
-        counter={{ current: description.length, max: 2000 }}
-        tips={[
-          "✅ Describe el estado real, incluyendo detalles positivos y negativos.",
-          "🔧 Menciona mantenimientos recientes o piezas nuevas.",
-          "⭐ Destaca características únicas que lo diferencien de otros."
-        ]}
-      >
-        <textarea
-          value={description}
-          onChange={(e) => onDescriptionChange(e.target.value)}
-          rows={6}
-          className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 focus:ring-teal-500/20 transition-all duration-200 resize-y ${isDarkMode ? "bg-gray-800 border-gray-700 text-gray-200" : "bg-white border-gray-200"}`}
-          placeholder="Ej: Vehículo en excelentes condiciones, único dueño, cauchos nuevos, servicio de aceite y filtros recién hecho..."
-          maxLength={2000}
-        />
-      </InputField>
-    </SectionWrapper>
+    <Card>
+      <CardHeader>
+        <InputField
+          label="Descripción del Vehículo"
+          required
+          error={error}
+          icon={<FileText className="w-4 h-4 text-primary" />}
+          tooltip="Sé detallado: menciona mantenimientos, extras, historial, o cualquier detalle único."
+          counter={{ current: localDescription.length, max: 2000 }}
+          tips={[
+            "✅ Describe el estado real, incluyendo detalles positivos y negativos.",
+            "🔧 Menciona mantenimientos recientes o piezas nuevas.",
+            "⭐ Destaca características únicas que lo diferencien de otros.",
+          ]}
+        >
+          <textarea
+            value={localDescription}
+            onChange={(e) => setLocalDescription(e.target.value)}
+            onBlur={handleBlur}
+            rows={6}
+            className="input-class w-full resize-y"
+            placeholder="Ej: Vehículo en excelentes condiciones, único dueño, cauchos nuevos, servicio de aceite y filtros recién hecho..."
+            maxLength={2000}
+          />
+        </InputField>
+      </CardHeader>
+    </Card>
   );
 };
 
@@ -361,21 +420,23 @@ const MediaSection: React.FC<{
   onUploadChange: (urls: string[]) => void;
   error?: string;
 }> = ({ initialUrls, onUploadChange, error }) => (
-  <SectionWrapper>
-    <InputField
-      label="Fotos del Vehículo"
-      required
-      icon={<ImageIcon className="w-4 h-4 text-teal-600" />}
-      tooltip="Sube al menos una foto de buena calidad: exterior, interior, motor y detalles."
-      error={error}
-    >
-      <ImageUploader
-        onUploadChange={onUploadChange}
-        initialUrls={initialUrls}
-        maxSizeMB={5}
-      />
-    </InputField>
-  </SectionWrapper>
+  <Card>
+    <CardHeader>
+      <InputField
+        label="Fotos del Vehículo"
+        required
+        icon={<ImageIcon className="w-4 h-4 text-primary" />}
+        tooltip="Sube al menos una foto de buena calidad: exterior, interior, motor y detalles."
+        error={error}
+      >
+        <ImageUploader
+          onUploadChange={onUploadChange}
+          initialUrls={initialUrls}
+          maxSizeMB={5}
+        />
+      </InputField>
+    </CardHeader>
+  </Card>
 );
 
 // --- Helpers ---
@@ -394,12 +455,30 @@ const getCategoryName = (category: VehicleCategory | undefined): string => {
 };
 
 const categoryTips: Record<VehicleCategory, { photos: string; unique: string }> = {
-  [VehicleCategory.CAR]: { photos: "Exterior, interior, motor y detalles únicos", unique: "Destaca lo que hace especial tu vehículo" },
-  [VehicleCategory.SUV]: { photos: "Exterior, interior, maletero y tracción", unique: "Menciona su versatilidad y capacidad" },
-  [VehicleCategory.VAN]: { photos: "Exterior, espacio de carga/pasajeros y cabina", unique: "Ideal para trabajo o familia numerosa" },
-  [VehicleCategory.MOTORCYCLE]: { photos: "Lateral, motor, odómetro y detalles", unique: "Destaca modificaciones o accesorios" },
-  [VehicleCategory.TRUCK]: { photos: "Exterior, cabina, carrocería y motor", unique: "Menciona capacidad y tipo de uso" },
-  [VehicleCategory.BUS]: { photos: "Exterior, interior de pasajeros y cabina", unique: "Menciona capacidad de pasajeros y comodidades" },
+  [VehicleCategory.CAR]: {
+    photos: "Exterior, interior, motor y detalles únicos",
+    unique: "Destaca lo que hace especial tu vehículo",
+  },
+  [VehicleCategory.SUV]: {
+    photos: "Exterior, interior, maletero y tracción",
+    unique: "Menciona su versatilidad y capacidad",
+  },
+  [VehicleCategory.VAN]: {
+    photos: "Exterior, espacio de carga/pasajeros y cabina",
+    unique: "Ideal para trabajo o familia numerosa",
+  },
+  [VehicleCategory.MOTORCYCLE]: {
+    photos: "Lateral, motor, odómetro y detalles",
+    unique: "Destaca modificaciones o accesorios",
+  },
+  [VehicleCategory.TRUCK]: {
+    photos: "Exterior, cabina, carrocería y motor",
+    unique: "Menciona capacidad y tipo de uso",
+  },
+  [VehicleCategory.BUS]: {
+    photos: "Exterior, interior de pasajeros y cabina",
+    unique: "Menciona capacidad de pasajeros y comodidades",
+  },
 };
 
 const getCategoryTips = (category: VehicleCategory | undefined) => {
@@ -410,26 +489,31 @@ const getCategoryTips = (category: VehicleCategory | undefined) => {
 const CategoryTips: React.FC<{ category: VehicleCategory | undefined }> = ({
   category,
 }) => {
-  const { isDarkMode } = useDarkMode();
   const categoryName = getCategoryName(category);
   const tips = getCategoryTips(category);
 
-  const TipItem: React.FC<{ icon: string; title: string; content: string }> = ({ icon, title, content }) => (
-    <div className={`p-3 rounded-lg ${isDarkMode ? "bg-gray-700/50" : "bg-gray-50"}`}>
-      <p className={`text-sm ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
+  const TipItem: React.FC<{ icon: string; title: string; content: string }> = ({
+    icon,
+    title,
+    content,
+  }) => (
+    <div className="p-3 rounded-lg bg-muted/50">
+      <p className="text-sm text-muted-foreground">
         {icon} <strong>{title}:</strong> {content}
       </p>
     </div>
   );
-  
+
   if (!category) return null; // No renderizar nada si no hay categoría
 
   return (
-    <div className={`p-6 rounded-xl shadow-lg ${isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
-      <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}>
-        💡 Tips para Destacar tu {categoryName}
-      </h3>
-      <div className="space-y-3">
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">
+          💡 Tips para Destacar tu {categoryName}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
         <TipItem icon="📸" title="Fotos variadas" content={tips.photos} />
         <TipItem
           icon="📝"
@@ -442,8 +526,8 @@ const CategoryTips: React.FC<{ category: VehicleCategory | undefined }> = ({
           title="Documentos listos"
           content="Tener los papeles en orden acelera la venta."
         />
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

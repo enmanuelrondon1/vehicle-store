@@ -9,10 +9,19 @@ import {
   FUEL_TYPES_LABELS,
   TRANSMISSION_TYPES_LABELS,
 } from "@/types/shared";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface CompareTableProps {
   vehicles: Vehicle[];
-  isDarkMode: boolean;
 }
 
 const formatPrice = (price: number) =>
@@ -24,131 +33,110 @@ const formatPrice = (price: number) =>
   }).format(price);
 
 const formatMileage = (mileage: number) =>
-  new Intl.NumberFormat("es-ES").format(mileage);
+  `${new Intl.NumberFormat("es-ES").format(mileage)} km`;
 
-const CompareTable: React.FC<CompareTableProps> = ({
-  vehicles,
-  isDarkMode,
-}) => {
-  const features = [
-    { label: "Precio", value: (v: Vehicle) => formatPrice(v.price) },
-    { label: "Marca", value: (v: Vehicle) => v.brand },
-    { label: "Modelo", value: (v: Vehicle) => v.model },
-    { label: "Año", value: (v: Vehicle) => v.year },
-    {
-      label: "Condición",
-      value: (v: Vehicle) => VEHICLE_CONDITIONS_LABELS[v.condition],
-    },
-    { label: "Kilometraje", value: (v: Vehicle) => `${formatMileage(v.mileage)} km` },
-    {
-      label: "Combustible",
-      value: (v: Vehicle) => FUEL_TYPES_LABELS[v.fuelType],
-    },
-    {
-      label: "Transmisión",
-      value: (v: Vehicle) => TRANSMISSION_TYPES_LABELS[v.transmission],
-    },
-    { label: "Ubicación", value: (v: Vehicle) => v.location },
-    {
-      label: "Características",
-      value: (v: Vehicle) => (
-        <div className="flex flex-wrap gap-2 justify-center">
-          {v.features.map((feature) => (
-            <span
-              key={feature}
-              className={`px-2 py-1 rounded-full text-xs ${
-                isDarkMode
-                  ? "bg-gray-700 text-gray-200"
-                  : "bg-gray-200 text-gray-800"
-              }`}
-            >
-              {feature}
-            </span>
-          ))}
-        </div>
-      ),
-    },
-  ];
+const featuresConfig = [
+  {
+    label: "Condición",
+    value: (v: Vehicle) => VEHICLE_CONDITIONS_LABELS[v.condition],
+  },
+  { label: "Kilometraje", value: (v: Vehicle) => formatMileage(v.mileage) },
+  { label: "Combustible", value: (v: Vehicle) => FUEL_TYPES_LABELS[v.fuelType] },
+  {
+    label: "Transmisión",
+    value: (v: Vehicle) => TRANSMISSION_TYPES_LABELS[v.transmission],
+  },
+  { label: "Ubicación", value: (v: Vehicle) => v.location },
+  {
+    label: "Características",
+    value: (v: Vehicle) => (
+      <div className="flex flex-wrap gap-2 justify-center">
+        {v.features.map((feature) => (
+          <Badge key={feature} variant="secondary">
+            {feature}
+          </Badge>
+        ))}
+      </div>
+    ),
+  },
+];
 
-  const tableVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
+const tableVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
     },
-  };
+  },
+};
 
-  const rowVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
+const CompareTable: React.FC<CompareTableProps> = ({ vehicles }) => {
   return (
     <motion.div
-      className="overflow-x-auto"
+      className="w-full overflow-x-auto"
       initial="hidden"
       animate="visible"
       variants={tableVariants}
     >
-      <table
-        className={`min-w-full border-collapse ${
-          isDarkMode ? "bg-gray-800" : "bg-white"
-        }`}
-      >
-        <thead>
-          <motion.tr variants={rowVariants}>
-            <th
-              className={`p-4 font-bold text-left ${
-                isDarkMode ? "bg-gray-700" : "bg-gray-200"
-              }`}
-            >
+      <Table className="min-w-full border-collapse">
+        <TableHeader>
+          <TableRow>
+            <TableHead className="sticky left-0 z-10 font-semibold bg-card w-1/4">
               Característica
-            </th>
+            </TableHead>
             {vehicles.map((vehicle) => (
-              <th
-                key={vehicle._id}
-                className={`p-4 ${isDarkMode ? "bg-gray-700" : "bg-gray-200"}`}
-              >
-                <div className="w-48 h-32 relative mx-auto">
-                  <Image
-                    src={vehicle.images[0] || "/placeholder.svg"}
-                    alt={`${vehicle.brand} ${vehicle.model}`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-lg"
-                  />
-                </div>
-              </th>
+              <TableHead key={vehicle._id} className="text-center">
+                <motion.div variants={itemVariants}>
+                  <Card className="overflow-hidden">
+                    <CardContent className="p-4">
+                      <div className="w-full h-32 relative mb-4">
+                        <Image
+                          src={vehicle.images[0] || "/placeholder.svg"}
+                          alt={`${vehicle.brand} ${vehicle.model}`}
+                          layout="fill"
+                          objectFit="cover"
+                          className="rounded-md"
+                        />
+                      </div>
+                      <h3 className="font-bold text-lg">
+                        {vehicle.brand} {vehicle.model}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {vehicle.year}
+                      </p>
+                      <p className="font-semibold text-primary mt-2">
+                        {formatPrice(vehicle.price)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </TableHead>
             ))}
-          </motion.tr>
-        </thead>
-        <motion.tbody variants={tableVariants}>
-          {features.map((feature) => (
-            <motion.tr
-              key={feature.label}
-              className={`border-t ${
-                isDarkMode ? "border-gray-700" : "border-gray-300"
-              }`}
-              variants={rowVariants}
-            >
-              <td
-                className={`p-4 font-semibold ${
-                  isDarkMode ? "text-gray-300" : "text-gray-600"
-                }`}
-              >
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {featuresConfig.map((feature) => (
+            <TableRow key={feature.label}>
+              <TableCell className="sticky left-0 z-10 font-semibold bg-card">
                 {feature.label}
-              </td>
+              </TableCell>
               {vehicles.map((vehicle) => (
-                <td key={vehicle._id} className="p-4 text-center">
-                  {feature.value(vehicle)}
-                </td>
+                <TableCell key={vehicle._id} className="text-center">
+                  <motion.div variants={itemVariants}>
+                    {feature.value(vehicle)}
+                  </motion.div>
+                </TableCell>
               ))}
-            </motion.tr>
+            </TableRow>
           ))}
-        </motion.tbody>
-      </table>
+        </TableBody>
+      </Table>
     </motion.div>
   );
 };
