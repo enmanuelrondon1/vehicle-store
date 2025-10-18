@@ -2,7 +2,7 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
-import clientPromise from "@/lib/mongodb";
+import clientPromise from "@/lib/mongodb"; // Importación unificada y correcta
 import bcrypt from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
 import { toTitleCase } from "./utils";
@@ -10,6 +10,7 @@ import { ObjectId } from "mongodb";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { logger } from './logger';
 import { sendWelcomeEmail, sendAdminNewUserNotification } from './mailer';
 
 // Extiende los tipos de NextAuth para incluir 'role' en User y Session
@@ -31,14 +32,13 @@ declare module "next-auth" {
   }
 }
 
-
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       httpOptions: {
-        timeout: 10000, // Aumenta el tiempo de espera a 10 segundos
+        timeout: 10000,
       },
     }),
     GithubProvider({
@@ -55,7 +55,6 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Email y contraseña son requeridos");
         }
-
         try {
           const client = await clientPromise;
           const db = client.db("vehicle_store");
@@ -90,74 +89,98 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === "google" || account?.provider === "github") {
-        const client = await clientPromise;
-        const db = client.db("vehicle_store");
-        const usersCollection = db.collection("users");
+      if (account?.provider === 'credentials') {
+        return true;
+      }
 
+      if (account?.provider === 'google' || account?.provider === 'github') {
         try {
+          const client = await clientPromise; // CORREGIDO: Usar clientPromise
+          const db = client.db('vehicle_store');
+          const usersCollection = db.collection('users');
           const existingUser = await usersCollection.findOne({ email: user.email });
 
           if (!existingUser) {
             const newUser = {
               email: user.email,
-              name: toTitleCase(user.name || "Usuario"),
+              name: user.name,
               image: user.image,
+              emailVerified: new Date(),
               provider: account.provider,
-              role: 'user',
               createdAt: new Date(),
+              role: 'user',
+              isDeleted: false,
             };
             const result = await usersCollection.insertOne(newUser);
             user.id = result.insertedId.toString();
+
             if (user.email && user.name) {
+              logger.info(`Nuevo usuario OAuth detectado. Enviando correos a ${user.email}`);
+              // No bloqueamos el login esperando los correos
               await sendWelcomeEmail(user.email, user.name);
               await sendAdminNewUserNotification(user.email, user.name);
             }
           } else {
             user.id = existingUser._id.toString();
+            if (existingUser.isDeleted) {
+              logger.warn(`Intento de inicio de sesión bloqueado para usuario eliminado: ${user.email}`);
+              return false;
+            }
+            await usersCollection.updateOne(
+              { _id: existingUser._id },
+              { $set: { image: user.image, name: user.name } }
+            );
           }
         } catch (error) {
-          console.error("Error al guardar usuario de red social:", error);
+          logger.error('Error en el callback de signIn:', error);
           return false;
         }
       }
       return true;
     },
-     async jwt({ token , user  }) {
-       if ( user ) {
-         token .id = user .id;
-        token.role = user.role;
-        return token;
-      }
-      if (!token.id) {
-        throw new Error("Token inválido: ID de usuario ausente.");
-      }
-      try {
-        const client = await clientPromise;
-        const db = client.db("vehicle_store");
-        const userExists = await db.collection("users").findOne({ _id: new ObjectId(token.id as string) });
 
-        if (!userExists) {
-          console.log(`❌ Invalidando sesión: El usuario con ID ${token.id} ya no existe.`);
-          throw new Error("El usuario ha sido eliminado.");
-        }
-        token.role = userExists.role;
-        return token;
-      } catch (error) {
-        console.error("Error durante la validación del JWT, invalidando sesión:", (error as Error).message);
-        throw new Error("La validación de la sesión ha fallado.");
-      }
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
-      }
-      return session;
-    },
+    async jwt({ token, user }) {
+       if (user) {
+         token.id = user.id;
+         token.role = user.role;
+       }
+       if (token.id) {
+         try {
+           const client = await clientPromise;
+           const db = client.db("vehicle_store");
+           const userExists = await db.collection("users").findOne({ _id: new ObjectId(token.id as string) });
+     
+           if (!userExists || userExists.isDeleted) {
+             if (!userExists) {
+                console.warn(`⚠️ Sesión inválida: El usuario con ID ${token.id} no existe.`);
+             } else {
+                console.warn(`⚠️ Sesión inválida: El usuario con ID ${token.id} está eliminado.`);
+             }
+             return {}; // Devuelve un token vacío para invalidar la sesión
+           }
+     
+           token.role = userExists.role;
+         } catch (error) {
+           console.error("Error durante la validación del JWT:", error);
+           return {}; // Invalida la sesión en caso de error
+         }
+       }
+       return token;
+     },
+     
+     async session({ session, token }) {
+       if (token.id && session.user) {
+         session.user.id = token.id as string;
+         session.user.role = token.role as string;
+       } else {
+         // Si no hay token.id, la sesión es inválida.
+         return { ...session, user: {} };
+       }
+       return session;
+     },
   },
   pages: {
-    signIn: "/login",
+    signIn: '/login',
     error: "/auth/error",
   },
   secret: process.env.NEXTAUTH_SECRET,

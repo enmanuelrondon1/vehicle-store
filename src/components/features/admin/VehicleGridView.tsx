@@ -4,7 +4,7 @@
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Eye, DollarSign, Gauge, MapPin, Car } from "lucide-react"
+import { Eye, DollarSign, Gauge, MapPin, Car, CalendarDays } from "lucide-react"
 import { VehicleDataFrontend, ApprovalStatus } from "@/types/types"
 import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge } from "./shared/StatusBadge";
@@ -122,6 +122,15 @@ export const VehicleGridView = ({
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <MapPin className="w-4 h-4 text-destructive" />
                   <span className="line-clamp-1">{vehicle.location}</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarDays className="w-4 h-4 text-blue-600" />
+                  <span>
+                    {vehicle.createdAt
+                      ? new Date(vehicle.createdAt).toLocaleDateString()
+                      : "N/A"}
+                  </span>
                 </div>
               </div>
 

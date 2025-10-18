@@ -1,3 +1,4 @@
+//src/components/emails/AdminNewUserNotification.tsx
 import {
   Body,
   Button,

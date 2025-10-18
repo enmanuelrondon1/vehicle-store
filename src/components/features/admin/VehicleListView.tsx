@@ -17,6 +17,10 @@ import {
   Fuel,
   Car,
   FileText,
+  CalendarDays,
+  CheckCircle,
+  XCircle,
+  Clock,
 } from "lucide-react";
 import type { VehicleDataFrontend, ApprovalStatus } from "@/types/types";
 import { PdfViewer } from "../payment/pdf-viewer";
@@ -163,6 +167,14 @@ export const VehicleListView = ({
                       <Fuel className="w-3 h-3 md:w-4 md:h-4 text-orange-600" />
                       <span>{vehicle.fuelType}</span>
                     </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <CalendarDays className="w-3 h-3 md:w-4 md:h-4 text-blue-600" />
+                      <span>
+                        {vehicle.createdAt
+                          ? new Date(vehicle.createdAt).toLocaleDateString()
+                          : "N/A"}
+                      </span>
+                    </div>
                   </div>
 
                   {vehicle.status === "rejected" && vehicle.rejectionReason && (
@@ -241,7 +253,98 @@ export const VehicleListView = ({
                       <Eye className="w-4 h-4 mr-2" />
                       Ver detalles
                     </Button>
-                    {/* Aquí puedes añadir más botones de acción rápida si lo deseas */}
+
+                    {/* Estado PENDIENTE */}
+                    {vehicle.status === "pending" && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            onStatusChange(
+                              vehicle._id!,
+                              "approved" as ApprovalStatus
+                            )
+                          }
+                          className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Aprobar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onShowRejectDialog(vehicle)}
+                          className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white"
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Rechazar
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Estado APROBADO */}
+                    {vehicle.status === "approved" && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            onStatusChange(
+                              vehicle._id!,
+                              "pending" as ApprovalStatus
+                            )
+                          }
+                          className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
+                        >
+                          <Clock className="w-4 h-4 mr-2" />
+                          Pendiente
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onShowRejectDialog(vehicle)}
+                          className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white"
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Rechazar
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Estado RECHAZADO */}
+                    {vehicle.status === "rejected" && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            onStatusChange(
+                              vehicle._id!,
+                              "approved" as ApprovalStatus
+                            )
+                          }
+                          className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Aprobar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            onStatusChange(
+                              vehicle._id!,
+                              "pending" as ApprovalStatus
+                            )
+                          }
+                          className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
+                        >
+                          <Clock className="w-4 h-4 mr-2" />
+                          Pendiente
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
