@@ -1,5 +1,7 @@
 // src/lib/authOptions.ts
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import GithubProvider from "next-auth/providers/github";
 import clientPromise from "@/lib/mongodb";
 import bcrypt from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
@@ -8,6 +10,7 @@ import { ObjectId } from "mongodb";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { sendWelcomeEmail, sendAdminNewUserNotification } from './mailer';
 
 // Extiende los tipos de NextAuth para incluir 'role' en User y Session
 declare module "next-auth" {
@@ -28,8 +31,20 @@ declare module "next-auth" {
   }
 }
 
+
 export const authOptions: NextAuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      httpOptions: {
+        timeout: 10000, // Aumenta el tiempo de espera a 10 segundos
+      },
+    }),
+    GithubProvider({
+      clientId: process.env.GITHUB_ID as string,
+      clientSecret: process.env.GITHUB_SECRET as string,
+    }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -74,9 +89,43 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
+    async signIn({ user, account }) {
+      if (account?.provider === "google" || account?.provider === "github") {
+        const client = await clientPromise;
+        const db = client.db("vehicle_store");
+        const usersCollection = db.collection("users");
+
+        try {
+          const existingUser = await usersCollection.findOne({ email: user.email });
+
+          if (!existingUser) {
+            const newUser = {
+              email: user.email,
+              name: toTitleCase(user.name || "Usuario"),
+              image: user.image,
+              provider: account.provider,
+              role: 'user',
+              createdAt: new Date(),
+            };
+            const result = await usersCollection.insertOne(newUser);
+            user.id = result.insertedId.toString();
+            if (user.email && user.name) {
+              await sendWelcomeEmail(user.email, user.name);
+              await sendAdminNewUserNotification(user.email, user.name);
+            }
+          } else {
+            user.id = existingUser._id.toString();
+          }
+        } catch (error) {
+          console.error("Error al guardar usuario de red social:", error);
+          return false;
+        }
+      }
+      return true;
+    },
+     async jwt({ token , user  }) {
+       if ( user ) {
+         token .id = user .id;
         token.role = user.role;
         return token;
       }

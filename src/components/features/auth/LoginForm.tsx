@@ -1,454 +1,420 @@
-// src/components/sections/LoginForm/LoginForm.tsx
-"use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
-import { Eye, EyeOff, User, Mail, Lock, Loader2 } from "lucide-react";
+// //src/components/features/auth/LoginForm.tsx
+// 'use client';
 
-interface FormData {
-  email: string;
-  password: string;
-  confirmPassword?: string;
-  name?: string;
-}
+// import React, { useState, ChangeEvent, FormEvent, ReactNode } from "react";
+// import { useRouter } from "next/navigation";
+// import { signIn } from "next-auth/react";
+// import {
+//   LazyMotion,
+//   domAnimation,
+//   m,
+//   AnimatePresence,
+//   Variants,
+// } from "framer-motion";
+// import { Eye, EyeOff, User, Mail, Lock, Loader2, Sparkles, LogIn } from "lucide-react";
+// import { Button } from "@/components/ui/button";
+// import { Input } from "@/components/ui/input";
 
-interface FormErrors {
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-  name?: string;
-  general?: string;
-}
+// // --- Interfaces ---
+// interface FormData {
+//   email: string;
+//   password: string;
+//   confirmPassword?: string;
+//   name?: string;
+// }
 
-interface AuthFormProps {
-  onLoginSuccess?: () => void; // Callback para cuando el login sea exitoso
-}
+// interface FormErrors {
+//   email?: string;
+//   password?: string;
+//   confirmPassword?: string;
+//   name?: string;
+//   general?: string;
+// }
 
-const AuthForm: React.FC<AuthFormProps> = ({ onLoginSuccess }) => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    name: "",
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [message, setMessage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const router = useRouter();
+// interface AuthFormProps {
+//   onLoginSuccess?: () => void;
+// }
 
-  // Validación de email
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+// // --- Animation Variants ---
+// const containerVariants: Variants = {
+//   hidden: { opacity: 0, y: 20 },
+//   visible: {
+//     opacity: 1,
+//     y: 0,
+//     transition: {
+//       staggerChildren: 0.1,
+//       ease: "circOut",
+//       duration: 0.5,
+//     },
+//   },
+// };
 
-  // Validación de contraseña
-  const validatePassword = (password: string): boolean => {
-    return password.length >= 8;
-  };
+// const itemVariants: Variants = {
+//   hidden: { opacity: 0, y: 15 },
+//   visible: { opacity: 1, y: 0, transition: { ease: "circOut", duration: 0.4 } },
+// };
 
-  // Validar formulario
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
+// // --- Floating Label Input Component ---
+// interface FloatingLabelInputProps {
+//   id: string;
+//   name: keyof FormData;
+//   placeholder: string;
+//   value: string;
+//   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+//   type?: string;
+//   disabled: boolean;
+//   error?: string;
+//   icon: ReactNode;
+//   showPasswordToggle?: boolean;
+//   onToggleShowPassword?: () => void;
+//   showPassword?: boolean;
+// }
 
-    if (!formData.email) {
-      newErrors.email = "El email es requerido";
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = "Ingresa un email válido";
-    }
+// const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
+//   id,
+//   name,
+//   placeholder,
+//   value,
+//   onChange,
+//   type = "text",
+//   disabled,
+//   error,
+//   icon,
+//   showPasswordToggle = false,
+//   onToggleShowPassword,
+//   showPassword,
+// }) => (
+//   <div className="relative">
+//     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors duration-300">
+//       {icon}
+//     </div>
+//     <Input
+//       id={id}
+//       name={name}
+//       type={type}
+//       value={value}
+//       onChange={onChange}
+//       disabled={disabled}
+//       placeholder=" "
+//       className={`pl-11 h-12 peer bg-transparent border-2 transition-colors duration-300 ${
+//         error
+//           ? "border-destructive focus:border-destructive"
+//           : "border-border hover:border-primary/50 focus:border-primary"
+//       }`}
+//     />
+//     <label
+//       htmlFor={id}
+//       className={`absolute text-muted-foreground duration-300 transform -translate-y-1/2 scale-75 top-1/2 left-11 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-1/2 peer-focus:top-3 peer-focus:bg-background peer-focus:px-1 pointer-events-none ${
+//         value ? 'top-3 scale-75 -translate-y-1/2 bg-background px-1' : 'top-1/2'
+//       }`}
+//     >
+//       {placeholder}
+//     </label>
+//     {showPasswordToggle && (
+//       <button
+//         type="button"
+//         onClick={onToggleShowPassword}
+//         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+//         disabled={disabled}
+//       >
+//         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+//       </button>
+//     )}
+//     <AnimatePresence>
+//       {error && (
+//         <m.p
+//           initial={{ opacity: 0, y: -5 }}
+//           animate={{ opacity: 1, y: 0 }}
+//           exit={{ opacity: 0 }}
+//           className="mt-1.5 text-sm text-destructive"
+//         >
+//           {error}
+//         </m.p>
+//       )}
+//     </AnimatePresence>
+//   </div>
+// );
 
-    if (!formData.password) {
-      newErrors.password = "La contraseña es requerida";
-    } else if (!validatePassword(formData.password)) {
-      newErrors.password = "La contraseña debe tener al menos 8 caracteres";
-    }
+// // --- Main Auth Form Component ---
+// const AuthForm: React.FC<AuthFormProps> = ({ onLoginSuccess }) => {
+//   const [isLogin, setIsLogin] = useState(true);
+//   const [formData, setFormData] = useState<FormData>({
+//     email: "",
+//     password: "",
+//     confirmPassword: "",
+//     name: "",
+//   });
+//   const [errors, setErrors] = useState<FormErrors>({});
+//   const [message, setMessage] = useState<string | null>(null);
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+//   const router = useRouter();
 
-    if (!isLogin) {
-      if (!formData.name) {
-        newErrors.name = "El nombre es requerido";
-      }
+//   const validateForm = (): boolean => {
+//     const newErrors: FormErrors = {};
+//     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+//       newErrors.email = "Ingresa un email válido.";
+//     if (!formData.password || formData.password.length < 8)
+//       newErrors.password = "La contraseña debe tener al menos 8 caracteres.";
+//     if (!isLogin) {
+//       if (!formData.name) newErrors.name = "El nombre es requerido.";
+//       if (formData.password !== formData.confirmPassword)
+//         newErrors.confirmPassword = "Las contraseñas no coinciden.";
+//     }
+//     setErrors(newErrors);
+//     return Object.keys(newErrors).length === 0;
+//   };
 
-      if (!formData.confirmPassword) {
-        newErrors.confirmPassword = "Confirma tu contraseña";
-      } else if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = "Las contraseñas no coinciden";
-      }
-    }
+//   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({ ...prev, [name]: value }));
+//     if (errors[name as keyof FormErrors])
+//       setErrors((prev) => ({ ...prev, [name]: undefined }));
+//   };
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+//   const handleRegister = async (): Promise<boolean> => {
+//     const response = await fetch("/api/register", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({
+//         name: formData.name,
+//         email: formData.email,
+//         password: formData.password,
+//       }),
+//     });
+//     const data = await response.json();
+//     if (!response.ok) {
+//       setErrors({ general: data.message || "Error al registrar usuario." });
+//       return false;
+//     }
+//     setMessage("Registro exitoso. Ahora puedes iniciar sesión.");
+//     return true;
+//   };
 
-  // Manejar cambios en los inputs
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Limpiar errores cuando el usuario empiece a escribir
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
+//   const handleLogin = async (): Promise<boolean> => {
+//     const result = await signIn("credentials", {
+//       redirect: false,
+//       email: formData.email,
+//       password: formData.password,
+//     });
+//     if (result?.error) {
+//       setErrors({ general: "Email o contraseña incorrectos." });
+//       return false;
+//     }
+//     if (result?.ok) {
+//       setMessage("Inicio de sesión exitoso. Redirigiendo...");
+//       return true;
+//     }
+//     return false;
+//   };
 
-  // Manejar registro con mejor manejo de errores
-  const handleRegister = async (): Promise<boolean> => {
-    try {
-      console.log("Enviando datos de registro:", {
-        name: formData.name,
-        email: formData.email,
-        password: "***",
-      });
+//   const handleSubmit = async (e: FormEvent) => {
+//     e.preventDefault();
+//     setMessage(null);
+//     setErrors({});
+//     if (!validateForm()) return;
 
-      const response = await fetch("/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+//     setIsLoading(true);
+//     try {
+//       const success = isLogin ? await handleLogin() : await handleRegister();
+//       if (success) {
+//         if (isLogin) {
+//           onLoginSuccess?.();
+//           setTimeout(() => {
+//             router.push("/");
+//             router.refresh();
+//           }, 500);
+//         } else {
+//           setFormData({
+//             email: formData.email,
+//             password: "",
+//             confirmPassword: "",
+//             name: "",
+//           });
+//           setIsLogin(true);
+//         }
+//       }
+//     } catch (error) {
+//       setErrors({ general: "Error inesperado. Intenta nuevamente." });
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
 
-      console.log(
-        "Respuesta del servidor:",
-        response.status,
-        response.statusText
-      );
+//   const toggleMode = () => {
+//     setIsLogin(!isLogin);
+//     setFormData({ email: "", password: "", confirmPassword: "", name: "" });
+//     setErrors({});
+//     setMessage(null);
+//   };
 
-      // Verificar si la respuesta es JSON válido
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        console.error("Respuesta no es JSON:", contentType);
-        const textResponse = await response.text();
-        console.error("Contenido de la respuesta:", textResponse);
-        setErrors({
-          general: "Error del servidor. Revisa la consola para más detalles.",
-        });
-        return false;
-      }
+//   return (
+//     <LazyMotion features={domAnimation}>
+//       <m.div
+//         key={isLogin ? "login" : "register"}
+//         variants={containerVariants}
+//         initial="hidden"
+//         animate="visible"
+//         className="w-full max-w-md p-8 space-y-6 bg-card text-card-foreground rounded-2xl border border-border shadow-lg"
+//       >
+//         <m.div variants={itemVariants} className="text-center">
+//           <h2 className="text-3xl font-bold tracking-tight">
+//             {isLogin ? "Bienvenido de Nuevo" : "Crea tu Cuenta"}
+//           </h2>
+//           <p className="mt-2 text-muted-foreground">
+//             {isLogin
+//               ? "Accede para gestionar tus vehículos."
+//               : "Únete a la comunidad de entusiastas."}
+//           </p>
+//         </m.div>
 
-      const data = await response.json();
-      console.log("Datos recibidos:", data);
+//         <AnimatePresence mode="wait">
+//           {message && (
+//             <m.div
+//               initial={{ opacity: 0, y: -10 }}
+//               animate={{ opacity: 1, y: 0 }}
+//               exit={{ opacity: 0, y: -10 }}
+//               className="p-3 mb-4 text-sm text-green-700 bg-green-100 border border-green-200 rounded-lg dark:bg-green-900/20 dark:text-green-300 dark:border-green-700"
+//             >
+//               {message}
+//             </m.div>
+//           )}
+//           {errors.general && (
+//             <m.div
+//               initial={{ opacity: 0, y: -10 }}
+//               animate={{ opacity: 1, y: 0 }}
+//               exit={{ opacity: 0, y: -10 }}
+//               className="p-3 mb-4 text-sm text-destructive-foreground bg-destructive/10 border border-destructive/20 rounded-lg"
+//             >
+//               {errors.general}
+//             </m.div>
+//           )}
+//         </AnimatePresence>
 
-      if (!response.ok) {
-        setErrors({ general: data.message || "Error al registrar usuario" });
-        return false;
-      }
+//         <m.form
+//           variants={containerVariants}
+//           onSubmit={handleSubmit}
+//           className="space-y-4"
+//         >
+//           <AnimatePresence>
+//             {!isLogin && (
+//               <m.div
+//                 key="name-field"
+//                 variants={itemVariants}
+//                 initial="hidden"
+//                 animate="visible"
+//                 exit={{ opacity: 0, y: -10 }}
+//               >
+//                 <FloatingLabelInput
+//                   id="name"
+//                   name="name"
+//                   placeholder="Nombre completo"
+//                   value={formData.name || ""}
+//                   onChange={handleInputChange}
+//                   disabled={isLoading}
+//                   error={errors.name}
+//                   icon={<User size={20} />}
+//                 />
+//               </m.div>
+//             )}
+//           </AnimatePresence>
 
-      setMessage("Registro exitoso. Ahora puedes iniciar sesión.");
-      return true;
-    } catch (error) {
-      console.error("Error en handleRegister:", error);
+//           <m.div variants={itemVariants}>
+//             <FloatingLabelInput
+//               id="email"
+//               name="email"
+//               type="email"
+//               placeholder="tu@email.com"
+//               value={formData.email}
+//               onChange={handleInputChange}
+//               disabled={isLoading}
+//               error={errors.email}
+//               icon={<Mail size={20} />}
+//             />
+//           </m.div>
 
-      // Manejar diferentes tipos de errores
-      if (error instanceof SyntaxError) {
-        setErrors({ general: "Error de formato en la respuesta del servidor" });
-      } else if (error instanceof TypeError) {
-        setErrors({
-          general: "Error de conexión. Verifica tu conexión a internet.",
-        });
-      } else {
-        setErrors({ general: "Error inesperado. Intenta nuevamente." });
-      }
-      return false;
-    }
-  };
+//           <m.div variants={itemVariants}>
+//             <FloatingLabelInput
+//               id="password"
+//               name="password"
+//               type={showPassword ? "text" : "password"}
+//               placeholder="Contraseña"
+//               value={formData.password}
+//               onChange={handleInputChange}
+//               disabled={isLoading}
+//               error={errors.password}
+//               icon={<Lock size={20} />}
+//               showPasswordToggle
+//               onToggleShowPassword={() => setShowPassword(!showPassword)}
+//               showPassword={showPassword}
+//             />
+//           </m.div>
 
-  // Función handleLogin corregida
-  const handleLogin = async (): Promise<boolean> => {
-    try {
-      const result = await signIn("credentials", {
-        redirect: false, // Mantener en false para manejar manualmente
-        email: formData.email,
-        password: formData.password,
-      });
+//           <AnimatePresence>
+//             {!isLogin && (
+//               <m.div
+//                 key="confirm-password-field"
+//                 variants={itemVariants}
+//                 initial="hidden"
+//                 animate="visible"
+//                 exit={{ opacity: 0, y: -10 }}
+//               >
+//                 <FloatingLabelInput
+//                   id="confirmPassword"
+//                   name="confirmPassword"
+//                   type={showConfirmPassword ? "text" : "password"}
+//                   placeholder="Confirmar contraseña"
+//                   value={formData.confirmPassword || ""}
+//                   onChange={handleInputChange}
+//                   disabled={isLoading}
+//                   error={errors.confirmPassword}
+//                   icon={<Lock size={20} />}
+//                   showPasswordToggle
+//                   onToggleShowPassword={() =>
+//                     setShowConfirmPassword(!showConfirmPassword)
+//                   }
+//                   showPassword={showConfirmPassword}
+//                 />
+//               </m.div>
+//             )}
+//           </AnimatePresence>
 
-      if (result?.error) {
-        // Manejar diferentes tipos de errores
-        if (result.error === "CredentialsSignin") {
-          setErrors({ general: "Email o contraseña incorrectos" });
-        } else {
-          setErrors({ general: "Error al iniciar sesión" });
-        }
-        return false;
-      }
+//           <m.div variants={itemVariants} className="pt-2">
+//             <Button
+//               type="submit"
+//               disabled={isLoading}
+//               className="w-full h-12 text-base font-semibold"
+//             >
+//               {isLoading ? (
+//                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+//               ) : (
+//                 isLogin ? <LogIn className="w-5 h-5 mr-2" /> : <Sparkles className="w-5 h-5 mr-2" />
+//               )}
+//               {isLoading
+//                 ? isLogin
+//                   ? "Iniciando sesión..."
+//                   : "Creando cuenta..."
+//                 : isLogin
+//                 ? "Iniciar Sesión"
+//                 : "Crear Cuenta"}
+//             </Button>
+//           </m.div>
+//         </m.form>
 
-      if (result?.ok) {
-        setMessage("Inicio de sesión exitoso. Redirigiendo...");
-        return true;
-      }
+//         <m.div variants={itemVariants} className="text-center text-sm text-muted-foreground">
+//           {isLogin ? "¿No tienes una cuenta?" : "¿Ya tienes una cuenta?"}
+//           <button
+//             onClick={toggleMode}
+//             disabled={isLoading}
+//             className="ml-1.5 font-semibold text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm"
+//           >
+//             {isLogin ? "Regístrate" : "Inicia sesión"}
+//           </button>
+//         </m.div>
+//       </m.div>
+//     </LazyMotion>
+//   );
+// };
 
-      return false;
-    } catch (error) {
-      console.error("Error en handleLogin:", error);
-      setErrors({ general: "Error de conexión. Intenta nuevamente." });
-      return false;
-    }
-  };
-
-  // Función handleSubmit corregida
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage(null);
-    setErrors({});
-
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-
-    try {
-      if (isLogin) {
-        const success = await handleLogin();
-        if (success) {
-          // Llamar al callback si existe (para cerrar modal)
-          if (onLoginSuccess) {
-            onLoginSuccess();
-          }
-          // Esperar un momento para que se actualice la sesión
-          setTimeout(() => {
-            router.push("/");
-            router.refresh(); // Forzar refresh para actualizar la sesión
-          }, 500);
-        }
-      } else {
-        const registerSuccess = await handleRegister();
-        if (registerSuccess) {
-          // Limpiar el formulario y cambiar a modo login
-          setFormData({
-            email: formData.email, // Mantener el email para facilitar el login
-            password: "",
-            confirmPassword: "",
-            name: "",
-          });
-          setIsLogin(true); // Cambiar a modo login
-        }
-      }
-    } catch (error) {
-      console.error("Error en handleSubmit:", error);
-      setErrors({ general: "Error inesperado. Intenta nuevamente." });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Cambiar entre login y registro
-  const toggleMode = () => {
-    setIsLogin(!isLogin);
-    setFormData({
-      email: "",
-      password: "",
-      confirmPassword: "",
-      name: "",
-    });
-    setErrors({});
-    setMessage(null);
-  };
-
-  return (
-    <div className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg mt-10">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-          {isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
-        </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-          {isLogin
-            ? "Ingresa tus credenciales para continuar"
-            : "Completa los datos para crear tu cuenta"}
-        </p>
-      </div>
-
-      {/* Mensajes de estado */}
-      {message && (
-        <div
-          className={`p-3 mb-4 text-center rounded-lg ${
-            message.includes("exitoso")
-              ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
-              : "bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400"
-          }`}
-        >
-          {message}
-        </div>
-      )}
-
-      {/* Error general */}
-      {errors.general && (
-        <div className="p-3 mb-4 text-center rounded-lg bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400">
-          {errors.general}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Campo de nombre (solo para registro) */}
-        {!isLogin && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <User className="inline w-4 h-4 mr-1" />
-              Nombre completo
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors ${
-                errors.name
-                  ? "border-red-500 dark:border-red-400"
-                  : "border-gray-300 dark:border-gray-600"
-              }`}
-              placeholder="Ingresa tu nombre completo"
-              disabled={isLoading}
-            />
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {errors.name}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Campo de email */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            <Mail className="inline w-4 h-4 mr-1" />
-            Email
-          </label>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) => handleInputChange("email", e.target.value)}
-            className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors ${
-              errors.email
-                ? "border-red-500 dark:border-red-400"
-                : "border-gray-300 dark:border-gray-600"
-            }`}
-            placeholder="tu@email.com"
-            disabled={isLoading}
-          />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {errors.email}
-            </p>
-          )}
-        </div>
-
-        {/* Campo de contraseña */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            <Lock className="inline w-4 h-4 mr-1" />
-            Contraseña
-          </label>
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              value={formData.password}
-              onChange={(e) => handleInputChange("password", e.target.value)}
-              className={`w-full p-3 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors ${
-                errors.password
-                  ? "border-red-500 dark:border-red-400"
-                  : "border-gray-300 dark:border-gray-600"
-              }`}
-              placeholder="••••••••"
-              disabled={isLoading}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              disabled={isLoading}
-            >
-              {showPassword ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Eye className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {errors.password}
-            </p>
-          )}
-        </div>
-
-        {/* Campo de confirmar contraseña (solo para registro) */}
-        {!isLogin && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              <Lock className="inline w-4 h-4 mr-1" />
-              Confirmar contraseña
-            </label>
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                value={formData.confirmPassword}
-                onChange={(e) =>
-                  handleInputChange("confirmPassword", e.target.value)
-                }
-                className={`w-full p-3 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-colors ${
-                  errors.confirmPassword
-                    ? "border-red-500 dark:border-red-400"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
-                placeholder="••••••••"
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                disabled={isLoading}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                {errors.confirmPassword}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Botón de envío */}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              {isLogin ? "Iniciando sesión..." : "Creando cuenta..."}
-            </>
-          ) : isLogin ? (
-            "Iniciar Sesión"
-          ) : (
-            "Crear Cuenta"
-          )}
-        </button>
-      </form>
-
-      {/* Toggle entre login y registro */}
-      <div className="mt-6 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}
-          <button
-            onClick={toggleMode}
-            className="ml-1 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
-            disabled={isLoading}
-          >
-            {isLogin ? "Crear cuenta" : "Iniciar sesión"}
-          </button>
-        </p>
-      </div>
-    </div>
-  );
-};
-
-export default AuthForm;
+// export default AuthForm;
