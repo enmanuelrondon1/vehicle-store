@@ -18,9 +18,9 @@ import {
   Car,
   FileText,
   CalendarDays,
-  CheckCircle,
-  XCircle,
-  Clock,
+  Power,
+  PowerOff,
+  Archive,
 } from "lucide-react";
 import type { VehicleDataFrontend, ApprovalStatus } from "@/types/types";
 import { PdfViewer } from "../payment/pdf-viewer";
@@ -254,7 +254,7 @@ export const VehicleListView = ({
                       Ver detalles
                     </Button>
 
-                    {/* Estado PENDIENTE */}
+                    {/* Estado PENDIENTE (Inactivo) */}
                     {vehicle.status === "pending" && (
                       <>
                         <Button
@@ -268,8 +268,8 @@ export const VehicleListView = ({
                           }
                           className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
                         >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Aprobar
+                          <Power className="w-4 h-4 mr-2" />
+                          Activar
                         </Button>
                         <Button
                           variant="outline"
@@ -277,13 +277,13 @@ export const VehicleListView = ({
                           onClick={() => onShowRejectDialog(vehicle)}
                           className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white"
                         >
-                          <XCircle className="w-4 h-4 mr-2" />
-                          Rechazar
+                          <Archive className="w-4 h-4 mr-2" />
+                          Archivar
                         </Button>
                       </>
                     )}
 
-                    {/* Estado APROBADO */}
+                    {/* Estado APROBADO (Activo) */}
                     {vehicle.status === "approved" && (
                       <>
                         <Button
@@ -295,10 +295,10 @@ export const VehicleListView = ({
                               "pending" as ApprovalStatus
                             )
                           }
-                          className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
+                          className="border-gray-500 text-gray-500 hover:bg-gray-500 hover:text-white"
                         >
-                          <Clock className="w-4 h-4 mr-2" />
-                          Pendiente
+                          <PowerOff className="w-4 h-4 mr-2" />
+                          Desactivar
                         </Button>
                         <Button
                           variant="outline"
@@ -306,13 +306,13 @@ export const VehicleListView = ({
                           onClick={() => onShowRejectDialog(vehicle)}
                           className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white"
                         >
-                          <XCircle className="w-4 h-4 mr-2" />
-                          Rechazar
+                          <Archive className="w-4 h-4 mr-2" />
+                          Archivar
                         </Button>
                       </>
                     )}
 
-                    {/* Estado RECHAZADO */}
+                    {/* Estado RECHAZADO (Archivado) */}
                     {vehicle.status === "rejected" && (
                       <>
                         <Button
@@ -326,8 +326,8 @@ export const VehicleListView = ({
                           }
                           className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
                         >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Aprobar
+                          <Power className="w-4 h-4 mr-2" />
+                          Activar
                         </Button>
                         <Button
                           variant="outline"
@@ -340,8 +340,8 @@ export const VehicleListView = ({
                           }
                           className="border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white"
                         >
-                          <Clock className="w-4 h-4 mr-2" />
-                          Pendiente
+                          <PowerOff className="w-4 h-4 mr-2" />
+                          Mover a Inactivo
                         </Button>
                       </>
                     )}

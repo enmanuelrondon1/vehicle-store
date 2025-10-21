@@ -1,3 +1,4 @@
+//src/components/features/vehicles/registration/useFieldValidation.ts
 "use client";
 
 import { useState } from 'react';
@@ -12,7 +13,10 @@ export const useFieldValidation = (value: FormFieldValue, error: string | undefi
   };
 
   const showValidation = isTouched || !!error;
-  const isValid = showValidation && !error && (value !== undefined && value !== '');
+
+  // El campo se considera válido para la UI (check verde) solo si ha sido
+  // tocado, no tiene errores y no está vacío.
+  const isValid = showValidation && !error && value !== undefined && value !== '';
 
   const getBorderColor = (isDarkMode: boolean) => {
     if (showValidation) {

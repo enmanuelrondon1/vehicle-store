@@ -1,26 +1,36 @@
+//src/hooks/useFieldValidation.ts
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-type FormFieldValue = string | number | undefined;
+type FormFieldValue = string | number | undefined | boolean | string[] | {} | null;
 
 export const useFieldValidation = (value: FormFieldValue, error: string | undefined) => {
-  const [isTouched, setIsTouched] = useState(false);
+  const [isPristine, setIsPristine] = useState(true);
 
-  const handleBlur = () => {
-    setIsTouched(true);
-  };
+  useEffect(() => {
+    if (value !== undefined && value !== '' && value !== null && isPristine) {
+      setIsPristine(false);
+    }
+    
+    if (value === undefined || value === '' || value === null) {
+        setIsPristine(true);
+    }
+  }, [value, isPristine]);
 
-  const showValidation = isTouched || !!error;
-  const isValid = showValidation && !error && (value !== undefined && value !== '');
+  const isValid = !isPristine && !error;
 
   const getBorderClassName = () => {
-    if (showValidation) {
-      if (error) return 'border-destructive focus:ring-destructive/20';
-      if (isValid) return 'border-primary focus:ring-primary/20';
+    if (isPristine && !error) {
+      return 'border-input focus:ring-blue-500/20 dark:focus:ring-blue-400/20';
     }
-    return 'border-input focus:ring-blue-500/20 dark:focus:ring-blue-400/20';
+
+    if (error) {
+      return 'border-destructive focus:ring-destructive/20';
+    }
+
+    return 'border-primary focus:ring-primary/20';
   };
 
-  return { handleBlur, showValidation, isValid, getBorderClassName };
+  return { isValid, getBorderClassName };
 };

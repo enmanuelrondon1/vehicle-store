@@ -1,3 +1,4 @@
+//src/components/features/vehicles/registration/Step3_Specs.tsx
 import React, { useMemo, useCallback } from "react";
 import {
   Settings,
@@ -213,7 +214,6 @@ const Step3_Specs: React.FC<StepProps> = ({
               type="text"
               value={formData.year || ""}
               onChange={handleYearChange}
-              onBlur={yearValidation.handleBlur}
               className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 bg-background text-foreground placeholder-muted-foreground ${yearValidation.getBorderClassName()}`}
               placeholder="2020"
               maxLength={4}
@@ -239,7 +239,6 @@ const Step3_Specs: React.FC<StepProps> = ({
             <SelectField
               value={formData.color || ""}
               onChange={(value) => handleInputChange("color", value)}
-              onBlur={colorValidation.handleBlur}
               placeholder="Selecciona un color"
               options={COMMON_COLORS.map((c) => ({ value: c, label: c }))}
               className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 bg-background text-foreground ${colorValidation.getBorderClassName()}`}
@@ -277,7 +276,6 @@ const Step3_Specs: React.FC<StepProps> = ({
             <SelectField
               value={formData.displacement || ""}
               onChange={(value) => handleInputChange("displacement", value)}
-              onBlur={displacementValidation.handleBlur}
               placeholder="Selecciona cilindraje"
               options={generateDisplacementOptions().map((d) => ({
                 value: d,
@@ -304,7 +302,6 @@ const Step3_Specs: React.FC<StepProps> = ({
               type="text"
               value={formData.engine || ""}
               onChange={(e) => handleInputChange("engine", e.target.value)}
-              onBlur={engineValidation.handleBlur}
               className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 bg-background text-foreground placeholder-muted-foreground ${engineValidation.getBorderClassName()}`}
               placeholder="Ej: V6, Turbo, DOHC, Inyección Directa"
               maxLength={100}
@@ -327,7 +324,6 @@ const Step3_Specs: React.FC<StepProps> = ({
             <SelectField
               value={formData.transmission || ""}
               onChange={(value) => handleInputChange("transmission", value)}
-              onBlur={transmissionValidation.handleBlur}
               placeholder="Selecciona transmisión"
               options={Object.entries(TRANSMISSION_TYPES_LABELS).map<
                 { value: string; label: string }
@@ -352,7 +348,6 @@ const Step3_Specs: React.FC<StepProps> = ({
             <SelectField
               value={formData.fuelType || ""}
               onChange={(value) => handleInputChange("fuelType", value)}
-              onBlur={fuelTypeValidation.handleBlur}
               placeholder="Selecciona combustible"
               options={Object.entries(FUEL_TYPES_LABELS).map<
                 { value: string; label: string }
@@ -377,7 +372,6 @@ const Step3_Specs: React.FC<StepProps> = ({
               <SelectField
                 value={formData.driveType || ""}
                 onChange={(value) => handleInputChange("driveType", value)}
-                onBlur={driveTypeValidation.handleBlur}
                 placeholder="Selecciona tracción"
                 options={Object.entries(DRIVE_TYPE_LABELS).map<
                   { value: string; label: string }
@@ -411,7 +405,6 @@ const Step3_Specs: React.FC<StepProps> = ({
                     type="number"
                     value={formData.doors || ""}
                     onChange={handleDoorsChange}
-                    onBlur={doorsValidation.handleBlur}
                     className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 bg-background text-foreground placeholder-muted-foreground ${doorsValidation.getBorderClassName()}`}
                     placeholder="4"
                     min="2"
@@ -434,7 +427,6 @@ const Step3_Specs: React.FC<StepProps> = ({
                     type="number"
                     value={formData.seats || ""}
                     onChange={handleSeatsChange}
-                    onBlur={seatsValidation.handleBlur}
                     className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 bg-background text-foreground placeholder-muted-foreground ${seatsValidation.getBorderClassName()}`}
                     placeholder="5"
                     min="2"
@@ -474,7 +466,6 @@ const Step3_Specs: React.FC<StepProps> = ({
                     parseFloat(e.target.value) || undefined
                   )
                 }
-                onBlur={loadCapacityValidation.handleBlur}
                 className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 bg-background text-foreground placeholder-muted-foreground ${loadCapacityValidation.getBorderClassName()}`}
                 placeholder="1000"
                 min="0"

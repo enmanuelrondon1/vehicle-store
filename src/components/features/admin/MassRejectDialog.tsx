@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { XCircle } from 'lucide-react';
+import { Archive, XCircle } from 'lucide-react';
 
 interface MassRejectDialogProps {
   isOpen: boolean;
@@ -48,27 +48,31 @@ export const MassRejectDialog: React.FC<MassRejectDialogProps> = ({
         <AlertDialogHeader>
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-yellow-100 dark:bg-yellow-500/20">
-              <XCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+              <Archive className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div className="flex-1">
               <AlertDialogTitle className="text-lg font-semibold text-gray-900 dark:text-slate-100">
-                ¿Estás seguro de rechazar estos vehículos?
+                ¿Estás seguro de archivar estos vehículos?
               </AlertDialogTitle>
             </div>
           </div>
           <AlertDialogDescription className="mt-3 text-gray-600 dark:text-slate-300">
-            Estás a punto de rechazar <span className="font-semibold text-yellow-600 dark:text-yellow-400">{count} vehículo{count !== 1 ? 's' : ''}</span>. 
+            Estás a punto de archivar{" "}
+            <span className="font-semibold text-yellow-600 dark:text-yellow-400">
+              {count} vehículo{count !== 1 ? "s" : ""}
+            </span>
+            .
             <span className="block mt-1">
-              Por favor, introduce una razón clara para el rechazo.
+              Por favor, introduce una razón clara para archivarlos.
             </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="py-4 space-y-2">
-          <Label 
-            htmlFor="rejection-reason" 
+          <Label
+            htmlFor="rejection-reason"
             className="text-sm font-medium text-gray-700 dark:text-slate-200"
           >
-            Razón del rechazo <span className="text-red-500">*</span>
+            Razón para archivar <span className="text-red-500">*</span>
           </Label>
           <Textarea
             id="rejection-reason"
@@ -94,7 +98,7 @@ export const MassRejectDialog: React.FC<MassRejectDialogProps> = ({
             disabled={!reason.trim()}
             className="bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-600 dark:hover:bg-yellow-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Rechazar vehículos
+            Archivar vehículos
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

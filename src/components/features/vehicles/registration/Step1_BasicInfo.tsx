@@ -200,7 +200,6 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
               handleInputChange("model", "");
             }}
             placeholder="Selecciona el tipo de vehículo"
-            onBlur={categoryValidation.handleBlur}
             options={categoryOptions}
             className={`${inputClass} ${categoryValidation.getBorderClassName()}`}
             error={errors.category}
@@ -228,8 +227,6 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
               handleInputChange("model", ""); // Reset model when brand changes
             }}
             disabled={!formData.category}
-            onBlur={brandValidation.handleBlur}
-            isLoading={!!formData.category && brandOptions.length === 0}
             placeholder={
               !formData.category
                 ? "Primero selecciona una categoría"
@@ -257,7 +254,6 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
               type="text"
               value={formData.brandOther || ""}
               onChange={(e) => handleInputChange("brandOther", e.target.value)}
-              onBlur={brandOtherValidation.handleBlur}
               maxLength={50}
               className={`${inputClass} ${brandOtherValidation.getBorderClassName()}`}
               placeholder="Ej: Empire Keeway, Skygo, Lifan"
@@ -282,8 +278,6 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             value={formData.model || ""}
             onChange={(value) => handleInputChange("model", value)}
             disabled={!formData.brand || formData.brand === 'Otra'}
-            onBlur={modelValidation.handleBlur}
-            isLoading={!!formData.brand && modelOptions.length === 0 && formData.brand !== 'Otra'}
             placeholder={
               !formData.brand || formData.brand === 'Otra'
                 ? "Primero selecciona una marca"
@@ -311,7 +305,6 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
               type="text"
               value={formData.modelOther || ""}
               onChange={(e) => handleInputChange("modelOther", e.target.value)}
-              onBlur={modelOtherValidation.handleBlur}
               maxLength={50}
               className={`${inputClass} ${modelOtherValidation.getBorderClassName()}`}
               placeholder="Ej: Corolla Cross, F-250, etc."
@@ -326,13 +319,13 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           success={versionValidation.isValid}
           icon={<Tag className="w-4 h-4 text-blue-600" />}
           tooltip="Añade detalles específicos del modelo. Ej: XEI, Limited, 4x4, etc."
+          tips={["💡 Si decides llenar este campo, debe tener entre 5 y 100 caracteres."]}
           counter={{ current: formData.version?.length || 0, max: 100 }}
         >
           <input
             type="text"
             value={formData.version || ""}
             onChange={(e) => handleInputChange("version", e.target.value)}
-            onBlur={versionValidation.handleBlur}
             maxLength={100}
             className={`${inputClass} ${versionValidation.getBorderClassName()}`}
             placeholder="Ej: XEI, Limited, Sport, 4x4"
@@ -360,7 +353,6 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             onChange={(value) =>
               handleInputChange("year", parseInt(value) || 0)
             }
-            onBlur={yearValidation.handleBlur}
             placeholder="Selecciona el año"
             options={yearOptions}
             className={`${inputClass} ${yearValidation.getBorderClassName()}`}

@@ -43,7 +43,11 @@ const step1Schema = z.object({
     .max(50, "La marca no puede exceder 50 caracteres"),
   brandOther: z.string().max(50, "El nombre de la marca es muy largo").optional(),
   modelOther: z.string().max(50, "El nombre del modelo es muy largo").optional(),
-  version: z.string().max(100, "La versión no puede exceder 100 caracteres").optional(),
+  version: z.string() 
+     .min(5, "La versión debe tener al menos 5 caracteres") 
+     .max(100, "La versión no puede exceder 100 caracteres") 
+     .optional() 
+     .or(z.literal("")), 
   model: z
     .string()
     .min(1, "El modelo es requerido")

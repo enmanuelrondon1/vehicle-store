@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { XCircle } from "lucide-react";
+import { Archive, XCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface RejectDialogProps {
@@ -37,18 +37,20 @@ export const RejectDialog = ({ isOpen, onOpenChange, onConfirm, initialReason = 
       <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg bg-card border">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-base md:text-lg flex items-center gap-2 text-card-foreground">
-            <XCircle className="w-5 h-5 text-destructive" />
-            Rechazar anuncio
+            <Archive className="w-5 h-5 text-destructive" />
+            Archivar anuncio
           </AlertDialogTitle>
           <AlertDialogDescription className="text-sm md:text-base text-muted-foreground">
-            ¿Estás seguro de que quieres rechazar este anuncio? Puedes agregar una razón opcional para informar al usuario.
+            ¿Estás seguro de que quieres archivar este anuncio? Puedes agregar
+            una razón opcional para informar al usuario.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="py-4">
           <Label
             htmlFor="reject-reason"
-            className="text-sm font-medium mb-2 block text-card-foreground">
-            Razón del rechazo (opcional)
+            className="text-sm font-medium mb-2 block text-card-foreground"
+          >
+            Razón para archivar (opcional)
           </Label>
           <Textarea
             id="reject-reason"
@@ -59,17 +61,15 @@ export const RejectDialog = ({ isOpen, onOpenChange, onConfirm, initialReason = 
           />
         </div>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogCancel
-            className="w-full sm:w-auto"
-          >
+          <AlertDialogCancel className="w-full sm:w-auto">
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={() => onConfirm(reason)}
             className="bg-destructive hover:bg-destructive/90 text-destructive-foreground w-full sm:w-auto"
           >
-            <XCircle className="w-4 h-4 mr-2" />
-            Rechazar anuncio
+            <Archive className="w-4 h-4 mr-2" />
+            Archivar anuncio
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,3 +1,4 @@
+//src/components/features/vehicles/registration/Step4_ContactInfo.tsx
 "use client";
 import React, { useState, useCallback, useMemo } from "react";
 import {
@@ -29,8 +30,7 @@ const LocationSelector: React.FC<{
   value: string;
   onChange: (value: string) => void;
   className: string;
-  onBlur: () => void;
-}> = ({ value, onChange, className, onBlur }) => {
+}> = ({ value, onChange, className }) => {
   const [selectedState, setSelectedState] = useState("");
   const [city, setCity] = useState("");
   const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
@@ -57,16 +57,12 @@ const LocationSelector: React.FC<{
     setSelectedState(formattedState);
     setIsStateDropdownOpen(false);
     onChange(`${city}, ${formattedState}`);
-    onBlur();
   };
 
   const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCity(e.target.value);
-  };
-
-  const handleCityBlur = () => {
-    onChange(`${city}, ${selectedState}`);
-    onBlur();
+    const newCity = e.target.value;
+    setCity(newCity);
+    onChange(`${newCity}, ${selectedState}`);
   };
 
   return (
@@ -76,7 +72,6 @@ const LocationSelector: React.FC<{
           <button
             type="button"
             onClick={() => setIsStateDropdownOpen(!isStateDropdownOpen)}
-            onBlur={onBlur}
             className={`${className} flex items-center justify-between text-left`}
           >
             <span className={selectedState ? "" : "text-muted-foreground"}>
@@ -115,7 +110,6 @@ const LocationSelector: React.FC<{
           type="text"
           value={city}
           onChange={handleCityChange}
-          onBlur={handleCityBlur}
           className={`${className} w-1/2`}
           placeholder="Ciudad o municipio"
           maxLength={100}
@@ -252,7 +246,6 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
             onChange={(e) =>
               handleInputChange("sellerContact.name", e.target.value)
             }
-            onBlur={nameValidation.handleBlur}
             className={`${inputClass} ${nameValidation.getBorderClassName()}`}
             placeholder="Ej: Juan Carlos Pérez"
             maxLength={100}
@@ -277,7 +270,6 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
               onChange={(e) =>
                 handleInputChange("sellerContact.email", e.target.value)
               }
-              onBlur={emailValidation.handleBlur}
               className={`${inputClass} ${emailValidation.getBorderClassName()}`}
               placeholder="Ej: juan.perez@email.com"
               maxLength={255}
@@ -319,7 +311,6 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
                 formData.sellerContact?.phone?.split(" ")[0] || phoneCodes[0]
               }
               onChange={handlePhoneCodeChange}
-              onBlur={phoneValidation.handleBlur}
               options={phoneCodes.map((code) => ({
                 value: code,
                 label: code,
@@ -333,7 +324,6 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
               maxLength={7}
               value={formData.sellerContact?.phone?.split(" ")[1] || ""}
               onChange={(e) => handlePhoneChange(e.target.value)}
-              onBlur={phoneValidation.handleBlur}
               className={`w-2/3 ${inputClass} ${phoneValidation.getBorderClassName()}`}
               placeholder="1234567"
             />
@@ -356,7 +346,6 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           <LocationSelector
             value={formData.location || ""}
             onChange={(value) => handleInputChange("location", value)}
-            onBlur={locationValidation.handleBlur}
             className={`${inputClass} ${locationValidation.getBorderClassName()}`}
           />
           <div className="text-xs text-muted-foreground mt-1">

@@ -320,7 +320,6 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
               onChange={handlePriceChange}
               className={`w-full rounded-xl border-2 bg-background px-4 py-3 pl-8 text-foreground transition-all duration-200 focus:outline-none focus:ring-4 ${priceValidation.getBorderClassName()}`}
               placeholder="25,000"
-              onBlur={priceValidation.handleBlur}
               inputMode="numeric"
             />
           </div>
@@ -494,7 +493,6 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
               onChange={handleMileageChange}
               className={`w-full rounded-xl border-2 bg-background px-4 py-3 pr-12 text-foreground transition-all duration-200 focus:outline-none focus:ring-4 ${mileageValidation.getBorderClassName()}`}
               placeholder="85,000"
-              onBlur={mileageValidation.handleBlur}
               inputMode="numeric"
             />
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
@@ -514,7 +512,6 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
           <SelectField
             value={formData.condition || ""}
             onChange={(value) => handleInputChange("condition", value)}
-            onBlur={conditionValidation.handleBlur}
             options={[VehicleCondition.EXCELLENT, VehicleCondition.GOOD].map(
               (c) => ({
                 value: c,

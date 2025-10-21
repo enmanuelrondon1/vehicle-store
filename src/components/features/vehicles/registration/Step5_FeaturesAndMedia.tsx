@@ -1,4 +1,4 @@
-// src/componentes/features/vehicles/registration/Step5_FeaturesAndMedia
+// src/components/features/vehicles/registration/Step5_FeaturesAndMedia.tsx
 "use client";
 import React, { useMemo, useState, useEffect } from "react";
 import {
@@ -378,12 +378,6 @@ const DescriptionSection: React.FC<{
     };
   }, [localDescription, onDescriptionChange, description]);
 
-  const handleBlur = () => {
-    if (localDescription !== description) {
-      onDescriptionChange(localDescription);
-    }
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -403,7 +397,6 @@ const DescriptionSection: React.FC<{
           <textarea
             value={localDescription}
             onChange={(e) => setLocalDescription(e.target.value)}
-            onBlur={handleBlur}
             rows={6}
             className="input-class w-full resize-y"
             placeholder="Ej: Vehículo en excelentes condiciones, único dueño, cauchos nuevos, servicio de aceite y filtros recién hecho..."

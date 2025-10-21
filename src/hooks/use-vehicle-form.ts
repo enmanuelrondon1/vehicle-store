@@ -84,9 +84,11 @@ export const useVehicleForm = () => {
 
   // Efecto para validar el paso actual en tiempo real
   useEffect(() => {
-    // Validamos sin actualizar los errores para no ser intrusivos
+    // Validamos y actualizamos los errores en tiempo real.
     const validation = validateStep(currentStep, formData, selectedBank, paymentProof, referenceNumber);
     setIsCurrentStepValid(validation.isValid);
+    // ¡AQUÍ ESTÁ LA MAGIA! Actualizamos los errores para que la UI reaccione.
+    setErrors(validation.errors);
   }, [formData, currentStep, selectedBank, paymentProof, referenceNumber, validateStep]);
 
 
