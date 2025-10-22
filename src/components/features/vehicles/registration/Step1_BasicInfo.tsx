@@ -249,6 +249,7 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             icon={<Award className="w-4 h-4 text-blue-600" />}
             tooltip="Escribe el nombre exacto de la marca"
             counter={{ current: formData.brandOther?.length || 0, max: 50 }}
+            tips={["💡 El nombre de la marca debe tener al menos 5 caracteres."]}
           >
             <input
               type="text"
@@ -277,9 +278,9 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           <SelectField
             value={formData.model || ""}
             onChange={(value) => handleInputChange("model", value)}
-            disabled={!formData.brand || formData.brand === 'Otra'}
+            disabled={!formData.brand}
             placeholder={
-              !formData.brand || formData.brand === 'Otra'
+              !formData.brand
                 ? "Primero selecciona una marca"
                 : "Selecciona el modelo"
             }
@@ -300,6 +301,7 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             icon={<Search className="w-4 h-4 text-blue-600" />}
             tooltip="Escribe el nombre exacto del modelo"
             counter={{ current: formData.modelOther?.length || 0, max: 50 }}
+            tips={["💡 El nombre del modelo debe tener al menos 5 caracteres."]}
           >
             <input
               type="text"

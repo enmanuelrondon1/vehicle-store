@@ -21,12 +21,18 @@ export const useFieldValidation = (value: FormFieldValue, error: string | undefi
   const isValid = !isPristine && !error;
 
   const getBorderClassName = () => {
-    if (isPristine && !error) {
+    const hasValue = value !== undefined && value !== '' && value !== null;
+
+    if (error && hasValue) {
+      return 'border-destructive focus:ring-destructive/20';
+    }
+
+    if (isPristine) {
       return 'border-input focus:ring-blue-500/20 dark:focus:ring-blue-400/20';
     }
 
-    if (error) {
-      return 'border-destructive focus:ring-destructive/20';
+    if (error && !hasValue) {
+      return 'border-input focus:ring-blue-500/20 dark:focus:ring-blue-400/20';
     }
 
     return 'border-primary focus:ring-primary/20';

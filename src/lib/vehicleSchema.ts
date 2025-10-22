@@ -203,12 +203,37 @@ const otherFieldsSchema = z.object({
 })
 
 export const schemasByStep = {
-  1: step1Schema.refine(data => !(data.brand === 'Otra' && !data.brandOther), {
-    message: "Debes especificar la marca si seleccionaste 'Otra'",
-    path: ["brandOther"],
-  }).refine(data => !(data.model === 'Otro' && !data.modelOther), {
-    message: "Debes especificar el modelo si seleccionaste 'Otro'",
-    path: ["modelOther"],
+  1: step1Schema.superRefine((data, ctx) => {
+    if (data.brand === 'Otra') {
+      if (!data.brandOther) {
+        ctx.addIssue({
+          path: ['brandOther'],
+          message: "Debes especificar la marca si seleccionaste 'Otra'",
+          code: 'custom'
+        });
+      } else if (data.brandOther.length < 5) {
+        ctx.addIssue({
+          path: ['brandOther'],
+          message: 'La marca debe tener al menos 5 caracteres',
+          code: 'custom'
+        });
+      }
+    }
+    if (data.model === 'Otro') {
+      if (!data.modelOther) {
+        ctx.addIssue({
+          path: ['modelOther'],
+          message: "Debes especificar el modelo si seleccionaste 'Otro'",
+          code: 'custom'
+        });
+      } else if (data.modelOther.length < 5) {
+        ctx.addIssue({
+          path: ['modelOther'],
+          message: 'El modelo debe tener al menos 5 caracteres',
+          code: 'custom'
+        });
+      }
+    }
   }),
   2: step2Schema.superRefine((data, ctx) => {
     if (data.offersFinancing && !data.financingDetails) {
