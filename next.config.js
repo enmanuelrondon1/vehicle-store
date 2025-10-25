@@ -6,16 +6,6 @@ const nextConfig = {
     domains: ["res.cloudinary.com"],
   },
   
-  // Paquetes externos del servidor - MOVIDO de experimental a nivel raíz
-  serverExternalPackages: [
-    'mongodb', 
-    'mongoose',
-    '@mongodb-js/zstd',
-    'snappy',
-    'bson-ext',
-    'kerberos'
-  ],
-  
   // Configuración de webpack para resolver errores de módulos de servidor
   webpack: (config, { isServer, dev }) => {
     // Excluir módulos de Node.js del bundle del cliente

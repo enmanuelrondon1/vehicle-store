@@ -45,13 +45,10 @@ const createSuccessResponse = <T>(
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
     console.log("GET /api/admin/vehicles/[id] - Iniciando...");
-
-    // Resolver params de forma asíncrona
-    const resolvedParams = await params;
 
     // Verificar sesión y autorización
     const session = await getServerSession(authOptions);
@@ -69,7 +66,7 @@ export async function GET(
     }
 
     // Validar que el ID sea válido
-    if (!ObjectId.isValid(resolvedParams.id)) {
+    if (!ObjectId.isValid(params.id)) {
       return NextResponse.json(createErrorResponse("ID de vehículo inválido"), {
         status: 400,
       });
@@ -91,7 +88,7 @@ export async function GET(
 
       const vehicle = await db
         .collection("vehicles")
-        .findOne({ _id: new ObjectId(resolvedParams.id) });
+        .findOne({ _id: new ObjectId(params.id) });
 
       if (!vehicle) {
         return NextResponse.json(
@@ -136,13 +133,10 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
     console.log("PATCH /api/admin/vehicles/[id] - Iniciando...");
-
-    // Resolver params de forma asíncrona
-    const resolvedParams = await params;
 
     // Verificar sesión y autorización
     const session = await getServerSession(authOptions);
@@ -177,7 +171,7 @@ export async function PATCH(
     }
 
     // Validar que el ID sea válido
-    if (!ObjectId.isValid(resolvedParams.id)) {
+    if (!ObjectId.isValid(params.id)) {
       return NextResponse.json(createErrorResponse("ID de vehículo inválido"), {
         status: 400,
       });
@@ -260,7 +254,7 @@ export async function PATCH(
       const result = await db
         .collection<{ comments?: Comment[] }>("vehicles")
         .findOneAndUpdate(
-          { _id: new ObjectId(resolvedParams.id) },
+          { _id: new ObjectId(params.id) },
           updateOperation,
           { returnDocument: "after" }
         );
@@ -314,13 +308,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
     console.log("DELETE /api/admin/vehicles/[id] - Iniciando...");
-
-    // Resolver params de forma asíncrona
-    const resolvedParams = await params;
 
     // Verificar sesión y autorización
     const session = await getServerSession(authOptions);
@@ -338,7 +329,7 @@ export async function DELETE(
     }
 
     // Validar que el ID sea válido
-    if (!ObjectId.isValid(resolvedParams.id)) {
+    if (!ObjectId.isValid(params.id)) {
       return NextResponse.json(createErrorResponse("ID de vehículo inválido"), {
         status: 400,
       });
@@ -361,7 +352,7 @@ export async function DELETE(
       // Primero verificar que el vehículo existe
       const vehicle = await db
         .collection<{ comments?: Comment[] }>("vehicles")
-        .findOne({ _id: new ObjectId(resolvedParams.id) });
+        .findOne({ _id: new ObjectId(params.id) });
 
       if (!vehicle) {
         return NextResponse.json(
@@ -373,7 +364,7 @@ export async function DELETE(
       // Eliminar el vehículo
       const result = await db
         .collection("vehicles")
-        .deleteOne({ _id: new ObjectId(resolvedParams.id) });
+        .deleteOne({ _id: new ObjectId(params.id) });
 
       if (result.deletedCount === 0) {
         return NextResponse.json(
@@ -386,7 +377,7 @@ export async function DELETE(
 
       return NextResponse.json(
         createSuccessResponse(
-          { id: resolvedParams.id },
+          { id: params.id },
           "Vehículo eliminado exitosamente"
         ),
         { status: 200 }

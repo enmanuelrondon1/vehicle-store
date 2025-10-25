@@ -6,6 +6,8 @@ import type { WithId, Document } from "mongodb"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/authOptions"
 
+export const dynamic = 'force-dynamic';
+
 // Tipo específico para documentos de MongoDB
 
 
