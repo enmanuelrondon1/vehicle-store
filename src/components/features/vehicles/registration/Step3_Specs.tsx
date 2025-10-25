@@ -41,6 +41,35 @@ const Step3_Specs: React.FC<StepProps> = ({
 }) => {
   const currentCategory = formData.category as VehicleCategory | undefined;
 
+  const createNumericInputHandler = useCallback(
+    (
+      field: keyof VehicleDataBackend,
+      options: { maxLength?: number; isFloat?: boolean } = {}
+    ) => {
+      return (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        let numericValue: string | number = value.replace(
+          options.isFloat ? /[^0-9.]/g : /[^0-9]/g,
+          ""
+        );
+
+        if (options.maxLength && numericValue.length > options.maxLength) {
+          numericValue = numericValue.slice(0, options.maxLength);
+        }
+
+        if (numericValue === "") {
+          handleInputChange(field, undefined);
+        } else {
+          const parsedValue = options.isFloat
+            ? parseFloat(numericValue as string)
+            : parseInt(numericValue as string, 10);
+          handleInputChange(field, isNaN(parsedValue) ? undefined : parsedValue);
+        }
+      };
+    },
+    [handleInputChange]
+  );
+
   const yearValidation = useFieldValidation(formData.year, errors.year);
   const colorValidation = useFieldValidation(formData.color, errors.color);
   const displacementValidation = useFieldValidation(
@@ -67,44 +96,12 @@ const Step3_Specs: React.FC<StepProps> = ({
     errors.loadCapacity
   );
 
-  const handleYearChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      const numericValue = value.replace(/[^0-9]/g, "").slice(0, 4);
-
-      if (numericValue === "") {
-        handleInputChange("year", undefined);
-      } else {
-        const year = parseInt(numericValue, 10);
-        handleInputChange("year", year);
-      }
-    },
-    [handleInputChange]
-  );
-
-  const handleDoorsChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = parseInt(e.target.value);
-      if (isNaN(value)) {
-        handleInputChange("doors", undefined);
-      } else {
-        handleInputChange("doors", value);
-      }
-    },
-    [handleInputChange]
-  );
-
-  const handleSeatsChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = parseInt(e.target.value);
-      if (isNaN(value)) {
-        handleInputChange("seats", undefined);
-      } else {
-        handleInputChange("seats", value);
-      }
-    },
-    [handleInputChange]
-  );
+  const handleYearChange = createNumericInputHandler("year", { maxLength: 4 });
+  const handleDoorsChange = createNumericInputHandler("doors");
+  const handleSeatsChange = createNumericInputHandler("seats");
+  const handleLoadCapacityChange = createNumericInputHandler("loadCapacity", {
+    isFloat: true,
+  });
 
   const generateDisplacementOptions = () => {
     const displacements = [
@@ -286,17 +283,27 @@ const Step3_Specs: React.FC<StepProps> = ({
           </InputField>
 
           <InputField
-            label="Motor"
+            label="Motor (Opcional)"
             error={errors.engine}
             icon={<Wrench className="w-4 h-4 text-gray-400" />}
             tooltip="Incluye detalles como V6, Turbo, DOHC para mayor atractivo"
             success={engineValidation.isValid}
             counter={{ current: formData.engine?.length || 0, max: 100 }}
-            tips={[
-              "🔧 Incluye tecnologías especiales (Turbo, DOHC)",
-              "⚡ Motores especiales aumentan el valor",
-              "📝 Sé específico pero conciso",
-            ]}
+            tips={
+              currentCategory === VehicleCategory.MOTORCYCLE
+                ? [
+                    "✍️ Mínimo 4 caracteres para describir el motor",
+                    "🔧 Incluye tecnologías especiales (Turbo, DOHC)",
+                    "⚡ Motores especiales aumentan el valor",
+                    "📝 Sé específico pero conciso",
+                  ]
+                : [
+                    "✍️ Mínimo 4 caracteres para describir el motor",
+                    "⚡ Motores V6/V8 aumentan el valor",
+                    "🔧 Incluye tecnologías especiales (Turbo, DOHC)",
+                    "📝 Sé específico pero conciso",
+                  ]
+            }
           >
             <input
               type="text"
@@ -460,12 +467,7 @@ const Step3_Specs: React.FC<StepProps> = ({
               <input
                 type="number"
                 value={formData.loadCapacity || ""}
-                onChange={(e) =>
-                  handleInputChange(
-                    "loadCapacity",
-                    parseFloat(e.target.value) || undefined
-                  )
-                }
+                onChange={handleLoadCapacityChange}
                 className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 bg-background text-foreground placeholder-muted-foreground ${loadCapacityValidation.getBorderClassName()}`}
                 placeholder="1000"
                 min="0"

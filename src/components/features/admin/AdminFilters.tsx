@@ -8,14 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import {
-  Search,
-  Filter,
-  X,
-  Grid,
-  List,
-  Square,
-} from "lucide-react";
+import { Search, Filter, X, Grid, List, Square } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -25,7 +18,7 @@ import {
 // import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { VEHICLE_CATEGORIES_LABELS } from "@/types/shared";
 import { SortSelector } from "@/components/ui/seraui-selector";
-import { MultiSelectFilter } from "@/components/ui/MultiSelectFilter";
+import { MultiSelectFilter } from "@/components/features/vehicles/list/filters/MultiSelectFilter";
 
 import {
   AdminPanelFilters,
@@ -44,6 +37,7 @@ interface AdminFiltersProps {
   onClearSelection: () => void;
   selectedCount: number;
   categoryCounts: Record<string, number>;
+  isMobileView: boolean;
 }
 
 export const AdminFilters = ({
@@ -56,6 +50,7 @@ export const AdminFilters = ({
   onClearSelection,
   selectedCount,
   categoryCounts,
+  isMobileView,
 }: AdminFiltersProps) => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [searchInput, setSearchInput] = useState(filters.search);
@@ -135,24 +130,26 @@ export const AdminFilters = ({
               {totalResults} resultado{totalResults !== 1 ? "s" : ""}
             </span>
 
-            <div className="flex items-center border rounded-lg p-1 bg-muted">
-              <Button
-                variant={viewMode === "list" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => onViewModeChange("list")}
-                className="p-2 h-8 w-8"
-              >
-                <List className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === "grid" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => onViewModeChange("grid")}
-                className="p-2 h-8 w-8"
-              >
-                <Grid className="w-4 h-4" />
-              </Button>
-            </div>
+            {!isMobileView && (
+              <div className="flex items-center border rounded-lg p-1 bg-muted">
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => onViewModeChange("list")}
+                  className="p-2 h-8 w-8"
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => onViewModeChange("grid")}
+                  className="p-2 h-8 w-8"
+                >
+                  <Grid className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -178,7 +175,11 @@ export const AdminFilters = ({
             <Checkbox
               id="select-all"
               checked={
-                isAllSelected ? true : isPartiallySelected ? "indeterminate" : false
+                isAllSelected
+                  ? true
+                  : isPartiallySelected
+                    ? "indeterminate"
+                    : false
               }
               onCheckedChange={(checked) => {
                 if (checked === true) {
@@ -255,7 +256,7 @@ export const AdminFilters = ({
                 </label>
                 <MultiSelectFilter
                   options={categoryOptions.filter((o) => o.value !== "all")}
-                  selectedValues={filters.category}
+                  selected={filters.category}
                   onChange={(selected) => onFiltersChange({ category: selected })}
                   placeholder="Seleccionar categorías"
                   className="w-full"

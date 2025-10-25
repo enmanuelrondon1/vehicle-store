@@ -27,12 +27,12 @@ interface MultiSelectFilterProps {
   selected: string[];
   onChange: (selected: string[]) => void;
   placeholder?: string;
-  // isDarkMode: boolean; // ❌ REMOVED
   showPublishedToggle?: boolean;
   isPublishedOnly?: boolean;
   onPublishedOnlyChange?: (value: boolean) => void;
   publishedOnlyLabel?: string;
   singleSelect?: boolean;
+  className?: string;
 }
 
 export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
@@ -40,12 +40,12 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
   selected,
   onChange,
   placeholder = "Seleccionar...",
-  // isDarkMode, // ❌ REMOVED
   showPublishedToggle = false,
   isPublishedOnly = false,
   onPublishedOnlyChange,
   publishedOnlyLabel = "Mostrar solo publicados",
-  singleSelect = false, // Añadir esta línea
+  singleSelect = false,
+  className,
 }) => {
   const [open, setOpen] = React.useState(false);
 
@@ -60,7 +60,11 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={`w-full justify-between h-auto min-h-10 ${selected.length > 0 ? "h-full" : ""}`}
+          className={cn(
+            "w-full justify-between h-auto min-h-10",
+            selected.length > 0 ? "h-full" : "",
+            className
+          )}
         >
           <div className="flex gap-1 flex-wrap">
             {selected.length > 0 ? (

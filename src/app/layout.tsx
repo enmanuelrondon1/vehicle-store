@@ -32,7 +32,12 @@ export const metadata: Metadata = {
     ],
   },
   icons: {
-    icon: "/car-svgrepo-com.svg", // Ruta relativa al archivo en public/
+    icon: [
+      { url: "/logo/favicon.svg", type: "image/svg+xml" },
+      { url: "/logo/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    apple: "/logo/apple-touch-icon.png",
+    shortcut: "/logo/favicon.ico",
   },
 };
 
@@ -47,8 +52,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body
-        className={`${GeistSans.variable} ${GeistMono.variable} antialiased flex flex-col items-center min-h-screen pt-24`}
+     <body
+        className={`${GeistSans.variable} ${GeistMono.variable} antialiased min-h-screen bg-background text-foreground transition-colors duration-300 pt-16`}
       >
         <ThemeProvider
           attribute="class"

@@ -30,7 +30,7 @@ import {
   addVehicleComment,
   getVehicleHistory,
 } from "@/lib/api/admin";
-import type { VehicleComment, VehicleHistoryEntry } from "@/types/types"; // AÑADIDO: Importar tipos
+import type { VehicleComment, VehicleHistoryEntry } from "@/types/types";
 import { Button } from "@/components/ui/button";
 
 // Mapeo explícito
@@ -51,8 +51,19 @@ interface DialogState {
 
 export const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>("vehicles");
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const handleResize = (e: MediaQueryListEvent) => setIsMobileView(e.matches);
+
+    setIsMobileView(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleResize);
+
+    return () => mediaQuery.removeEventListener("change", handleResize);
+  }, []);
+
   const {
-    // ✅ vehicles es la lista ya filtrada, ordenada y paginada.
     vehicles,
     allVehicles,
     isLoading,
@@ -82,7 +93,7 @@ export const AdminPanel = () => {
         }
         return acc;
       },
-      {} as Record<string, number>
+{} as Record<string, number>
     );
   }, [allVehicles]);
 
@@ -96,12 +107,10 @@ export const AdminPanel = () => {
     vehicle: null,
   });
 
-  // Estados para diálogos de acciones masivas
   const [showMassApproveDialog, setShowMassApproveDialog] = useState(false);
   const [showMassRejectDialog, setShowMassRejectDialog] = useState(false);
   const [showMassDeleteDialog, setShowMassDeleteDialog] = useState(false);
 
-  // Estados para las nuevas funcionalidades
   const [vehicleComments, setVehicleComments] = useState<VehicleComment[]>([]);
   const [vehicleHistory, setVehicleHistory] = useState<VehicleHistoryEntry[]>(
     []
@@ -133,7 +142,6 @@ export const AdminPanel = () => {
     setDialogState({ type: null, vehicle: null });
   };
 
-  // Efecto para asegurar que se cargan TODOS los vehículos al inicio
   useEffect(() => {
     const fetchAllVehiclesInitially = async () => {
       if (allVehicles.length === 0) {
@@ -153,7 +161,6 @@ export const AdminPanel = () => {
     fetchAllVehiclesInitially();
   }, [setAllVehicles, allVehicles.length]);
 
-  // Efecto para abrir el diálogo de detalles desde una notificación
   useEffect(() => {
     const fetchAndDisplayVehicle = async (vehicleId: string) => {
       try {
@@ -193,10 +200,9 @@ export const AdminPanel = () => {
     }
   }, [vehicleFromNotification, setAllVehicles]);
 
-
-if (status === "loading" || isLoading) {
+  if (status === "loading" || isLoading) {
     return <AdminPanelLoading />;
-  }
+}
 
   if (!isAdmin) {
     return <AdminPanelAccessDenied />;
@@ -204,32 +210,26 @@ if (status === "loading" || isLoading) {
 
   if (error) {
     return <AdminPanelError error={error} onRetry={fetchVehicles} />;
-}
+  }
 
-  // Funciones para manejar comentarios
   const handleAddComment = async (vehicleId: string, comment: string) => {
     setIsLoadingComments(true);
     try {
       const result = await addVehicleComment(vehicleId, comment);
       if (result.success) {
-        // El diálogo de comentarios limpia su propio campo de texto.
-        // Solo necesitamos volver a cargar los comentarios para mostrar el nuevo.
         await loadVehicleComments(vehicleId);
       } else {
         console.error(
           "Error al agregar comentario desde la API. La operación no tuvo éxito."
         );
-        // Aquí podrías mostrar una notificación de error al usuario.
       }
     } catch (error) {
       console.error("Error al agregar comentario:", error);
-      // Aquí también podrías mostrar una notificación de error.
-} finally {
+    } finally {
       setIsLoadingComments(false);
     }
   };
 
-  // Función para cargar comentarios
   const loadVehicleComments = async (vehicleId: string) => {
     setIsLoadingComments(true);
     try {
@@ -242,7 +242,6 @@ if (status === "loading" || isLoading) {
     }
   };
 
-  // Función para cargar historial
   const loadVehicleHistory = async (vehicleId: string) => {
     setIsLoadingHistory(true);
     try {
@@ -252,10 +251,9 @@ if (status === "loading" || isLoading) {
       console.error("Error al cargar historial:", error);
     } finally {
       setIsLoadingHistory(false);
-}
+    }
   };
 
-  // Función para eliminar vehículo
   const handleDeleteVehicle = async (vehicleId: string) => {
     try {
       const result = await deleteVehicle(vehicleId);
@@ -268,11 +266,11 @@ if (status === "loading" || isLoading) {
       }
     } catch (error) {
       console.error("Error al eliminar vehículo:", error);
-}
+    }
   };
 
   const handleRejectWithReason = async (vehicleId: string, reason: string) => {
-try {
+    try {
       await handleStatusChange(vehicleId, ApprovalStatus.REJECTED, reason);
       handleCloseDialog();
     } catch (error) {
@@ -307,7 +305,7 @@ try {
       );
       await Promise.all(promises);
       setSelectedVehicles(new Set());
-} catch (error) {
+    } catch (error) {
       console.error("Error en eliminación masiva:", error);
     }
     setShowMassDeleteDialog(false);
@@ -337,7 +335,6 @@ try {
   };
 
   const selectAllVisible = () => {
-    // ✅ CORREGIDO: Usar `vehicles` (la lista visible) en lugar de `displayedVehicles`.
     const allIds = new Set(vehicles.map((v) => v._id!));
     setSelectedVehicles(allIds);
   };
@@ -439,6 +436,7 @@ try {
               onClearSelection={clearSelection}
               selectedCount={selectedVehicles.size}
               categoryCounts={categoryCounts}
+              isMobileView={isMobileView}
             />
 
             {/* Acciones masivas */}
@@ -475,10 +473,22 @@ try {
               </Card>
             )}
 
-            {/* Contenido principal */}
-            <Card>
+            {/* Contenido principal - AJUSTE AQUÍ */}
+            <Card className="w-full">
               <CardContent className="p-3 md:p-6">
-                {viewMode === "grid" ? (
+                {isMobileView ? (
+                  <VehicleGridView
+                    vehicles={vehicles}
+                    onStatusChange={handleStatusChange}
+                    onVehicleSelect={setSelectedVehicle}
+                    selectedVehicles={selectedVehicles}
+                    onToggleSelection={toggleVehicleSelection}
+                    onShowRejectDialog={handleShowRejectDialog}
+                    onShowCommentDialog={handleShowCommentDialog}
+                    onShowHistoryDialog={handleShowHistoryDialog}
+                    onShowDeleteDialog={handleShowDeleteDialog}
+                  />
+                ) : viewMode === "grid" ? (
                   <VehicleGridView
                     vehicles={vehicles}
                     onStatusChange={handleStatusChange}
@@ -532,7 +542,7 @@ try {
         onOpenChange={(open) => !open && setSelectedVehicle(null)}
       />
 
-      {/* Dialog para rechazar con razón - MEJORADO */}
+      {/* Dialog para rechazar con razón */}
       <RejectDialog
         isOpen={dialogState.type === "reject"}
         onOpenChange={handleCloseDialog}
@@ -542,7 +552,7 @@ try {
         }
       />
 
-      {/* Dialog para agregar comentarios - MEJORADO */}
+      {/* Dialog para agregar comentarios */}
       <CommentDialog
         isOpen={dialogState.type === "comment"}
         onOpenChange={handleCloseDialog}
@@ -555,7 +565,7 @@ try {
         }}
       />
 
-      {/* Dialog para ver historial - MEJORADO */}
+      {/* Dialog para ver historial */}
       <HistoryDialog
         isOpen={dialogState.type === "history"}
         onOpenChange={handleCloseDialog}
@@ -563,7 +573,7 @@ try {
         isLoading={isLoadingHistory}
       />
 
-      {/* Dialog para confirmar eliminación - MEJORADO */}
+      {/* Dialog para confirmar eliminación */}
       <DeleteDialog
         isOpen={dialogState.type === "delete"}
         onOpenChange={handleCloseDialog}

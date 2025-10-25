@@ -8,12 +8,14 @@ import { Car, RefreshCw, Download, BarChart2 } from "lucide-react";
 import { NotificationBell } from "../../shared/notifications/NotificationBell";
 import type { VehicleDataFrontend } from "@/types/types";
 
+
 interface AdminPanelHeaderProps {
   isLoading: boolean;
   exportData: () => void;
   fetchVehicles: () => void;
   setVehicleFromNotification: (vehicle: VehicleDataFrontend | null) => void;
 }
+
 
 export const AdminPanelHeader = ({
   isLoading,
@@ -34,7 +36,7 @@ export const AdminPanelHeader = ({
               Gestiona los anuncios de vehículos y comprobantes de pago
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+          <div className="flex flex-row flex-wrap items-center justify-center gap-2 sm:justify-start sm:gap-3">
             <NotificationBell
               onNotificationClick={setVehicleFromNotification}
             />

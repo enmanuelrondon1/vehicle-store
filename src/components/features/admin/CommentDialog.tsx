@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { MessageSquare, RefreshCw, Plus, User } from "lucide-react";
 import type { VehicleComment } from "@/types/types";
 import { useState } from "react";
+import { TextareaField } from "@/components/shared/forms/TextareaField";
 
 interface CommentDialogProps {
   isOpen: boolean;
@@ -115,19 +116,15 @@ export const CommentDialog = ({
           </div>
 
           <div className="border-t pt-4 border-border">
-            <Label
-              htmlFor="comment"
-              className="text-sm font-medium text-card-foreground"
-            >
-              Agregar nuevo comentario
-            </Label>
-            <Textarea
-              id="comment"
-              placeholder="Escribe tu comentario aquí..."
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              className="mt-2 min-h-[80px] bg-background border text-foreground placeholder:text-muted-foreground"
-            />
+            <TextareaField label="Agregar nuevo comentario">
+              <Textarea
+                id="comment"
+                placeholder="Escribe tu comentario aquí..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                className="mt-2 min-h-[80px] bg-background border text-foreground placeholder:text-muted-foreground"
+              />
+            </TextareaField>
           </div>
         </div>
 

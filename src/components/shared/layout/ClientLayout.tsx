@@ -1,3 +1,4 @@
+// src/components/shared/layout
 "use client";
 import React from "react";
 import { DarkModeProvider } from "@/context/DarkModeContext";

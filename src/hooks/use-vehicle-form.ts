@@ -294,7 +294,7 @@ export const useVehicleForm = () => {
     } finally {
       setIsSubmitting(false)
     }
-  }, [formData, validateCurrentStep, selectedBank, referenceNumber, paymentProof])
+  }, [formData, validateCurrentStep, referenceNumber, paymentProof])
 
   const resetForm = useCallback(() => {
     setFormData(initialFormData);

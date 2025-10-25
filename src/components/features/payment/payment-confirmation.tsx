@@ -60,7 +60,7 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label>Selecciona un Banco</Label>
+          <Label>Selecciona un Banco (Opcional)</Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {banks.map((bank) => (
               <Button
@@ -78,11 +78,6 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
               </Button>
             ))}
           </div>
-          {errors.selectedBank && (
-            <p className="text-sm text-red-500 dark:text-red-400 mt-1">
-              {errors.selectedBank}
-            </p>
-          )}
         </div>
 
         <div className="space-y-2">
@@ -159,7 +154,7 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
           <Button
             onClick={onSubmit}
             disabled={
-              isSubmitting || !selectedBank || !referenceNumber || !paymentProof
+              isSubmitting || !referenceNumber || !paymentProof
             }
             className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
           >

@@ -1,4 +1,4 @@
-// src/components/sections/AdminPanel/components/NotificationBell/NotificationBell.tsx
+// src/components/shared/notifications/NotificationBell.tsx
 'use client';
 
 import { useState, useEffect, Fragment } from "react";
@@ -20,9 +20,10 @@ interface Notification {
 
 interface NotificationBellProps {
   onNotificationClick: (vehicle: VehicleDataFrontend) => void;
+  className?: string; // Añadimos la propiedad className
 }
 
-export const NotificationBell = ({ onNotificationClick }: NotificationBellProps) => {
+export const NotificationBell = ({ onNotificationClick, className }: NotificationBellProps) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -82,7 +83,7 @@ export const NotificationBell = ({ onNotificationClick }: NotificationBellProps)
     localStorage.removeItem('adminUnreadCount');
   };
   return (
-    <Popover className="relative">
+    <Popover className={`relative ${className}`}>
       {({ close }) => (
         <>
           <Popover.Button

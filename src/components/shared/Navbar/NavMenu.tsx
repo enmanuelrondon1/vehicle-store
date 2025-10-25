@@ -1,10 +1,11 @@
 //src/components/shared/Navbar/NavMenu.tsx
 "use client";
 
+
 import React, { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Phone, LogOut, ChevronDown, User, Shield, Heart } from "lucide-react";
+import { Menu, X, Phone, LogOut, ChevronDown, User, Shield, Heart, List } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import {
@@ -24,6 +25,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
 
+
 // Tipos e Interfaces
 interface NavItem {
   label: string;
@@ -32,12 +34,14 @@ interface NavItem {
   requiresAdmin?: boolean;
 }
 
+
 interface UserInfo {
   name?: string | null;
   email?: string | null;
   role?: string;
   image?: string | null;
 }
+
 
 interface SessionUser {
   name?: string | null;
@@ -46,10 +50,12 @@ interface SessionUser {
   role?: string;
 }
 
+
 const NavMenu = () => {
   const { translations } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session, status } = useSession();
+
 
   const userInfo = useMemo((): UserInfo | null => {
     if (!session?.user) return null;
@@ -62,9 +68,11 @@ const NavMenu = () => {
     };
   }, [session]);
 
+
   const isAdmin = useMemo(() => {
     return status === "authenticated" && userInfo?.role === "admin";
   }, [status, userInfo]);
+
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -73,6 +81,7 @@ const NavMenu = () => {
       console.error("Error al cerrar sesión:", error);
     }
   }, []);
+
 
   const navItems: NavItem[] = useMemo(
     () => [
@@ -95,13 +104,16 @@ const NavMenu = () => {
     [translations.contact, isAdmin]
   );
 
+
   const handleToggleMenu = useCallback(() => {
     setIsMenuOpen((prev) => !prev);
   }, []);
 
+
   const handleCloseMenu = useCallback(() => {
     setIsMenuOpen(false);
   }, []);
+
 
   return (
     <>
@@ -175,6 +187,9 @@ const NavMenu = () => {
                   <Link href={siteConfig.paths.myFavorites} onClick={handleCloseMenu} className={cn(buttonVariants({ variant: 'ghost' }), 'justify-start gap-2')}>
                     <Heart className="w-4 h-4" /> Mis Favoritos
                   </Link>
+                  <Link href={siteConfig.paths.vehicleList} onClick={handleCloseMenu} className={cn(buttonVariants({ variant: 'ghost' }), 'justify-start gap-2')}>
+                    <List className="w-4 h-4" /> Ver Publicaciones
+                  </Link>
                   {isAdmin && (
                     <Link href={siteConfig.paths.adminPanel} onClick={handleCloseMenu} className={cn(buttonVariants({ variant: 'ghost' }), 'justify-start gap-2 text-destructive')}>
                       <Shield className="w-4 h-4" /> AdminPanel
@@ -202,6 +217,7 @@ const NavMenu = () => {
          </Sheet>
        </div>
 
+
       {/* --- Menú de Escritorio --- */}
       <nav className="hidden sm:flex items-center" role="navigation" aria-label="Navegación principal">
         <ul className="flex space-x-2 items-center">
@@ -226,7 +242,10 @@ const NavMenu = () => {
             <li className="relative">
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="rounded-full h-auto p-2 flex items-center">
+                  <Button
+                    variant="ghost"
+                    className="rounded-full h-auto p-2 flex items-center"
+                  >
                     <UserInfo user={userInfo} />
                     <ChevronDown className="w-4 h-4 ml-2 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                   </Button>
@@ -250,6 +269,12 @@ const NavMenu = () => {
                         <Link href={siteConfig.paths.myFavorites} className="flex items-center w-full cursor-pointer">
                           <Heart className="w-4 h-4 mr-2" />
                           Mis Favoritos
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={siteConfig.paths.vehicleList} className="flex items-center w-full cursor-pointer">
+                          <List className="w-4 h-4 mr-2" />
+                          Ver Publicaciones
                         </Link>
                       </DropdownMenuItem>
                       {isAdmin && (
@@ -290,5 +315,6 @@ const NavMenu = () => {
     </>
   );
 };
+
 
 export default NavMenu;

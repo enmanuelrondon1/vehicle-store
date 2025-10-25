@@ -44,10 +44,19 @@ const LocationSelector: React.FC<{
       .join(" ");
   };
 
+  const capitalizeWords = (input: string) => {
+    if (!input) return "";
+    return input
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   React.useEffect(() => {
-    const [currentCity = "", currentState = ""] = value
-      .split(", ")
-      .map((s) => s.trim());
+    const parts = value.split(", ");
+    const currentCity = parts[0] || "";
+    const currentState = parts.slice(1).join(", ").trim();
     setCity(currentCity);
     setSelectedState(currentState);
   }, [value]);
@@ -63,6 +72,14 @@ const LocationSelector: React.FC<{
     const newCity = e.target.value;
     setCity(newCity);
     onChange(`${newCity}, ${selectedState}`);
+  };
+
+  const handleCityBlur = () => {
+    const formattedCity = capitalizeWords(city);
+    if (formattedCity !== city) {
+      setCity(formattedCity);
+      onChange(`${formattedCity}, ${selectedState}`);
+    }
   };
 
   return (
@@ -110,6 +127,7 @@ const LocationSelector: React.FC<{
           type="text"
           value={city}
           onChange={handleCityChange}
+          onBlur={handleCityBlur}
           className={`${className} w-1/2`}
           placeholder="Ciudad o municipio"
           maxLength={100}
@@ -239,12 +257,17 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           success={nameValidation.isValid}
           icon={<User className="w-4 h-4 text-indigo-400" />}
           tooltip="Usa tu nombre real para generar confianza"
+          tips={[
+            "✅ Mínimo 2 caracteres",
+            "✅ Solo letras y espacios",
+            "❌ Sin caracteres especiales",
+          ]}
         >
           <input
             type="text"
             value={formData.sellerContact?.name || ""}
             onChange={(e) =>
-              handleInputChange("sellerContact.name", e.target.value)
+              handleInputChange("sellerContact.name", e.target.value || undefined)
             }
             className={`${inputClass} ${nameValidation.getBorderClassName()}`}
             placeholder="Ej: Juan Carlos Pérez"
@@ -262,13 +285,20 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           success={emailValidation.isValid}
           icon={<Mail className="w-4 h-4 text-indigo-400" />}
           tooltip="Recibirás notificaciones de interesados aquí"
+          tips={[
+            "✅ Formato: nombre@dominio.com",
+            "✅ Recibirás notificaciones aquí",
+          ]}
         >
           <div className="relative">
             <input
               type="email"
               value={formData.sellerContact?.email || ""}
               onChange={(e) =>
-                handleInputChange("sellerContact.email", e.target.value)
+                handleInputChange(
+                  "sellerContact.email",
+                  e.target.value || undefined
+                )
               }
               className={`${inputClass} ${emailValidation.getBorderClassName()}`}
               placeholder="Ej: juan.perez@email.com"
@@ -304,6 +334,12 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           success={phoneValidation.isValid}
           icon={<Phone className="w-4 h-4 text-indigo-400" />}
           tooltip="Preferiblemente WhatsApp para contacto directo"
+          tips={[
+            "✅ El número debe tener 7 dígitos",
+            "✅ Código de área + número",
+            "✅ Solo números",
+            "✅ Ejemplo: 0414 1234567",
+          ]}
         >
           <div className="flex space-x-2">
             <SelectField
@@ -342,10 +378,15 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           success={locationValidation.isValid}
           icon={<MapPin className="w-4 h-4 text-indigo-400" />}
           tooltip="Selecciona tu estado y especifica la ciudad"
+          tips={[
+            "✅ Ciudad mín. 4 caracteres",
+            "✅ Formato: Ciudad, Estado",
+            "✅ Ejemplo: Caracas, Distrito Capital",
+          ]}
         >
           <LocationSelector
             value={formData.location || ""}
-            onChange={(value) => handleInputChange("location", value)}
+            onChange={(value) => handleInputChange("location", value || undefined)}
             className={`${inputClass} ${locationValidation.getBorderClassName()}`}
           />
           <div className="text-xs text-muted-foreground mt-1">

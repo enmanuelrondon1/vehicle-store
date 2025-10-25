@@ -7,6 +7,15 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Loader2, Mail, Lock, User, Eye, EyeOff, Sparkles, LogIn } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
 
 // --- SVG Icons ---
 const GoogleIcon = () => (
@@ -109,7 +118,8 @@ const Login = () => {
     });
     const data = await response.json();
     if (!response.ok) {
-      setErrors({ general: data.message || "Error al registrar usuario." });
+      const message = (data && data.message) || "Error al registrar usuario.";
+      setErrors({ general: message });
       return false;
     }
     setMessage("Registro exitoso. Ahora puedes iniciar sesión.");
@@ -158,9 +168,9 @@ const Login = () => {
           setIsLogin(true);
         }
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      setErrors({ general: "Error inesperado. Intenta nuevamente." });
+      const errorMessage = error instanceof Error ? error.message : "Error inesperado. Intenta nuevamente.";
+      setErrors({ general: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -250,7 +260,17 @@ const Login = () => {
                 <Button type="button" variant="ghost" size="icon" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </Button>
-                {errors.password && <p className="mt-1.5 text-sm text-destructive">{errors.password}</p>}
+                {errors.password && (
+                  <p className="text-sm text-red-500">{errors.password}</p>
+                )}
+                <div className="flex items-center justify-end">
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </div>
               </div>
               {!isLogin && (
                 <div className="relative">

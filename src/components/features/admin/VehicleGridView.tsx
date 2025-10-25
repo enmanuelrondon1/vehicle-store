@@ -1,11 +1,18 @@
 // src/components/features/admin/VehicleGridView.tsx
-"use client"
+"use client";
 
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Eye, DollarSign, Gauge, MapPin, Car, CalendarDays } from "lucide-react"
-import { VehicleDataFrontend, ApprovalStatus } from "@/types/types"
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Eye,
+  DollarSign,
+  Gauge,
+  MapPin,
+  Car,
+  CalendarDays,
+} from "lucide-react";
+import { VehicleDataFrontend, ApprovalStatus } from "@/types/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge } from "./shared/StatusBadge";
 import { VehicleActions } from "./VehicleActions";
@@ -51,10 +58,10 @@ export const VehicleGridView = ({
         <Card
           key={vehicle._id}
           className={`
-            bg-card border
-            hover:shadow-lg transition-all duration-200 hover:scale-105
-            ${selectedVehicles.has(vehicle._id!) ? "ring-2 ring-primary" : ""}
-          `}
+bg-card border
+hover:shadow-lg transition-all duration-200 hover:scale-105
+${selectedVehicles.has(vehicle._id!) ? "ring-2 ring-primary" : ""}
+`}
         >
           <CardContent className="p-4">
             {/* Imagen */}
@@ -88,10 +95,10 @@ export const VehicleGridView = ({
             <div className="space-y-3">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-bold text-lg line-clamp-1 text-foreground">
+                  <h3 className="font-bold text-base md:text-xl line-clamp-1 text-foreground">
                     {vehicle.brand} {vehicle.model}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm md:text-base text-muted-foreground">
                     {vehicle.year}
                   </p>
                 </div>
@@ -106,26 +113,26 @@ export const VehicleGridView = ({
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 text-sm md:text-base">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-green-600" />
-                  <span className="font-semibold text-green-600">
+                  <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
+                  <span className="font-semibold text-lg md:text-xl text-green-600">
                     ${vehicle.price.toLocaleString()}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Gauge className="w-4 h-4 text-primary" />
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Gauge className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                   <span>{vehicle.mileage.toLocaleString()} km</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="w-4 h-4 text-destructive" />
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="w-4 h-4 md:w-5 md:h-5 text-destructive" />
                   <span className="line-clamp-1">{vehicle.location}</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarDays className="w-4 h-4 text-blue-600" />
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <CalendarDays className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
                   <span>
                     {vehicle.createdAt
                       ? new Date(vehicle.createdAt).toLocaleDateString()
@@ -135,12 +142,12 @@ export const VehicleGridView = ({
               </div>
 
               {/* Acciones */}
-              <div className="flex flex-col gap-2 pt-2 border-t">
+              <div className="flex flex-col gap-2 pt-3 border-t">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onVehicleSelect(vehicle)}
-                  className="w-full"
+                  className="w-full text-sm md:text-base"
                 >
                   <Eye className="w-4 h-4 mr-2" />
                   Ver detalles

@@ -5,7 +5,7 @@ import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { SparklesText } from "@/components/ui/sparkles-text";
+import { SparklesText } from "@/components/ui/SparklesText";
 
 interface HeroCallToActionProps {
   onSellClick: () => void;
@@ -56,7 +56,7 @@ export const HeroCallToAction: React.FC<HeroCallToActionProps> = ({
         >
           <SparklesText
             className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl"
-            sparklesCount={10}
+            sparkleCount={10}
           >
             Vende tu Vehículo Hoy
           </SparklesText>

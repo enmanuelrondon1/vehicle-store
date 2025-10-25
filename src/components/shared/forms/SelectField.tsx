@@ -36,7 +36,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         disabled={disabled || isLoading}
-        className={className}
+        className={`${className} appearance-none`}
       >
         <option value="">{placeholder}</option>
         {options.map((option) => (

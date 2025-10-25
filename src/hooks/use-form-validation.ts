@@ -23,8 +23,6 @@ export function useFormValidation() {
       // Special validation for payment step
       if (step === 6) {
         const paymentErrors: Record<string, string> = {};
-        if (!selectedBank)
-          paymentErrors.selectedBank = "Debes seleccionar un banco.";
         if (!referenceNumber || referenceNumber.length < 8)
           paymentErrors.referenceNumber = "El número de referencia es inválido.";
         if (!paymentProof)

@@ -7,6 +7,11 @@ import Image from "next/image";
 
 // Componente optimizado para el logo
 const CompanyLogo = memo(() => {
+  const lightLogo =
+    "https://res.cloudinary.com/dcdawwvx2/image/upload/v1761340312/Generated_Image_October_24__2025_-_8_50AM-removebg-preview_1_c1gldv.png";
+  const darkLogo =
+    "https://res.cloudinary.com/dcdawwvx2/image/upload/v1761339670/dreamina-2025-10-24-7495-puedes_cambiarle_el_fondo_a_un_color_neg...-removebg-preview_bd8fc4.png";
+
   return (
     <Link
       href="/"
@@ -14,15 +19,28 @@ const CompanyLogo = memo(() => {
       aria-label="Ir a la página principal"
     >
       <div className="relative overflow-hidden rounded-lg transition-transform duration-300 group-hover:scale-110">
-        <Image
-          src="https://res.cloudinary.com/dcdawwvx2/image/upload/v1760032511/photo_2025-10-09_13-50-37_w0w9cr.jpg"
-          alt="Logo de la empresa - Plataforma de venta de vehículos"
-          width={50}
-          height={50}
-          priority
-          className="object-contain"
-          sizes="50px"
-        />
+        {/* Logo para modo claro (visible por defecto) */}
+        <div className="dark:hidden">
+          <Image
+            src={lightLogo}
+            alt="Logo de VehicleStore"
+            width={120}
+            height={40}
+            priority
+            sizes="120px"
+          />
+        </div>
+        {/* Logo para modo oscuro (oculto por defecto, visible en modo dark) */}
+        <div className="hidden dark:block">
+          <Image
+            src={darkLogo}
+            alt="Logo de VehicleStore"
+            width={120}
+            height={40}
+            priority
+            sizes="120px"
+          />
+        </div>
 
         {/* Efecto de brillo en hover, usando el color primario del tema */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform -translate-x-full group-hover:translate-x-full" />
@@ -52,7 +70,7 @@ export const Navbar = memo(() => {
         <div className="flex items-center flex-shrink-0">
           <CompanyLogo />
         </div>
- 
+
         {/* Navigation Menu */}
         <div className="flex items-center">
           <NavMenu />

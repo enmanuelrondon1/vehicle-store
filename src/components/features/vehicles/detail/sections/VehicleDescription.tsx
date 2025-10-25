@@ -17,7 +17,7 @@ const VehicleDescriptionComponent: React.FC<VehicleDescriptionProps> = ({ descri
       <h3 className="text-2xl font-bold mb-4 text-foreground">
         Descripción
       </h3>
-      <p className="text-lg leading-relaxed text-muted-foreground">
+      <p className="text-lg leading-relaxed text-muted-foreground break-words">
         {description}
       </p>
     </div>

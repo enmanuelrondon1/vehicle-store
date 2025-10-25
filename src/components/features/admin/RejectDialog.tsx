@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Archive, XCircle } from "lucide-react";
 import { useState, useEffect } from "react";
+import { TextareaField } from "@/components/shared/forms/TextareaField";
 
 interface RejectDialogProps {
   isOpen: boolean;
@@ -46,19 +47,15 @@ export const RejectDialog = ({ isOpen, onOpenChange, onConfirm, initialReason = 
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="py-4">
-          <Label
-            htmlFor="reject-reason"
-            className="text-sm font-medium mb-2 block text-card-foreground"
-          >
-            Razón para archivar (opcional)
-          </Label>
-          <Textarea
-            id="reject-reason"
-            placeholder="Ej: Documentación incompleta, imágenes no coinciden con el vehículo..."
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            className="min-h-[100px] md:min-h-[120px] text-sm bg-background border text-foreground placeholder:text-muted-foreground"
-          />
+          <TextareaField label="Razón para archivar (opcional)">
+            <Textarea
+              id="reject-reason"
+              placeholder="Ej: Documentación incompleta, imágenes no coinciden con el vehículo..."
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="min-h-[100px] md:min-h-[120px] text-sm bg-background border text-foreground placeholder:text-muted-foreground"
+            />
+          </TextareaField>
         </div>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <AlertDialogCancel className="w-full sm:w-auto">
