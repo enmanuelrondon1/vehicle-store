@@ -49,37 +49,40 @@ export const FormProgress: React.FC<FormProgressProps> = ({
 
           const Icon = iconMap[step.iconName as keyof typeof iconMap] || Car;
 
+          // ESTILO ACTUALIZADO: Estados con colores de tema.
           const stepClasses = `
             flex items-center p-3 rounded-xl transition-all duration-300 w-full lg:flex-1
-            ${isReachable ? "cursor-pointer" : "cursor-not-allowed"} 
+            ${isReachable ? "cursor-pointer hover:bg-muted/80" : "cursor-not-allowed"} 
             ${
               isActive
-                ? "bg-blue-50 dark:bg-blue-900/50 border-2 border-blue-500 dark:border-blue-600 shadow-lg"
+                ? "bg-primary/10 border-2 border-primary shadow-lg"
                 : isCompleted
-                  ? "bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200/80 dark:hover:bg-gray-700/80"
-                  : "bg-gray-50 dark:bg-gray-800 opacity-50"
+                  ? "bg-muted/50"
+                  : "bg-muted/50 opacity-50"
             }
           `;
 
+          // ESTILO ACTUALIZADO: Iconos con colores de tema.
           const iconClasses = `
             w-10 h-10 p-2 rounded-full transition-all duration-300
             ${
               isActive
-                ? "bg-blue-500 dark:bg-blue-600 text-white"
+                ? "bg-primary text-primary-foreground"
                 : isCompleted
-                ? "bg-green-500 dark:bg-green-700 text-white"
-                : "bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500"
+                ? "bg-green-600 text-white"
+                : "bg-muted text-muted-foreground"
             }
           `;
 
+          // ESTILO ACTUALIZADO: Textos con colores de tema.
           const textClasses = `
             transition-colors duration-300
             ${
               isActive
-                ? "text-blue-700 dark:text-blue-300"
+                ? "text-primary"
                 : isCompleted
-                ? "text-gray-800 dark:text-gray-200"
-                : "text-gray-400 dark:text-gray-500"
+                ? "text-foreground"
+                : "text-muted-foreground"
             }
           `;
 
@@ -94,17 +97,19 @@ export const FormProgress: React.FC<FormProgressProps> = ({
                   <Icon className="w-full h-full" />
                 </div>
                 <div className="ml-3">
-                  <p className={`font-bold text-sm ${textClasses}`}>
+                  {/* ESTILO ACTUALIZADO: Título con fuente de encabezado. */}
+                  <p className={`font-heading text-sm font-bold ${textClasses}`}>
                     {step.label}
                   </p>
                   <p className={`text-xs hidden md:block ${textClasses}`}>{step.description}</p>
                 </div>
               </div>
               {index < formSteps.length - 1 && (
+                // ESTILO ACTUALIZADO: Conector con colores de tema.
                 <div
                   className={`
                     h-px w-full md:h-auto md:w-px flex-shrink-0 my-2 md:my-0 md:mx-2
-                    ${isCompleted ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}
+                    ${isCompleted ? 'bg-primary' : 'bg-border'}
                   `}
                 />
               )}

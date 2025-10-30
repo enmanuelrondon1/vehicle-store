@@ -64,6 +64,7 @@ export const STATUS_MAP: Record<ApprovalStatus, string> = {
   [ApprovalStatus.UNDER_REVIEW]: "En Revisión",
   [ApprovalStatus.APPROVED]: "Aprobado",
   [ApprovalStatus.REJECTED]: "Rechazado",
+  [ApprovalStatus.SOLD]: "Vendido", // ✅ Agregado
 };
 
 /**

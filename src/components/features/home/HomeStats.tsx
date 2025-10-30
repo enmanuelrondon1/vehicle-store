@@ -3,12 +3,12 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { StatCard } from "./hero/StatCard";
-import { BenefitCard } from "./hero/BenefitCard";
+import { BenefitCard } from "./hero/BenefitCard"; // Usaremos el nuevo componente
 import { stats, benefits } from "./hero/data";
 
 const HomeStats = () => {
   return (
-    <section className="py-20 sm:py-28 bg-secondary/50">
+    <section className="py-20 sm:py-28 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <motion.div
@@ -17,7 +17,7 @@ const HomeStats = () => {
             viewport={{ once: true }}
             transition={{ duration: 1 }}
           >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground mb-6">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-extrabold text-foreground mb-6">
               Resultados que hablan por sí mismos
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
@@ -42,9 +42,7 @@ const HomeStats = () => {
                 number={stat.number}
                 label={stat.label}
                 index={index}
-                textColor={stat.textColor}
-                bgColor={stat.bgColor}
-                borderColor={stat.borderColor}
+                // ¡Se eliminaron todas las props de color!
               />
             ))}
           </motion.div>

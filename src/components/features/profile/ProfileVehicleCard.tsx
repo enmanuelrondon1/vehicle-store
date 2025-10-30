@@ -1,4 +1,4 @@
-//src/components/features/profile/VehicleCard.tsx
+//src/components/features/profile/ProfileVehicleCard.tsx
 import React, { JSX } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,6 +13,11 @@ import {
   CheckCircle,
   XCircle,
   Search,
+  GitCompare,
+  Banknote,
+  CircleSlash,
+  DollarSign,
+  Calendar,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import {
@@ -30,12 +35,15 @@ import {
 } from "@/components/ui/tooltip";
 
 interface VehicleCardProps {
-  vehicle: VehicleDataFrontend;
+  vehicle: VehicleDataFrontend & { _id: string };
   onDelete: (id: string) => void;
+  onRemoveFinancing: (id: string) => void; // Añadir nueva prop
+  onToggleCompare: (id: string) => void;
+  isInCompareList: boolean;
 }
 
 const StatusInfo: Record<
-  ApprovalStatus,
+  ApprovalStatus | "sold",
   {
     text: string;
     variant: "default" | "secondary" | "destructive" | "outline";
@@ -78,9 +86,30 @@ const StatusInfo: Record<
     className:
       "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-400 border-red-200 dark:border-red-900",
   },
+  sold: {
+    text: "Vendido",
+    variant: "outline",
+    icon: <DollarSign className="w-4 h-4" />,
+    tooltip: "¡Felicidades! Has vendido este vehículo.",
+    className:
+      "bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-400 border-purple-200 dark:border-purple-900",
+  },
 };
 
-const VehicleCard = ({ vehicle, onDelete }: VehicleCardProps) => {
+const ProfileVehicleCard = ({
+  vehicle,
+  onDelete,
+  onRemoveFinancing, // Usar nueva prop
+  onToggleCompare,
+  isInCompareList,
+}: VehicleCardProps) => {
+  const details = [
+    {
+      label: "Año",
+      value: vehicle.year,
+      icon: <Calendar className="w-4 h-4" />,
+    },
+  ];
   const imageUrl =
     vehicle.images?.[0] ||
     "https://res.cloudinary.com/dcdawwvx2/image/upload/f_auto,q_auto/v1718207295/Default-car_t3j2s6.png";
@@ -141,7 +170,11 @@ const VehicleCard = ({ vehicle, onDelete }: VehicleCardProps) => {
           </div>
         </CardContent>
         <CardFooter className="p-3 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-3 gap-2 w-full">
+          <div
+            className={`grid ${
+              vehicle.offersFinancing ? "grid-cols-4" : "grid-cols-2"
+            } gap-1 w-full`}
+          >
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -160,33 +193,69 @@ const VehicleCard = ({ vehicle, onDelete }: VehicleCardProps) => {
                 <p>Ver Anuncio</p>
               </TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button asChild variant="ghost" size="sm">
-                  <Link href={`/profile/edit-ad/${vehicle._id}`}>
-                    <Edit className="w-4 h-4" />
-                    <span className="sr-only">Editar</span>
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="bg-gray-900 dark:bg-slate-950 text-white border-gray-700">
-                <p>Editar Anuncio</p>
-              </TooltipContent>
-            </Tooltip>
+
+            {vehicle.offersFinancing && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button asChild variant="ghost" size="sm">
+                      <Link href={`/profile/edit-ad/${vehicle._id}`}>
+                        <Banknote className="w-4 h-4" />
+                        <span className="sr-only">Editar Financiación</span>
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-gray-900 dark:bg-slate-950 text-white border-gray-700">
+                    <p>Editar Financiación</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-amber-600 dark:text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-950/50 hover:text-amber-700 dark:hover:text-amber-400"
+                      onClick={() => onRemoveFinancing(vehicle._id!)}
+                    >
+                      <CircleSlash className="w-4 h-4" />
+                      <span className="sr-only">Desactivar Financiación</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-gray-900 dark:bg-slate-950 text-white border-gray-700">
+                    <p>Desactivar Financiación</p>
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            )}
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-red-600 dark:text-red-500 hover:bg-red-100 dark:hover:bg-red-950/50 hover:text-red-700 dark:hover:text-red-400"
-                  onClick={() => onDelete(vehicle._id!)}
+                  className={
+                    isInCompareList
+                      ? "text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/50"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700"
+                  }
+                  onClick={() => onToggleCompare(vehicle._id!)}
+                  disabled={vehicle.status === "pending"}
                 >
-                  <Trash2 className="w-4 h-4" />
-                  <span className="sr-only">Eliminar</span>
+                  <GitCompare className="w-4 h-4" />
+                  <span className="sr-only">Comparar</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="bg-gray-900 dark:bg-slate-950 text-white border-gray-700">
-                <p>Eliminar Anuncio</p>
+                {vehicle.status === "pending" ? (
+                  <p>El anuncio debe estar aprobado para poder comparar.</p>
+                ) : (
+                  <p>
+                    {isInCompareList
+                      ? "Quitar de la comparación"
+                      : "Añadir a la comparación"}
+                  </p>
+                )}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -196,4 +265,4 @@ const VehicleCard = ({ vehicle, onDelete }: VehicleCardProps) => {
   );
 };
 
-export default VehicleCard;
+export default ProfileVehicleCard;

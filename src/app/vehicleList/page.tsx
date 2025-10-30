@@ -5,6 +5,7 @@ import { getApprovedVehicles } from "@/lib/vehicles";
 import { logger } from "@/lib/logger";
 import type { Vehicle } from "@/types/types";
 import { Suspense } from "react";
+import LoadingSkeleton from "@/components/shared/feedback/LoadingSkeleton";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function VehicleListPage() {
     logger.error("Failed to fetch initial vehicles:", error);
   }
   return (
-    <Suspense fallback={<div>Cargando vehículos...</div>}>
+    <Suspense fallback={<LoadingSkeleton />}>
       <VehicleList initialVehicles={initialVehicles} />
     </Suspense>
   );

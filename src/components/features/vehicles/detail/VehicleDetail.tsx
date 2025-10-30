@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { useDarkMode } from "@/context/DarkModeContext"; // ❌ REMOVED
 import { formatDate, formatMileage, DOCUMENTATION_MAP } from "@/lib/utils";
 import { Documentation } from "@/types/types";
 import { useVehicleData } from "@/hooks/useVehicleData";
@@ -61,8 +60,11 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     translatedStatus,
   } = useVehicleData(vehicleId);
 
+
+  
+
   useEffect(() => {
-    console.log("Vehicle data in VehicleDetail:", vehicle);
+    // console.log("Vehicle data in VehicleDetail:", vehicle);
   }, [vehicle]);
 
   useEffect(() => {

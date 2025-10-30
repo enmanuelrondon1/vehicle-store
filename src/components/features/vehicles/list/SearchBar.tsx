@@ -1,4 +1,4 @@
-//src/components/features/vehicles/list/SearchBar.tsx
+// src/components/features/vehicles/list/SearchBar.tsx
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -7,7 +7,6 @@ import { SortSelector } from "@/components/ui/seraui-selector";
 import { SORT_OPTIONS } from "@/types/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
 
 type SearchBarProps = {
   onSearch: (term: string) => void;
@@ -49,7 +48,8 @@ const SearchBar = ({
   };
 
   return (
-    <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-md mb-6 sticky top-20 z-10">
+    // ✅ MEJORA: Eliminamos mb-6 para que el espaciado lo controle el padre.
+    <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-md sticky top-20 z-10">
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex-grow w-full md:w-auto">
           <div className="relative">

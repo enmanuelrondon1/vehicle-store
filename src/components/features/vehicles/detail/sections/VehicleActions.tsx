@@ -8,6 +8,12 @@ import { useSession, signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { ArrowLeft, Heart, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface VehicleActionsProps {
   vehicleId: string;
@@ -79,31 +85,62 @@ export const VehicleActions: React.FC<VehicleActionsProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between mb-8">
-      <Button variant="outline" onClick={() => router.back()}>
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Volver
-      </Button>
-      <div className="flex items-center gap-2">
+    <TooltipProvider delayDuration={100}>
+      <div className="flex items-center justify-between mb-6">
         <Button
           variant="ghost"
-          size="icon"
-          onClick={handleFavorite}
-          disabled={isLoadingFavorite}
-          className={`disabled:opacity-50 disabled:cursor-not-allowed ${
-            isFavorited ? "text-red-600 hover:text-red-700" : ""
-          }`}
+          onClick={() => router.back()}
+          className="text-muted-foreground hover:text-foreground"
         >
-          <Heart
-            className={`w-5 h-5 ${
-              isFavorited ? "fill-current" : "group-hover:fill-red-100"
-            }`}
-          />
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Volver a la lista
         </Button>
-        <Button variant="ghost" size="icon" onClick={onShare}>
-          <Share2 className="w-5 h-5" />
-        </Button>
+        <div className="flex items-center gap-1 rounded-full border bg-background p-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleFavorite}
+                disabled={isLoadingFavorite}
+                className="rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Heart
+                  className={`w-5 h-5 transition-colors ${
+                    isFavorited
+                      ? "text-red-500 fill-red-500"
+                      : "text-muted-foreground"
+                  }`}
+                />
+                <span className="sr-only">
+                  {isFavorited ? "Quitar de favoritos" : "Añadir a favoritos"}
+                </span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {isFavorited ? "Quitar de favoritos" : "Añadir a favoritos"}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onShare}
+                className="rounded-full"
+              >
+                <Share2 className="w-5 h-5 text-muted-foreground" />
+                <span className="sr-only">Compartir</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Compartir</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };

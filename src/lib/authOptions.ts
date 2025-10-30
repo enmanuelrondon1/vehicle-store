@@ -19,6 +19,9 @@ declare module "next-auth" {
     role?: string;
     id?: string;
     _id?: string;
+    phone?: string;
+    location?: string;
+    createdAt?: Date;
   }
   interface Session {
     user: {
@@ -28,7 +31,21 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
+      phone?: string | null;
+      location?: string | null;
+      createdAt?: string | null;
     };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    role?: string;
+    name?: string | null;
+    phone?: string | null;
+    location?: string | null;
+    createdAt?: Date;
   }
 }
 
@@ -76,6 +93,9 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             name: toTitleCase(user.name),
             role: user.role,
+            phone: user.phone,
+            location: user.location,
+            createdAt: user.createdAt,
           };
         } catch (error) {
           console.error("Error en la autorización:", error);
@@ -110,6 +130,8 @@ export const authOptions: NextAuthOptions = {
               createdAt: new Date(),
               role: 'user',
               isDeleted: false,
+              phone: "", // Valor inicial vacío
+              location: "", // Valor inicial vacío
             };
             const result = await usersCollection.insertOne(newUser);
             user.id = result.insertedId.toString();
@@ -143,6 +165,10 @@ export const authOptions: NextAuthOptions = {
        if (user) {
          token.id = user.id;
          token.role = user.role;
+         token.name = user.name;
+         token.phone = user.phone;
+         token.location = user.location;
+         token.createdAt = user.createdAt;
        }
        if (token.id) {
          try {
@@ -160,6 +186,10 @@ export const authOptions: NextAuthOptions = {
            }
      
            token.role = userExists.role;
+           token.name = userExists.name;
+           token.phone = userExists.phone;
+           token.location = userExists.location;
+           token.createdAt = userExists.createdAt;
          } catch (error) {
            console.error("Error durante la validación del JWT:", error);
            return {}; // Invalida la sesión en caso de error
@@ -171,12 +201,19 @@ export const authOptions: NextAuthOptions = {
      async session({ session, token }) {
        if (token.id && session.user) {
          session.user.id = token.id as string;
+         session.user._id = token.id as string; // Añadimos _id para compatibilidad con MongoDB
          session.user.role = token.role as string;
-       } else {
-         // Si no hay token.id, la sesión es inválida.
-         return { ...session, user: {} };
+         session.user.name = token.name;
+         session.user.phone = token.phone;
+         session.user.location = token.location;
+         if (token.createdAt) {
+           session.user.createdAt = (token.createdAt as Date).toISOString();
+         }
+         return session; // Devolvemos la sesión con los datos completos
        }
-       return session;
+       
+       // Si no hay token o usuario en la sesión, devolvemos una sesión vacía para invalidarla
+       return { ...session, user: {} };
      },
   },
   pages: {

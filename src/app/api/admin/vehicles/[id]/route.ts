@@ -306,6 +306,8 @@ export async function PATCH(
   }
 }
 
+
+
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
@@ -348,11 +350,12 @@ export async function DELETE(
 
     try {
       const db = client.db("vehicle_store");
+      const vehicleObjectId = new ObjectId(params.id);
 
       // Primero verificar que el vehículo existe
       const vehicle = await db
-        .collection<{ comments?: Comment[] }>("vehicles")
-        .findOne({ _id: new ObjectId(params.id) });
+        .collection("vehicles")
+        .findOne({ _id: vehicleObjectId });
 
       if (!vehicle) {
         return NextResponse.json(
@@ -361,24 +364,48 @@ export async function DELETE(
         );
       }
 
-      // Eliminar el vehículo
-      const result = await db
-        .collection("vehicles")
-        .deleteOne({ _id: new ObjectId(params.id) });
+      // 🔥 PASO 1: Eliminar todos los ratings relacionados
+      console.log("Eliminando ratings relacionados...");
+      const ratingsDeleted = await db
+        .collection("ratings")
+        .deleteMany({ vehicleId: vehicleObjectId });
+      console.log(`✅ ${ratingsDeleted.deletedCount} ratings eliminados`);
 
-      if (result.deletedCount === 0) {
+      // 🔥 PASO 2: Eliminar todos los favoritos relacionados
+      console.log("Eliminando favoritos relacionados...");
+      const favoritesDeleted = await db
+        .collection("favorites")
+        .deleteMany({ vehicleId: vehicleObjectId });
+      console.log(`✅ ${favoritesDeleted.deletedCount} favoritos eliminados`);
+
+      // 🔥 PASO 3: Eliminar el vehículo
+      console.log("Eliminando vehículo...");
+      const vehicleResult = await db
+        .collection("vehicles")
+        .deleteOne({ _id: vehicleObjectId });
+
+      if (vehicleResult.deletedCount === 0) {
         return NextResponse.json(
           createErrorResponse("Error al eliminar el vehículo"),
           { status: 500 }
         );
       }
 
-      console.log("Vehículo eliminado exitosamente");
+      console.log("✅ Vehículo y datos relacionados eliminados exitosamente");
+      console.log(`📊 Resumen de eliminación:
+        - Vehículo: 1
+        - Ratings: ${ratingsDeleted.deletedCount}
+        - Favoritos: ${favoritesDeleted.deletedCount}
+      `);
 
       return NextResponse.json(
         createSuccessResponse(
-          { id: params.id },
-          "Vehículo eliminado exitosamente"
+          {
+            id: params.id,
+            deletedRatings: ratingsDeleted.deletedCount,
+            deletedFavorites: favoritesDeleted.deletedCount,
+          },
+          "Vehículo y datos relacionados eliminados exitosamente"
         ),
         { status: 200 }
       );

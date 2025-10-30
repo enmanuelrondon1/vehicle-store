@@ -20,15 +20,16 @@ interface UserDocument {
   _id?: ObjectId;
   name: string;
   email: string;
-  password?: string; // Hacemos la contraseña opcional para no devolverla
+  password?: string;
   role: string;
+  phone?: string;
+  location?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Parsear el cuerpo de la solicitud
     const body = await request.json();
 
     // 1. Validar los datos usando Zod
@@ -48,16 +49,11 @@ export async function POST(request: NextRequest) {
     const users = db.collection<UserDocument>("users");
 
     // Verificar si el usuario ya existe
-    const existingUser = await users.findOne({ 
-      email: email.toLowerCase() 
-    });
+    const existingUser = await users.findOne({ email: email.toLowerCase() });
 
     if (existingUser) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: "Ya existe un usuario con este email" 
-        },
+        { success: false, error: "Ya existe un usuario con este email" },
         { status: 409 }
       );
     }
@@ -68,10 +64,12 @@ export async function POST(request: NextRequest) {
 
     // Crear el nuevo usuario para la DB
     const newUser: UserDocument = {
-      name: toTitleCase(name.trim()), // Normalizar el nombre
+      name: toTitleCase(name.trim()),
       email: email.toLowerCase(),
       password: hashedPassword,
-      role: "user", // Rol por defecto
+      role: "user",
+      phone: "",
+      location: "",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -81,27 +79,23 @@ export async function POST(request: NextRequest) {
 
     if (!result.insertedId) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: "Error al crear el usuario" 
-        },
+        { success: false, error: "Error al crear el usuario" },
         { status: 500 }
       );
     }
 
-    // 📧 Enviar correo de bienvenida
-    // Se ejecutan en paralelo para no retrasar la respuesta al usuario.
+    // 📧 Enviar correos de bienvenida y notificación
     try {
       await Promise.all([
         sendWelcomeEmail(newUser.email, newUser.name),
         sendAdminNewUserNotification(newUser.email, newUser.name)
       ]);
-      logger.info(`Correo de bienvenida enviado a ${newUser.email}`);
+      logger.info(`Correos de registro enviados a ${newUser.email}`);
     } catch (emailError) {
-      logger.error('Fallo el envío del correo de bienvenida, pero el usuario fue creado:', emailError);
+      logger.error('Fallo el envío de correos, pero el usuario fue creado:', emailError);
     }
 
-    // Respuesta exitosa (no incluimos la contraseña)
+    // Respuesta exitosa
     return NextResponse.json(
       {
         success: true,
@@ -118,27 +112,17 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     logger.error("Error en el registro:", error);
-    
-    // Manejar errores específicos de MongoDB
+
     if (error instanceof Error) {
-      // Error de conexión a la base de datos
       if (error.message.includes('MongoNetworkError')) {
         return NextResponse.json(
-          { 
-            success: false, 
-            error: "Error de conexión a la base de datos" 
-          },
+          { success: false, error: "Error de conexión a la base de datos" },
           { status: 503 }
         );
       }
-      
-      // Error de duplicado (por si acaso)
       if (error.message.includes('duplicate key')) {
         return NextResponse.json(
-          { 
-            success: false, 
-            error: "Ya existe un usuario con este email" 
-          },
+          { success: false, error: "Ya existe un usuario con este email" },
           { status: 409 }
         );
       }
@@ -146,10 +130,7 @@ export async function POST(request: NextRequest) {
 
     // Error genérico
     return NextResponse.json(
-      { 
-        success: false, 
-        error: "Error interno del servidor" 
-      },
+      { success: false, error: "Error interno del servidor" },
       { status: 500 }
     );
   }
@@ -158,9 +139,9 @@ export async function POST(request: NextRequest) {
 // Método GET para verificar que el endpoint funciona
 export async function GET() {
   return NextResponse.json(
-    { 
+    {
       message: "Endpoint de registro funcionando",
-      methods: ["POST"] 
+      methods: ["POST"]
     },
     { status: 200 }
   );

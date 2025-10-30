@@ -1,6 +1,8 @@
+// src/components/ui/seraui-selector.tsx
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react"; // ✅ Usamos iconos consistentes
+import { cn } from "@/lib/utils"; // ✅ Usamos la utilidad cn de shadcn
 
 // Definición de tipo para las opciones
 interface Option {
@@ -13,40 +15,23 @@ interface SortSelectorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  className?: string; // ✅ Añadimos className para flexibilidad
 }
 
-// Icono de Check (puedes reemplazarlo con el de lucide-react si lo prefieres)
-const CheckIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="h-4 w-4"
-  >
-    <path d="M20 6 9 17l-5-5" />
-  </svg>
-);
-
 /**
- * Un componente de selección simple inspirado en seraui/shadcn.
- * Optimizado para una única selección, con una interfaz limpia y accesible.
+ * Un componente de selección de primera, 100% integrado con tu sistema de diseño.
+ * Ofrece interacciones suaves, retroalimentación visual clara y un aspecto profesional.
  */
 export const SortSelector: React.FC<SortSelectorProps> = ({
   options,
   value,
   onChange,
   placeholder = "Seleccionar...",
+  className,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar el menú al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -69,43 +54,53 @@ export const SortSelector: React.FC<SortSelectorProps> = ({
     options.find((option) => option.value === value)?.label || placeholder;
 
   return (
-    <div className="relative w-[180px]" ref={wrapperRef}>
+    <div className={cn("relative w-[180px]", className)} ref={wrapperRef}>
+      {/* ✅ BOTÓN PRINCIPAL: Estilo limpio y temático */}
       <button
         type="button"
-        className="flex items-center justify-between w-full p-2 min-h-[40px] text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md shadow-sm cursor-pointer transition-colors focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none"
+        className="flex items-center justify-between w-full px-3 py-2 text-sm bg-card border border-border rounded-md shadow-sm cursor-pointer transition-all duration-200 hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="text-gray-900 dark:text-gray-100">
-          {selectedLabel}
-        </span>
-        <ChevronsUpDown className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+        <span className="truncate text-foreground">{selectedLabel}</span>
+        <ChevronsUpDown className="h-4 w-4 ml-2 shrink-0 opacity-50" />
       </button>
 
       {isOpen && (
-        <div className="absolute z-20 w-full mt-1 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-md shadow-lg max-h-60 overflow-y-auto animate-popover-in">
-          <ul className="p-1">
+        /* ✅ LISTA DESPLEGABLE: Fondo de tarjeta, sombra y animación suave */
+        <div className="absolute z-20 w-full mt-1 bg-popover border border-border rounded-md shadow-lg overflow-hidden animate-popover-in">
+          <ul className="py-1">
             {options.map((option) => (
               <li
                 key={option.value}
-                className="flex items-center justify-between p-2 cursor-pointer rounded-md transition-colors duration-150 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
+                className={cn(
+                  "relative flex items-center w-full px-2 py-1.5 text-sm cursor-pointer rounded-sm transition-colors duration-150",
+                  // ✅ ESTILO HOVER: Tu color de acento para una retroalimentación vibrante
+                  "hover:bg-accent hover:text-accent-foreground",
+                  // ✅ ESTILO SELECCIONADO: Fondo sutil para diferenciarlo del hover
+                  value === option.value && "bg-muted text-muted-foreground"
+                )}
                 onClick={() => handleSelectOption(option.value)}
               >
-                {option.label}
-                {value === option.value && <CheckIcon />}
+                <span className="truncate">{option.label}</span>
+                {/* ✅ ICONO DE CHECK: Solo se muestra si está seleccionado */}
+                {value === option.value && (
+                  <Check className="ml-auto h-4 w-4 text-primary" />
+                )}
               </li>
             ))}
           </ul>
         </div>
       )}
-      {/* Estilos para la animación del popover */}
+
+      {/* ✅ ANIMACIÓN: La mantenemos pero la hacemos más suave */}
       <style>{`
         @keyframes popover-in {
-          from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+          from { opacity: 0; transform: scale(0.97) translateY(-8px); }
           to { opacity: 1; transform: scale(1) translateY(0); }
         }
         .animate-popover-in {
           transform-origin: top;
-          animation: popover-in 0.1s ease-out forwards;
+          animation: popover-in 0.15s ease-out forwards;
         }
       `}</style>
     </div>

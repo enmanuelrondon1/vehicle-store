@@ -1,4 +1,4 @@
-//src/components/features/vehicles/registration/Step4_ContactInfo.tsx
+// src/components/features/vehicles/registration/Step4_ContactInfo.tsx
 "use client";
 import React, { useState, useCallback, useMemo } from "react";
 import {
@@ -26,6 +26,7 @@ interface StepProps {
   phoneCodes: string[];
 }
 
+// Componente de Ubicación (Estilizado)
 const LocationSelector: React.FC<{
   value: string;
   onChange: (value: string) => void;
@@ -89,28 +90,28 @@ const LocationSelector: React.FC<{
           <button
             type="button"
             onClick={() => setIsStateDropdownOpen(!isStateDropdownOpen)}
-            className={`${className} flex items-center justify-between text-left`}
+            // ESTILO ACTUALIZADO: Botón del dropdown con estilo de tema.
+            className={`${className} flex items-center justify-between text-left appearance-none`}
           >
             <span className={selectedState ? "" : "text-muted-foreground"}>
               {selectedState || "Seleccionar estado"}
             </span>
             <ChevronDown
-              className={`w-4 h-4 transition-transform duration-200 ${
+              className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
                 isStateDropdownOpen ? "rotate-180" : ""
               }`}
             />
           </button>
 
           {isStateDropdownOpen && (
-            <div
-              className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto rounded-xl border-2 shadow-lg bg-background border-border"
-            >
+            // ESTILO ACTUALIZADO: Dropdown con colores de tema.
+            <div className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto rounded-xl border-2 shadow-lg bg-popover text-popover-foreground border-border">
               {VENEZUELAN_STATES.map((state) => (
                 <button
                   key={state}
                   type="button"
                   onClick={() => handleStateSelect(state)}
-                  className={`w-full px-4 py-2 text-left focus:outline-none transition-colors duration-150 text-foreground hover:bg-accent focus:bg-accent ${
+                  className={`w-full px-4 py-2 text-left focus:outline-none transition-colors duration-150 hover:bg-accent focus:bg-accent ${
                     selectedState === capitalizeState(state)
                       ? "bg-accent font-medium"
                       : ""
@@ -135,9 +136,8 @@ const LocationSelector: React.FC<{
       </div>
 
       {(city || selectedState) && (
-        <div
-          className="text-xs p-2 rounded-lg bg-muted text-muted-foreground"
-        >
+        // ESTILO ACTUALIZADO: Vista previa con colores de tema.
+        <div className="text-xs p-2 rounded-lg bg-muted text-muted-foreground">
           <strong>Ubicación:</strong>{" "}
           {city && selectedState
             ? `${city}, ${selectedState}`
@@ -215,19 +215,21 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
     return { progressPercentage: progress, isComplete: progress === 100 };
   }, [nameValidation, emailValidation, phoneValidation, locationValidation]);
 
-  const inputClass = `w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 bg-background text-foreground placeholder-muted-foreground`;
+  // ESTILO ACTUALIZADO: Clase base para inputs, consistente con los pasos anteriores.
+  const inputClass = "w-full rounded-xl border-2 border-input bg-background text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 pl-4 pr-10 py-4 text-base";
 
   return (
-    <div className="max-w-2xl mx-auto text-foreground">
-      <div className="mb-8">
-        <div className="flex items-center space-x-3 mb-4">
-          <div
-            className="p-3 rounded-xl shadow-lg bg-gradient-to-br from-indigo-500 to-purple-600"
-          >
-            <User className="w-6 h-6 text-white" />
+    // ESTILO ACTUALIZADO: Añadida animación de entrada y espaciado consistente.
+    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in-0 duration-500">
+      <div className="text-center">
+        <div className="flex items-center justify-center space-x-3 mb-4">
+          {/* ESTILO ACTUALIZADO: Icono con colores de tema. */}
+          <div className="p-3 rounded-xl shadow-lg bg-gradient-to-br from-primary to-accent">
+            <User className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-foreground">
+            {/* ESTILO ACTUALIZADO: Título con fuente de encabezado. */}
+            <h2 className="text-2xl font-heading font-bold text-foreground">
               Información de Contacto
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -236,16 +238,17 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           </div>
         </div>
 
+        {/* ESTILO ACTUALIZADO: Barra de progreso con colores de tema. */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-foreground">
               Progreso del formulario
             </span>
             <span className="text-sm text-muted-foreground">
               {Math.round(progressPercentage)}%
             </span>
           </div>
-          <Progress value={progressPercentage} />
+          <Progress value={progressPercentage} className="w-full" />
         </div>
       </div>
 
@@ -255,7 +258,8 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           required
           error={errors["sellerContact.name"]}
           success={nameValidation.isValid}
-          icon={<User className="w-4 h-4 text-indigo-400" />}
+          // ESTILO ACTUALIZADO: Icono con color primario.
+          icon={<User className="w-4 h-4 text-primary" />}
           tooltip="Usa tu nombre real para generar confianza"
           tips={[
             "✅ Mínimo 2 caracteres",
@@ -269,6 +273,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
             onChange={(e) =>
               handleInputChange("sellerContact.name", e.target.value || undefined)
             }
+            // ESTILO ACTUALIZADO: Uso de la clase base para inputs.
             className={`${inputClass} ${nameValidation.getBorderClassName()}`}
             placeholder="Ej: Juan Carlos Pérez"
             maxLength={100}
@@ -283,7 +288,8 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           required
           error={errors["sellerContact.email"]}
           success={emailValidation.isValid}
-          icon={<Mail className="w-4 h-4 text-indigo-400" />}
+          // ESTILO ACTUALIZADO: Icono con color primario.
+          icon={<Mail className="w-4 h-4 text-primary" />}
           tooltip="Recibirás notificaciones de interesados aquí"
           tips={[
             "✅ Formato: nombre@dominio.com",
@@ -300,6 +306,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
                   e.target.value || undefined
                 )
               }
+              // ESTILO ACTUALIZADO: Uso de la clase base para inputs.
               className={`${inputClass} ${emailValidation.getBorderClassName()}`}
               placeholder="Ej: juan.perez@email.com"
               maxLength={255}
@@ -319,9 +326,8 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
             )}
           </div>
           {showEmailPreview && formData.sellerContact?.email && (
-            <div
-              className="text-xs p-2 rounded mt-2 bg-muted text-muted-foreground"
-            >
+            // ESTILO ACTUALIZADO: Vista previa con colores de tema.
+            <div className="text-xs p-2 rounded mt-2 bg-muted text-muted-foreground">
               Vista previa: Los compradores verán este email para contactarte
             </div>
           )}
@@ -332,7 +338,8 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           required
           error={errors["sellerContact.phone"]}
           success={phoneValidation.isValid}
-          icon={<Phone className="w-4 h-4 text-indigo-400" />}
+          // ESTILO ACTUALIZADO: Icono con color primario.
+          icon={<Phone className="w-4 h-4 text-primary" />}
           tooltip="Preferiblemente WhatsApp para contacto directo"
           tips={[
             "✅ El número debe tener 7 dígitos",
@@ -351,6 +358,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
                 value: code,
                 label: code,
               }))}
+              // ESTILO ACTUALIZADO: Uso de la clase base para inputs.
               className={`w-1/3 ${inputClass} ${phoneValidation.getBorderClassName()}`}
               placeholder="Código"
             />
@@ -360,6 +368,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
               maxLength={7}
               value={formData.sellerContact?.phone?.split(" ")[1] || ""}
               onChange={(e) => handlePhoneChange(e.target.value)}
+              // ESTILO ACTUALIZADO: Uso de la clase base para inputs.
               className={`w-2/3 ${inputClass} ${phoneValidation.getBorderClassName()}`}
               placeholder="1234567"
             />
@@ -376,7 +385,8 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           required
           error={errors.location}
           success={locationValidation.isValid}
-          icon={<MapPin className="w-4 h-4 text-indigo-400" />}
+          // ESTILO ACTUALIZADO: Icono con color primario.
+          icon={<MapPin className="w-4 h-4 text-primary" />}
           tooltip="Selecciona tu estado y especifica la ciudad"
           tips={[
             "✅ Ciudad mín. 4 caracteres",
@@ -387,6 +397,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           <LocationSelector
             value={formData.location || ""}
             onChange={(value) => handleInputChange("location", value || undefined)}
+            // ESTILO ACTUALIZADO: Uso de la clase base para inputs.
             className={`${inputClass} ${locationValidation.getBorderClassName()}`}
           />
           <div className="text-xs text-muted-foreground mt-1">
@@ -394,17 +405,13 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           </div>
         </InputField>
 
-        <div
-          className="mt-8 p-4 rounded-xl border bg-blue-50 border-blue-200 dark:bg-accent/20 dark:border-border"
-        >
-          <h3
-            className="font-semibold mb-2 text-blue-900 dark:text-foreground"
-          >
+        {/* ESTILO ACTUALIZADO: Tarjeta de consejos con colores de tema. */}
+        <div className="mt-8 p-4 rounded-xl border bg-card shadow-sm">
+          <h3 className="font-semibold mb-2 text-foreground flex items-center">
+            <span className="w-2 h-2 bg-accent rounded-full mr-2"></span>
             💡 Consejos para un mejor contacto:
           </h3>
-          <ul
-            className="text-sm space-y-1 text-blue-700 dark:text-muted-foreground"
-          >
+          <ul className="text-sm space-y-1 text-muted-foreground">
             <li>• Mantén tu teléfono disponible para WhatsApp</li>
             <li>• Responde rápido a los mensajes para generar confianza</li>
             <li>• Sé específico con tu ubicación para facilitar visitas</li>
@@ -412,26 +419,17 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           </ul>
         </div>
 
-        <div
-          className={`mt-6 p-4 rounded-xl border ${
-            isComplete
-              ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700"
-              : "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-700"
-          }`}
-        >
+        {/* ESTILO ACTUALIZADO: Tarjeta de estado con colores de tema. */}
+        <div className={`mt-6 p-4 rounded-xl border bg-card shadow-sm ${
+          isComplete ? 'border-green-600/50' : 'border-destructive/50'
+        }`}>
           <div className="flex items-center space-x-2">
             {isComplete ? (
-              <Check className="w-5 h-5 text-green-500" />
+              <Check className="w-5 h-5 text-green-600" />
             ) : (
-              <AlertCircle className="w-5 h-5 text-orange-500" />
+              <AlertCircle className="w-5 h-5 text-destructive" />
             )}
-            <span
-              className={`font-medium ${
-                isComplete
-                  ? "text-green-700 dark:text-green-400"
-                  : "text-orange-700 dark:text-orange-400"
-              }`}
-            >
+            <span className={`font-medium text-foreground`}>
               {isComplete
                 ? "¡Información de contacto completa!"
                 : `Completa los campos requeridos para continuar`}

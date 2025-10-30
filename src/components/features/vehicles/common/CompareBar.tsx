@@ -1,4 +1,4 @@
-// src/components/sections/VehicleList/CompareBar.tsx
+// src/components/features/vehicles/common/CompareBar.tsx
 "use client";
 
 import type React from "react";

@@ -7,7 +7,15 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Loader, TrendingUp, Calendar, Percent, DollarSign, Calculator } from "lucide-react";
+import {
+  Loader,
+  TrendingUp,
+  Calendar,
+  Percent,
+  DollarSign,
+  Calculator,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
 
 import { VehicleDataFrontend } from "@/types/types";
 import { Button } from "@/components/ui/button";
@@ -21,14 +29,27 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Slider } from "@/components/ui/slider";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { formatPrice } from "@/lib/utils";
 import { updateFinancingDetails } from "@/lib/actions/vehicle.actions";
 
 // Schema de validación para el formulario
 const formSchema = z.object({
-  interestRate: z.coerce.number().min(0, "La tasa no puede ser negativa.").max(30, "La tasa es demasiado alta."),
-  loanTerm: z.coerce.number().min(1, "El plazo debe ser de al menos 1 mes.").max(84, "El plazo no puede exceder los 7 años (84 meses)."),
+  interestRate: z.coerce
+    .number()
+    .min(0, "La tasa no puede ser negativa.")
+    .max(30, "La tasa es demasiado alta."),
+  loanTerm: z.coerce
+    .number()
+    .min(1, "El plazo debe ser de al menos 1 mes.")
+    .max(84, "El plazo no puede exceder los 7 años (84 meses)."),
 });
 
 interface EditFinancingFormProps {
@@ -64,10 +85,11 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
           const numberOfPayments = loanTerm;
           const payment =
             principal *
-            (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) /
+            (monthlyInterestRate *
+              Math.pow(1 + monthlyInterestRate, numberOfPayments)) /
             (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
           setMonthlyPayment(payment);
-          
+
           const total = payment * numberOfPayments;
           setTotalPayment(total);
           setTotalInterest(total - principal);
@@ -78,7 +100,7 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
         }
       }
     });
-    
+
     // Calcular el pago inicial
     const { interestRate, loanTerm } = form.getValues();
     if (interestRate !== undefined && loanTerm !== undefined) {
@@ -90,10 +112,11 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
         const numberOfPayments = loanTerm;
         const payment =
           principal *
-          (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) /
+          (monthlyInterestRate *
+            Math.pow(1 + monthlyInterestRate, numberOfPayments)) /
           (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
         setMonthlyPayment(payment);
-        
+
         const total = payment * numberOfPayments;
         setTotalPayment(total);
         setTotalInterest(total - principal);
@@ -103,11 +126,11 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
         setTotalInterest(null);
       }
     }
-    
+
     return () => subscription.unsubscribe();
   }, [watch, vehicle.price, form]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit( values : z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
       const result = await updateFinancingDetails({
@@ -116,8 +139,10 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
       });
 
       if (result.success) {
-        toast.success("¡Perfecto! Los detalles de financiación se han actualizado.");
-        router.push(`/vehicle/${vehicle._id}`);
+        toast.success(
+          "¡Perfecto! Los detalles de financiación se han actualizado."
+        );
+        router.push("/profile");
       } else {
         toast.error(result.error || "No se pudieron guardar los cambios.");
       }
@@ -129,7 +154,7 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
   }
 
   return (
-    <Card className="max-w-3xl border-gray-200 dark:border-gray-800 shadow-lg bg-white dark:bg-slate-900">
+    <Card className ="max-w-3xl border-gray-200 dark:border-gray-800 shadow-lg bg-white dark:bg-slate-900">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardHeader className="space-y-1 pb-6">
@@ -138,16 +163,17 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
                 <Calculator className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+                <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   Editar Financiación
                 </CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-400">
-                  Ajusta la tasa de interés y el plazo para ver la cuota mensual estimada
+                <CardDescription className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+                  Ajusta la tasa de interés y el plazo para ver la cuota mensual
+                  estimada
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
-          
+
           <CardContent className="space-y-8 pt-2">
             {/* Tasa de Interés */}
             <FormField
@@ -155,13 +181,13 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
               name="interestRate"
               render={({ field }) => (
                 <FormItem className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <FormLabel className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                       <Percent className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                       Tasa de Interés Anual
                     </FormLabel>
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-100 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900">
-                      <span className="text-2xl font-bold text-orange-700 dark:text-orange-400">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-100 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-900 self-start sm:self-center">
+                      <span className="text-xl sm:text-2xl font-bold text-orange-700 dark:text-orange-400">
                         {field.value.toFixed(1)}%
                       </span>
                     </div>
@@ -197,17 +223,17 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
               name="loanTerm"
               render={({ field }) => (
                 <FormItem className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <FormLabel className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       Plazo del Préstamo
                     </FormLabel>
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900">
-                      <span className="text-2xl font-bold text-blue-700 dark:text-blue-400">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900 self-start sm:self-center">
+                      <span className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-400">
                         {field.value}
                       </span>
-                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                        {field.value === 1 ? 'mes' : 'meses'}
+                      <span className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400">
+                        {field.value === 1 ? "mes" : "meses"}
                       </span>
                     </div>
                   </div>
@@ -239,15 +265,15 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
             {/* Resumen de Financiación */}
             <div className="space-y-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 p-6">
               <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                <TrendingUp className="w-5 h-5 text-gray-700 dark:text-gray-300 flex-shrink-0" />
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                   Resumen de Financiación
                 </h3>
               </div>
-              
+
               <div className="grid gap-4">
                 {/* Precio del vehículo */}
-                <div className="flex justify-between items-center p-4 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700">
+                <div className="flex flex-wrap justify-between items-center gap-2 p-4 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-gray-100 dark:bg-slate-700">
                       <DollarSign className="w-4 h-4 text-gray-600 dark:text-gray-300" />
@@ -256,13 +282,13 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
                       Precio del vehículo
                     </span>
                   </div>
-                  <span className="text-lg font-bold text-gray-900 dark:text-white">
+                  <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
                     {formatPrice(vehicle.price)}
                   </span>
                 </div>
 
                 {/* Entrada (10%) */}
-                <div className="flex justify-between items-center p-4 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700">
+                <div className="flex flex-wrap justify-between items-center gap-2 p-4 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-gray-100 dark:bg-slate-700">
                       <DollarSign className="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -271,13 +297,13 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
                       Entrada (10%)
                     </span>
                   </div>
-                  <span className="text-lg font-bold text-green-700 dark:text-green-400">
+                  <span className="text-base sm:text-lg font-bold text-green-700 dark:text-green-400">
                     -{formatPrice(vehicle.price * 0.1)}
                   </span>
                 </div>
 
                 {/* Monto a financiar */}
-                <div className="flex justify-between items-center p-4 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700">
+                <div className="flex flex-wrap justify-between items-center gap-2 p-4 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-gray-100 dark:bg-slate-700">
                       <Calculator className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -286,13 +312,13 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
                       Monto a financiar
                     </span>
                   </div>
-                  <span className="text-lg font-bold text-gray-900 dark:text-white">
+                  <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
                     {formatPrice(vehicle.price * 0.9)}
                   </span>
                 </div>
 
                 {/* Cuota mensual */}
-                <div className="flex justify-between items-center p-5 rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 shadow-lg">
+                <div className="flex flex-wrap justify-between items-center gap-2 p-5 rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 shadow-lg">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
                       <Calendar className="w-5 h-5 text-white" />
@@ -302,55 +328,57 @@ export function EditFinancingForm({ vehicle }: EditFinancingFormProps) {
                         Cuota mensual
                       </span>
                       <span className="text-xs text-white/70">
-                        {form.watch('loanTerm')} pagos mensuales
+                        {form.watch("loanTerm")} pagos mensuales
                       </span>
                     </div>
                   </div>
-                  <span className="text-2xl font-bold text-white">
+                  <span className="text-xl sm:text-2xl font-bold text-white">
                     {monthlyPayment ? formatPrice(monthlyPayment) : "N/A"}
                   </span>
                 </div>
 
                 {/* Total a pagar */}
-                <div className="flex justify-between items-center p-4 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700">
+                <div className="flex flex-wrap justify-between items-center gap-2 p-4 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-gray-700">
                   <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                     Total a pagar
                   </span>
-                  <span className="text-lg font-bold text-gray-900 dark:text-white">
+                  <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
                     {totalPayment ? formatPrice(totalPayment) : "N/A"}
                   </span>
                 </div>
 
                 {/* Intereses totales */}
-                <div className="flex justify-between items-center p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
+                <div className="flex flex-wrap justify-between items-center gap-2 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
                   <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
                     Intereses totales
                   </span>
-                  <span className="text-lg font-bold text-amber-800 dark:text-amber-300">
+                  <span className="text-base sm:text-lg font-bold text-amber-800 dark:text-amber-300">
                     {totalInterest ? `+${formatPrice(totalInterest)}` : "N/A"}
                   </span>
                 </div>
               </div>
             </div>
           </CardContent>
-          
+
           <CardFooter className="bg-gray-50 dark:bg-slate-800/50 border-t border-gray-200 dark:border-gray-700 mt-6">
             <div className="flex flex-col sm:flex-row gap-3 w-full">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => router.push('/profile')}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/profile")}
+                disabled={isSubmitting}
                 className="flex-1 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-slate-700"
               >
                 Cancelar
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isSubmitting}
-                
                 className="flex-1 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white"
               >
-                {isSubmitting && <Loader className="w-4 h-4 mr-2 animate-spin" />}
+                {isSubmitting && (
+                  <Loader className="w-4 h-4 mr-2 animate-spin" />
+                )}
                 {isSubmitting ? "Guardando..." : "Guardar Cambios"}
               </Button>
             </div>

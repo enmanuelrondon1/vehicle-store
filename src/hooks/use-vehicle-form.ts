@@ -19,10 +19,6 @@ const initialFormData: Partial<VehicleDataBackend> = {
   documentation: [], // Array de strings, no de enums
   offersFinancing: false,
   isFeatured: false, // ✅ Añadido: Campo para vehículo destacado
-  financingDetails: {
-    interestRate: 18, // Un valor inicial razonable
-    loanTerm: 36, // Un plazo común en meses
-  },
 };
 
 export const useVehicleForm = () => {
@@ -93,10 +89,24 @@ export const useVehicleForm = () => {
 
 
   const handleSwitchChange = useCallback((field: keyof VehicleDataBackend, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: checked,
-    }));
+    setFormData(prev => {
+      const newState: Partial<VehicleDataBackend> = { ...prev, [field]: checked };
+
+      if (field === 'offersFinancing') {
+        if (checked) {
+          // Si se activa, nos aseguramos de que financingDetails exista
+          newState.financingDetails = newState.financingDetails || {
+            interestRate: 18,
+            loanTerm: 36,
+          };
+        } else {
+          // Si se desactiva, eliminamos financingDetails
+          delete newState.financingDetails;
+        }
+      }
+      
+      return newState;
+    });
   }, []);
 
 

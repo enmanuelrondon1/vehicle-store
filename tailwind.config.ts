@@ -1,4 +1,4 @@
-//tailwind.config.ts
+// tailwind.config.ts
 import type { Config } from "tailwindcss";
 
 const config = {
@@ -8,7 +8,7 @@ const config = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-	],
+    ],
   prefix: "",
   theme: {
     container: {
@@ -75,6 +75,12 @@ const config = {
           "5": "var(--chart-5)",
         }
       },
+      // --- AÑADE ESTA SECCIÓN ---
+      fontFamily: {
+        sans: ["var(--font-sans)"],
+        heading: ["var(--font-heading)"],
+      },
+      // -------------------------
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

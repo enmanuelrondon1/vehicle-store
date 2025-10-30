@@ -1,4 +1,4 @@
-//src/components/sections/VehicleList/VehicleStats.tsx
+// src/components/features/vehicles/common/VehicleStats.tsx
 "use client";
 
 import type React from "react";
@@ -10,7 +10,7 @@ const VehicleStats = ({
   filteredVehicles,
 }: {
   filteredVehicles: Vehicle[];
-}) => { // ❌ REMOVED: isDarkMode prop
+}) => {
   const averagePrice = useMemo(() => {
     if (filteredVehicles.length === 0) return 0;
     const total = filteredVehicles.reduce((sum, v) => sum + v.price, 0);
@@ -24,9 +24,8 @@ const VehicleStats = ({
   }, [filteredVehicles]);
 
   return (
-    <div
-      className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 p-4 rounded-xl mb-6 shadow-md bg-card/80 backdrop-blur-sm border border-border"
-    >
+    // ✅ MEJORA: Quitamos mb-6 para que el espaciado lo controle el padre con space-y-6
+    <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4 p-4 rounded-xl shadow-md bg-card/80 backdrop-blur-sm border border-border">
       <div className="flex items-center gap-2">
         <BarChart className="w-5 h-5 text-primary" />
         <p className="text-muted-foreground">
@@ -38,9 +37,8 @@ const VehicleStats = ({
         <span className="text-muted-foreground">
           Precio Promedio:
         </span>
-        <span
-          className="font-semibold text-green-600 dark:text-green-400"
-        >
+        {/* ✅ MEJORA: Usamos color semántico 'primary' para el precio */}
+        <span className="font-semibold text-primary">
           ${averagePrice.toLocaleString()}
         </span>
       </div>
@@ -48,9 +46,8 @@ const VehicleStats = ({
         <span className="text-muted-foreground">
           Año Promedio:
         </span>
-        <span
-          className="font-semibold text-purple-600 dark:text-purple-400"
-        >
+        {/* ✅ MEJORA: Usamos color semántico 'accent' para el año */}
+        <span className="font-semibold text-accent">
           {averageYear}
         </span>
       </div>

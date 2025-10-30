@@ -7,11 +7,9 @@ interface StatCardProps {
   number: string;
   label: string;
   index: number;
-  textColor: string;
-  bgColor: string;
-  borderColor?: string;
 }
 
+// ¡Mantengo tu AnimatedCounter! Es un detalle genial.
 const AnimatedCounter = ({ value }: { value: string }) => {
   const [displayValue, setDisplayValue] = useState("0");
 
@@ -22,7 +20,7 @@ const AnimatedCounter = ({ value }: { value: string }) => {
 
     if (isNaN(numericValue)) return;
 
-    const duration = 1500; // Duración de la animación en ms
+    const duration = 1500;
     const startTime = Date.now();
 
     const frame = () => {
@@ -49,52 +47,20 @@ const AnimatedCounter = ({ value }: { value: string }) => {
   return <span className="font-black">{displayValue}</span>;
 };
 
-export const StatCard: React.FC<StatCardProps> = memo(
-  ({
-  number, 
-  label, 
-  index,
-  textColor,
-  bgColor,
-  borderColor = "border-transparent",
-}) => {
+export const StatCard: React.FC<StatCardProps> = memo(({ number, label, index }) => {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ 
-        duration: 0.6, 
-        delay: index * 0.1,
-        type: "spring",
-        stiffness: 100
-      }}
+      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6, delay: index * 0.1, type: "spring", stiffness: 100 }}
       whileHover={{ scale: 1.05, y: -2 }}
-      className={`
-        relative text-center p-4 rounded-xl border-2 ${borderColor} ${bgColor}
-        backdrop-blur-sm hover:shadow-xl hover:shadow-primary/10 
-        dark:hover:shadow-primary/20 transition-all duration-300
-        group cursor-pointer
-      `}
+      className="relative bg-card border-2 border-primary rounded-xl p-6 text-center shadow-sm hover:shadow-lg transition-all duration-300"
     >
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/20 to-transparent dark:from-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      
-      <div className={`text-2xl font-bold mb-1 ${textColor} relative z-10`}>
+      <p className="text-3xl sm:text-4xl font-heading font-black text-primary">
         <AnimatedCounter value={number} />
-      </div>
-      
-      <div className={`
-        text-xs font-semibold uppercase tracking-wide
-        text-gray-600 dark:text-gray-300
-        group-hover:text-gray-700 dark:group-hover:text-gray-200
-        transition-colors duration-300 relative z-10
-      `}>
-        {label}
-      </div>
-
-      <div className={`
-        absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${textColor.replace('text', 'from')}
-        transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center
-      `} />
+      </p>
+      <p className="text-sm text-muted-foreground mt-2">{label}</p>
     </motion.div>
   );
 });

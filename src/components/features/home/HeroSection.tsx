@@ -2,11 +2,10 @@
 "use client";
 import React, { memo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Car, DollarSign, List } from "lucide-react";
+import { Car, List, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { AnimatedBackground } from "./hero/AnimatedBackground";
-import SparklesText from "@/components/ui/SparklesText";
 import ThreeDCarousel from "./ThreeDCarousel";
 
 interface HeroSectionProps {
@@ -22,17 +21,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onSellClick, onSecondaryButto
       return {
         text: "Ver Anuncios",
         icon: <List className="w-5 h-5 mr-2" />,
-        variant: "default" as const,
-        className:
-          "bg-gradient-to-r from-[var(--chart-3)] to-[oklch(0.7_0.18_140)] hover:from-[var(--chart-3)]/90 hover:to-[oklch(0.7_0.18_140)]/90 text-white border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-lg py-6",
       };
     } else {
       return {
-        text: "Conoce más",
-        icon: <DollarSign className="w-5 h-5 mr-2" />,
-        variant: "outline" as const,
-        className:
-          "transition-all duration-300 border-border hover:bg-accent text-muted-foreground hover:text-foreground text-lg py-6",
+        text: "Explorar Catálogo",
+        icon: <Search className="w-5 h-5 mr-2" />,
       };
     }
   }, [status]);
@@ -53,7 +46,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onSellClick, onSecondaryButto
               className="mb-6"
             >
               <span className="inline-flex items-center px-6 py-3 rounded-full text-sm font-bold bg-primary/10 text-primary border border-primary/20 backdrop-blur-sm">
-                <span className="w-2 h-2 bg-[var(--chart-3)] rounded-full mr-2 animate-pulse"></span>
+                <span className="w-2 h-2 bg-accent rounded-full mr-2 animate-pulse"></span>
                 🏆 Plataforma #1 en ventas de vehículos
               </span>
             </motion.div>
@@ -62,32 +55,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onSellClick, onSecondaryButto
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1 }}
-              className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold leading-tight mb-8"
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-heading font-extrabold leading-tight mb-8"
             >
-              <span className="block text-foreground mb-2">Vende tu</span>
-              <SparklesText
-                as="span"
-                className="block font-black mb-2"
-                colors={{ first: 'oklch(0.6 0.18 250)', second: 'oklch(0.696 0.17 162.48)' }}
-                sparkleCount={25}
-                sparkleSize={14}
-              >
-                <span className="bg-gradient-to-r from-primary to-[oklch(0.55_0.15_270)] bg-clip-text text-transparent">
-                  Vehículo
-                </span>
-              </SparklesText>
-              <span className="block text-foreground mb-2">de forma</span>
-              <SparklesText
-                as="span"
-                className="block font-black"
-                colors={{ first: 'oklch(0.645 0.246 16.439)', second: 'oklch(0.7 0.25 25)' }}
-                sparkleCount={25}
-                sparkleSize={14}
-              >
-                <span className="bg-gradient-to-r from-[var(--chart-5)] to-[var(--destructive)] bg-clip-text text-transparent">
-                  Rápida y Segura
-                </span>
-              </SparklesText>
+              <span className="block text-foreground">Vende tu</span>
+              <span className="block text-primary">Vehículo</span>
+              <span className="block text-foreground">de forma</span>
+              <span className="block text-accent">Rápida y Segura</span>
             </motion.h1>
 
             <motion.p
@@ -96,7 +69,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onSellClick, onSecondaryButto
               transition={{ duration: 0.8, delay: 0.3 }}
               className="text-xl mb-10 leading-relaxed max-w-xl mx-auto lg:mx-0 text-muted-foreground"
             >
-              {"La plataforma más confiable para vender tu auto o moto. Conectamos compradores y vendedores de manera segura y eficiente. Miles de usuarios ya confían en nosotros."}
+              La plataforma más confiable para vender tu auto o moto. Conectamos compradores y vendedores de manera segura y eficiente.
             </motion.p>
 
             <motion.div
@@ -105,22 +78,24 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onSellClick, onSecondaryButto
               transition={{ duration: 0.8, delay: 0.5 }}
               className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start"
             >
+              {/* Botón Principal con color de acento */}
               <Button
                 onClick={onSellClick}
                 size="lg"
-                className="relative overflow-hidden text-lg py-6 px-8 font-bold text-primary-foreground bg-gradient-to-r from-primary to-[oklch(0.55_0.15_270)] hover:from-primary/90 hover:to-[oklch(0.55_0.15_270)]/90 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                className="relative overflow-hidden text-lg py-6 px-8 font-bold text-accent-foreground bg-accent hover:bg-accent/90 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 <span className="flex items-center">
                   <Car className="w-6 h-6 mr-3" />
-                  {"Vender mi Vehículo"}
+                  Vender mi Vehículo
                 </span>
               </Button>
 
+              {/* Botón Secundario con estilo limpio */}
               <Button
                 onClick={onSecondaryButtonClick}
-                variant={secondaryButtonContent.variant}
+                variant="outline"
                 size="lg"
-                className={`${secondaryButtonContent.className} backdrop-blur-sm`}
+                className="text-lg py-6 px-8 font-bold border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300"
               >
                 {secondaryButtonContent.icon}
                 {secondaryButtonContent.text}
@@ -135,7 +110,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onSellClick, onSecondaryButto
               transition={{ duration: 0.8, delay: 0.7 }}
               className="text-center"
             >
-              <h3 className="text-2xl font-bold text-foreground">
+              <h3 className="text-2xl font-heading font-bold text-foreground">
                 Historias de Éxito Sobre Ruedas
               </h3>
               <p className="text-muted-foreground mt-2">

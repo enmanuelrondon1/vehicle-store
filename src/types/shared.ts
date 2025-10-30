@@ -38,7 +38,8 @@ export enum ApprovalStatus {
   PENDING = "pending",
   UNDER_REVIEW = "under_review",
   APPROVED = "approved",
-  REJECTED = "rejected"
+  REJECTED = "rejected",
+  SOLD = "sold",
 }
 
 export enum WarrantyType {

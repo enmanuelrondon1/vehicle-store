@@ -6,6 +6,7 @@ import { ApprovalStatus } from "@/types/types";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/authOptions";
 import { ObjectId } from "mongodb";
+import { removeFinancingDetails } from "@/lib/actions/vehicle.actions";
 
 export async function GET(
   req: NextRequest,
@@ -61,5 +62,30 @@ export async function GET(
       { success: false, error: `Error interno del servidor: ${errorMessage}` },
       { status: 500 }
     );
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user || !session.user.id) {
+    return NextResponse.json({ error: "No autorizado o sesión inválida" }, { status: 401 });
+  }
+
+  const { id } = params;
+  if (!ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "ID de vehículo inválido" }, { status: 400 });
+  }
+
+  try {
+    // Aquí podrías manejar otras acciones DELETE en el futuro,
+    // por ejemplo, eliminar el vehículo por completo.
+    // Por ahora, la lógica de 'remove_financing' se ha movido a una Server Action.
+    return NextResponse.json({ error: "Acción no especificada o no válida" }, { status: 400 });
+  } catch (error) {
+    console.error("Error en la operación DELETE:", error);
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }

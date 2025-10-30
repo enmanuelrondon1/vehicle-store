@@ -1,13 +1,23 @@
 // src/components/features/vehicles/registration/Step1_BasicInfo.tsx
 "use client";
-import React, {  useMemo } from 'react';
-import { Car, Check, AlertCircle, Search, Calendar, Tag, Layers, Award } from 'lucide-react';
+import React, { useMemo } from "react";
+import {
+  Car,
+  Check,
+  AlertCircle,
+  Search,
+  Calendar,
+  Tag,
+  Layers,
+  Award,
+} from "lucide-react";
 import { VehicleCategory, VEHICLE_CATEGORIES_LABELS } from "@/types/shared";
 import { VehicleDataBackend } from "@/types/types";
 import { CATEGORY_DATA } from "@/constants/form-constants";
-import { useFieldValidation } from '@/hooks/useFieldValidation';
-import { InputField } from '@/components/shared/forms/InputField';
-import { SelectField } from '@/components/shared/forms/SelectField';
+import { useFieldValidation } from "@/hooks/useFieldValidation";
+import { InputField } from "@/components/shared/forms/InputField";
+import { SelectField } from "@/components/shared/forms/SelectField";
+import { Progress } from "@/components/ui/progress";
 
 interface FormErrors {
   [key: string]: string | undefined;
@@ -22,16 +32,16 @@ interface StepProps {
   isLoading?: boolean;
 }
 
-// Componente de sugerencias inteligentes
+// Componente de sugerencias inteligentes (Estilizado)
 const SmartSuggestions: React.FC<{
   category?: VehicleCategory;
   brand?: string;
 }> = ({ category }) => {
   const getSuggestions = () => {
     if (!category) return [];
-    
+
     const suggestions = [];
-    
+
     if (category === VehicleCategory.CAR) {
       suggestions.push("Los sedanes son ideales para familias");
       suggestions.push("Los hatchback son perfectos para la ciudad");
@@ -42,20 +52,22 @@ const SmartSuggestions: React.FC<{
       suggestions.push("Los SUV mantienen mejor su valor");
       suggestions.push("Perfectos para terrenos difíciles");
     }
-    
+
     return suggestions;
   };
 
   const suggestions = getSuggestions();
-  
+
   if (suggestions.length === 0 || !category) return null;
 
   return (
-    <div className="mt-4 p-3 rounded-xl border bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-700">
-      <h4 className="text-sm font-semibold mb-2 text-blue-800 dark:text-blue-300">
+    // ESTILO ACTUALIZADO: Usa colores de tema en lugar de colores hardcodeados.
+    <div className="mt-4 p-4 rounded-xl border bg-card shadow-sm">
+      <h4 className="text-sm font-semibold mb-2 text-foreground flex items-center">
+        <span className="w-2 h-2 bg-accent rounded-full mr-2"></span>
         💡 Consejos para tu {VEHICLE_CATEGORIES_LABELS[category] || "vehículo"}:
       </h4>
-      <ul className="text-xs space-y-1 text-blue-700 dark:text-blue-200">
+      <ul className="text-xs space-y-1 text-muted-foreground">
         {suggestions.map((suggestion, index) => (
           <li key={index}>• {suggestion}</li>
         ))}
@@ -64,54 +76,40 @@ const SmartSuggestions: React.FC<{
   );
 };
 
-
-// Componente de Progreso (estandarizado)
-const ProgressBar: React.FC<{ progress: number }> = ({ progress }) => (
-  <div className="mb-6">
-    <div className="flex justify-between items-center mb-2">
-      <span className="text-sm font-medium text-foreground/80">
-        Progreso del formulario
-      </span>
-      <span className="text-sm text-foreground/60">
-        {Math.round(progress)}%
-      </span>
-    </div>
-    <div className="w-full h-2 rounded-full bg-muted">
-      <div 
-        className="h-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-full transition-all duration-500 ease-out"
-        style={{ width: `${progress}%` }}
-      ></div>
-    </div>
-  </div>
-);
-
-
-
 const Step1_BasicInfo: React.FC<StepProps> = ({
   formData,
   errors,
   handleInputChange,
 }) => {
-
   // Hooks de validación para cada campo
-  const categoryValidation = useFieldValidation(formData.category, errors.category);
+  const categoryValidation = useFieldValidation(
+    formData.category,
+    errors.category
+  );
   const brandValidation = useFieldValidation(formData.brand, errors.brand);
-  const brandOtherValidation = useFieldValidation(formData.brandOther, errors.brandOther);
+  const brandOtherValidation = useFieldValidation(
+    formData.brandOther,
+    errors.brandOther
+  );
   const modelValidation = useFieldValidation(formData.model, errors.model);
-  const modelOtherValidation = useFieldValidation(formData.modelOther, errors.modelOther);
-  const versionValidation = useFieldValidation(formData.version, errors.version);
+  const modelOtherValidation = useFieldValidation(
+    formData.modelOther,
+    errors.modelOther
+  );
+  const versionValidation = useFieldValidation(
+    formData.version,
+    errors.version
+  );
   const yearValidation = useFieldValidation(formData.year, errors.year);
 
-
-  const inputClass = "w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-4 transition-all duration-200 bg-background text-foreground";
-
-
-
+  // ESTILO ACTUALIZADO: Clase base más robusta y con estilos de tema.
+  const inputClass =
+    "w-full px-4 py-3 rounded-xl border-2 border-input bg-background text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200";
 
   // Memoización para el progreso
   const { completedRequiredFields, progressPercentage } = useMemo(() => {
-    const requiredFields = ['category', 'brand', 'model', 'year'];
-    const completed = requiredFields.filter(field => {
+    const requiredFields = ["category", "brand", "model", "year"];
+    const completed = requiredFields.filter((field) => {
       const value = formData[field as keyof typeof formData];
       return (!!value || value === 0) && !errors[field];
     }).length;
@@ -119,34 +117,35 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
     return { completedRequiredFields: completed, progressPercentage: progress };
   }, [formData, errors]);
 
-
   const categoryOptions = Object.values(VehicleCategory).map((cat) => ({
     value: cat,
     label: VEHICLE_CATEGORIES_LABELS[cat],
   }));
 
-
   const currentCategory = formData.category as VehicleCategory | undefined;
-
 
   const brandOptions = useMemo(() => {
     if (!currentCategory || !CATEGORY_DATA[currentCategory]) return [];
-    // ¡NUEVA LÓGICA! Leemos las claves (nombres de marcas) del objeto.
-    return Object.keys(CATEGORY_DATA[currentCategory].brands).map(brand => ({
+    return Object.keys(CATEGORY_DATA[currentCategory].brands).map((brand) => ({
       value: brand,
       label: brand,
     }));
   }, [currentCategory]);
-      
-  const modelOptions = useMemo(() => {
-    // ¡NUEVA LÓGICA! Buscamos los modelos dentro de la categoría y marca seleccionadas.
-    if (!currentCategory || !formData.brand || !CATEGORY_DATA[currentCategory]?.brands[formData.brand]) return [];
-    return CATEGORY_DATA[currentCategory].brands[formData.brand].map(model => ({
-      value: model,
-      label: model,
-    }));
-  }, [currentCategory, formData.brand]);
 
+  const modelOptions = useMemo(() => {
+    if (
+      !currentCategory ||
+      !formData.brand ||
+      !CATEGORY_DATA[currentCategory]?.brands[formData.brand]
+    )
+      return [];
+    return CATEGORY_DATA[currentCategory].brands[formData.brand].map(
+      (model) => ({
+        value: model,
+        label: model,
+      })
+    );
+  }, [currentCategory, formData.brand]);
 
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: currentYear - 1899 }, (_, i) => {
@@ -154,16 +153,18 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
     return { value: year.toString(), label: year.toString() };
   });
 
-
   return (
-    <div className="max-w-2xl mx-auto text-foreground">
-      <div className="mb-8">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-3 rounded-xl shadow-lg bg-gradient-to-br from-blue-500 to-blue-600">
-            <Car className="w-6 h-6 text-white" />
+    // ESTILO ACTUALIZADO: Añadida animación de entrada.
+    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in-0 duration-500">
+      <div className="text-center">
+        <div className="flex items-center justify-center space-x-3 mb-4">
+          {/* ESTILO ACTUALIZADO: Icono con colores de tema. */}
+          <div className="p-3 rounded-xl shadow-lg bg-gradient-to-br from-primary to-accent">
+            <Car className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-foreground">
+            {/* ESTILO ACTUALIZADO: Título con fuente de encabezado. */}
+            <h2 className="text-2xl font-heading font-bold text-foreground">
               Información Básica
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -171,12 +172,8 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             </p>
           </div>
         </div>
-
-
-        {/* Barra de progreso */}
-        <ProgressBar progress={progressPercentage} />
+        <Progress value={progressPercentage} className="w-full" />
       </div>
-
 
       <div className="space-y-6">
         <InputField
@@ -184,12 +181,13 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           required
           error={errors.category}
           success={categoryValidation.isValid}
-          icon={<Layers className="w-4 h-4 text-blue-600" />}
+          // ESTILO ACTUALIZADO: Icono con color primario.
+          icon={<Layers className="w-4 h-4 text-primary" />}
           tooltip="Selecciona el tipo que mejor describe tu vehículo"
           tips={[
             "🚗 Los carros y camionetas (SUV) son los más buscados.",
             "🏍️ Las motos de baja cilindrada tienen alta demanda para trabajo.",
-            "🚚 Si es un camión, asegúrate de detallar su capacidad en los siguientes pasos."
+            "🚚 Si es un camión, asegúrate de detallar su capacidad en los siguientes pasos.",
           ]}
         >
           <SelectField
@@ -206,18 +204,17 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           />
         </InputField>
 
-
-        <InputField 
-          label="Marca" 
-          required 
+        <InputField
+          label="Marca"
+          required
           error={errors.brand}
           success={brandValidation.isValid}
-          icon={<Award className="w-4 h-4 text-blue-600" />}
+          icon={<Award className="w-4 h-4 text-primary" />}
           tooltip="La marca del fabricante del vehículo"
           tips={[
             "👍 Marcas como Toyota, Honda y Ford son muy populares y confiables.",
             "🏍️ Para motos, Empire Keeway, Bera y Yamaha son líderes en el mercado.",
-            "❓ Si no encuentras tu marca, selecciona 'Otra' y escríbela manualmente."
+            "❓ Si no encuentras tu marca, selecciona 'Otra' y escríbela manualmente.",
           ]}
         >
           <SelectField
@@ -238,7 +235,6 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           />
         </InputField>
 
-
         {/* Campo condicional para especificar otra marca */}
         {formData.brand === "Otra" && (
           <InputField
@@ -246,10 +242,12 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             required
             error={errors.brandOther}
             success={brandOtherValidation.isValid}
-            icon={<Award className="w-4 h-4 text-blue-600" />}
+            icon={<Award className="w-4 h-4 text-primary" />}
             tooltip="Escribe el nombre exacto de la marca"
             counter={{ current: formData.brandOther?.length || 0, max: 50 }}
-            tips={["💡 El nombre de la marca debe tener al menos 5 caracteres."]}
+            tips={[
+              "💡 El nombre de la marca debe tener al menos 5 caracteres.",
+            ]}
           >
             <input
               type="text"
@@ -262,13 +260,12 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           </InputField>
         )}
 
-
-        <InputField 
-          label="Modelo" 
-          required 
+        <InputField
+          label="Modelo"
+          required
           error={errors.model}
           success={modelValidation.isValid}
-          icon={<Search className="w-4 h-4 text-blue-600" />}
+          icon={<Search className="w-4 h-4 text-primary" />}
           tooltip="El modelo específico del vehículo"
           tips={[
             "✨ Sé lo más específico posible (Ej: Corolla XEI, no solo Corolla).",
@@ -290,7 +287,6 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           />
         </InputField>
 
-
         {/* Campo condicional para especificar otro modelo */}
         {formData.model === "Otro" && (
           <InputField
@@ -298,7 +294,7 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
             required
             error={errors.modelOther}
             success={modelOtherValidation.isValid}
-            icon={<Search className="w-4 h-4 text-blue-600" />}
+            icon={<Search className="w-4 h-4 text-primary" />}
             tooltip="Escribe el nombre exacto del modelo"
             counter={{ current: formData.modelOther?.length || 0, max: 50 }}
             tips={["💡 El nombre del modelo debe tener al menos 5 caracteres."]}
@@ -314,14 +310,15 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           </InputField>
         )}
 
-
         <InputField
           label="Versión / Edición (Opcional)"
           error={errors.version}
           success={versionValidation.isValid}
-          icon={<Tag className="w-4 h-4 text-blue-600" />}
+          icon={<Tag className="w-4 h-4 text-primary" />}
           tooltip="Añade detalles específicos del modelo. Ej: XEI, Limited, 4x4, etc."
-          tips={["💡 Si decides llenar este campo, debe tener entre 5 y 100 caracteres."]}
+          tips={[
+            "💡 Si decides llenar este campo, debe tener entre 5 y 100 caracteres.",
+          ]}
           counter={{ current: formData.version?.length || 0, max: 100 }}
         >
           <input
@@ -336,18 +333,17 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           />
         </InputField>
 
-
-        <InputField 
-          label="Año" 
-          required 
+        <InputField
+          label="Año"
+          required
           error={errors.year}
           success={yearValidation.isValid}
-          icon={<Calendar className="w-4 h-4 text-blue-600" />}
+          icon={<Calendar className="w-4 h-4 text-primary" />}
           tooltip="Año de fabricación del vehículo"
           tips={[
             "📈 El año del modelo es uno de los factores más importantes en el precio.",
             "🆕 Los vehículos más nuevos suelen tener mayor valor de reventa.",
-            "❗ Asegúrate de que el año coincida con los papeles del vehículo."
+            "❗ Asegúrate de que el año coincida con los papeles del vehículo.",
           ]}
         >
           <SelectField
@@ -362,35 +358,29 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           />
         </InputField>
 
-
         {/* Sugerencias inteligentes */}
-        <SmartSuggestions 
-          category={currentCategory}
-          brand={formData.brand}
-        />
+        <SmartSuggestions category={currentCategory} brand={formData.brand} />
 
-
-        {/* Resumen de completitud */}
-        <div className={`mt-6 p-4 rounded-xl border ${
-          completedRequiredFields >= 4
-            ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700"
-            : "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-700"
-        }`}>
+        {/* Resumen de completitud (Estilizado) */}
+        <div
+          className={`mt-6 p-4 rounded-xl border bg-card shadow-sm ${
+            completedRequiredFields >= 4
+              ? "border-green-600/50"
+              : "border-destructive/50"
+          }`}
+        >
           <div className="flex items-center space-x-2">
             {completedRequiredFields >= 4 ? (
-              <Check className="w-5 h-5 text-green-500" />
+              <Check className="w-5 h-5 text-green-600" />
             ) : (
-              <AlertCircle className="w-5 h-5 text-orange-500" />
+              <AlertCircle className="w-5 h-5 text-destructive" />
             )}
-            <span className={`font-medium ${
-              completedRequiredFields >= 4
-                ? "text-green-700 dark:text-green-400"
-                : "text-orange-700 dark:text-orange-400"
-            }`}>
+            <span className={`font-medium text-foreground`}>
               {completedRequiredFields >= 4
                 ? "¡Información básica completa!"
-                : `Completa ${4 - completedRequiredFields} campos más para continuar`
-              }
+                : `Completa ${
+                    4 - completedRequiredFields
+                  } campos más para continuar`}
             </span>
           </div>
           <div className="text-xs mt-2 text-muted-foreground">
@@ -401,6 +391,5 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
     </div>
   );
 };
-
 
 export default Step1_BasicInfo;

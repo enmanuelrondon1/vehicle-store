@@ -24,13 +24,18 @@ export const SellerContactBackendSchema = z.object({
     .max(255, "El email no puede exceder 255 caracteres"),
   phone: z.string().refine(
     (phone) => {
-      const parts = phone.split(" ");
-      if (parts.length !== 2) return false;
-      const number = parts[1];
-      return /^[0-9]{7}$/.test(number);
+      // Remove spaces, dashes, and parentheses to validate only the numbers
+      const justDigits = phone.replace(/[- ()]/g, "");
+      // Basic validation for 10 to 15 digits, allows for country codes.
+      return (
+        justDigits.length >= 10 &&
+        justDigits.length <= 15 &&
+        /^[0-9]+$/.test(justDigits)
+      );
     },
     {
-      message: "El número de teléfono debe tener 7 dígitos.",
+      message:
+        "El número de teléfono no es válido. Debe tener entre 10 y 15 dígitos.",
     }
   ),
 });

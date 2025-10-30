@@ -198,6 +198,8 @@ export interface VehicleDataFrontend
     interestRate: number;
     loanTerm: number;
   };
+  averageRating?: number;
+  ratingCount?: number;
 }
 
 export interface VehicleDataGeneric {

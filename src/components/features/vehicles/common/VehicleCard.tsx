@@ -2,7 +2,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
@@ -27,19 +27,20 @@ import {
   WARRANTY_LABELS,
 } from "@/types/shared";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
+import { StarRating } from "../detail/sections/StarRating";
 
 const VehicleCard = ({
   vehicle,
-  viewMode,
   onToggleCompare,
   isInCompareList,
   isFavorited,
   onFavoriteToggle,
 }: {
-  vehicle: Vehicle;
-  viewMode: "grid" | "list";
+  vehicle: Vehicle & { averageRating?: number; ratingCount?: number };
   onToggleCompare: (vehicleId: string) => void;
   isInCompareList: boolean;
   isFavorited: boolean;
@@ -49,6 +50,67 @@ const VehicleCard = ({
   const [imageError, setImageError] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isLoadingFavorite, setIsLoadingFavorite] = useState(false);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  const [currentVehicle, setCurrentVehicle] = useState(vehicle);
+
+  useEffect(() => {
+    const fetchUserRating = async () => {
+      if (session) {
+        try {
+          const response = await fetch(
+            `/api/vehicles/${vehicle._id}/user-rating`
+          );
+          const data = await response.json();
+          if (response.ok && data.userRating !== null) {
+            setUserRating(data.userRating);
+          }
+        } catch (error) {
+          console.error("Error fetching user rating:", error);
+        }
+      }
+    };
+
+    fetchUserRating();
+  }, [session, vehicle._id]);
+
+  const handleSetRating = async (rating: number) => {
+    if (isSubmittingRating) return;
+
+    if (!session) {
+      toast.info("Debes iniciar sesión para valorar un vehículo.");
+      signIn();
+      return;
+    }
+
+    setIsSubmittingRating(true);
+    try {
+      const response = await fetch(`/api/vehicles/${vehicle._id}/rate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("¡Gracias por tu valoración!");
+        setCurrentVehicle((prev) => ({
+          ...prev,
+          averageRating: data.averageRating,
+          ratingCount: data.ratingCount,
+        }));
+        setUserRating(rating);
+      } else {
+        toast.error(data.error || "No se pudo guardar la valoración.");
+      }
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+      toast.error("Error al enviar la valoración.");
+    } finally {
+      setIsSubmittingRating(false);
+    }
+  };
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("es-ES", {
@@ -159,19 +221,17 @@ const VehicleCard = ({
     TRANSMISSION_TYPES_LABELS
   );
 
-  const ActionButtons = ({ isGrid = false }: { isGrid?: boolean }) => (
+  const ActionButtons = () => (
     <div
       className={cn(
         "flex gap-2",
-        isGrid
-          ? "absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
-          : "absolute bottom-3 right-3"
+        "absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
       )}
     >
       <Button
         variant={isInCompareList ? "default" : "secondary"}
         size="icon"
-        className="rounded-full shadow-lg"
+        className="h-8 w-8 rounded-full shadow-lg"
         onClick={handleCompare}
         title="Comparar"
       >
@@ -204,20 +264,23 @@ const VehicleCard = ({
     </div>
   );
 
-  if (viewMode === "list") {
-    return (
+  // Grid View
+  return (
+    <Card className="overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 group">
       <Link
         href={siteConfig.paths.vehicleDetail(vehicle._id)}
-        className="bg-card border-border hover:bg-accent/50 transition-all duration-300 hover:shadow-xl group rounded-lg border relative block"
+        className="block h-full"
       >
-        {vehicle.isFeatured && (
-          <div className="absolute top-3 left-3 bg-accent text-accent-foreground px-2 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
-            <Star className="w-3 h-3 inline" />
-            Destacado
-          </div>
-        )}
-        <div className="flex flex-col md:flex-row">
-          <div className="relative w-full md:w-80 h-48 md:h-auto overflow-hidden rounded-t-lg md:rounded-l-lg md:rounded-t-none">
+        <CardContent className="p-0">
+          {vehicle.isFeatured && (
+            <div className="absolute top-3 left-3 z-10">
+              <Badge variant="default" className="flex items-center gap-1">
+                <Star className="w-3 h-3" />
+                Destacado
+              </Badge>
+            </div>
+          )}
+          <div className="relative w-full h-56 overflow-hidden">
             {isImageLoading && (
               <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
                 <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -230,216 +293,82 @@ const VehicleCard = ({
                   : vehicle.images[0]
               }
               alt={`${vehicle.brand} ${vehicle.model}`}
-              width={320}
-              height={200}
+              width={300}
+              height={224}
               className={cn(
-                "w-full h-full object-cover transition-all duration-500 group-hover:scale-105",
+                "w-full h-full object-cover transition-all duration-500 group-hover:scale-110",
                 isImageLoading ? "opacity-0" : "opacity-100"
               )}
               onError={handleImageError}
               onLoad={handleImageLoad}
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             {vehicle.condition === VehicleCondition.NEW && (
-              <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
+              <Badge variant="default" className="absolute top-3 right-3">
                 Nuevo
-              </span>
+              </Badge>
             )}
             <ActionButtons />
           </div>
-          <div className="flex-1 p-6">
-            <div className="flex justify-between items-start mb-4">
+          <div className="p-6 flex-grow flex flex-col">
+            <h3 className="text-xl font-bold mb-2 font-heading text-foreground group-hover:text-primary transition-colors line-clamp-1">
+              {`${currentVehicle.brand} ${currentVehicle.model} (${currentVehicle.year})`}
+            </h3>
+            <div className="mb-3">
+              <StarRating
+                rating={userRating ?? currentVehicle.averageRating ?? 0}
+                ratingCount={currentVehicle.ratingCount ?? 0}
+                isInteractive={!isSubmittingRating}
+                onRating={handleSetRating}
+              />
+            </div>
+            <p className="text-2xl font-bold text-primary mb-4">
+              {formatPrice(currentVehicle.price)}
+            </p>
+            <div className="grid grid-cols-4 gap-2 text-center border-t border-b border-border py-3 my-4">
               <div>
-                <h3 className="text-2xl font-bold mb-2 text-foreground group-hover:text-primary transition-colors">
-                  {`${vehicle.brand} ${vehicle.model}`}
-                </h3>
-                <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mb-3">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>{vehicle.year}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Car className="w-4 h-4" />
-                    <span>{formatMileage(vehicle.mileage)} km</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    <span>{vehicle.location}</span>
-                  </div>
-                  {/* FIX: Add explicit check for vehicle.views */}
-                  {vehicle.views !== undefined && vehicle.views > 0 && (
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
-                      <span>{vehicle.views} vistas</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <p className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                {formatPrice(vehicle.price)}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="flex flex-col">
-                <span className="text-muted-foreground text-xs">Condición</span>
-                <span className="font-medium text-foreground">
-                  {translatedCondition}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-muted-foreground text-xs">
-                  Transmisión
-                </span>
-                <span className="font-medium text-foreground">
+                <Car className="w-5 h-5 mx-auto text-muted-foreground" />
+                <p
+                  className="text-xs mt-1 text-muted-foreground line-clamp-1"
+                  title={translatedTransmission}
+                >
                   {translatedTransmission}
-                </span>
+                </p>
               </div>
-              <div className="flex flex-col">
-                <span className="text-muted-foreground text-xs">
-                  Combustible
-                </span>
-                <span className="font-medium text-foreground">
+              <div>
+                <Settings2 className="w-5 h-5 mx-auto text-muted-foreground" />
+                <p className="text-xs mt-1 text-muted-foreground line-clamp-1">
+                  {formatMileage(currentVehicle.mileage)} km
+                </p>
+              </div>
+              <div>
+                <Fuel className="w-5 h-5 mx-auto text-muted-foreground" />
+                <p
+                  className="text-xs mt-1 text-muted-foreground line-clamp-1"
+                  title={translatedFuelType}
+                >
                   {translatedFuelType}
-                </span>
+                </p>
               </div>
-              <div className="flex flex-col">
-                <span className="text-muted-foreground text-xs">Estado</span>
-                <span className="font-medium text-foreground">
-                  {vehicle.status}
-                </span>
+              <div>
+                <MapPin className="w-5 h-5 mx-auto text-muted-foreground" />
+                <p
+                  className="text-xs mt-1 text-muted-foreground line-clamp-1"
+                  title={currentVehicle.location}
+                >
+                  {currentVehicle.location}
+                </p>
               </div>
             </div>
-            {vehicle.features.length > 0 && (
-              <div className="mt-4">
-                <div className="flex flex-wrap gap-2">
-                  {vehicle.features.slice(0, 3).map((feature: string) => (
-                    <span
-                      key={feature}
-                      className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded"
-                    >
-                      {feature}
-                    </span>
-                  ))}
-                  {vehicle.features.length > 3 && (
-                    <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded">
-                      +{vehicle.features.length - 3}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-            {vehicle.warranty && WARRANTY_LABELS[vehicle.warranty] && (
-              <div className="mt-3">
-                <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded">
-                  {WARRANTY_LABELS[vehicle.warranty]}
-                </span>
-              </div>
-            )}
           </div>
-        </div>
+          <div className="p-6 pt-0 mt-auto">
+            <Button className="w-full">
+              Ver Detalles
+            </Button>
+          </div>
+        </CardContent>
       </Link>
-    );
-  }
-
-  // Grid View
-  return (
-    <Link
-      href={siteConfig.paths.vehicleDetail(vehicle._id)}
-      className="flex flex-col bg-card/80 border-border hover:bg-card transition-all duration-300 hover:shadow-xl hover:-translate-y-1 backdrop-blur-sm group overflow-hidden rounded-lg border relative"
-    >
-      {vehicle.isFeatured && (
-        <div className="absolute top-3 left-3 bg-accent text-accent-foreground px-2 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
-          <Star className="w-3 h-3 inline" />
-          Destacado
-        </div>
-      )}
-      <div className="relative w-full h-56 overflow-hidden">
-        {isImageLoading && (
-          <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
-            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
-        <Image
-          src={
-            imageError || !vehicle.images[0]
-              ? "/placeholder.svg?height=200&width=300"
-              : vehicle.images[0]
-          }
-          alt={`${vehicle.brand} ${vehicle.model}`}
-          width={300}
-          height={224}
-          className={cn(
-            "w-full h-full object-cover transition-all duration-500 group-hover:scale-110",
-            isImageLoading ? "opacity-0" : "opacity-100"
-          )}
-          onError={handleImageError}
-          onLoad={handleImageLoad}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        {vehicle.condition === VehicleCondition.NEW && (
-          <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded shadow-lg">
-            Nuevo
-          </span>
-        )}
-        <ActionButtons isGrid />
-      </div>
-      <div className="p-6 flex-grow flex flex-col">
-        <h3 className="text-xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors line-clamp-1">
-          {`${vehicle.brand} ${vehicle.model} (${vehicle.year})`}
-        </h3>
-        <p className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-          {formatPrice(vehicle.price)}
-        </p>
-        <div className="grid grid-cols-4 gap-2 text-center border-t border-b border-border py-3 my-4">
-          <div>
-            <Car
-              className="w-5 h-5 mx-auto text-muted-foreground"
-              // Removed title prop from Lucide icon
-            />
-            <p
-              className="text-xs mt-1 text-muted-foreground line-clamp-1"
-              title={translatedTransmission}
-            >
-              {translatedTransmission}
-            </p>
-          </div>
-          <div>
-            <Settings2 className="w-5 h-5 mx-auto text-muted-foreground" />
-            <p className="text-xs mt-1 text-muted-foreground line-clamp-1">
-              {formatMileage(vehicle.mileage)} km
-            </p>
-          </div>
-          <div>
-            <Fuel
-              className="w-5 h-5 mx-auto text-muted-foreground"
-              // Removed title prop from Lucide icon
-            />
-            <p
-              className="text-xs mt-1 text-muted-foreground line-clamp-1"
-              title={translatedFuelType}
-            >
-              {translatedFuelType}
-            </p>
-          </div>
-          <div>
-            <MapPin
-              className="w-5 h-5 mx-auto text-muted-foreground"
-              // Removed title prop from Lucide icon
-            />
-            <p
-              className="text-xs mt-1 text-muted-foreground line-clamp-1"
-              title={vehicle.location}
-            >
-              {vehicle.location}
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="p-6 pt-0 mt-auto">
-        <div className="flex items-center justify-center w-full p-2 bg-gradient-to-r from-primary to-purple-600 text-primary-foreground transition-all duration-300 transform group-hover:scale-105 shadow-lg group-hover:shadow-xl rounded">
-          Ver Detalles
-        </div>
-      </div>
-    </Link>
+    </Card>
   );
 };
 

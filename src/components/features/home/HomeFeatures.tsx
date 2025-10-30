@@ -1,3 +1,4 @@
+// src/components/features/home/HomeFeatures.tsx
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
@@ -6,7 +7,7 @@ import { features } from "./hero/data";
 
 const HomeFeatures = () => {
   return (
-    <section className="py-20 sm:py-28 bg-background">
+    <section id="features" className="py-20 sm:py-28 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -15,7 +16,7 @@ const HomeFeatures = () => {
           transition={{ duration: 0.8 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-heading font-extrabold text-foreground">
             ¿Por qué elegirnos?
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -36,10 +37,7 @@ const HomeFeatures = () => {
               title={feature.title}
               description={feature.description}
               delay={0.1 + index * 0.1}
-              textColor={feature.textColor}
-              borderColor={feature.borderColor}
-              bgColor={feature.bgColor}
-              iconBg={feature.iconBg}
+              // ¡Se eliminaron todas las props de color!
             />
           ))}
         </motion.div>

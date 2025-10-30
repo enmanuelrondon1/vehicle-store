@@ -4,40 +4,60 @@
 import { Badge } from "@/components/ui/badge";
 import { ApprovalStatus } from "@/types/types";
 import { CheckCircle, XCircle, Clock, Eye } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface StatusBadgeProps {
   status: ApprovalStatus;
 }
 
+// ✅ Define el tipo de configuración explícitamente
+type StatusConfig = {
+  variant: "secondary" | "default" | "destructive";
+  icon: LucideIcon;
+  text: string;
+  className: string;
+};
+
+// ✅ Tipado correcto: Record parcial que mapea ApprovalStatus a StatusConfig
+type StatusVariants = Partial<Record<ApprovalStatus, StatusConfig>>;
+
 export const StatusBadge = ({ status }: StatusBadgeProps) => {
-  const variants = {
+  const variants: StatusVariants = {
     [ApprovalStatus.PENDING]: {
-      variant: "secondary" as const,
+      variant: "secondary",
       icon: Clock,
       text: "Pendiente",
       className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
     },
     [ApprovalStatus.APPROVED]: {
-      variant: "default" as const,
+      variant: "default",
       icon: CheckCircle,
       text: "Aprobado",
       className: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
     },
     [ApprovalStatus.REJECTED]: {
-      variant: "destructive" as const,
+      variant: "destructive",
       icon: XCircle,
       text: "Rechazado",
       className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
     },
     [ApprovalStatus.UNDER_REVIEW]: {
-      variant: "default" as const,
+      variant: "default",
       icon: Eye,
       text: "En Revisión",
       className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
     },
   };
 
-  const config = variants[status] || variants[ApprovalStatus.PENDING];
+  // ✅ Configuración por defecto bien tipada
+  const defaultConfig: StatusConfig = {
+    variant: "secondary",
+    icon: Clock,
+    text: "Pendiente",
+    className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  };
+
+  const config = variants[status] || defaultConfig;
   const Icon = config.icon;
 
   return (

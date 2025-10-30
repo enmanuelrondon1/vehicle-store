@@ -1,10 +1,9 @@
-//src/app/layout.tsx
+// src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
 import ClientLayout from "@/components/shared/layout/ClientLayout";
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/ui/theme-provider"; // Importa el nuevo provider
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
 export const metadata: Metadata = {
   title: "VehicleStore",
@@ -41,8 +40,9 @@ export const metadata: Metadata = {
   },
 };
 
+// Cambiado a un azul que coincide con nuestro nuevo --primary
 export const viewport: Viewport = {
-  themeColor: "#1E3A8A",
+  themeColor: "#3b4f8f",
 };
 
 export default function RootLayout({
@@ -52,9 +52,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-     <body
-        className={`${GeistSans.variable} ${GeistMono.variable} antialiased min-h-screen bg-background text-foreground transition-colors duration-300 pt-16`}
-      >
+      {/* 
+        Usamos las fuentes definidas en globals.css.
+        Añadimos 'font-heading' para que los h1-h6 la usen por defecto.
+      */}
+      <body className="font-sans font-heading antialiased min-h-screen bg-background text-foreground transition-colors duration-300 pt-20">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -63,26 +65,25 @@ export default function RootLayout({
         >
           <ClientLayout>
             {children}
+            {/* 
+              Toaster unificado y estilizado con nuestro tema.
+              Se adapta automáticamente al modo claro/oscuro.
+            */}
             <Toaster
+              richColors
+              theme="system"
               toastOptions={{
                 classNames: {
-                  toast:
-                    "group toast group-[.toaster]:bg-white group-[.toaster]:text-gray-950 group-[.toaster]:border-gray-200 group-[.toaster]:shadow-lg dark:group-[.toaster]:bg-gray-950 dark:group-[.toaster]:text-gray-50 dark:group-[.toaster]:border-gray-800",
-                  title: "font-semibold",
-                  description:
-                    "group-[.toast]:text-gray-500 dark:group-[.toast]:text-gray-400 group-[.success-toast]:!text-white group-[.info-toast]:!text-white group-[.error-toast]:!text-white",
+                  toast: "group toast group-[.toaster]:bg-card group-[.toaster]:text-card-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+                  title: "font-heading font-semibold",
+                  description: "group-[.toast]:text-muted-foreground",
                   actionButton:
-                    "group-[.toast]:bg-gray-900 group-[.toast]:text-gray-50 dark:group-[.toast]:bg-gray-50 dark:group-[.toast]:text-gray-900",
+                    "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
                   cancelButton:
-                    "group-[.toast]:bg-gray-100 group-[.toast]:text-gray-500 dark:group-[.toast]:bg-gray-800 dark:group-[.toast]:text-gray-400",
-                  icon: "w-6 h-6",
-                  success: "success-toast !bg-green-600 !text-white",
-                  info: "info-toast !bg-blue-600 !text-white",
-                  error: "error-toast !bg-red-600 !text-white",
+                    "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
                 },
               }}
             />
-            <Toaster richColors theme="system" />
           </ClientLayout>
         </ThemeProvider>
       </body>

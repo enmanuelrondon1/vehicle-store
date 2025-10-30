@@ -14,7 +14,7 @@ import {
   Navigation,
   Wrench,
   Truck,
-  Star, // ✅ Añadido: Ícono para destacar
+  Star,
 } from "lucide-react";
 import { getAvailableFeatures } from "@/constants/form-constants";
 import { ImageUploader } from "@/components/shared/forms/ImageUploader";
@@ -32,14 +32,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Switch } from "@/components/ui/switch"; // ✅ Añadido: Importar Switch
-import { Label } from "@/components/ui/label"; // ✅ Añadido: Importar Label
-
-// Importaciones corregidas - usar re-exportaciones de types.ts
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Documentation, VehicleCategory, VehicleDataBackend } from "@/types/types";
-
-// Función para obtener el ícono - versión mejorada y segura
 import { InputField } from "@/components/shared/forms/InputField";
+
+// ... (iconMap y getDynamicIcon sin cambios)
 const iconMap = {
   Car,
   Shield,
@@ -51,13 +49,14 @@ const iconMap = {
   Truck,
 } as const;
 
+const inputClass = "w-full rounded-xl border-2 border-input bg-background text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 pl-4 pr-10 py-4 text-base";
+
 const getDynamicIcon = (iconName: keyof typeof iconMap = "Car") => {
   const IconComponent = iconMap[iconName] || iconMap.Car;
   return <IconComponent className="w-4 h-4" />;
 };
 
-
-// Tipos
+// ... (interfaces y constantes sin cambios)
 interface FormErrors {
   [key: string]: string | undefined;
 }
@@ -73,7 +72,6 @@ interface StepProps {
   handleImagesChange: (urls: string[]) => void;
 }
 
-// Opciones de documentación - usar valores del enum
 const DOCUMENTATION_OPTIONS = [
   { label: "Título de Propiedad", value: Documentation.TITLE },
   { label: "Certificado de Origen", value: Documentation.ORIGIN_CERTIFICATE },
@@ -92,16 +90,16 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
   isDocumentationSelected,
   handleImagesChange,
 }) => {
-  // --- CÁLCULO DE PROGRESO ---
+  // ESTILO ACTUALIZADO: Clase base para inputs, consistente con los pasos anteriores.
+  const inputClass = "w-full rounded-xl border-2 border-input bg-background text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 pl-4 pr-10 py-4 text-base";
+
+  // ... (lógica de progreso y useMemo sin cambios)
   const progress = useMemo(() => {
     const fields = [
-      // La descripción es válida si tiene más de 50 caracteres
       (formData.description?.length || 0) > 50,
-      // Las imágenes son válidas si hay al menos una
       (formData.images?.length || 0) > 0,
     ];
 
-    // Las características solo cuentan si la categoría las tiene
     if (formData.category) {
       const categoryFeatures = getAvailableFeatures(formData.category);
       const categoryHasFeatures = Object.keys(categoryFeatures).length > 0;
@@ -121,7 +119,6 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
     formData.features,
   ]);
 
-  // Obtener características dinámicamente según la categoría
   const availableFeatures = useMemo(() => {
     if (!formData.category) {
       return {};
@@ -129,15 +126,13 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
     return getAvailableFeatures(formData.category);
   }, [formData.category]);
 
-  // Verificar si tenemos características disponibles
   const hasFeatures = Object.keys(availableFeatures).length > 0;
 
-  // Si no hay categoría, mostrar mensaje de error
   if (!formData.category) {
     return (
-      <div className="p-6 rounded-xl border-2 border-dashed border-border text-muted-foreground">
-        <AlertCircle className="w-6 h-6 mx-auto mb-2" />
-        <p className="text-center">
+      <div className="p-6 rounded-xl border-2 border-dashed border-border bg-card text-center">
+        <AlertCircle className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+        <p className="text-center text-muted-foreground">
           Por favor, regresa al paso 1 y selecciona una categoría para
           continuar.
         </p>
@@ -146,13 +141,15 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    // ESTILO ACTUALIZADO: Añadida animación de entrada y espaciado consistente.
+    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in-0 duration-500">
       {/* --- SECCIÓN DE TÍTULO CENTRADA --- */}
-      <div className="mb-8 text-center">
-        <div className="inline-flex items-center justify-center p-3 rounded-xl shadow-lg mb-3 bg-primary/10">
-          <FileBadge className="w-6 h-6 text-primary" />
+      <div className="text-center">
+        <div className="inline-flex items-center justify-center p-3 rounded-xl shadow-lg mb-3 bg-gradient-to-br from-primary to-accent">
+          <FileBadge className="w-6 h-6 text-primary-foreground" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground">
+        {/* ESTILO ACTUALIZADO: Título con fuente de encabezado. */}
+        <h2 className="text-2xl font-heading font-bold text-foreground">
           Características y Multimedia
         </h2>
         <p className="text-muted-foreground text-sm">
@@ -208,7 +205,6 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
         </div>
 
         <div className="space-y-6">
-          {/* ✅ Nuevo: Sección de Opciones de Publicación */}
           <PublicationOptionsSection
             isFeatured={formData.isFeatured || false}
             onFeaturedToggle={(value) => handleSwitchChange("isFeatured", value)}
@@ -228,17 +224,12 @@ const FeaturesSection: React.FC<{
   selectedFeatures: string[];
   onFeatureToggle: (feature: string) => void;
   error?: string;
-}> = ({
-  category,
-  availableFeatures,
-  selectedFeatures,
-  onFeatureToggle,
-  error,
-}) => {
+}> = ({ category, availableFeatures, selectedFeatures, onFeatureToggle, error }) => {
   const firstCategoryData = Object.values(availableFeatures)[0];
 
   return (
-    <Card>
+    // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
+    <Card className="shadow-sm">
       <CardHeader>
         <InputField
           label={`Características del ${getCategoryName(category)}`}
@@ -260,7 +251,8 @@ const FeaturesSection: React.FC<{
               <AccordionItem value={categoryName} key={categoryName}>
                 <AccordionTrigger>
                   <h4 className="text-md font-semibold flex items-center text-foreground">
-                    <span className={`mr-2 ${categoryData.color}`}>
+                    {/* ESTILO ACTUALIZADO: Icono con color primario para consistencia. */}
+                    <span className="mr-2 text-primary">
                       {getDynamicIcon(
                         categoryData.iconName as keyof typeof iconMap
                       )}
@@ -294,7 +286,8 @@ const DocumentationSection: React.FC<{
   onDocumentationToggle: (doc: Documentation) => void;
   error?: string;
 }> = ({ isDocumentationSelected, onDocumentationToggle, error }) => (
-  <Card>
+  // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
+  <Card className="shadow-sm">
     <CardHeader>
       <InputField
         label="Documentación del Vehículo"
@@ -320,12 +313,12 @@ const DocumentationSection: React.FC<{
   </Card>
 );
 
-{/* ✅ Nuevo: Sub-componente para Opciones de Publicación */}
 const PublicationOptionsSection: React.FC<{
   isFeatured: boolean;
   onFeaturedToggle: (value: boolean) => void;
 }> = ({ isFeatured, onFeaturedToggle }) => (
-  <Card>
+  // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
+  <Card className="shadow-sm">
     <CardHeader>
       <InputField
         label="Opciones de Publicación"
@@ -336,8 +329,9 @@ const PublicationOptionsSection: React.FC<{
       </InputField>
     </CardHeader>
     <CardContent>
-      <div className="flex items-center justify-between rounded-lg border p-4">
-        <Label htmlFor="featured-switch" className="flex flex-col space-y-1">
+      {/* ESTILO ACTUALIZADO: Contenedor interactivo con colores de tema. */}
+      <div className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
+        <Label htmlFor="featured-switch" className="flex flex-col space-y-1 cursor-pointer">
           <span className="font-semibold text-foreground">Destacar Vehículo</span>
           <span className="text-sm text-muted-foreground">
             Aparecerá en la página de inicio y tendrá prioridad en las búsquedas.
@@ -360,18 +354,16 @@ const DescriptionSection: React.FC<{
 }> = ({ description, onDescriptionChange, error }) => {
   const [localDescription, setLocalDescription] = useState(description);
 
-  // Sincroniza el estado local si la prop externa cambia
   useEffect(() => {
     setLocalDescription(description);
   }, [description]);
 
-  // Debounce para actualizar el estado global
   useEffect(() => {
     const handler = setTimeout(() => {
       if (localDescription !== description) {
         onDescriptionChange(localDescription);
       }
-    }, 500); // 500ms de retraso
+    }, 500);
 
     return () => {
       clearTimeout(handler);
@@ -379,7 +371,8 @@ const DescriptionSection: React.FC<{
   }, [localDescription, onDescriptionChange, description]);
 
   return (
-    <Card>
+    // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
+    <Card className="shadow-sm">
       <CardHeader>
         <InputField
           label="Descripción del Vehículo"
@@ -394,11 +387,12 @@ const DescriptionSection: React.FC<{
             "⭐ Destaca características únicas que lo diferencien de otros.",
           ]}
         >
+          {/* ESTILO ACTUALIZADO: Textarea usando la clase base para inputs. */}
           <textarea
             value={localDescription}
             onChange={(e) => setLocalDescription(e.target.value)}
             rows={6}
-            className="input-class w-full resize-y"
+            className={`${inputClass} resize-y`}
             placeholder="Ej: Vehículo en excelentes condiciones, único dueño, cauchos nuevos, servicio de aceite y filtros recién hecho..."
             maxLength={2000}
           />
@@ -413,7 +407,8 @@ const MediaSection: React.FC<{
   onUploadChange: (urls: string[]) => void;
   error?: string;
 }> = ({ initialUrls, onUploadChange, error }) => (
-  <Card>
+  // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
+  <Card className="shadow-sm">
     <CardHeader>
       <InputField
         label="Fotos del Vehículo"
@@ -432,8 +427,7 @@ const MediaSection: React.FC<{
   </Card>
 );
 
-// --- Helpers ---
-
+// --- Helpers (sin cambios) ---
 const getCategoryName = (category: VehicleCategory | undefined): string => {
   if (!category) return "Vehículo";
   const names: Record<VehicleCategory, string> = {
@@ -497,10 +491,11 @@ const CategoryTips: React.FC<{ category: VehicleCategory | undefined }> = ({
     </div>
   );
 
-  if (!category) return null; // No renderizar nada si no hay categoría
+  if (!category) return null;
 
   return (
-    <Card>
+    // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
+    <Card className="shadow-sm">
       <CardHeader>
         <CardTitle className="text-lg">
           💡 Tips para Destacar tu {categoryName}

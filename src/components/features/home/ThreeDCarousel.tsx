@@ -1,6 +1,11 @@
-'use client';
-import Image from 'next/image';
-import React, { useMemo, useRef, useEffect, useCallback } from 'react';
+// src/components/features/home/ThreeFeatures.tsx
+"use client";
+import Image from "next/image";
+import React, { useMemo, useRef, useEffect, useCallback } from "react";
+import { Card as UICard } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /* 1️⃣  Assets ————————————————————————— */
 const FALLBACK =
@@ -11,12 +16,12 @@ const FALLBACK =
 
 // Por favor, reemplaza estas imágenes con las que me proporcionarás.
 const DEFAULT_IMAGES = [
-  'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2070&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=2070&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=2070&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1542281286-9e0a16bb7366?q=80&w=2070&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1517672651691-24622a91b2dc?q=80&w=1974&auto=format&fit=crop',
+  "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2070&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=2070&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=2070&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1542281286-9e0a16bb7366?q=80&w=2070&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1517672651691-24622a91b2dc?q=80&w=1974&auto=format&fit=crop",
 ];
 
 /* 2️⃣  Config ————————————————————————— */
@@ -35,43 +40,65 @@ interface CardProps {
   transform: string;
   cardW: number;
   cardH: number;
+  index: number;
+  title: string;
+  price: string;
 }
 
-const Card = React.memo(({ src, transform, cardW, cardH }: CardProps) => (
-  <div
-    className="absolute"
-    style={{
-      width: cardW,
-      height: cardH,
-      transform,
-      transformStyle: 'preserve-3d',
-      willChange: 'transform',
-    }}
-  >
+const Card = React.memo(
+  ({ src, transform, cardW, cardH, index, title, price }: CardProps) => (
     <div
-      className="w-full h-full rounded-2xl overflow-hidden bg-white dark:bg-gray-800 
-                 border border-gray-200 dark:border-gray-700 shadow-lg dark:shadow-gray-900/50 
-                 transition-transform duration-300 hover:scale-105 hover:shadow-2xl dark:hover:shadow-gray-900/70 
-                 hover:z-10"
-      style={{ backfaceVisibility: 'hidden' }}
+      className="absolute"
+      style={{
+        width: cardW,
+        height: cardH,
+        transform,
+        transformStyle: "preserve-3d",
+        willChange: "transform",
+      }}
     >
-      <Image
-        src={src}
-        alt="Carousel item"
-        width={cardW}
-        height={cardH}
-        className="w-full h-full object-cover"
-        loading="lazy"
-        draggable="false"
-        onError={e => {
-          e.currentTarget.src = FALLBACK;
-        }}
-      />
+      <UICard
+        className={cn(
+          "w-full h-full rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105",
+          "bg-card border-border"
+        )}
+        style={{ backfaceVisibility: "hidden" }}
+      >
+        <div className="relative w-full h-full">
+          <Image
+            src={src}
+            alt="Carousel item"
+            width={cardW}
+            height={cardH}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            draggable="false"
+            onError={(e) => {
+              e.currentTarget.src = FALLBACK;
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <h3 className="text-white font-bold text-lg font-heading mb-1">
+              {title}
+            </h3>
+            <p className="text-white text-sm">{price}</p>
+          </div>
+          <div className="absolute top-3 right-3">
+            <Badge
+              variant="secondary"
+              className="bg-primary/20 text-primary-foreground border-primary/30"
+            >
+              Destacado
+            </Badge>
+          </div>
+        </div>
+      </UICard>
     </div>
-  </div>
-));
+  )
+);
 
-Card.displayName = 'Card';
+Card.displayName = "Card";
 
 /* 4️⃣  Main component —————————————————— */
 interface ThreeDCarouselProps {
@@ -79,6 +106,8 @@ interface ThreeDCarouselProps {
   radius?: number;
   cardW?: number;
   cardH?: number;
+  titles?: string[];
+  prices?: string[];
 }
 
 const ThreeDCarousel = React.memo(
@@ -87,6 +116,8 @@ const ThreeDCarousel = React.memo(
     radius = RADIUS,
     cardW = CARD_W,
     cardH = CARD_H,
+    titles = Array(images.length).fill("Vehículo Premium"),
+    prices = Array(images.length).fill("$25,000"),
   }: ThreeDCarouselProps) => {
     const parentRef = useRef<HTMLDivElement>(null);
     const wheelRef = useRef<HTMLDivElement>(null);
@@ -113,10 +144,10 @@ const ThreeDCarousel = React.memo(
         targetTiltRef.current = -normalizedY * TILT_SENSITIVITY;
       };
 
-      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener("mousemove", handleMouseMove);
 
       return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener("mousemove", handleMouseMove);
       };
     }, []);
 
@@ -163,7 +194,8 @@ const ThreeDCarousel = React.memo(
       lastInteractionRef.current = Date.now();
 
       const deltaX = clientX - dragStartRef.current;
-      const newRotation = initialRotationRef.current + deltaX * DRAG_SENSITIVITY;
+      const newRotation =
+        initialRotationRef.current + deltaX * DRAG_SENSITIVITY;
 
       velocityRef.current = newRotation - rotationRef.current;
       rotationRef.current = newRotation;
@@ -178,8 +210,10 @@ const ThreeDCarousel = React.memo(
     // Event listeners for mouse and touch
     const onMouseDown = (e: React.MouseEvent) => handleDragStart(e.clientX);
     const onMouseMove = (e: React.MouseEvent) => handleDragMove(e.clientX);
-    const onTouchStart = (e: React.TouchEvent) => handleDragStart(e.touches[0].clientX);
-    const onTouchMove = (e: React.TouchEvent) => handleDragMove(e.touches[0].clientX);
+    const onTouchStart = (e: React.TouchEvent) =>
+      handleDragStart(e.touches[0].clientX);
+    const onTouchMove = (e: React.TouchEvent) =>
+      handleDragMove(e.touches[0].clientX);
 
     /* Pre-compute card transforms (only re-computes if images/radius change) */
     const cards = useMemo(
@@ -196,52 +230,60 @@ const ThreeDCarousel = React.memo(
     );
 
     return (
-      <div
-        ref={parentRef}
-        className="w-full h-full flex items-center justify-center overflow-hidden font-sans cursor-grab active:cursor-grabbing"
-        style={{ userSelect: 'none' }}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={handleDragEnd}
-        onMouseLeave={handleDragEnd}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={handleDragEnd}
-      >
-        <div
-          className="relative"
-          style={{
-            perspective: 1500,
-            perspectiveOrigin: 'center',
-            width: Math.max(cardW * 1.5, radius * 2.2),
-            height: Math.max(cardH * 1.8, radius * 1.5),
-          }}
-        >
+      <div className="w-full py-4">
+        <div className="max-w-7xl mx-auto px-4">
           <div
-            ref={wheelRef}
-            className="relative"
-            style={{
-              width: cardW,
-              height: cardH,
-              transformStyle: 'preserve-3d',
-              willChange: 'transform',
-              position: 'absolute',
-              left: '50%',
-              top: '50%',
-              marginLeft: -cardW / 2,
-              marginTop: -cardH / 2,
-            }}
+            ref={parentRef}
+            className="w-full h-96 flex items-center justify-center overflow-hidden font-sans cursor-grab active:cursor-grabbing bg-background/50 rounded-xl"
+            style={{ userSelect: "none" }}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={handleDragEnd}
+            onMouseLeave={handleDragEnd}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={handleDragEnd}
           >
-            {cards.map(card => (
-              <Card
-                key={card.key}
-                src={card.src}
-                transform={card.transform}
-                cardW={cardW}
-                cardH={cardH}
-              />
-            ))}
+            <div
+              className="relative"
+              style={{
+                perspective: 1500,
+                perspectiveOrigin: "center",
+                width: Math.max(cardW * 1.5, radius * 2.2),
+                height: Math.max(cardH * 1.8, radius * 1.5),
+              }}
+            >
+              <div
+                ref={wheelRef}
+                className="relative"
+                style={{
+                  width: cardW,
+                  height: cardH,
+                  transformStyle: "preserve-3d",
+                  willChange: "transform",
+                  position: "absolute",
+                  left: "50%",
+                  top: "50%",
+                  marginLeft: -cardW / 2,
+                  marginTop: -cardH / 2,
+                }}
+              >
+                {cards.map((card, idx) => (
+                  <Card
+                    key={card.key}
+                    src={card.src}
+                    transform={card.transform}
+                    cardW={cardW}
+                    cardH={cardH}
+                    index={idx}
+                    title={titles[idx]}
+                    price={prices[idx]}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
+          
         </div>
       </div>
     );

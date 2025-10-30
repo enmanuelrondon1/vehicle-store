@@ -6,6 +6,9 @@ import type { VehicleDataFrontend } from "@/types/types";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Phone, MessageSquare, Mail } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 interface ContactInfoProps {
   sellerContact: VehicleDataFrontend["sellerContact"];
@@ -47,7 +50,7 @@ const ContactInfoComponent: React.FC<ContactInfoProps> = ({
     );
     window.open(
       `https://wa.me/${sellerContact.phone.replace(
-        /\\D/g,
+        /\D/g,
         ""
       )}?text=${message}`,
       "_blank"
@@ -55,63 +58,70 @@ const ContactInfoComponent: React.FC<ContactInfoProps> = ({
   };
 
   return (
-    <div className="p-6 rounded-xl border bg-card/50 border-border backdrop-blur-sm">
-      <h3 className="text-xl font-bold mb-4 text-foreground">
-        Información de Contacto
-      </h3>
-
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-            <span className="text-lg font-bold text-foreground">
+    <Card className="overflow-hidden shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-xl font-heading">
+          Información de Contacto
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Avatar className="w-14 h-14 border-2 border-primary/20">
+            <AvatarFallback className="text-xl font-bold">
               {sellerContact.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
+            </AvatarFallback>
+          </Avatar>
           <div>
-            <p className="font-semibold text-foreground">
+            <p className="font-bold text-lg text-foreground">
               {sellerContact.name}
             </p>
-            <p className="text-sm text-muted-foreground">Vendedor</p>
+            <p className="text-sm text-muted-foreground font-medium">Vendedor</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-3">
           <Button
             onClick={handleCall}
-            variant="secondary"
-            className="w-full justify-start"
+            variant="outline"
+            className="w-full h-auto justify-start p-3 transition-all duration-300 ease-in-out group hover:bg-blue-500/10 border-blue-500/20 hover:border-blue-500"
           >
-            <Phone className="mr-2 h-4 w-4 text-blue-500" />
+            <Phone className="mr-4 h-5 w-5 text-blue-500 transition-transform group-hover:scale-110" />
             <div className="text-left">
-              <p className="font-semibold">Llamar</p>
-              <p className="text-sm opacity-90">{sellerContact.phone}</p>
+              <p className="font-semibold text-sm text-foreground">Llamar</p>
+              <p className="text-xs text-muted-foreground group-hover:text-blue-600">
+                {sellerContact.phone}
+              </p>
             </div>
           </Button>
           <Button
             onClick={handleWhatsApp}
-            variant="secondary"
-            className="w-full justify-start"
+            variant="outline"
+            className="w-full h-auto justify-start p-3 transition-all duration-300 ease-in-out group hover:bg-green-500/10 border-green-500/20 hover:border-green-500"
           >
-            <MessageSquare className="mr-2 h-4 w-4 text-green-500" />
+            <MessageSquare className="mr-4 h-5 w-5 text-green-500 transition-transform group-hover:scale-110" />
             <div className="text-left">
-              <p className="font-semibold">WhatsApp</p>
-              <p className="text-sm opacity-90">Enviar mensaje</p>
+              <p className="font-semibold text-sm text-foreground">WhatsApp</p>
+              <p className="text-xs text-muted-foreground group-hover:text-green-600">
+                Enviar mensaje
+              </p>
             </div>
           </Button>
           <Button
             onClick={handleEmail}
-            variant="secondary"
-            className="w-full justify-start"
+            variant="outline"
+            className="w-full h-auto justify-start p-3 transition-all duration-300 ease-in-out group hover:bg-gray-500/10 border-gray-500/20 hover:border-gray-500"
           >
-            <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
+            <Mail className="mr-4 h-5 w-5 text-muted-foreground transition-transform group-hover:scale-110" />
             <div className="text-left">
-              <p className="font-semibold">Email</p>
-              <p className="text-sm opacity-90">{sellerContact.email}</p>
+              <p className="font-semibold text-sm text-foreground">Email</p>
+              <p className="text-xs text-muted-foreground truncate max-w-[150px] group-hover:text-gray-600">
+                {sellerContact.email}
+              </p>
             </div>
           </Button>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

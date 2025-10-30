@@ -6,6 +6,7 @@ import React, { useState, useMemo } from "react";
 import { Car, AlertCircle, Trash2, ArrowLeft, ArrowRight, Save, AlertTriangle } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner"; // <-- IMPORTACIÓN CLAVE
 import ProtectedRoute from "@/components/features/auth/ProtectedRoute";
 import { Button } from "@/components/ui/button";
 import {
@@ -74,10 +75,24 @@ const VehicleRegistrationForm: React.FC = () => {
     handleSwitchChange,
   } = useVehicleForm();
 
+  // --- EFECTO SECUNDARIO: Mostrar notificaciones de error con Sonner ---
+  React.useEffect(() => {
+    if (submissionStatus === "error" && errors.general) {
+      toast.error(errors.general, {
+        description: "Por favor, revisa los campos e inténtalo de nuevo.",
+        action: {
+          label: "Reintentar",
+          onClick: () => handleSubmit(),
+        },
+      });
+    }
+  }, [submissionStatus, errors.general, handleSubmit]);
+  // --- FIN DEL EFECTO SECUNDARIO ---
 
   const handleClearForm = () => {
     resetForm();
     setShowClearConfirm(false);
+    toast.success("Formulario limpiado correctamente.");
   };
 
   const handleCreateNew = () => setCurrentStep(1);
@@ -108,20 +123,20 @@ const VehicleRegistrationForm: React.FC = () => {
         <title>Publicar Anuncio - 1AutoMarket</title>
       </Head>
 
-      <div className="min-h-screen bg-background text-foreground py-8 px-4">
+      <div className="min-h-screen bg-background text-foreground py-8 px-4 ">
         <div className="relative">
           <div className="max-w-6xl mx-auto">
-            <Card>
-              <CardHeader className="text-center relative">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mx-auto mb-4 bg-primary">
-                  <Car className="w-10 h-10 text-primary-foreground" />
+            <Card className="shadow-xl border-border">
+              <CardHeader className="text-center relative bg-muted/30 border-b">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mx-auto mb-4 bg-primary/10 border-2 border-primary/20">
+                  <Car className="w-10 h-10 text-primary" />
                 </div>
-                <CardTitle className="text-3xl font-bold">
+                <CardTitle className="text-3xl font-heading font-bold text-foreground">
                   Registrar Vehículo
                 </CardTitle>
-                <p className="text-md text-muted-foreground">
+                <p className="text-md text-muted-foreground max-w-lg mx-auto">
                   Completa este formulario profesional para publicar tu vehículo
-                  y conectar con compradores potenciales
+                  y conectar con compradores potenciales.
                 </p>
 
                 <div className="absolute top-4 right-4">
@@ -129,7 +144,7 @@ const VehicleRegistrationForm: React.FC = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowClearConfirm(true)}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-destructive"
+                    className="flex items-center gap-2 text-muted-foreground hover:text-destructive transition-colors"
                     aria-label="Limpiar formulario"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -138,26 +153,14 @@ const VehicleRegistrationForm: React.FC = () => {
                 </div>
               </CardHeader>
 
-              <CardContent>
+              <CardContent className="p-6 lg:p-8">
                 <FormProgress
                   currentStep={currentStep}
                   highestCompletedStep={highestCompletedStep}
                   onStepClick={setCurrentStep}
                 />
-
-                {submissionStatus === "error" && (
-                  <div
-                    className="fixed top-4 right-4 px-4 py-2 rounded-md shadow-lg flex items-center space-x-2 bg-destructive text-destructive-foreground"
-                    role="alert"
-                  >
-                    <AlertCircle className="w-5 h-5" />
-                    <span>
-                      {errors.general ||
-                        "Hubo un error al registrar el vehículo. Por favor, inténtalo de nuevo."}
-                    </span>
-                  </div>
-                )}
-
+                
+                {/* El error general ahora se maneja con Sonner, así que no se necesita renderizar aquí */}
                 {currentStep === 6 ? (
                   <PaymentConfirmation
                     selectedBank={selectedBank}
@@ -191,6 +194,7 @@ const VehicleRegistrationForm: React.FC = () => {
                         formData={formDataTyped}
                         errors={errors}
                         handleInputChange={handleInputChange}
+                        handleSwitchChange={handleSwitchChange}
                       />
                     )}
                     {currentStep === 3 && (
@@ -256,14 +260,14 @@ const VehicleRegistrationForm: React.FC = () => {
                         )}
 
                         {currentStep < 5 && (
-                          <Button onClick={nextStep} disabled={isSubmitting || !isCurrentStepValid} className="flex w-full sm:w-auto items-center justify-center gap-2">
+                          <Button onClick={nextStep} disabled={isSubmitting || !isCurrentStepValid} className="flex w-full sm:w-auto items-center justify-center gap-2 bg-primary hover:bg-primary/90">
                             Siguiente
                             <ArrowRight className="w-4 h-4" />
                           </Button>
                         )}
 
                         {currentStep === 5 && (
-                          <Button onClick={nextStep} disabled={isSubmitting || !isStep5Complete} className="flex w-full sm:w-auto items-center justify-center gap-2">
+                          <Button onClick={nextStep} disabled={isSubmitting || !isStep5Complete} className="flex w-full sm:w-auto items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-accent-foreground">
                             Finalizar y Pagar
                             <ArrowRight className="w-4 h-4" />
                           </Button>
@@ -295,7 +299,7 @@ const VehicleRegistrationForm: React.FC = () => {
                   <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-destructive/10 sm:mx-0 sm:h-10 sm:w-10">
                     <AlertTriangle className="h-6 w-6 text-destructive" aria-hidden="true" />
                   </div>
-                  <AlertDialogTitle className="text-lg font-semibold">
+                  <AlertDialogTitle className="text-lg font-heading font-semibold">
                     ¿Estás realmente seguro?
                   </AlertDialogTitle>
                 </div>

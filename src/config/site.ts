@@ -18,6 +18,7 @@ export const siteConfig = {
     uploadPaymentProof: "/upload-payment-proof",
     profile: "/profile",
     myFavorites: "/my-favorites",
+    compare: "/compare",
     vehicleDetail: (id: string) => `/vehicle/${id}`,
     login: "/login",
   },
