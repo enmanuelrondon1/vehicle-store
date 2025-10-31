@@ -1,4 +1,6 @@
-//src/components/features/admin/MassRejectDialog.tsx
+// src/components/features/admin/MassRejectDialog.tsx
+// VERSIÓN CON DISEÑO UNIFICADO
+
 import React, { useState } from 'react';
 import {
   AlertDialog,
@@ -11,15 +13,15 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Archive, XCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Archive, XCircle, AlertTriangle, FileText } from 'lucide-react';
+import { InputField } from "@/components/shared/forms/InputField";
 
 interface MassRejectDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onConfirm: (reason: string) => void;
   count: number;
-  isDarkMode?: boolean;
 }
 
 export const MassRejectDialog: React.FC<MassRejectDialogProps> = ({
@@ -29,6 +31,14 @@ export const MassRejectDialog: React.FC<MassRejectDialogProps> = ({
   count,
 }) => {
   const [reason, setReason] = useState('');
+
+  // ========== Clase Mejorada de Inputs ==========
+  const inputClass =
+    "w-full px-4 py-3.5 rounded-xl border-2 border-border bg-background text-foreground " +
+    "placeholder:text-muted-foreground/60 " +
+    "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 " +
+    "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/30 " +
+    "transition-all duration-200 ease-out hover:border-border/80";
 
   const handleConfirm = () => {
     if (reason.trim()) {
@@ -44,60 +54,84 @@ export const MassRejectDialog: React.FC<MassRejectDialogProps> = ({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 max-w-lg">
+      <AlertDialogContent className="max-w-lg mx-auto">
         <AlertDialogHeader>
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-yellow-100 dark:bg-yellow-500/20">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
               <Archive className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
             </div>
-            <div className="flex-1">
-              <AlertDialogTitle className="text-lg font-semibold text-gray-900 dark:text-slate-100">
-                ¿Estás seguro de archivar estos vehículos?
-              </AlertDialogTitle>
-            </div>
+            <AlertDialogTitle className="text-xl font-heading">
+              Archivar Vehículos
+            </AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="mt-3 text-gray-600 dark:text-slate-300">
-            Estás a punto de archivar{" "}
-            <span className="font-semibold text-yellow-600 dark:text-yellow-400">
-              {count} vehículo{count !== 1 ? "s" : ""}
-            </span>
-            .
-            <span className="block mt-1">
-              Por favor, introduce una razón clara para archivarlos.
-            </span>
+          <AlertDialogDescription className="text-sm text-muted-foreground mt-2">
+            Estás a punto de archivar <Badge variant="secondary" className="mx-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300">{count} vehículo{count !== 1 ? 's' : ''}</Badge>. 
+            Por favor, introduce una razón clara para archivarlos.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="py-4 space-y-2">
-          <Label
-            htmlFor="rejection-reason"
-            className="text-sm font-medium text-gray-700 dark:text-slate-200"
+
+        <div className="py-4">
+          <InputField
+            label="Razón para archivar"
+            required
+            icon={<FileText className="w-4 h-4 text-primary" />}
+            tooltip="Proporcionar una razón clara ayuda a los vendedores a entender por qué sus anuncios fueron archivados"
+            counter={{ current: reason.length, max: 500 }}
           >
-            Razón para archivar <span className="text-red-500">*</span>
-          </Label>
-          <Textarea
-            id="rejection-reason"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Ej: Faltan imágenes de buena calidad, la descripción no es clara, etc."
-            className="min-h-[100px] bg-white dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:border-yellow-500 dark:focus:border-yellow-500 focus:ring-yellow-500/20"
-            maxLength={500}
-          />
-          <p className="text-xs text-gray-500 dark:text-slate-400">
-            {reason.length}/500 caracteres
-          </p>
+            <Textarea
+              id="rejection-reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Ej: Faltan imágenes de buena calidad, la descripción no es clara, etc."
+              className={`${inputClass} min-h-[100px] resize-y`}
+              maxLength={500}
+            />
+          </InputField>
         </div>
-        <AlertDialogFooter className="mt-4 gap-2">
-          <AlertDialogCancel 
-            onClick={handleCancel}
-            className="bg-white dark:bg-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-200 border-gray-300 dark:border-slate-600"
-          >
+
+        <div className="py-4">
+          <div className="p-4 rounded-xl border-2 border-yellow-500/20 bg-yellow-50/50 dark:bg-yellow-950/20">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-sm text-foreground mb-3">
+                  ¿Qué sucederá después de archivar?
+                </h3>
+                <ul className="text-sm space-y-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-600 dark:text-yellow-400 mt-0.5 font-bold">•</span>
+                    <span>
+                      Los vehículos cambiarán su estado a "Archivado"
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-600 dark:text-yellow-400 mt-0.5 font-bold">•</span>
+                    <span>
+                      No serán visibles públicamente en la plataforma
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-yellow-600 dark:text-yellow-400 mt-0.5 font-bold">•</span>
+                    <span>
+                      Los vendedores recibirán una notificación con tu razón
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <AlertDialogFooter className="flex-col sm:flex-row gap-3">
+          <AlertDialogCancel onClick={handleCancel} className="w-full sm:w-auto">
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={!reason.trim()}
-            className="bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-600 dark:hover:bg-yellow-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-yellow-600 hover:bg-yellow-700 text-white w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
           >
+            <Archive className="w-4 h-4 mr-2" />
             Archivar vehículos
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -1,7 +1,10 @@
 // src/components/features/admin/AnalyticsDashboard.tsx
+// VERSIÓN CON DISEÑO UNIFICADO
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   BarChart,
   Bar,
@@ -27,6 +30,9 @@ import {
   TrendingDown,
   Activity,
   Loader2,
+  BarChart3,
+  PieChart as PieChartIcon,
+  TrendingUp as TrendingUpIcon,
 } from "lucide-react";
 import { useMemo } from "react";
 
@@ -54,7 +60,6 @@ interface AnalyticsData {
 
 interface AnalyticsDashboardProps {
   data: AnalyticsData | null;
-  isDarkMode: boolean;
   isLoading?: boolean;
   error?: string;
 }
@@ -65,7 +70,6 @@ const STATUS_COLORS = {
   approved: "#10b981",
   rejected: "#ef4444",
 } as const;
-
 
 const StatCard = ({
   title,
@@ -88,20 +92,20 @@ const StatCard = ({
     trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Activity;
   const trendColorClass =
     trend === "up"
-      ? "text-green-500"
+      ? "text-green-600"
       : trend === "down"
-        ? "text-red-500"
-        : "text-gray-500";
+      ? "text-red-600"
+      : "text-muted-foreground";
 
   return (
-    <Card
-      className={`transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${className}`}
-    >
+    <Card className={`shadow-sm border-border ${className}`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <Icon className={`h-5 w-5 ${colorClass}`} />
+        <div className="p-2 rounded-lg bg-primary/10">
+          <Icon className={`h-4 w-4 ${colorClass}`} />
+        </div>
       </CardHeader>
       <CardContent>
         <div className="flex items-center justify-between">
@@ -119,7 +123,7 @@ const StatCard = ({
 };
 
 const LoadingCard = () => (
-  <Card className="dark:bg-slate-800/60 dark:border-slate-700">
+  <Card className="shadow-sm border-border">
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
         <Loader2 className="h-5 w-5 animate-spin" />
@@ -128,9 +132,11 @@ const LoadingCard = () => (
     </CardHeader>
     <CardContent>
       <div className="flex items-center justify-center h-32">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-          <p className="text-slate-400">Cargando datos de analíticas...</p>
+        <div className="text-center space-y-4">
+          <div className="p-3 rounded-full bg-primary/10">
+            <Loader2 className="h-8 w-8 text-primary animate-spin mx-auto" />
+          </div>
+          <p className="text-sm text-muted-foreground">Cargando datos de analíticas...</p>
         </div>
       </div>
     </CardContent>
@@ -138,25 +144,33 @@ const LoadingCard = () => (
 );
 
 const ErrorCard = ({ error }: { error: string }) => (
-  <Card className="border-red-500/50 bg-red-50 dark:bg-red-900/20 dark:border-red-500/30">
+  <Card className="shadow-sm border-border">
     <CardHeader>
-      <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-300">
+      <CardTitle className="flex items-center gap-2 text-destructive">
         <XCircle className="h-5 w-5" />
         Error en Dashboard
       </CardTitle>
     </CardHeader>
     <CardContent>
-      <p className="text-red-700 dark:text-red-400">{error}</p>
+      <div className="p-4 rounded-xl border-2 border-destructive/20 bg-destructive/5">
+        <div className="flex items-start gap-3">
+          <XCircle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+          <div>
+            <h3 className="font-semibold text-sm text-foreground mb-2">
+              Error al cargar datos
+            </h3>
+            <p className="text-sm text-muted-foreground">{error}</p>
+          </div>
+        </div>
+      </div>
     </CardContent>
   </Card>
 );
 
 const StatusDistributionChart = ({
   statusCounts,
-  isDarkMode,
 }: {
   statusCounts: AnalyticsData["statusCounts"];
-  isDarkMode: boolean;
 }) => {
   const data = useMemo(
     () =>
@@ -182,8 +196,16 @@ const StatusDistributionChart = ({
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px]">
-        <p className="text-muted-foreground">No hay datos disponibles</p>
+      <div className="flex flex-col items-center justify-center h-[300px] text-center">
+        <div className="p-3 rounded-full bg-muted/50 mb-4">
+          <PieChartIcon className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
+          No hay datos disponibles
+        </h3>
+        <p className="text-sm text-muted-foreground max-w-md">
+          No hay vehículos registrados con diferentes estados para mostrar en este gráfico.
+        </p>
       </div>
     );
   }
@@ -209,11 +231,9 @@ const StatusDistributionChart = ({
         </Pie>
         <Tooltip
           contentStyle={{
-            backgroundColor: isDarkMode
-              ? "rgba(15, 23, 42, 0.9)" // slate-900
-              : "rgba(255, 255, 255, 0.95)",
-            borderColor: isDarkMode ? "hsl(215 28% 17%)" : "#e2e8f0", // slate-800, slate-200
-            color: isDarkMode ? "#fff" : "#333",
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            borderColor: "#e2e8f0",
+            color: "#333",
             borderRadius: "0.5rem",
             boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
           }}
@@ -225,7 +245,6 @@ const StatusDistributionChart = ({
 
 export const AnalyticsDashboard = ({
   data,
-  isDarkMode,
   isLoading = false,
   error,
 }: AnalyticsDashboardProps) => {
@@ -310,88 +329,104 @@ export const AnalyticsDashboard = ({
           title="Total Vehículos"
           value={formatNumber(generalStats.totalVehicles)}
           icon={Car}
-          colorClass="text-blue-600 dark:text-blue-400"
-          className="dark:bg-blue-900/20 dark:border-blue-700/50 border-l-4 border-l-blue-500"
+          colorClass="text-primary"
         />
         <StatCard
           title="Precio Promedio"
           value={formatPrice(generalStats.averagePrice)}
           icon={DollarSign}
-          colorClass="text-green-600 dark:text-green-400"
-          className="dark:bg-green-900/20 dark:border-green-700/50 border-l-4 border-l-green-500"
+          colorClass="text-green-600"
         />
         <StatCard
           title="Vistas Totales"
           value={formatNumber(generalStats.totalViews)}
           icon={Eye}
-          colorClass="text-purple-600 dark:text-purple-400"
-          className="dark:bg-purple-900/20 dark:border-purple-700/50 border-l-4 border-l-purple-500"
+          colorClass="text-purple-600"
         />
         <StatCard
           title="Tasa de Aprobación"
           value={`${approvalRate.toFixed(1)}%`}
           icon={CheckCircle}
-          colorClass="text-emerald-600 dark:text-emerald-400"
-          className="dark:bg-emerald-900/20 dark:border-emerald-700/50 border-l-4 border-l-emerald-500"
+          colorClass="text-emerald-600"
         />
       </div>
 
       {/* Estados de Vehículos */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <StatCard title="Vehículos Pendientes" value={statusCounts.pending || 0} icon={Clock} colorClass="text-yellow-600 dark:text-yellow-400" className="dark:bg-yellow-900/20 dark:border-yellow-700/50" />
-        <StatCard
-          title="Vehículos Aprobados"
-          value={statusCounts.approved || 0}
-          icon={CheckCircle}
-          colorClass="text-green-600 dark:text-green-400"
-          className="dark:bg-green-900/20 dark:border-green-700/50"
-        />
-        <StatCard
-          title="Vehículos Rechazados"
-          value={statusCounts.rejected || 0}
-          icon={XCircle}
-          colorClass="text-red-600 dark:text-red-400"
-          className="dark:bg-red-900/20 dark:border-red-700/50"
-        />
-      </div>
+      <Card className="shadow-sm border-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-heading flex items-center gap-2">
+            <Activity className="w-5 h-5 text-primary" />
+            Estados de Vehículos
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="p-4 rounded-xl border-2 border-yellow-500/20 bg-yellow-50/50 dark:bg-yellow-950/20">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
+                  <Clock className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Pendientes</p>
+                  <p className="text-2xl font-bold">{statusCounts.pending || 0}</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 rounded-xl border-2 border-green-500/20 bg-green-50/50 dark:bg-green-950/20">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                  <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Aprobados</p>
+                  <p className="text-2xl font-bold">{statusCounts.approved || 0}</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 rounded-xl border-2 border-red-500/20 bg-red-50/50 dark:bg-red-950/20">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
+                  <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Rechazados</p>
+                  <p className="text-2xl font-bold">{statusCounts.rejected || 0}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Gráficos */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Gráfico de Publicaciones por Mes */}
-        <Card className="dark:bg-slate-800/60 dark:border-slate-700">
+        <Card className="shadow-sm border-border">
           <CardHeader>
-            <CardTitle>Publicaciones por Mes</CardTitle>
+            <CardTitle className="text-lg font-heading flex items-center gap-2">
+              <TrendingUpIcon className="w-5 h-5 text-primary" />
+              Publicaciones por Mes
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {publicationChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={publicationChartData}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke={isDarkMode ? "hsl(222 47% 11% / 0.5)" : "#e2e8f0"}
-                  />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis
                     dataKey="name"
-                    tick={{
-                      fill: isDarkMode ? "#94a3b8" : "#64748b",
-                      fontSize: 12,
-                    }}
-                    axisLine={{ stroke: isDarkMode ? "#475569" : "#cbd5e1" }}
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                    axisLine={{ stroke: "#cbd5e1" }}
                   />
                   <YAxis
-                    tick={{
-                      fill: isDarkMode ? "#94a3b8" : "#64748b",
-                      fontSize: 12,
-                    }}
-                    axisLine={{ stroke: isDarkMode ? "#475569" : "#cbd5e1" }}
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                    axisLine={{ stroke: "#cbd5e1" }}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: isDarkMode
-                        ? "rgba(15, 23, 42, 0.9)" // slate-900
-                        : "rgba(255, 255, 255, 0.95)",
-                      border: `1px solid ${isDarkMode ? "hsl(215 28% 17%)" : "#e2e8f0"}`, // slate-800, slate-200
-                      color: isDarkMode ? "#f1f5f9" : "#0f172a", // slate-100, slate-900
+                      backgroundColor: "rgba(255, 255, 255, 0.95)",
+                      border: "1px solid #e2e8f0",
+                      color: "#333",
                       borderRadius: "0.5rem",
                       boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                     }}
@@ -407,9 +442,15 @@ export const AnalyticsDashboard = ({
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-[300px]">
-                <p className="text-muted-foreground">
-                  No hay datos de publicaciones disponibles
+              <div className="flex flex-col items-center justify-center h-[300px] text-center">
+                <div className="p-3 rounded-full bg-muted/50 mb-4">
+                  <TrendingUpIcon className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
+                  No hay datos disponibles
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  No hay publicaciones registradas para mostrar en este gráfico.
                 </p>
               </div>
             )}
@@ -417,23 +458,26 @@ export const AnalyticsDashboard = ({
         </Card>
 
         {/* Distribución de Estados */}
-        <Card className="dark:bg-slate-800/60 dark:border-slate-700">
+        <Card className="shadow-sm border-border">
           <CardHeader>
-            <CardTitle>Distribución de Estados</CardTitle>
+            <CardTitle className="text-lg font-heading flex items-center gap-2">
+              <PieChartIcon className="w-5 h-5 text-primary" />
+              Distribución de Estados
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <StatusDistributionChart
-              statusCounts={statusCounts}
-              isDarkMode={isDarkMode}
-            />
+            <StatusDistributionChart statusCounts={statusCounts} />
           </CardContent>
         </Card>
       </div>
 
       {/* Gráfico de Precios por Categoría */}
-      <Card className="dark:bg-slate-800/60 dark:border-slate-700">
+      <Card className="shadow-sm border-border">
         <CardHeader>
-          <CardTitle>Precio Promedio por Categoría</CardTitle>
+          <CardTitle className="text-lg font-heading flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-primary" />
+            Precio Promedio por Categoría
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {categoryPriceChartData.length > 0 ? (
@@ -442,25 +486,16 @@ export const AnalyticsDashboard = ({
                 data={categoryPriceChartData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke={isDarkMode ? "hsl(222 47% 11% / 0.5)" : "#e2e8f0"}
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis
                   dataKey="name"
-                  tick={{
-                    fill: isDarkMode ? "#94a3b8" : "#64748b",
-                    fontSize: 12,
-                  }}
-                  axisLine={{ stroke: isDarkMode ? "#475569" : "#cbd5e1" }}
+                  tick={{ fill: "#64748b", fontSize: 12 }}
+                  axisLine={{ stroke: "#cbd5e1" }}
                 />
                 <YAxis
                   tickFormatter={(value) => `$${Number(value) / 1000}k`}
-                  tick={{
-                    fill: isDarkMode ? "#94a3b8" : "#64748b",
-                    fontSize: 12,
-                  }}
-                  axisLine={{ stroke: isDarkMode ? "#475569" : "#cbd5e1" }}
+                  tick={{ fill: "#64748b", fontSize: 12 }}
+                  axisLine={{ stroke: "#cbd5e1" }}
                 />
                 <Tooltip
                   formatter={(value: number, name: string) => [
@@ -469,11 +504,9 @@ export const AnalyticsDashboard = ({
                   ]}
                   labelFormatter={(label) => `Categoría: ${label}`}
                   contentStyle={{
-                    backgroundColor: isDarkMode
-                      ? "rgba(15, 23, 42, 0.9)" // slate-900
-                      : "rgba(255, 255, 255, 0.95)",
-                    border: `1px solid ${isDarkMode ? "hsl(215 28% 17%)" : "#e2e8f0"}`, // slate-800, slate-200
-                    color: isDarkMode ? "#f1f5f9" : "#0f172a", // slate-100, slate-900
+                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                    border: "1px solid #e2e8f0",
+                    color: "#333",
                     borderRadius: "0.5rem",
                     boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                   }}
@@ -486,9 +519,15 @@ export const AnalyticsDashboard = ({
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[400px]">
-              <p className="text-muted-foreground">
-                No hay datos de categorías disponibles
+            <div className="flex flex-col items-center justify-center h-[400px] text-center">
+              <div className="p-3 rounded-full bg-muted/50 mb-4">
+                <BarChart3 className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
+                No hay datos disponibles
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                No hay categorías registradas para mostrar en este gráfico.
               </p>
             </div>
           )}

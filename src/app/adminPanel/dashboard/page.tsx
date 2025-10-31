@@ -1,13 +1,14 @@
 // src/app/adminPanel/dashboard/page.tsx
+// VERSIÓN CON DISEÑO UNIFICADO
+
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnalyticsDashboard } from "@/components/features/admin/AnalyticsDashboard";
-import { useDarkMode } from "@/context/DarkModeContext";
-import { ArrowLeft, BarChart2, Loader2 } from "lucide-react";
+import { ArrowLeft, BarChart3, Loader2 } from "lucide-react";
 
 interface AnalyticsData {
   generalStats: {
@@ -24,7 +25,6 @@ interface AnalyticsData {
 }
 
 export default function AdminDashboardPage() {
-  const { isDarkMode } = useDarkMode();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,33 +49,49 @@ export default function AdminDashboardPage() {
   }, []);
 
   return (
-    <div
-      className={`min-h-screen p-2 sm:p-4 lg:p-6 ${isDarkMode ? "bg-slate-900 text-slate-200" : "bg-gray-50"}`}
-    >
-      <div className="max-w-7xl mx-auto space-y-4">
-        <Card className={isDarkMode ? "bg-slate-800/60 border-slate-700" : "bg-white"}>
-          <CardHeader className="p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-3 text-2xl">
-                <BarChart2 className="w-6 h-6 text-blue-500" />
-                Dashboard de Analíticas
-              </CardTitle>
-              <Button asChild variant="outline">
-                <Link href="/adminPanel">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Volver al Panel
-                </Link>
-              </Button>
+    <div className="min-h-screen bg-background text-foreground py-8 px-4">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* ========== ENCABEZADO MEJORADO ========== */}
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className="p-3.5 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10">
+              <BarChart3 className="w-7 h-7 text-primary-foreground" />
             </div>
-          </CardHeader>
-        </Card>
-        {isLoading ? (
-          <div className="text-center p-8 text-slate-400">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            Cargando analíticas...
+            <div className="text-left">
+              <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">
+                Dashboard de Analíticas
+              </h2>
+              <p className="text-base text-muted-foreground mt-0.5">
+                Visualiza estadísticas y tendencias de la plataforma
+              </p>
+            </div>
           </div>
+        </div>
+
+        {/* ========== BOTÓN DE NAVEGACIÓN ========== */}
+        <div className="flex justify-center">
+          <Button asChild variant="outline">
+            <Link href="/adminPanel">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver al Panel
+            </Link>
+          </Button>
+        </div>
+
+        {/* ========== CONTENIDO PRINCIPAL ========== */}
+        {isLoading ? (
+          <Card className="shadow-sm border-border">
+            <CardContent className="flex items-center justify-center h-64">
+              <div className="text-center space-y-4">
+                <div className="p-3 rounded-full bg-primary/10">
+                  <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" />
+                </div>
+                <p className="text-muted-foreground">Cargando analíticas...</p>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
-          <AnalyticsDashboard data={analyticsData} isDarkMode={isDarkMode} />
+          <AnalyticsDashboard data={analyticsData} />
         )}
       </div>
     </div>

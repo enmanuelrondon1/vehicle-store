@@ -1,4 +1,6 @@
-//src/components/features/admin/AdminFilters.tsx
+// src/components/features/admin/AdminFilters.tsx
+// VERSIÓN CON DISEÑO UNIFICADO
+
 "use client";
 
 import type React from "react";
@@ -8,18 +10,27 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, X, Grid, List, Square } from "lucide-react";
+import { InputField } from "@/components/shared/forms/InputField";
+import { 
+  Search, 
+  Filter, 
+  X, 
+  Grid, 
+  List, 
+  Square,
+  Calendar,
+  DollarSign,
+  ArrowUpDown,
+  Tag
+} from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-
-// import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { VEHICLE_CATEGORIES_LABELS } from "@/types/shared";
 import { SortSelector } from "@/components/ui/seraui-selector";
 import { MultiSelectFilter } from "@/components/features/vehicles/list/filters/MultiSelectFilter";
-
 import {
   AdminPanelFilters,
   SortByType,
@@ -54,6 +65,14 @@ export const AdminFilters = ({
 }: AdminFiltersProps) => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [searchInput, setSearchInput] = useState(filters.search);
+
+  // ========== Clase Mejorada de Inputs ==========
+  const inputClass =
+    "w-full px-4 py-3.5 rounded-xl border-2 border-border bg-background text-foreground " +
+    "placeholder:text-muted-foreground/60 " +
+    "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 " +
+    "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/30 " +
+    "transition-all duration-200 ease-out hover:border-border/80";
 
   const sortOptions: { value: SortByType; label: string }[] = [
     { value: "newest", label: "Más nuevos" },
@@ -112,18 +131,27 @@ export const AdminFilters = ({
   const isPartiallySelected = selectedCount > 0 && !isAllSelected;
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="shadow-sm border-border">
+      <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <Filter className="w-5 h-5" />
-            Filtros y Búsqueda
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Filter className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-heading">
+                Filtros y Búsqueda
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Refina los resultados para encontrar lo que buscas
+              </p>
+            </div>
             {activeFiltersCount > 0 && (
               <Badge variant="secondary" className="ml-2">
-                {activeFiltersCount}
+                {activeFiltersCount} activos
               </Badge>
             )}
-          </CardTitle>
+          </div>
 
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground">
@@ -154,83 +182,91 @@ export const AdminFilters = ({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-5 pt-6">
+      <CardContent className="space-y-6">
         {/* Búsqueda */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <InputField
+          label="Búsqueda"
+          icon={<Search className="w-4 h-4 text-primary" />}
+          tooltip="Busca por marca, modelo, vendedor o número de referencia"
+        >
           <Input
-            placeholder="Buscar por marca, modelo, vendedor, referencia..."
+            placeholder="Buscar por marca, modelo, vendedor..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="pl-10"
+            className={`${inputClass} pl-12`}
           />
-        </div>
+        </InputField>
 
         {/* Acciones de selección masiva */}
-        <div className="flex flex-wrap items-center gap-2 py-2">
-          <label
-            htmlFor="select-all"
-            className="inline-flex items-center gap-2 cursor-pointer rounded-md border px-3 text-sm h-9 font-medium transition-colors hover:bg-muted"
-          >
-            <Checkbox
-              id="select-all"
-              checked={
-                isAllSelected
-                  ? true
-                  : isPartiallySelected
-                    ? "indeterminate"
-                    : false
-              }
-              onCheckedChange={(checked) => {
-                if (checked === true) {
-                  onSelectAll();
-                } else {
-                  onClearSelection();
+        <div className="p-4 rounded-xl border-2 border-border bg-muted/30">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <label
+              htmlFor="select-all"
+              className="inline-flex items-center gap-2 cursor-pointer"
+            >
+              <Checkbox
+                id="select-all"
+                checked={
+                  isAllSelected
+                    ? true
+                    : isPartiallySelected
+                      ? "indeterminate"
+                      : false
                 }
-              }}
-              aria-label="Seleccionar o deseleccionar todos"
-            />
-            <span>Seleccionar todos</span>
-          </label>
-          {selectedCount > 0 && (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onClearSelection}
-                className="flex items-center gap-2"
-              >
-                <Square className="w-4 h-4" />
-                Limpiar selección
-              </Button>
-              <Badge variant="secondary">
-                {selectedCount} seleccionado{selectedCount !== 1 ? "s" : ""}
-              </Badge>
-            </>
-          )}
+                onCheckedChange={(checked) => {
+                  if (checked === true) {
+                    onSelectAll();
+                  } else {
+                    onClearSelection();
+                  }
+                }}
+                aria-label="Seleccionar o deseleccionar todos"
+              />
+              <span className="text-sm font-medium">Seleccionar todos</span>
+            </label>
+            {selectedCount > 0 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onClearSelection}
+                  className="flex items-center gap-2"
+                >
+                  <Square className="w-4 h-4" />
+                  Limpiar
+                </Button>
+                <Badge variant="secondary">
+                  {selectedCount} seleccionado{selectedCount !== 1 ? "s" : ""}
+                </Badge>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Filtros rápidos por estado */}
-        <div className="flex flex-wrap gap-2 py-2">
-          {[
-            { value: "all", label: "Todos" },
-            { value: "pending", label: "Pendientes" },
-            { value: "approved", label: "Aprobados" },
-            { value: "rejected", label: "Rechazados" },
-          ].map((status) => (
-            <Button
-              key={status.value}
-              variant={filters.status === status.value ? "default" : "outline"}
-              size="sm"
-              onClick={() =>
-                onFiltersChange({
-                  status: status.value as AdminPanelFilters["status"],
-                })
-              }
-            >
-              {status.label}
-            </Button>
-          ))}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-foreground">Estado del Anuncio</h3>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: "all", label: "Todos" },
+              { value: "pending", label: "Pendientes" },
+              { value: "approved", label: "Aprobados" },
+              { value: "rejected", label: "Rechazados" },
+            ].map((status) => (
+              <Button
+                key={status.value}
+                variant={filters.status === status.value ? "default" : "outline"}
+                size="sm"
+                onClick={() =>
+                  onFiltersChange({
+                    status: status.value as AdminPanelFilters["status"],
+                  })
+                }
+              >
+                {status.label}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Filtros avanzados */}
@@ -247,13 +283,14 @@ export const AdminFilters = ({
             </Button>
           </CollapsibleTrigger>
 
-          <CollapsibleContent className="space-y-6 mt-4 pt-4 border-t">
+          <CollapsibleContent className="space-y-6 mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Categoría */}
-              <div className="p-5 rounded-lg border bg-card">
-                <label className="text-sm font-semibold mb-3 block text-foreground">
-                  Categoría
-                </label>
+              <InputField
+                label="Categoría"
+                icon={<Tag className="w-4 h-4 text-primary" />}
+                tooltip="Filtra por una o más categorías de vehículos"
+              >
                 <MultiSelectFilter
                   options={categoryOptions.filter((o) => o.value !== "all")}
                   selected={filters.category}
@@ -261,30 +298,30 @@ export const AdminFilters = ({
                   placeholder="Seleccionar categorías"
                   className="w-full"
                 />
-              </div>
+              </InputField>
 
               {/* Ordenamiento */}
-              <div className="p-5 rounded-lg border bg-card">
-                <label className="text-sm font-semibold mb-3 block text-foreground">
-                  Ordenar por
-                </label>
-                <div>
-                  <SortSelector
-                    value={filters.sortBy}
-                    onChange={(value) =>
-                      onFiltersChange({ sortBy: value as SortByType })
-                    }
-                    placeholder="Ordenar por"
-                    options={sortOptions}
-                  />
-                </div>
-              </div>
+              <InputField
+                label="Ordenar por"
+                icon={<ArrowUpDown className="w-4 h-4 text-primary" />}
+                tooltip="Define el criterio de ordenamiento de los resultados"
+              >
+                <SortSelector
+                  value={filters.sortBy}
+                  onChange={(value) =>
+                    onFiltersChange({ sortBy: value as SortByType })
+                  }
+                  placeholder="Ordenar por"
+                  options={sortOptions}
+                />
+              </InputField>
 
               {/* Filtro Destacado */}
-              <div className="p-5 rounded-lg border bg-card">
-                <label className="text-sm font-semibold mb-3 block text-foreground">
-                  Destacado
-                </label>
+              <InputField
+                label="Destacado"
+                icon={<Tag className="w-4 h-4 text-primary" />}
+                tooltip="Filtra por anuncios destacados o no destacados"
+              >
                 <div className="flex flex-wrap gap-2">
                   {[
                     { value: "all", label: "Todos" },
@@ -307,13 +344,14 @@ export const AdminFilters = ({
                     </Button>
                   ))}
                 </div>
-              </div>
+              </InputField>
 
               {/* Rango de Fechas */}
-              <div className="p-5 rounded-lg border bg-card">
-                <label className="text-sm font-semibold mb-3 block text-foreground">
-                  Rango de Fechas
-                </label>
+              <InputField
+                label="Rango de Fechas"
+                icon={<Calendar className="w-4 h-4 text-primary" />}
+                tooltip="Filtra por fecha de creación del anuncio"
+              >
                 <DatePicker
                   onDateChange={(range) => {
                     if (range) {
@@ -329,30 +367,36 @@ export const AdminFilters = ({
                     to: filters.dateRange[1] ?? undefined,
                   }}
                 />
-              </div>
+              </InputField>
 
               {/* Rango de precio */}
-              <div className="md:col-span-2 lg:col-span-3 p-5 rounded-lg border bg-card">
-                <label className="text-sm font-semibold mb-4 block text-foreground">
-                  Rango de precio:{" "}
-                  <span className="font-bold text-primary">
-                    ${filters.priceRange[0].toLocaleString()}
-                  </span>{" "}
-                  -{" "}
-                  <span className="font-bold text-primary">
-                    ${filters.priceRange[1].toLocaleString()}
-                  </span>
-                </label>
-                <Slider
-                  value={filters.priceRange}
-                  onValueChange={(value) =>
-                    onFiltersChange({ priceRange: value as [number, number] })
-                  }
-                  max={1000000}
-                  min={0}
-                  step={5000}
-                  className="mt-3"
-                />
+              <div className="md:col-span-2 lg:col-span-3">
+                <InputField
+                  label="Rango de precio"
+                  icon={<DollarSign className="w-4 h-4 text-primary" />}
+                  tooltip="Filtra por rango de precios"
+                >
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium text-primary">
+                        ${filters.priceRange[0].toLocaleString()}
+                      </span>
+                      <span className="font-medium text-primary">
+                        ${filters.priceRange[1].toLocaleString()}
+                      </span>
+                    </div>
+                    <Slider
+                      value={filters.priceRange}
+                      onValueChange={(value) =>
+                        onFiltersChange({ priceRange: value as [number, number] })
+                      }
+                      max={1000000}
+                      min={0}
+                      step={5000}
+                      className="mt-3"
+                    />
+                  </div>
+                </InputField>
               </div>
             </div>
 

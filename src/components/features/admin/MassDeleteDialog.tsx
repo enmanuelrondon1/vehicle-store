@@ -1,4 +1,6 @@
-//src/components/features/admin/MassDeleteDialog.tsx
+// src/components/features/admin/MassDeleteDialog.tsx
+// VERSIÓN CON DISEÑO UNIFICADO
+
 import React from 'react';
 import {
   AlertDialog,
@@ -10,14 +12,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { AlertTriangle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { AlertTriangle, Trash2, XCircle } from 'lucide-react';
 
 interface MassDeleteDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onConfirm: () => void;
   count: number;
-  isDarkMode?: boolean;
 }
 
 export const MassDeleteDialog: React.FC<MassDeleteDialogProps> = ({
@@ -28,33 +30,64 @@ export const MassDeleteDialog: React.FC<MassDeleteDialogProps> = ({
 }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 max-w-md">
+      <AlertDialogContent className="max-w-md mx-auto">
         <AlertDialogHeader>
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-red-100 dark:bg-red-500/20">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
               <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
-            <div className="flex-1">
-              <AlertDialogTitle className="text-lg font-semibold text-gray-900 dark:text-slate-100">
-                ¿Estás seguro de eliminar estos vehículos?
-              </AlertDialogTitle>
-            </div>
+            <AlertDialogTitle className="text-xl font-heading">
+              Eliminar Vehículos
+            </AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="mt-3 text-gray-600 dark:text-slate-300">
-            Estás a punto de eliminar <span className="font-semibold text-red-600 dark:text-red-400">{count} vehículo{count !== 1 ? 's' : ''}</span> de forma permanente. 
-            <span className="block mt-2 font-medium text-gray-800 dark:text-slate-200">
-              Esta acción no se puede deshacer.
-            </span>
+          <AlertDialogDescription className="text-sm text-muted-foreground mt-2">
+            Estás a punto de eliminar <Badge variant="secondary" className="mx-1 bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">{count} vehículo{count !== 1 ? 's' : ''}</Badge> de forma permanente. 
+            Esta acción no se puede deshacer.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="mt-6 gap-2">
-          <AlertDialogCancel className="bg-white dark:bg-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-200 border-gray-300 dark:border-slate-600">
+
+        <div className="py-4">
+          <div className="p-4 rounded-xl border-2 border-red-500/20 bg-red-50/50 dark:bg-red-950/20">
+            <div className="flex items-start gap-3">
+              <XCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-sm text-foreground mb-3">
+                  Esta acción es irreversible
+                </h3>
+                <ul className="text-sm space-y-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 dark:text-red-400 mt-0.5 font-bold">•</span>
+                    <span>
+                      Se eliminará permanentemente toda la información de los vehículos
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 dark:text-red-400 mt-0.5 font-bold">•</span>
+                    <span>
+                      Todas las imágenes y comprobantes asociados serán eliminados
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 dark:text-red-400 mt-0.5 font-bold">•</span>
+                    <span>
+                      Esta acción no puede ser revertida
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <AlertDialogFooter className="flex-col sm:flex-row gap-3">
+          <AlertDialogCancel className="w-full sm:w-auto">
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white font-medium"
+            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground w-full sm:w-auto"
           >
+            <Trash2 className="w-4 h-4 mr-2" />
             Eliminar permanentemente
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -76,7 +76,7 @@ export const MobileActionSheet = ({
             onClick={() => onShowRejectDialog(vehicle)}
           >
             <XCircle className="mr-2 h-4 w-4 text-destructive" />
-            Rechazar
+            Archivar
           </Button>
           <Button
             variant="outline"

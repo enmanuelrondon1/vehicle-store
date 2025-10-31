@@ -1,3 +1,6 @@
+// src/components/features/admin/MassApproveDialog.tsx
+// VERSIÓN CON DISEÑO UNIFICADO
+
 import React from 'react';
 import {
   AlertDialog,
@@ -9,14 +12,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { CheckCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, CheckSquare, Car } from 'lucide-react';
 
 interface MassApproveDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onConfirm: () => void;
   count: number;
-  isDarkMode?: boolean;
 }
 
 export const MassApproveDialog: React.FC<MassApproveDialogProps> = ({
@@ -27,33 +30,64 @@ export const MassApproveDialog: React.FC<MassApproveDialogProps> = ({
 }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 max-w-md">
+      <AlertDialogContent className="max-w-md mx-auto">
         <AlertDialogHeader>
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-green-100 dark:bg-green-500/20">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
               <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
-            <div className="flex-1">
-              <AlertDialogTitle className="text-lg font-semibold text-gray-900 dark:text-slate-100">
-                ¿Estás seguro de aprobar estos vehículos?
-              </AlertDialogTitle>
-            </div>
+            <AlertDialogTitle className="text-xl font-heading">
+              Aprobar Vehículos
+            </AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="mt-3 text-gray-600 dark:text-slate-300">
-            Estás a punto de aprobar <span className="font-semibold text-green-600 dark:text-green-400">{count} vehículo{count !== 1 ? 's' : ''}</span>. 
-            <span className="block mt-2 font-medium text-gray-800 dark:text-slate-200">
-              Esta acción les cambiará el estado a &quot;Aprobado&quot; y serán visibles públicamente.
-            </span>
+          <AlertDialogDescription className="text-sm text-muted-foreground mt-2">
+            Estás a punto de aprobar <Badge variant="secondary" className="mx-1 bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">{count} vehículo{count !== 1 ? 's' : ''}</Badge>. 
+            Esta acción les cambiará el estado a "Aprobado" y serán visibles públicamente.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="mt-6 gap-2">
-          <AlertDialogCancel className="bg-white dark:bg-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-200 border-gray-300 dark:border-slate-600">
+
+        <div className="py-4">
+          <div className="p-4 rounded-xl border-2 border-green-500/20 bg-green-50/50 dark:bg-green-950/20">
+            <div className="flex items-start gap-3">
+              <CheckSquare className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-sm text-foreground mb-3">
+                  ¿Qué sucederá después de aprobar?
+                </h3>
+                <ul className="text-sm space-y-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 dark:text-green-400 mt-0.5 font-bold">•</span>
+                    <span>
+                      Los vehículos cambiarán su estado a "Aprobado"
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 dark:text-green-400 mt-0.5 font-bold">•</span>
+                    <span>
+                      Serán visibles públicamente en la plataforma
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 dark:text-green-400 mt-0.5 font-bold">•</span>
+                    <span>
+                      Los vendedores recibirán una notificación
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <AlertDialogFooter className="flex-col sm:flex-row gap-3">
+          <AlertDialogCancel className="w-full sm:w-auto">
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white font-medium"
+            className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
           >
+            <CheckCircle className="w-4 h-4 mr-2" />
             Aprobar vehículos
           </AlertDialogAction>
         </AlertDialogFooter>

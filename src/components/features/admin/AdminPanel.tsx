@@ -1,37 +1,58 @@
 // src/components/features/admin/AdminPanel.tsx
+// VERSIÓN CON DISEÑO MEJORADO - Completo y sin abreviaciones
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAdminPanelEnhanced } from "@/hooks/use-admin-panel-enhanced";
-import type {
-  VehicleDataFrontend,
-  ApprovalStatus as ApprovalStatusType,
-} from "@/types/types";
-import { AdminFilters } from "./AdminFilters";
-import { VehicleGridView } from "./VehicleGridView";
-import { VehicleListView } from "./VehicleListView";
-import { AdminPagination } from "./AdminPagination";
-import { AdminPanelLoading } from "./AdminPanelLoading";
-import { AdminPanelAccessDenied } from "./AdminPanelAccessDenied";
-import { AdminPanelError } from "./AdminPanelError";
-import { AdminPanelHeader } from "./AdminPanelHeader";
-import { VehicleDetailsDialog } from "./VehicleDetailsDialog";
-import { RejectDialog } from "./RejectDialog";
-import { CommentDialog } from "./CommentDialog";
-import { HistoryDialog } from "./HistoryDialog";
-import { DeleteDialog } from "./DeleteDialog";
-import { UsersPanel } from "./UsersPanel";
-import { MassApproveDialog } from "./MassApproveDialog";
-import { MassRejectDialog } from "./MassRejectDialog";
-import { MassDeleteDialog } from "./MassDeleteDialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getVehicleComments,
   addVehicleComment,
   getVehicleHistory,
 } from "@/lib/api/admin";
-import type { VehicleComment, VehicleHistoryEntry } from "@/types/types";
-import { Button } from "@/components/ui/button";
+import type {
+  VehicleDataFrontend,
+  ApprovalStatus as ApprovalStatusType,
+  VehicleComment,
+  VehicleHistoryEntry,
+} from "@/types/types";
+import { useAdminPanelEnhanced } from "@/hooks/use-admin-panel-enhanced";
+import { 
+  Shield, 
+  Users, 
+  Car, 
+  CheckCircle2, 
+  AlertCircle, 
+  Download,
+  Filter,
+  Grid,
+  List,
+  CheckSquare,
+  XSquare,
+  Trash2
+} from "lucide-react";
+
+// Local components in order of first appearance in JSX
+import { AdminPanelLoading } from "./AdminPanelLoading";
+import { AdminPanelAccessDenied } from "./AdminPanelAccessDenied";
+import { AdminPanelError } from "./AdminPanelError";
+import { AdminPanelHeader } from "./AdminPanelHeader";
+import { AdminFilters } from "./AdminFilters";
+import { VehicleGridView } from "./VehicleGridView";
+import { VehicleListView } from "./VehicleListView";
+import { AdminPagination } from "./AdminPagination";
+import { UsersPanel } from "./UsersPanel";
+import { VehicleDetailsDialog } from "./VehicleDetailsDialog";
+import { RejectDialog } from "./RejectDialog";
+import { CommentDialog } from "./CommentDialog";
+import { HistoryDialog } from "./HistoryDialog";
+import { DeleteDialog } from "./DeleteDialog";
+import { MassApproveDialog } from "./MassApproveDialog";
+import { MassRejectDialog } from "./MassRejectDialog";
+import { MassDeleteDialog } from "./MassDeleteDialog";
 
 // Mapeo explícito
 const ApprovalStatus = {
@@ -93,7 +114,7 @@ export const AdminPanel = () => {
         }
         return acc;
       },
-{} as Record<string, number>
+      {} as Record<string, number>
     );
   }, [allVehicles]);
 
@@ -119,6 +140,16 @@ export const AdminPanel = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [vehicleFromNotification, setVehicleFromNotification] =
     useState<VehicleDataFrontend | null>(null);
+
+  // ========== Cálculo de Estadísticas ==========
+  const { pendingCount, approvedCount, rejectedCount, totalCount } = useMemo(() => {
+    const pending = allVehicles.filter(v => v.status === ApprovalStatus.PENDING).length;
+    const approved = allVehicles.filter(v => v.status === ApprovalStatus.APPROVED).length;
+    const rejected = allVehicles.filter(v => v.status === ApprovalStatus.REJECTED).length;
+    const total = allVehicles.length;
+    
+    return { pendingCount: pending, approvedCount: approved, rejectedCount: rejected, totalCount: total };
+  }, [allVehicles]);
 
   const handleShowRejectDialog = (vehicle: VehicleDataFrontend) => {
     setDialogState({ type: "reject", vehicle });
@@ -202,7 +233,7 @@ export const AdminPanel = () => {
 
   if (status === "loading" || isLoading) {
     return <AdminPanelLoading />;
-}
+  }
 
   if (!isAdmin) {
     return <AdminPanelAccessDenied />;
@@ -389,42 +420,104 @@ export const AdminPanel = () => {
   };
 
   return (
-    <div className="bg-background text-foreground min-h-screen p-2 sm:p-4 lg:p-6">
-      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-        {/* Header mejorado */}
-        <AdminPanelHeader
-          isLoading={isLoading}
-          exportData={exportData}
-          fetchVehicles={fetchVehicles}
-          setVehicleFromNotification={setVehicleFromNotification}
-        />
-
-        {/* Pestañas de navegación */}
-        <div className="flex border-b border-border">
-          <button
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === "vehicles"
-                ? "border-b-2 border-primary text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-            onClick={() => setActiveTab("vehicles")}
-          >
-            Vehículos
-          </button>
-          <button
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === "users"
-                ? "border-b-2 border-primary text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-            onClick={() => setActiveTab("users")}
-          >
-            Usuarios
-          </button>
+    <div className="min-h-screen bg-background text-foreground py-8 px-4 animate-in fade-in duration-500">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* ========== ENCABEZADO MEJORADO ========== */}
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className="p-3.5 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10 transition-all hover:scale-[1.02]">
+              <Shield className="w-7 h-7 text-primary-foreground" />
+            </div>
+            <div className="text-left">
+              <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">
+                Panel de Administración
+              </h2>
+              <p className="text-base text-muted-foreground mt-0.5">
+                Gestiona vehículos y usuarios de la plataforma
+              </p>
+            </div>
+          </div>
         </div>
 
-        {activeTab === "vehicles" && (
-          <>
+        {/* ========== ESTADÍSTICAS ========== */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="shadow-sm border-border hover:shadow-md transition-shadow">
+            <CardContent className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold text-foreground">{totalCount}</p>
+              </div>
+              <div className="p-2 rounded-lg bg-muted/50">
+                <Car className="w-5 h-5 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-sm border-border hover:shadow-md transition-shadow bg-muted/20">
+            <CardContent className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Pendientes</p>
+                <p className="text-2xl font-bold text-accent">{pendingCount}</p> {/* Usando accent para pending */}
+              </div>
+              <div className="p-2 rounded-lg bg-accent/20">
+                <AlertCircle className="w-5 h-5 text-accent" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-sm border-border hover:shadow-md transition-shadow bg-primary/5">
+            <CardContent className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Aprobados</p>
+                <p className="text-2xl font-bold text-primary">{approvedCount}</p> {/* Primary para approved */}
+              </div>
+              <div className="p-2 rounded-lg bg-primary/10">
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-sm border-border hover:shadow-md transition-shadow bg-destructive/5">
+            <CardContent className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-muted-foreground">Rechazados</p>
+                <p className="text-2xl font-bold text-destructive">{rejectedCount}</p>
+              </div>
+              <div className="p-2 rounded-lg bg-destructive/10">
+                <XSquare className="w-5 h-5 text-destructive" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* ========== PESTAÑAS DE NAVEGACIÓN ========== */}
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as AdminTab)} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-muted rounded-lg shadow-sm border border-border/20 p-1">
+            <TabsTrigger 
+              value="vehicles" 
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all hover:scale-105 rounded-md"
+            >
+              <Car className="w-4 h-4" />
+              Vehículos
+            </TabsTrigger>
+            <TabsTrigger 
+              value="users" 
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all hover:scale-105 rounded-md"
+            >
+              <Users className="w-4 h-4" />
+              Usuarios
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="vehicles" className="space-y-6 mt-6">
+            {/* Header mejorado */}
+            <AdminPanelHeader
+              isLoading={isLoading}
+              exportData={exportData}
+              fetchVehicles={fetchVehicles}
+              setVehicleFromNotification={setVehicleFromNotification}
+            />
+
             {/* Filtros */}
             <AdminFilters
               filters={filters}
@@ -441,40 +534,48 @@ export const AdminPanel = () => {
 
             {/* Acciones masivas */}
             {selectedVehicles.size > 0 && (
-              <Card>
-                <CardContent className="p-4 flex flex-wrap items-center gap-3">
-                  <span className="text-sm font-semibold">
-                    {selectedVehicles.size} vehículo(s) seleccionado(s)
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
-                    onClick={() => setShowMassApproveDialog(true)}
-                  >
-                    Aprobar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white"
-                    onClick={() => setShowMassRejectDialog(true)}
-                  >
-                    Rechazar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => setShowMassDeleteDialog(true)}
-                  >
-                    Eliminar
-                  </Button>
+              <Card className="shadow-sm border-border bg-muted/20">
+                <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-sm shadow-sm">
+                      {selectedVehicles.size} vehículo(s) seleccionado(s)
+                    </Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                      onClick={() => setShowMassApproveDialog(true)}
+                    >
+                      <CheckSquare className="w-4 h-4 mr-1" />
+                      Aprobar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-accent text-accent hover:bg-accent hover:text-accent-foreground transition-all"
+                      onClick={() => setShowMassRejectDialog(true)}
+                    >
+                      <XSquare className="w-4 h-4 mr-1" />
+                      Rechazar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="hover:scale-105 transition-transform"
+                      onClick={() => setShowMassDeleteDialog(true)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Eliminar
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Contenido principal - AJUSTE AQUÍ */}
-            <Card className="w-full">
+            {/* Contenido principal */}
+            <Card className="shadow-lg border-border">
               <CardContent className="p-3 md:p-6">
                 {isMobileView ? (
                   <VehicleGridView
@@ -529,78 +630,80 @@ export const AdminPanel = () => {
                 </div>
               </CardContent>
             </Card>
-          </>
-        )}
+          </TabsContent>
+          
+          <TabsContent value="users" className="mt-6">
+            <UsersPanel />
+          </TabsContent>
+        </Tabs>
 
-        {activeTab === "users" && <UsersPanel />}
-      </div>
+        {/* Dialog para ver detalles del vehículo */}
+        <VehicleDetailsDialog
+          vehicle={selectedVehicle}
+          isOpen={!!selectedVehicle}
+          onOpenChange={(open) => !open && setSelectedVehicle(null)}
+        />
 
-      {/* Dialog para ver detalles del vehículo */}
-      <VehicleDetailsDialog
-        vehicle={selectedVehicle}
-        isOpen={!!selectedVehicle}
-        onOpenChange={(open) => !open && setSelectedVehicle(null)}
-      />
-
-      {/* Dialog para rechazar con razón */}
-      <RejectDialog
-        isOpen={dialogState.type === "reject"}
-        onOpenChange={handleCloseDialog}
-        onConfirm={(reason) =>
-          dialogState.vehicle &&
-          handleRejectWithReason(dialogState.vehicle._id!, reason)
-        }
-      />
-
-      {/* Dialog para agregar comentarios */}
-      <CommentDialog
-        isOpen={dialogState.type === "comment"}
-        onOpenChange={handleCloseDialog}
-        comments={vehicleComments}
-        isLoading={isLoadingComments}
-        onAddComment={(comment) => {
-          if (dialogState.vehicle) {
-            handleAddComment(dialogState.vehicle._id!, comment);
+        {/* Dialog para rechazar con razón */}
+        <RejectDialog
+          isOpen={dialogState.type === "reject"}
+          onOpenChange={handleCloseDialog}
+          onConfirm={(reason) =>
+            dialogState.vehicle &&
+            handleRejectWithReason(dialogState.vehicle._id!, reason)
           }
-        }}
-      />
+        />
 
-      {/* Dialog para ver historial */}
-      <HistoryDialog
-        isOpen={dialogState.type === "history"}
-        onOpenChange={handleCloseDialog}
-        history={vehicleHistory}
-        isLoading={isLoadingHistory}
-      />
+        {/* Dialog para agregar comentarios */}
+        <CommentDialog
+          isOpen={dialogState.type === "comment"}
+          onOpenChange={handleCloseDialog}
+          comments={vehicleComments}
+          isLoading={isLoadingComments}
+          onAddComment={(comment) => {
+            if (dialogState.vehicle) {
+              handleAddComment(dialogState.vehicle._id!, comment);
+            }
+          }}
+        />
 
-      {/* Dialog para confirmar eliminación */}
-      <DeleteDialog
-        isOpen={dialogState.type === "delete"}
-        onOpenChange={handleCloseDialog}
-        onConfirm={() =>
-          dialogState.vehicle && handleDeleteVehicle(dialogState.vehicle._id!)
-        }
-      />
+        {/* Dialog para ver historial */}
+        <HistoryDialog
+          isOpen={dialogState.type === "history"}
+          onOpenChange={handleCloseDialog}
+          history={vehicleHistory}
+          isLoading={isLoadingHistory}
+        />
 
-      {/* Diálogos de acciones masivas */}
-      <MassApproveDialog
-        isOpen={showMassApproveDialog}
-        onOpenChange={setShowMassApproveDialog}
-        onConfirm={handleMassApprove}
-        count={selectedVehicles.size}
-      />
-      <MassRejectDialog
-        isOpen={showMassRejectDialog}
-        onOpenChange={setShowMassRejectDialog}
-        onConfirm={handleMassReject}
-        count={selectedVehicles.size}
-      />
-      <MassDeleteDialog
-        isOpen={showMassDeleteDialog}
-        onOpenChange={setShowMassDeleteDialog}
-        onConfirm={handleMassDelete}
-        count={selectedVehicles.size}
-      />
+        {/* Dialog para confirmar eliminación */}
+        <DeleteDialog
+          isOpen={dialogState.type === "delete"}
+          onOpenChange={handleCloseDialog}
+          onConfirm={() =>
+            dialogState.vehicle && handleDeleteVehicle(dialogState.vehicle._id!)
+          }
+        />
+
+        {/* Diálogos de acciones masivas */}
+        <MassApproveDialog
+          isOpen={showMassApproveDialog}
+          onOpenChange={setShowMassApproveDialog}
+          onConfirm={handleMassApprove}
+          count={selectedVehicles.size}
+        />
+        <MassRejectDialog
+          isOpen={showMassRejectDialog}
+          onOpenChange={setShowMassRejectDialog}
+          onConfirm={handleMassReject}
+          count={selectedVehicles.size}
+        />
+        <MassDeleteDialog
+          isOpen={showMassDeleteDialog}
+          onOpenChange={setShowMassDeleteDialog}
+          onConfirm={handleMassDelete}
+          count={selectedVehicles.size}
+        />
+      </div>
     </div>
   );
 };

@@ -1,4 +1,6 @@
 // src/components/features/admin/HistoryDialog.tsx
+// VERSIÓN CON DISEÑO UNIFICADO
+
 "use client";
 
 import {
@@ -10,7 +12,21 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { History, RefreshCw, Plus, MessageSquare, FileText, Calendar, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { 
+  History, 
+  RefreshCw, 
+  Plus, 
+  MessageSquare, 
+  FileText, 
+  Calendar, 
+  User,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle
+} from "lucide-react";
 import type { VehicleHistoryEntry } from "@/types/types";
 
 interface HistoryDialogProps {
@@ -21,70 +37,108 @@ interface HistoryDialogProps {
 }
 
 export const HistoryDialog = ({ isOpen, onOpenChange, history, isLoading }: HistoryDialogProps) => {
+  const getActionIcon = (action: string) => {
+    if (action.includes("aprobado")) return <CheckCircle className="w-4 h-4" />;
+    if (action.includes("rechazado")) return <XCircle className="w-4 h-4" />;
+    if (action.includes("Comentario")) return <MessageSquare className="w-4 h-4" />;
+    if (action.includes("creado")) return <Plus className="w-4 h-4" />;
+    return <FileText className="w-4 h-4" />;
+  };
+
+  const getActionColor = (action: string) => {
+    if (action.includes("aprobado")) return "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400";
+    if (action.includes("rechazado")) return "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400";
+    if (action.includes("Comentario")) return "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400";
+    if (action.includes("creado")) return "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400";
+    return "bg-muted text-muted-foreground";
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="mx-4 max-w-md sm:max-w-3xl bg-card border">
+      <DialogContent className="max-w-3xl mx-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-card-foreground">
-            <History className="w-5 h-5 text-primary" />
-            Historial del vehículo
-          </DialogTitle>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <History className="w-5 h-5 text-primary" />
+            </div>
+            <DialogTitle className="text-xl font-heading">
+              Historial del Vehículo
+            </DialogTitle>
+          </div>
         </DialogHeader>
 
-        <div className="max-h-96 overflow-y-auto">
-          <ScrollArea className="h-full pr-4">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <RefreshCw className="w-6 h-6 animate-spin text-primary" />
-              </div>
-            ) : history.length > 0 ? (
-              <div className="space-y-6">
-                {history.map((entry, index) => (
-                  <div key={index} className="relative">
-                    {index < history.length - 1 && (
-                      <div className="absolute left-4 top-10 w-0.5 h-full bg-border"></div>
-                    )}
-                    <div className="flex gap-4">
-                      <div className="flex-shrink-0">
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center ${entry.action.includes("Estado") ? "bg-blue-100 dark:bg-blue-900/50" : entry.action.includes("creado") ? "bg-green-100 dark:bg-green-900/50" : entry.action.includes("Comentario") ? "bg-purple-100 dark:bg-purple-900/50" : "bg-muted"}`}>
-                          {entry.action.includes("Estado") ? (
-                            <RefreshCw className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                          ) : entry.action.includes("creado") ? (
-                            <Plus className="w-4 h-4 text-green-600 dark:text-green-400" />
-                          ) : entry.action.includes("Comentario") ? (
-                            <MessageSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                          ) : (
-                            <FileText className="w-4 h-4 text-muted-foreground" />
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0 pb-6">
-                        <div className="flex items-start justify-between mb-1 gap-2">
-                          <h4 className="font-semibold text-sm text-card-foreground">{entry.action}</h4>
-                          <div className="flex items-center gap-1.5 text-xs flex-shrink-0 text-muted-foreground">
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span className="whitespace-nowrap">{new Date(entry.timestamp).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
-                          </div>
-                        </div>
-                        <p className="text-sm mb-2 text-muted-foreground">{entry.details}</p>
-                        
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <User className="w-3.5 h-3.5" />
-                          <span>por {entry.author}</span>
-                        </div>
-                      </div>
+        <div className="space-y-6">
+          <Card className="shadow-sm border-border">
+            <CardContent className="p-0">
+              <ScrollArea className="h-96">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center space-y-4">
+                      <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto" />
+                      <p className="text-sm text-muted-foreground">Cargando historial...</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <History className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No hay historial disponible</p>
-              </div>
-            )}
-          </ScrollArea>
+                ) : history.length > 0 ? (
+                  <div className="p-6">
+                    <div className="space-y-6">
+                      {history.map((entry, index) => (
+                        <div key={index} className="relative">
+                          {index < history.length - 1 && (
+                            <div className="absolute left-5 top-12 w-0.5 h-full bg-border"></div>
+                          )}
+                          <div className="flex gap-4">
+                            <div className="flex-shrink-0">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getActionColor(entry.action)}`}>
+                                {getActionIcon(entry.action)}
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0 pb-6">
+                              <div className="flex items-start justify-between mb-2 gap-2">
+                                <h4 className="font-semibold text-sm text-foreground">{entry.action}</h4>
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  <span className="whitespace-nowrap">
+                                    {new Date(entry.timestamp).toLocaleString("es-ES", { 
+                                      day: "numeric", 
+                                      month: "short", 
+                                      hour: "2-digit", 
+                                      minute: "2-digit" 
+                                    })}
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-sm mb-3 text-muted-foreground">{entry.details}</p>
+                              
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
+                                  <User className="w-3 h-3 mr-1" />
+                                  {entry.author}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="p-3 rounded-full bg-muted/50 mb-4">
+                      <History className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
+                      No hay historial disponible
+                    </h3>
+                    <p className="text-sm text-muted-foreground max-w-md">
+                      Este vehículo aún no tiene registros de cambios en su estado.
+                    </p>
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cerrar

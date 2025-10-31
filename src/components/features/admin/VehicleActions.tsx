@@ -1,4 +1,6 @@
 // src/components/features/admin/VehicleActions.tsx
+// VERSIÓN CON DISEÑO UNIFICADO
+
 "use client";
 
 import { useState } from "react";
@@ -8,6 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
   MoreHorizontal,
   CheckCircle,
@@ -16,6 +19,9 @@ import {
   Trash2,
   History,
   Eye,
+  Archive,
+  Power,
+  PowerOff,
 } from "lucide-react";
 import { VehicleDataFrontend, ApprovalStatus } from "@/types/types";
 
@@ -45,6 +51,55 @@ export const VehicleActions = ({
     setIsOpen(false);
   };
 
+  const getActionButton = (status: ApprovalStatus) => {
+    switch (status) {
+      case ApprovalStatus.APPROVED:
+        return (
+          <button
+            onClick={() =>
+              handleAction(() =>
+                onStatusChange(vehicle._id!, ApprovalStatus.PENDING)
+              )
+            }
+            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left hover:bg-accent"
+          >
+            <PowerOff className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="font-medium">Desactivar</span>
+          </button>
+        );
+      case ApprovalStatus.PENDING:
+        return (
+          <button
+            onClick={() =>
+              handleAction(() =>
+                onStatusChange(vehicle._id!, ApprovalStatus.APPROVED)
+              )
+            }
+            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left hover:bg-accent"
+          >
+            <Power className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <span className="font-medium">Activar</span>
+          </button>
+        );
+      case ApprovalStatus.REJECTED:
+        return (
+          <button
+            onClick={() =>
+              handleAction(() =>
+                onStatusChange(vehicle._id!, ApprovalStatus.APPROVED)
+              )
+            }
+            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left hover:bg-accent"
+          >
+            <Power className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <span className="font-medium">Activar</span>
+          </button>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -72,38 +127,24 @@ export const VehicleActions = ({
             <span className="font-medium">Ver detalles</span>
           </button>
 
-          <div className="border-t" />
+          <Separator />
 
-          {/* Sección de aprobación */}
+          {/* Sección de estado */}
           <div className="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Acciones
+            Estado
           </div>
 
-          <button
-            onClick={() =>
-              handleAction(() =>
-                onStatusChange(vehicle._id!, ApprovalStatus.APPROVED)
-              )
-            }
-            disabled={vehicle.status === ApprovalStatus.APPROVED}
-            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
-          >
-            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-            <span className="font-medium flex-1">Aprobar</span>
-            {vehicle.status === ApprovalStatus.APPROVED && (
-              <span className="text-xs text-green-500">✓</span>
-            )}
-          </button>
+          {getActionButton(vehicle.status)}
 
           <button
             onClick={() => handleAction(() => onShowRejectDialog(vehicle))}
             className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left hover:bg-accent"
           >
-            <XCircle className="h-4 w-4 text-destructive flex-shrink-0" />
-            <span className="font-medium">Rechazar</span>
+            <Archive className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+            <span className="font-medium">Archivar</span>
           </button>
 
-          <div className="border-t" />
+          <Separator />
 
           {/* Sección de información */}
           <div className="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -130,7 +171,7 @@ export const VehicleActions = ({
             <span className="font-medium">Historial</span>
           </button>
 
-          <div className="border-t" />
+          <Separator />
 
           {/* Eliminar */}
           <button
@@ -144,4 +185,4 @@ export const VehicleActions = ({
       </PopoverContent>
     </Popover>
   );
-};
+}
