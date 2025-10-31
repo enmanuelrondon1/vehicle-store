@@ -1,4 +1,6 @@
 // src/components/features/vehicles/registration/Step5_FeaturesAndMedia.tsx
+// VERSIÓN CON DISEÑO UNIFICADO
+
 "use client";
 import React, { useMemo, useState, useEffect } from "react";
 import {
@@ -15,11 +17,15 @@ import {
   Wrench,
   Truck,
   Star,
+  CheckCircle2,
+  Eye,
+  Info,
 } from "lucide-react";
 import { getAvailableFeatures } from "@/constants/form-constants";
 import { ImageUploader } from "@/components/shared/forms/ImageUploader";
 import { SelectableChip } from "@/components/shared/forms/SelectableChip";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -36,6 +42,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Documentation, VehicleCategory, VehicleDataBackend } from "@/types/types";
 import { InputField } from "@/components/shared/forms/InputField";
+import { useFieldValidation } from "@/hooks/useFieldValidation";
 
 // ... (iconMap y getDynamicIcon sin cambios)
 const iconMap = {
@@ -48,8 +55,6 @@ const iconMap = {
   Wrench,
   Truck,
 } as const;
-
-const inputClass = "w-full rounded-xl border-2 border-input bg-background text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 pl-4 pr-10 py-4 text-base";
 
 const getDynamicIcon = (iconName: keyof typeof iconMap = "Car") => {
   const IconComponent = iconMap[iconName] || iconMap.Car;
@@ -90,11 +95,22 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
   isDocumentationSelected,
   handleImagesChange,
 }) => {
-  // ESTILO ACTUALIZADO: Clase base para inputs, consistente con los pasos anteriores.
-  const inputClass = "w-full rounded-xl border-2 border-input bg-background text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 pl-4 pr-10 py-4 text-base";
+  // ========== Clase Mejorada de Inputs ==========
+  const inputClass =
+    "w-full px-4 py-3.5 rounded-xl border-2 border-border bg-background text-foreground " +
+    "placeholder:text-muted-foreground/60 " +
+    "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 " +
+    "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/30 " +
+    "transition-all duration-200 ease-out hover:border-border/80";
 
-  // ... (lógica de progreso y useMemo sin cambios)
-  const progress = useMemo(() => {
+  // ========== Hooks de Validación ==========
+  const descriptionValidation = useFieldValidation(formData.description, errors.description);
+  const featuresValidation = useFieldValidation(formData.features, errors.features);
+  const documentationValidation = useFieldValidation(formData.documentation, errors.documentation);
+  const imagesValidation = useFieldValidation(formData.images, errors.images);
+
+  // ========== Cálculo de Progreso ==========
+  const { progressPercentage, isComplete } = useMemo(() => {
     const fields = [
       (formData.description?.length || 0) > 50,
       (formData.images?.length || 0) > 0,
@@ -110,8 +126,9 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
 
     const completedCount = fields.filter(Boolean).length;
     const totalFields = fields.length;
+    const progress = totalFields > 0 ? (completedCount / totalFields) * 100 : 0;
 
-    return totalFields > 0 ? (completedCount / totalFields) * 100 : 0;
+    return { progressPercentage: progress, isComplete: progress === 100 };
   }, [
     formData.description,
     formData.images,
@@ -130,86 +147,139 @@ const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
 
   if (!formData.category) {
     return (
-      <div className="p-6 rounded-xl border-2 border-dashed border-border bg-card text-center">
-        <AlertCircle className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-        <p className="text-center text-muted-foreground">
-          Por favor, regresa al paso 1 y selecciona una categoría para
-          continuar.
-        </p>
+      <div className="max-w-2xl mx-auto">
+        <div className="p-8 rounded-xl border-2 border-dashed border-border bg-card text-center">
+          <div className="p-3 rounded-full bg-muted/50 w-fit mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            Categoría no seleccionada
+          </h3>
+          <p className="text-muted-foreground">
+            Por favor, regresa al paso 1 y selecciona una categoría para continuar.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    // ESTILO ACTUALIZADO: Añadida animación de entrada y espaciado consistente.
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in-0 duration-500">
-      {/* --- SECCIÓN DE TÍTULO CENTRADA --- */}
-      <div className="text-center">
-        <div className="inline-flex items-center justify-center p-3 rounded-xl shadow-lg mb-3 bg-gradient-to-br from-primary to-accent">
-          <FileBadge className="w-6 h-6 text-primary-foreground" />
+    // ========== ESTRUCTURA PRINCIPAL CONSISTENTE ==========
+    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in-0 duration-500">
+      {/* ========== ENCABEZADO MEJORADO ========== */}
+      <div className="text-center space-y-4">
+        <div className="flex items-center justify-center gap-3">
+          <div className="p-3.5 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10">
+            <FileBadge className="w-7 h-7 text-primary-foreground" />
+          </div>
+          <div className="text-left">
+            <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">
+              Características y Multimedia
+            </h2>
+            <p className="text-base text-muted-foreground mt-0.5">
+              Completa los detalles que enamorarán a los compradores
+            </p>
+          </div>
         </div>
-        {/* ESTILO ACTUALIZADO: Título con fuente de encabezado. */}
-        <h2 className="text-2xl font-heading font-bold text-foreground">
-          Características y Multimedia
-        </h2>
-        <p className="text-muted-foreground text-sm">
-          Completa los detalles que enamorarán a los compradores.
-        </p>
 
-        {/* --- BARRA DE PROGRESO --- */}
-        <div className="mt-6">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-sm font-medium text-foreground">
-              Progreso de la sección
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {Math.round(progress)}%
+        {/* ========== BARRA DE PROGRESO MEJORADA ========== */}
+        <div className="w-full max-w-md mx-auto pt-2">
+          <div className="flex justify-between items-center mb-2.5">
+            <span className="text-sm font-medium text-muted-foreground">Progreso</span>
+            <span className="text-sm font-bold text-foreground tabular-nums">
+              {Math.round(progressPercentage)}%
             </span>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progressPercentage} className="h-2.5 bg-muted" />
         </div>
       </div>
 
-      {/* --- CONTENIDO PRINCIPAL --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          {hasFeatures && (
-            <FeaturesSection
-              category={formData.category}
-              availableFeatures={availableFeatures}
-              selectedFeatures={formData.features || []}
-              onFeatureToggle={handleFeatureToggle}
-              error={errors.features}
-            />
-          )}
-
-          <DocumentationSection
-            isDocumentationSelected={isDocumentationSelected}
-            onDocumentationToggle={handleDocumentationToggle}
-            error={errors.documentation}
+      {/* ========== FORMULARIO ========== */}
+      <div className="space-y-7">
+        {hasFeatures && (
+          <FeaturesSection
+            category={formData.category}
+            availableFeatures={availableFeatures}
+            selectedFeatures={formData.features || []}
+            onFeatureToggle={handleFeatureToggle}
+            error={errors.features}
+            validation={featuresValidation}
+            inputClass={inputClass}
           />
+        )}
 
-          <DescriptionSection
-            description={formData.description || ""}
-            onDescriptionChange={(value) =>
-              handleInputChange("description", value)
-            }
-            error={errors.description}
-          />
+        <DocumentationSection
+          isDocumentationSelected={isDocumentationSelected}
+          onDocumentationToggle={handleDocumentationToggle}
+          error={errors.documentation}
+          validation={documentationValidation}
+          inputClass={inputClass}
+        />
 
-          <MediaSection
-            initialUrls={formData.images || []}
-            onUploadChange={handleImagesChange}
-            error={errors.images}
-          />
-        </div>
+        <DescriptionSection
+          description={formData.description || ""}
+          onDescriptionChange={(value) => handleInputChange("description", value)}
+          error={errors.description}
+          validation={descriptionValidation}
+          inputClass={inputClass}
+        />
 
-        <div className="space-y-6">
-          <PublicationOptionsSection
-            isFeatured={formData.isFeatured || false}
-            onFeaturedToggle={(value) => handleSwitchChange("isFeatured", value)}
-          />
-          <CategoryTips category={formData.category} />
+        <MediaSection
+          initialUrls={formData.images || []}
+          onUploadChange={handleImagesChange}
+          error={errors.images}
+          validation={imagesValidation}
+          inputClass={inputClass}
+        />
+
+        <PublicationOptionsSection
+          isFeatured={formData.isFeatured || false}
+          onFeaturedToggle={(value) => handleSwitchChange("isFeatured", value)}
+        />
+
+        <CategoryTips category={formData.category} />
+
+        {/* ========== RESUMEN DE COMPLETITUD MEJORADO ========== */}
+        <div
+          className={`p-5 rounded-xl border-2 shadow-sm transition-all duration-300 ${
+            isComplete
+              ? "border-green-500/40 bg-green-50/50 dark:bg-green-950/20"
+              : "border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/20"
+          }`}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div
+                className={`p-2 rounded-lg ${
+                  isComplete ? "bg-green-500/20" : "bg-amber-500/20"
+                }`}
+              >
+                {isComplete ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                )}
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-base">
+                  {isComplete
+                    ? "¡Información multimedia completa!"
+                    : "Faltan algunos campos obligatorios"}
+                </p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {isComplete
+                    ? "Puedes continuar al siguiente paso"
+                    : `${Math.round(progressPercentage)}% completado`}
+                </p>
+              </div>
+            </div>
+            <Badge
+              variant={isComplete ? "default" : "secondary"}
+              className="text-sm font-bold px-3 py-1"
+            >
+              {Math.round(progressPercentage)}%
+            </Badge>
+          </div>
         </div>
       </div>
     </div>
@@ -224,60 +294,58 @@ const FeaturesSection: React.FC<{
   selectedFeatures: string[];
   onFeatureToggle: (feature: string) => void;
   error?: string;
-}> = ({ category, availableFeatures, selectedFeatures, onFeatureToggle, error }) => {
+  validation: any;
+  inputClass: string;
+}> = ({ category, availableFeatures, selectedFeatures, onFeatureToggle, error, validation, inputClass }) => {
   const firstCategoryData = Object.values(availableFeatures)[0];
 
   return (
-    // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
-    <Card className="shadow-sm">
-      <CardHeader>
-        <InputField
-          label={`Características del ${getCategoryName(category)}`}
-          icon={
-            firstCategoryData
-              ? getDynamicIcon(firstCategoryData.iconName as keyof typeof iconMap)
-              : getDynamicIcon("Car")
-          }
-          tooltip="Selecciona todo lo que aplique. Más detalles generan más interés."
-          error={error}
-        >
-          <></>
-        </InputField>
-      </CardHeader>
-      <CardContent>
-        <Accordion type="multiple" defaultValue={Object.keys(availableFeatures)}>
-          {Object.entries(availableFeatures).map(
-            ([categoryName, categoryData]) => (
-              <AccordionItem value={categoryName} key={categoryName}>
-                <AccordionTrigger>
-                  <h4 className="text-md font-semibold flex items-center text-foreground">
-                    {/* ESTILO ACTUALIZADO: Icono con color primario para consistencia. */}
-                    <span className="mr-2 text-primary">
-                      {getDynamicIcon(
-                        categoryData.iconName as keyof typeof iconMap
-                      )}
-                    </span>
-                    {categoryName}
-                  </h4>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="flex flex-wrap gap-3 pt-4">
-                    {categoryData.features.map((feature) => (
-                      <SelectableChip
-                        key={feature}
-                        label={feature}
-                        isSelected={selectedFeatures.includes(feature)}
-                        onToggle={() => onFeatureToggle(feature)}
-                      />
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            )
-          )}
-        </Accordion>
-      </CardContent>
-    </Card>
+    <InputField
+      label={`Características del ${getCategoryName(category)}`}
+      icon={
+        firstCategoryData
+          ? getDynamicIcon(firstCategoryData.iconName as keyof typeof iconMap)
+          : getDynamicIcon("Car")
+      }
+      tooltip="Selecciona todo lo que aplique. Más detalles generan más interés."
+      error={error}
+      success={validation.isValid}
+    >
+      <Card className="shadow-sm border-border">
+        <CardContent className="p-0">
+          <Accordion type="multiple" defaultValue={Object.keys(availableFeatures)}>
+            {Object.entries(availableFeatures).map(
+              ([categoryName, categoryData]) => (
+                <AccordionItem value={categoryName} key={categoryName} className="border-border">
+                  <AccordionTrigger className="px-5 py-4 hover:no-underline">
+                    <h4 className="text-md font-semibold flex items-center text-foreground">
+                      <span className="mr-2 text-primary">
+                        {getDynamicIcon(
+                          categoryData.iconName as keyof typeof iconMap
+                        )}
+                      </span>
+                      {categoryName}
+                    </h4>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="flex flex-wrap gap-3 pt-4 pb-5 px-5">
+                      {categoryData.features.map((feature) => (
+                        <SelectableChip
+                          key={feature}
+                          label={feature}
+                          isSelected={selectedFeatures.includes(feature)}
+                          onToggle={() => onFeatureToggle(feature)}
+                        />
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              )
+            )}
+          </Accordion>
+        </CardContent>
+      </Card>
+    </InputField>
   );
 };
 
@@ -285,73 +353,69 @@ const DocumentationSection: React.FC<{
   isDocumentationSelected: (doc: Documentation) => boolean;
   onDocumentationToggle: (doc: Documentation) => void;
   error?: string;
-}> = ({ isDocumentationSelected, onDocumentationToggle, error }) => (
-  // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
-  <Card className="shadow-sm">
-    <CardHeader>
-      <InputField
-        label="Documentación del Vehículo"
-        icon={<FileBadge className="w-4 h-4 text-primary" />}
-        tooltip="Tener la documentación en regla es crucial para una venta rápida y segura."
-        error={error}
-      >
-        <></>
-      </InputField>
-    </CardHeader>
-    <CardContent>
-      <div className="flex flex-wrap gap-3">
-        {DOCUMENTATION_OPTIONS.map(({ label, value }) => (
-          <SelectableChip
-            key={value}
-            label={label}
-            isSelected={isDocumentationSelected(value)}
-            onToggle={() => onDocumentationToggle(value)}
-          />
-        ))}
-      </div>
-    </CardContent>
-  </Card>
+  validation: any;
+  inputClass: string;
+}> = ({ isDocumentationSelected, onDocumentationToggle, error, validation }) => (
+  <InputField
+    label="Documentación del Vehículo"
+    icon={<FileBadge className="w-4 h-4 text-primary" />}
+    tooltip="Tener la documentación en regla es crucial para una venta rápida y segura."
+    error={error}
+    success={validation.isValid}
+  >
+    <Card className="shadow-sm border-border">
+      <CardContent className="p-5">
+        <div className="flex flex-wrap gap-3">
+          {DOCUMENTATION_OPTIONS.map(({ label, value }) => (
+            <SelectableChip
+              key={value}
+              label={label}
+              isSelected={isDocumentationSelected(value)}
+              onToggle={() => onDocumentationToggle(value)}
+            />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  </InputField>
 );
 
 const PublicationOptionsSection: React.FC<{
   isFeatured: boolean;
   onFeaturedToggle: (value: boolean) => void;
 }> = ({ isFeatured, onFeaturedToggle }) => (
-  // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
-  <Card className="shadow-sm">
-    <CardHeader>
-      <InputField
-        label="Opciones de Publicación"
-        icon={<Star className="w-4 h-4 text-primary" />}
-        tooltip="Destaca tu vehículo para que aparezca en la sección principal y atraiga más miradas."
-      >
-        <></>
-      </InputField>
-    </CardHeader>
-    <CardContent>
-      {/* ESTILO ACTUALIZADO: Contenedor interactivo con colores de tema. */}
-      <div className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
-        <Label htmlFor="featured-switch" className="flex flex-col space-y-1 cursor-pointer">
-          <span className="font-semibold text-foreground">Destacar Vehículo</span>
-          <span className="text-sm text-muted-foreground">
-            Aparecerá en la página de inicio y tendrá prioridad en las búsquedas.
-          </span>
-        </Label>
-        <Switch
-          id="featured-switch"
-          checked={isFeatured}
-          onCheckedChange={onFeaturedToggle}
-        />
-      </div>
-    </CardContent>
-  </Card>
+  <InputField
+    label="Opciones de Publicación"
+    icon={<Star className="w-4 h-4 text-primary" />}
+    tooltip="Destaca tu vehículo para que aparezca en la sección principal y atraiga más miradas."
+  >
+    <Card className="shadow-sm border-border">
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
+          <Label htmlFor="featured-switch" className="flex flex-col space-y-1 cursor-pointer">
+            <span className="font-semibold text-foreground">Destacar Vehículo</span>
+            <span className="text-sm text-muted-foreground">
+              Aparecerá en la página de inicio y tendrá prioridad en las búsquedas.
+            </span>
+          </Label>
+          <Switch
+            id="featured-switch"
+            checked={isFeatured}
+            onCheckedChange={onFeaturedToggle}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  </InputField>
 );
 
 const DescriptionSection: React.FC<{
   description: string;
   onDescriptionChange: (value: string) => void;
   error?: string;
-}> = ({ description, onDescriptionChange, error }) => {
+  validation: any;
+  inputClass: string;
+}> = ({ description, onDescriptionChange, error, validation, inputClass }) => {
   const [localDescription, setLocalDescription] = useState(description);
 
   useEffect(() => {
@@ -371,34 +435,29 @@ const DescriptionSection: React.FC<{
   }, [localDescription, onDescriptionChange, description]);
 
   return (
-    // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
-    <Card className="shadow-sm">
-      <CardHeader>
-        <InputField
-          label="Descripción del Vehículo"
-          required
-          error={error}
-          icon={<FileText className="w-4 h-4 text-primary" />}
-          tooltip="Sé detallado: menciona mantenimientos, extras, historial, o cualquier detalle único."
-          counter={{ current: localDescription.length, max: 2000 }}
-          tips={[
-            "✅ Describe el estado real, incluyendo detalles positivos y negativos.",
-            "🔧 Menciona mantenimientos recientes o piezas nuevas.",
-            "⭐ Destaca características únicas que lo diferencien de otros.",
-          ]}
-        >
-          {/* ESTILO ACTUALIZADO: Textarea usando la clase base para inputs. */}
-          <textarea
-            value={localDescription}
-            onChange={(e) => setLocalDescription(e.target.value)}
-            rows={6}
-            className={`${inputClass} resize-y`}
-            placeholder="Ej: Vehículo en excelentes condiciones, único dueño, cauchos nuevos, servicio de aceite y filtros recién hecho..."
-            maxLength={2000}
-          />
-        </InputField>
-      </CardHeader>
-    </Card>
+    <InputField
+      label="Descripción del Vehículo"
+      required
+      error={error}
+      success={validation.isValid}
+      icon={<FileText className="w-4 h-4 text-primary" />}
+      tooltip="Sé detallado: menciona mantenimientos, extras, historial, o cualquier detalle único."
+      counter={{ current: localDescription.length, max: 2000 }}
+      tips={[
+        "✅ Describe el estado real, incluyendo detalles positivos y negativos.",
+        "🔧 Menciona mantenimientos recientes o piezas nuevas.",
+        "⭐ Destaca características únicas que lo diferencien de otros.",
+      ]}
+    >
+      <textarea
+        value={localDescription}
+        onChange={(e) => setLocalDescription(e.target.value)}
+        rows={6}
+        className={`${inputClass} ${validation.getBorderClassName()} resize-y`}
+        placeholder="Ej: Vehículo en excelentes condiciones, único dueño, cauchos nuevos, servicio de aceite y filtros recién hecho..."
+        maxLength={2000}
+      />
+    </InputField>
   );
 };
 
@@ -406,25 +465,23 @@ const MediaSection: React.FC<{
   initialUrls: string[];
   onUploadChange: (urls: string[]) => void;
   error?: string;
-}> = ({ initialUrls, onUploadChange, error }) => (
-  // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
-  <Card className="shadow-sm">
-    <CardHeader>
-      <InputField
-        label="Fotos del Vehículo"
-        required
-        icon={<ImageIcon className="w-4 h-4 text-primary" />}
-        tooltip="Sube al menos una foto de buena calidad: exterior, interior, motor y detalles."
-        error={error}
-      >
-        <ImageUploader
-          onUploadChange={onUploadChange}
-          initialUrls={initialUrls}
-          maxSizeMB={5}
-        />
-      </InputField>
-    </CardHeader>
-  </Card>
+  validation: any;
+  inputClass: string;
+}> = ({ initialUrls, onUploadChange, error, validation }) => (
+  <InputField
+    label="Fotos del Vehículo"
+    required
+    icon={<ImageIcon className="w-4 h-4 text-primary" />}
+    tooltip="Sube al menos una foto de buena calidad: exterior, interior, motor y detalles."
+    error={error}
+    success={validation.isValid}
+  >
+    <ImageUploader
+      onUploadChange={onUploadChange}
+      initialUrls={initialUrls}
+      maxSizeMB={5}
+    />
+  </InputField>
 );
 
 // --- Helpers (sin cambios) ---
@@ -494,28 +551,44 @@ const CategoryTips: React.FC<{ category: VehicleCategory | undefined }> = ({
   if (!category) return null;
 
   return (
-    // ESTILO ACTUALIZADO: Tarjeta con sombra sutil.
-    <Card className="shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-lg">
-          💡 Tips para Destacar tu {categoryName}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <TipItem icon="📸" title="Fotos variadas" content={tips.photos} />
-        <TipItem
-          icon="📝"
-          title="Descripción honesta"
-          content="Menciona tanto lo bueno como lo que necesita atención."
-        />
-        <TipItem icon="⭐" title="Características únicas" content={tips.unique} />
-        <TipItem
-          icon="📋"
-          title="Documentos listos"
-          content="Tener los papeles en orden acelera la venta."
-        />
-      </CardContent>
-    </Card>
+    <div className="p-5 rounded-xl border-2 border-primary/20 bg-primary/5">
+      <div className="flex items-start gap-3">
+        <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
+          <Info className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <h3 className="font-semibold text-base text-foreground mb-3">
+            💡 Tips para Destacar tu {categoryName}
+          </h3>
+          <ul className="text-sm space-y-2 text-muted-foreground">
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-0.5 font-bold">•</span>
+              <span>
+                <strong>Fotos variadas:</strong> {tips.photos}
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-0.5 font-bold">•</span>
+              <span>
+                <strong>Descripción honesta:</strong> Menciona tanto lo bueno como lo que necesita atención.
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-0.5 font-bold">•</span>
+              <span>
+                <strong>Características únicas:</strong> {tips.unique}
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary mt-0.5 font-bold">•</span>
+              <span>
+                <strong>Documentos listos:</strong> Tener los papeles en orden acelera la venta.
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,4 +1,5 @@
-// src/components/features/vehicles/registration/Step2_PriceAndCondition.tsx
+//src/components/features/vehicles/registration/Step2_PriceAndCondition.tsx
+// Step2_PriceAndCondition.tsx - VERSIÓN PROFESIONAL MEJORADA
 "use client";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
@@ -9,6 +10,9 @@ import {
   Loader2,
   Info,
   Eye,
+  TrendingUp,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -29,10 +33,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
 interface FormErrors {
   [key: string]: string | undefined;
 }
+
 type FormFieldValue =
   | string
   | number
@@ -48,49 +54,53 @@ interface StepProps {
   handleSwitchChange: (field: keyof VehicleDataBackend, checked: boolean) => void;
 }
 
- const VALIDATION_CONFIG = {
+// ============================================
+// CONFIGURACIÓN DE VALIDACIÓN
+// ============================================
+const VALIDATION_CONFIG = {
   price: {
     min: 100,
     max: 1000000,
     tips: [
-      "💡 Investiga precios similares en el mercado",
-      "🎯 Un precio justo atrae más compradores",
-      "📈 Considera la depreciación por año y kilometraje",
+      "Investiga precios similares en el mercado",
+      "Un precio justo atrae más compradores",
+      "Considera la depreciación por año y kilometraje",
     ],
   },
   mileage: {
     min: 0,
     max: 999999,
     tips: [
-      "🚗 Kilometraje bajo aumenta el valor",
-      "📊 El promedio anual es 15,000-20,000 km",
-      "✅ Sé honesto con el kilometraje real",
+      "Kilometraje bajo aumenta el valor del vehículo",
+      "El promedio anual es 15,000-20,000 km",
+      "Sé honesto con el kilometraje real",
     ],
   },
   offersFinancing: {
     tips: [
-      "💡 Al activar esta opción, se mostrará una calculadora de financiamiento en la página de tu vehículo.",
-      "📈 Ayuda a los compradores a entender las opciones de pago y puede aumentar el interés.",
+      "Al activar esta opción, se mostrará una calculadora de financiamiento en tu anuncio",
+      "Ayuda a los compradores a entender las opciones de pago y puede aumentar el interés",
     ],
   },
   condition: {
     tips: [
-      "✅ Sé honesto y preciso al describir la condición.",
-      "📸 Usa las fotos para mostrar detalles del estado del vehículo.",
-      "📝 Menciona cualquier reparación reciente o imperfección en la descripción.",
+      "Sé honesto y preciso al describir la condición",
+      "Usa las fotos para mostrar detalles del estado del vehículo",
+      "Menciona cualquier reparación reciente o imperfección en la descripción",
     ],
   },
   warranty: {
     tips: [
-      "📄 Ofrecer una garantía, aunque sea de concesionario, genera más confianza.",
-      "✅ Ten a mano la documentación que respalde la garantía.",
-      "⚖️ Sé transparente sobre la cobertura y las exclusiones de la garantía.",
+      "Ofrecer una garantía, aunque sea de concesionario, genera más confianza",
+      "Ten a mano la documentación que respalde la garantía",
+      "Sé transparente sobre la cobertura y las exclusiones de la garantía",
     ],
   },
 };
 
-
-// Componente de Vista Previa (Estilizado)
+// ============================================
+// COMPONENTE: Vista Previa
+// ============================================
 const PreviewCard: React.FC<{
   formData: Partial<VehicleDataBackend>;
   exchangeRate: number | null;
@@ -108,54 +118,64 @@ const PreviewCard: React.FC<{
   }, [formData.price, exchangeRate, formData.currency]);
 
   return (
-    <div className="mt-6 p-4 rounded-xl border-2 border-dashed transition-all duration-300 border-border bg-card/50">
-      <h3 className="flex items-center text-sm font-semibold mb-3 text-foreground/90">
-        <Eye className="w-4 h-4 mr-2" />
-        Vista Previa del Anuncio
-      </h3>
-
-      <div className="space-y-2 text-sm text-muted-foreground">
-        <div className="flex justify-between">
-          <span>Precio:</span>
-          {/* ESTILO ACTUALIZADO: Precio con color primario. */}
-          <span className="font-semibold text-primary">
-            {formData.price
-              ? `$${formData.price.toLocaleString()} USD`
-              : "No especificado"}
-            {formData.isNegotiable && " (Negociable)"}
-          </span>
+    <div className="p-5 rounded-xl border-2 border-dashed border-border bg-gradient-to-br from-card via-card to-muted/20 shadow-sm">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="p-1.5 rounded-lg bg-primary/10">
+          <Eye className="w-4 h-4 text-primary" />
         </div>
+        <h3 className="text-base font-semibold text-foreground">
+          Vista Previa del Anuncio
+        </h3>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex justify-between items-center py-2 border-b border-border/50">
+          <span className="text-sm text-muted-foreground">Precio</span>
+          <div className="text-right">
+            <span className="font-bold text-lg text-primary">
+              {formData.price
+                ? `$${formData.price.toLocaleString()} USD`
+                : "No especificado"}
+            </span>
+            {formData.isNegotiable && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                Negociable
+              </Badge>
+            )}
+          </div>
+        </div>
+
         {priceInVes && (
-          <div className="flex justify-between">
-            <span>Equivalente:</span>
-            <span className="font-medium">{priceInVes}</span>
+          <div className="flex justify-between items-center py-2 border-b border-border/50">
+            <span className="text-sm text-muted-foreground">Equivalente</span>
+            <span className="font-medium text-sm text-foreground">{priceInVes}</span>
           </div>
         )}
 
-        <div className="flex justify-between">
-          <span>Kilometraje:</span>
-          <span>
+        <div className="flex justify-between items-center py-2 border-b border-border/50">
+          <span className="text-sm text-muted-foreground">Kilometraje</span>
+          <span className="font-medium text-sm text-foreground">
             {formData.mileage
               ? `${formData.mileage.toLocaleString()} km`
               : "No especificado"}
           </span>
         </div>
 
-        <div className="flex justify-between">
-          <span>Condición:</span>
-          <span>
+        <div className="flex justify-between items-center py-2 border-b border-border/50">
+          <span className="text-sm text-muted-foreground">Condición</span>
+          <span className="font-medium text-sm text-foreground">
             {formData.condition
-              ? VEHICLE_CONDITIONS_LABELS[
-                  formData.condition as VehicleCondition
-                ]
+              ? VEHICLE_CONDITIONS_LABELS[formData.condition as VehicleCondition]
               : "No especificada"}
           </span>
         </div>
 
         {formData.warranty && (
-          <div className="flex justify-between">
-            <span>Garantía:</span>
-            <span>{WARRANTY_LABELS[formData.warranty as WarrantyType]}</span>
+          <div className="flex justify-between items-center py-2">
+            <span className="text-sm text-muted-foreground">Garantía</span>
+            <Badge variant="outline" className="font-medium">
+              {WARRANTY_LABELS[formData.warranty as WarrantyType]}
+            </Badge>
           </div>
         )}
       </div>
@@ -163,6 +183,9 @@ const PreviewCard: React.FC<{
   );
 };
 
+// ============================================
+// COMPONENTE PRINCIPAL
+// ============================================
 const Step2_PriceAndCondition: React.FC<StepProps> = ({
   formData,
   errors,
@@ -173,29 +196,29 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
   const [isLoadingRate, setIsLoadingRate] = useState(false);
   const [showFinancingTips, setShowFinancingTips] = useState(false);
 
+  // ========== Hooks de Validación ==========
   const priceValidation = useFieldValidation(formData.price, errors.price);
-  const mileageValidation = useFieldValidation(
-    formData.mileage,
-    errors.mileage
-  );
-  const conditionValidation = useFieldValidation(
-    formData.condition,
-    errors.condition
-  );
-  const warrantyValidation = useFieldValidation(
-    formData.warranty,
-    errors.warranty
-  );
+  const mileageValidation = useFieldValidation(formData.mileage, errors.mileage);
+  const conditionValidation = useFieldValidation(formData.condition, errors.condition);
+  const warrantyValidation = useFieldValidation(formData.warranty, errors.warranty);
 
-  // ESTILO ACTUALIZADO: Clases base para inputs, consistentes con Step1.
-  // DESPUÉS (con más espacio para escribir)
+  // ========== Clases de Input Mejoradas ==========
   const inputClass =
-    "w-full rounded-xl border-2 border-input bg-background text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 pl-4 pr-10 py-4 text-base";
-  const inputClassSm =
-    "w-full rounded-lg border border-input bg-background px-3 py-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+    "w-full px-4 py-3.5 rounded-xl border-2 border-border bg-background text-foreground " +
+    "placeholder:text-muted-foreground/60 " +
+    "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 " +
+    "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/30 " +
+    "transition-all duration-200 ease-out hover:border-border/80";
 
+  const inputClassSm =
+    "w-full px-3 py-3 rounded-lg border-2 border-border bg-background text-sm " +
+    "placeholder:text-muted-foreground/60 " +
+    "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 " +
+    "transition-all duration-200";
+
+  // ========== Cálculo de Progreso ==========
   const formProgress = useMemo(() => {
-    const fields = ["price", "mileage", "condition"];
+    const fields = ["price", "mileage", "condition", "warranty"];
     const completedFields = fields.filter((field) => {
       const value = formData[field as keyof typeof formData];
       return value !== undefined && value !== "" && value !== null;
@@ -204,19 +227,19 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
     return (completedFields / fields.length) * 100;
   }, [formData]);
 
+  // ========== Inicialización de Moneda ==========
   useEffect(() => {
     if (!formData.currency) {
       handleInputChange("currency", Currency.USD);
     }
   }, [formData.currency, handleInputChange]);
 
+  // ========== Obtener Tasa de Cambio ==========
   useEffect(() => {
     const fetchRate = async () => {
       setIsLoadingRate(true);
       try {
-        const apiUrl = `${
-          process.env.NEXT_PUBLIC_API_BASE_URL || ""
-        }/api/exchange-rate`;
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ""}/api/exchange-rate`;
         const response = await fetch(apiUrl);
         const data = await response.json();
         if (data.success && data.rate) {
@@ -233,6 +256,7 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
     fetchRate();
   }, []);
 
+  // ========== Cálculo de Precio en VES ==========
   const priceInVes = useMemo(() => {
     if (formData.price && exchangeRate && formData.currency === Currency.USD) {
       return (formData.price * exchangeRate).toLocaleString("es-VE", {
@@ -245,6 +269,7 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
     return null;
   }, [formData.price, exchangeRate, formData.currency]);
 
+  // ========== Manejadores de Cambio ==========
   const handleMileageChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
@@ -289,219 +314,240 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
   };
 
   return (
-    // ESTILO ACTUALIZADO: Añadida animación de entrada.
-    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in-0 duration-500">
-      <div className="text-center">
-        <div className="flex items-center justify-center space-x-3 mb-4">
-          {/* ESTILO ACTUALIZADO: Icono con colores de tema. */}
-          <div className="p-3 rounded-xl shadow-lg bg-gradient-to-br from-primary to-accent">
-            <DollarSign className="w-6 h-6 text-primary-foreground" />
+    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in-0 duration-500">
+      {/* ========== ENCABEZADO MEJORADO ========== */}
+      <div className="text-center space-y-4">
+        <div className="flex items-center justify-center gap-3">
+          <div className="p-3.5 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10">
+            <DollarSign className="w-7 h-7 text-primary-foreground" />
           </div>
-          <div>
-            {/* ESTILO ACTUALIZADO: Título con fuente de encabezado. */}
-            <h2 className="text-2xl font-heading font-bold text-foreground">
+          <div className="text-left">
+            <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">
               Precio y Condición
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-base text-muted-foreground mt-0.5">
               Define el precio y estado del vehículo
             </p>
           </div>
         </div>
+
+        {/* ========== BARRA DE PROGRESO ========== */}
+        <div className="w-full max-w-md mx-auto pt-2">
+          <div className="flex justify-between items-center mb-2.5">
+            <span className="text-sm font-medium text-muted-foreground">Progreso</span>
+            <span className="text-sm font-bold text-foreground tabular-nums">
+              {Math.round(formProgress)}%
+            </span>
+          </div>
+          <Progress value={formProgress} className="h-2.5 bg-muted" />
+        </div>
       </div>
 
-      <Progress value={formProgress} className="w-full" />
-
-      <div className="space-y-6">
-        <div>
+      {/* ========== FORMULARIO ========== */}
+      <div className="space-y-7">
+        {/* PRECIO */}
+        <div className="space-y-3">
           <InputField
-            label="Precio (USD)"
+            label="Precio"
             required
             success={priceValidation.isValid}
             error={errors.price}
-            // ESTILO ACTUALIZADO: Icono con color primario.
             icon={<DollarSign className="w-4 h-4 text-primary" />}
-            tooltip="El precio debe estar en dólares estadounidenses. Se mostrará la conversión automática a bolívares."
+            tooltip="El precio debe estar en dólares estadounidenses. Se mostrará la conversión automática a bolívares"
             tips={VALIDATION_CONFIG.price.tips}
           >
             <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                <span className="text-sm font-medium text-muted-foreground">
-                  ${" "}
-                </span>
+                <span className="text-base font-semibold text-muted-foreground">$</span>
               </div>
               <input
                 type="text"
                 value={formatPrice(formData.price)}
                 onChange={handlePriceChange}
-                // ESTILO ACTUALIZADO: Uso de la clase base para inputs.
-                className={`${inputClass} pl-8 ${priceValidation.getBorderClassName()}`}
+                className={`${inputClass} pl-9 ${priceValidation.getBorderClassName()}`}
                 placeholder="25,000"
                 inputMode="numeric"
               />
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+                <span className="text-sm text-muted-foreground">USD</span>
+              </div>
             </div>
           </InputField>
+
+          {/* Tasa de Cambio */}
           {isLoadingRate && (
-            <p className="mt-2 flex items-center text-xs text-muted-foreground">
-              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-              Obteniendo tasa del día...
-            </p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground px-1">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Obteniendo tasa del día...</span>
+            </div>
           )}
+
           {priceInVes && !isLoadingRate && (
-            <div className="mt-2 rounded-lg border bg-muted/50 p-3">
-              <p className="text-xs text-muted-foreground">
-                Equivalente aproximado:{" "}
-                {/* ESTILO ACTUALIZADO: Precio con color primario. */}
-                <span className="font-semibold text-primary">{priceInVes}</span>
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground/80">
-                💡 Los compradores verán ambas monedas
+            <div className="p-4 rounded-xl border border-border bg-gradient-to-br from-muted/30 to-muted/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-muted-foreground">Equivalente aproximado</span>
+                </div>
+                <span className="text-lg font-bold text-primary">{priceInVes}</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Los compradores verán ambas monedas en el anuncio
               </p>
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between rounded-lg p-3 transition-colors hover:bg-muted/50">
-          <label className="group flex cursor-pointer items-center space-x-2">
-            <span className="text-sm font-medium text-foreground transition-colors group-hover:text-primary">
-              ¿Precio Negociable?
-            </span>
-            <Handshake
-              className={`h-4 w-4 transition-colors group-hover:scale-110 ${
-                formData.isNegotiable ? "text-primary" : "text-muted-foreground"
-              }`}
-            />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-3 w-3 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    Marcar como negociable puede atraer más compradores
-                    interesados
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </label>
-          <Switch
-            checked={formData.isNegotiable || false}
-            onCheckedChange={(checked) =>
-              handleSwitchChange("isNegotiable", checked)
-            }
-          />
-        </div>
-
-        <div className="space-y-1">
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={() => setShowFinancingTips(!showFinancingTips)}
-              className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/20"
-            >
-              Tips
-            </button>
-          </div>
-
-          <div className="-mt-2 flex items-center justify-between rounded-lg p-3 transition-colors hover:bg-muted/50">
-            <label className="group flex cursor-pointer items-center space-x-2">
-              <span className="text-sm font-medium text-foreground transition-colors group-hover:text-primary">
-                ¿Ofrece Financiación?
-              </span>
-              <Handshake
-                className={`h-4 w-4 transition-colors group-hover:scale-110 ${
-                  formData.offersFinancing
-                    ? "text-primary"
-                    : "text-muted-foreground"
-                }`}
-              />
+        {/* PRECIO NEGOCIABLE */}
+        <div className="p-4 rounded-xl border-2 border-border bg-card hover:bg-muted/20 transition-colors duration-200">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-3 cursor-pointer group flex-1">
+              <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <Handshake className={`w-5 h-5 transition-colors ${
+                  formData.isNegotiable ? "text-primary" : "text-muted-foreground"
+                }`} />
+              </div>
+              <div className="flex-1">
+                <span className="text-base font-semibold text-foreground block">
+                  ¿Precio Negociable?
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  Permite a los compradores hacer ofertas
+                </span>
+              </div>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="h-3 w-3 cursor-help text-muted-foreground" />
+                    <Info className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>
-                      Activa esta opción si ofreces facilidades de pago. Se
-                      mostrará una calculadora en tu anuncio.
-                    </p>
+                    <p>Marcar como negociable puede atraer más compradores interesados</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </label>
             <Switch
-              checked={formData.offersFinancing || false}
-              onCheckedChange={(checked) =>
-                handleSwitchChange("offersFinancing", checked)
-              }
+              checked={formData.isNegotiable || false}
+              onCheckedChange={(checked) => handleSwitchChange("isNegotiable", checked)}
             />
           </div>
+        </div>
 
-          {showFinancingTips && (
-            <div className="space-y-1 rounded-lg border border-primary/20 bg-primary/10 p-3">
-              {VALIDATION_CONFIG.offersFinancing.tips.map((tip, index) => (
-                <p key={index} className="text-xs text-primary/90">
-                  {tip}
-                </p>
-              ))}
+        {/* FINANCIACIÓN */}
+        <div className="space-y-3">
+          <div className="p-4 rounded-xl border-2 border-border bg-card hover:bg-muted/20 transition-colors duration-200">
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-3 cursor-pointer group flex-1">
+                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <DollarSign className={`w-5 h-5 transition-colors ${
+                    formData.offersFinancing ? "text-primary" : "text-muted-foreground"
+                  }`} />
+                </div>
+                <div className="flex-1">
+                  <span className="text-base font-semibold text-foreground block">
+                    ¿Ofrece Financiación?
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    Muestra una calculadora de cuotas en el anuncio
+                  </span>
+                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Activa esta opción si ofreces facilidades de pago</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </label>
+              <Switch
+                checked={formData.offersFinancing || false}
+                onCheckedChange={(checked) => handleSwitchChange("offersFinancing", checked)}
+              />
+            </div>
+          </div>
+
+          {/* Tips de Financiación */}
+          {formData.offersFinancing && (
+            <div className="p-4 rounded-xl border border-primary/30 bg-primary/5">
+              <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                <Info className="w-4 h-4 text-primary" />
+                Consejos sobre Financiación
+              </h4>
+              <ul className="space-y-1.5">
+                {VALIDATION_CONFIG.offersFinancing.tips.map((tip, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <span className="text-primary mt-0.5 font-bold">•</span>
+                    <span className="leading-relaxed">{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Detalles de Financiación */}
+          {formData.offersFinancing && (
+            <div className="p-5 rounded-xl border-2 border-border bg-muted/30 space-y-5">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-primary" />
+                Detalles de la Financiación
+              </h3>
+
+              <InputField
+                label="Tasa de Interés Anual (%)"
+                error={errors["financingDetails.interestRate"]}
+                required
+              >
+                <input
+                  type="number"
+                  value={formData.financingDetails?.interestRate || ""}
+                  onChange={(e) =>
+                    handleInputChange("financingDetails", {
+                      ...formData.financingDetails,
+                      interestRate: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  placeholder="Ej: 18"
+                  className={inputClassSm}
+                  step="0.1"
+                  min="0"
+                  max="100"
+                />
+              </InputField>
+              <InputField
+                label="Plazo Máximo del Préstamo (meses)"
+                error={errors["financingDetails.loanTerm"]}
+                required
+              >
+                <input
+                  type="number"
+                  value={formData.financingDetails?.loanTerm || ""}
+                  onChange={(e) =>
+                    handleInputChange("financingDetails", {
+                      ...formData.financingDetails,
+                      loanTerm: parseInt(e.target.value, 10) || 0,
+                    })
+                  }
+                  placeholder="Ej: 36"
+                  className={inputClassSm}
+                  min="1"
+                  max="120"
+                />
+              </InputField>
             </div>
           )}
         </div>
 
-        {formData.offersFinancing && (
-          <div className="mt-4 space-y-4 rounded-lg border bg-muted/50 p-4">
-            <h3 className="text-md font-semibold text-foreground">
-              Detalles de la Financiación
-            </h3>
-            <InputField
-              label="Tasa de Interés Anual (%)"
-              error={errors["financingDetails.interestRate"]}
-              required
-            >
-              <input
-                type="number"
-                value={formData.financingDetails?.interestRate || ""}
-                onChange={(e) =>
-                  handleInputChange("financingDetails", {
-                    ...formData.financingDetails,
-                    interestRate: parseFloat(e.target.value) || 0,
-                  })
-                }
-                placeholder="Ej: 18"
-                // ESTILO ACTUALIZADO: Uso de la clase base pequeña para inputs.
-                className={inputClassSm}
-              />
-            </InputField>
-            <InputField
-              label="Plazo Máximo del Préstamo (meses)"
-              error={errors["financingDetails.loanTerm"]}
-              required
-            >
-              <input
-                type="number"
-                value={formData.financingDetails?.loanTerm || ""}
-                onChange={(e) =>
-                  handleInputChange("financingDetails", {
-                    ...formData.financingDetails,
-                    loanTerm: parseInt(e.target.value, 10) || 0,
-                  })
-                }
-                placeholder="Ej: 36"
-                // ESTILO ACTUALIZADO: Uso de la clase base pequeña para inputs.
-                className={inputClassSm}
-              />
-            </InputField>
-          </div>
-        )}
-
+        {/* KILOMETRAJE */}
         <InputField
           label="Kilometraje"
           required
           success={mileageValidation.isValid}
           error={errors.mileage}
-          // ESTILO ACTUALIZADO: Icono con color primario.
           icon={<Gauge className="w-4 h-4 text-primary" />}
-          tooltip="Introduce el kilometraje actual del vehículo. Se formatará automáticamente."
+          tooltip="Introduce el kilometraje actual del vehículo. Se formatará automáticamente"
           tips={VALIDATION_CONFIG.mileage.tips}
         >
           <div className="relative">
@@ -509,7 +555,6 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
               type="text"
               value={formatMileage(formData.mileage)}
               onChange={handleMileageChange}
-              // ESTILO ACTUALIZADO: Uso de la clase base para inputs.
               className={`${inputClass} pr-12 ${mileageValidation.getBorderClassName()}`}
               placeholder="85,000"
               inputMode="numeric"
@@ -520,71 +565,94 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
           </div>
         </InputField>
 
+        {/* CONDICIÓN */}
         <InputField
           label="Condición"
           required
           success={conditionValidation.isValid}
           error={errors.condition}
-          // ESTILO ACTUALIZADO: Icono con color de acento.
-          icon={<Shield className="w-4 h-4 text-accent" />}
+          icon={<Shield className="w-4 h-4 text-primary" />}
           tooltip="La condición del vehículo afecta significativamente su valor de mercado"
           tips={VALIDATION_CONFIG.condition.tips}
         >
           <SelectField
             value={formData.condition || ""}
             onChange={(value) => handleInputChange("condition", value)}
-            options={[VehicleCondition.EXCELLENT, VehicleCondition.GOOD].map(
-              (c) => ({
-                value: c,
-                label: VEHICLE_CONDITIONS_LABELS[c],
-              })
-            )}
+            options={[VehicleCondition.EXCELLENT, VehicleCondition.GOOD].map((c) => ({
+              value: c,
+              label: VEHICLE_CONDITIONS_LABELS[c],
+            }))}
             placeholder="Selecciona la condición"
             error={errors.condition}
-            // ESTILO ACTUALIZADO: Uso de la clase base para inputs.
             className={`${inputClass} ${conditionValidation.getBorderClassName()}`}
           />
         </InputField>
 
-         <InputField
-           label="Garantía"
-           error={errors.warranty}
-           success={warrantyValidation.isValid}
-           icon={<Shield className="w-4 h-4 text-primary" />}
-           tooltip="Informa si el vehículo tiene alguna garantía vigente."
-           tips={VALIDATION_CONFIG.warranty.tips}
-         >
-           <SelectField
-             value={formData.warranty || ""}
-             onChange={(value) => handleInputChange("warranty", value)}
-             options={Object.values(WarrantyType).map((w) => ({
-               value: w,
-               label: WARRANTY_LABELS[w],
-             }))}
-             placeholder="Selecciona tipo de garantía"
-             error={errors.warranty}
-             className={`${inputClass} ${warrantyValidation.getBorderClassName()}`}
-           />
-         </InputField>
+        {/* GARANTÍA */}
+        <InputField
+          label="Garantía"
+          error={errors.warranty}
+          success={warrantyValidation.isValid}
+          icon={<Shield className="w-4 h-4 text-primary" />}
+          tooltip="Informa si el vehículo tiene alguna garantía vigente"
+          tips={VALIDATION_CONFIG.warranty.tips}
+        >
+          <SelectField
+            value={formData.warranty || ""}
+            onChange={(value) => handleInputChange("warranty", value)}
+            options={Object.values(WarrantyType).map((w) => ({
+              value: w,
+              label: WARRANTY_LABELS[w],
+            }))}
+            placeholder="Selecciona tipo de garantía"
+            error={errors.warranty}
+            className={`${inputClass} ${warrantyValidation.getBorderClassName()}`}
+          />
+        </InputField>
 
+        {/* ========== VISTA PREVIA ========== */}
         <PreviewCard formData={formData} exchangeRate={exchangeRate} />
 
-        <div className="mt-6 rounded-xl border bg-card p-4 shadow-sm">
-          <h3 className="mb-2 text-sm font-semibold text-foreground">
-            Estado del Formulario
-          </h3>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              {formProgress === 100
-                ? "🎉 ¡Formulario completo!"
-                : `📝 ${Math.round(formProgress)}% completado`}
-            </span>
-            {formProgress === 100 && (
-              // El color verde para el éxito es aceptable y universalmente entendido.
-              <span className="text-xs font-medium text-green-600">
-                ✅ Listo para continuar
-              </span>
-            )}
+        {/* ========== RESUMEN DE COMPLETITUD ========== */}
+        <div
+          className={`p-5 rounded-xl border-2 shadow-sm transition-all duration-300 ${
+            formProgress >= 100
+              ? "border-green-500/40 bg-green-50/50 dark:bg-green-950/20"
+              : "border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/20"
+          }`}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div 
+                className={`p-2 rounded-lg ${
+                  formProgress >= 100 ? "bg-green-500/20" : "bg-amber-500/20"
+                }`}
+              >
+                {formProgress >= 100 ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                )}
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-base">
+                  {formProgress >= 100
+                    ? "¡Información de precio completa!"
+                    : "Faltan algunos campos"}
+                </p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {formProgress >= 100
+                    ? "Puedes continuar al siguiente paso"
+                    : `${Math.round(formProgress)}% completado`}
+                </p>
+              </div>
+            </div>
+            <Badge
+              variant={formProgress >= 100 ? "default" : "secondary"}
+              className="text-sm font-bold px-3 py-1"
+            >
+              {Math.round(formProgress)}%
+            </Badge>
           </div>
         </div>
       </div>

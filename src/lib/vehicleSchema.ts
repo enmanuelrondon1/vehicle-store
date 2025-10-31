@@ -6,13 +6,15 @@ import {
   FuelType,
   Currency,
   ApprovalStatus,
+  WarrantyType,
 } from "@/types/shared";
 import { getAvailableFeatures } from "@/constants/form-constants";
+
 
 export const SellerContactBackendSchema = z.object({
   name: z
     .string()
-    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .min(4, "El nombre debe tener al menos 4 caracteres")
     .max(100, "El nombre no puede exceder 100 caracteres")
     .regex(
       /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
@@ -24,21 +26,16 @@ export const SellerContactBackendSchema = z.object({
     .max(255, "El email no puede exceder 255 caracteres"),
   phone: z.string().refine(
     (phone) => {
-      // Remove spaces, dashes, and parentheses to validate only the numbers
-      const justDigits = phone.replace(/[- ()]/g, "");
-      // Basic validation for 10 to 15 digits, allows for country codes.
-      return (
-        justDigits.length >= 10 &&
-        justDigits.length <= 15 &&
-        /^[0-9]+$/.test(justDigits)
-      );
+      if (!phone) return false;
+      const numberPart = phone.split(" ")[1] || "";
+      return /^\d{7}$/.test(numberPart);
     },
     {
-      message:
-        "El número de teléfono no es válido. Debe tener entre 10 y 15 dígitos.",
+      message: "El número de teléfono debe tener exactamente 7 dígitos.",
     }
   ),
 });
+
 
 const step1Schema = z.object({
   _id: z.string().optional(),
@@ -92,19 +89,27 @@ export const FinancingDetailsSchema = z.object({
 
 const step2Schema = z.object({
   price: z
-    .number()
+    .number({
+      required_error: "El precio es requerido.",
+      invalid_type_error: "El precio debe ser un número.",
+    })
     .positive("El precio debe ser mayor a 0")
-    .max(10000000, "El precio no puede exceder 10,000,000")
-    .optional(),
+    .max(10000000, "El precio no puede exceder 10,000,000"),
   currency: z.nativeEnum(Currency).optional().default(Currency.USD),
   isNegotiable: z.boolean().optional().default(false),
   offersFinancing: z.boolean().optional().default(false),
   financingDetails: FinancingDetailsSchema.optional(),
   mileage: z
-    .number()
+    .number({
+      required_error: "El kilometraje es requerido.",
+      invalid_type_error: "El kilometraje debe ser un número.",
+    })
     .min(0, "El kilometraje no puede ser negativo")
-    .max(1000000, "El kilometraje parece excesivo")
-    .optional(),
+    .max(1000000, "El kilometraje parece excesivo"),
+  warranty: z.nativeEnum(WarrantyType, {
+    required_error: "Debes seleccionar un estado de garantía.",
+    invalid_type_error: "El valor de la garantía no es válido.",
+  }),
 });
 
 const step3Schema = z.object({
@@ -167,30 +172,22 @@ const step4Schema = z.object({
     .string()
     .min(5, "La ubicación es requerida (ej: Caracas, Distrito Capital)")
     .max(200, "La ubicación no puede exceder 200 caracteres")
-    .refine((value) => value.includes(","), {
-      message: "El formato debe ser 'Ciudad, Estado'",
-    })
     .refine(
       (value) => {
+        if (!value) return false;
         const parts = value.split(",");
-        return (
-          parts.length === 2 && parts[0].trim() !== "" && parts[1].trim() !== ""
-        );
+        if (parts.length !== 2) return false;
+        const city = parts[0].trim();
+        const state = parts[1].trim();
+        return city.length >= 4 && state.length > 0;
       },
       {
-        message: "Debes especificar tanto la ciudad como el estado",
-      }
-    )
-    .refine(
-      (value) => {
-        const city = value.split(",")[0].trim();
-        return city.length >= 4;
-      },
-      {
-        message: "La ciudad o municipio debe tener al menos 4 caracteres",
+        message:
+          "Formato: 'Ciudad, Estado'. La ciudad debe tener al menos 4 caracteres.",
       }
     ),
 });
+
 
 export const step5Schema = z.object({
   description: z

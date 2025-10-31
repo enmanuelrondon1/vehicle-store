@@ -6,7 +6,7 @@ import React, { useState, useMemo } from "react";
 import { Car, AlertCircle, Trash2, ArrowLeft, ArrowRight, Save, AlertTriangle } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner"; // <-- IMPORTACIÓN CLAVE
+import { toast } from "sonner";
 import ProtectedRoute from "@/components/features/auth/ProtectedRoute";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,19 +31,17 @@ import { phoneCodes } from "@/constants/form-constants";
 import { FormProgress } from "./form-progress";
 import { PaymentConfirmation } from "../../payment/payment-confirmation";
 import { SuccessScreen } from "./success-screen";
-// Importar los nuevos componentes de pasos
 import Step1_BasicInfo from "./Step1_BasicInfo";
 import Step2_PriceAndCondition from "./Step2_PriceAndCondition";
 import Step3_Specs from "./Step3_Specs";
 import Step4_ContactInfo from "./Step4_ContactInfo";
 import Step5_FeaturesAndMedia from "./Step5_FeaturesAndMedia";
-
-// Importar tipos desde la misma fuente centralizada
 import type { VehicleDataBackend } from "@/types/types";
 
 const VehicleRegistrationForm: React.FC = () => {
   const router = useRouter();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const formRef = React.useRef<HTMLDivElement>(null);
 
   const {
     currentStep,
@@ -73,9 +71,8 @@ const VehicleRegistrationForm: React.FC = () => {
     manualSave,
     handleSubmit,
     handleSwitchChange,
-  } = useVehicleForm();
+  } = useVehicleForm({ formRef });
 
-  // --- EFECTO SECUNDARIO: Mostrar notificaciones de error con Sonner ---
   React.useEffect(() => {
     if (submissionStatus === "error" && errors.general) {
       toast.error(errors.general, {
@@ -87,7 +84,35 @@ const VehicleRegistrationForm: React.FC = () => {
       });
     }
   }, [submissionStatus, errors.general, handleSubmit]);
-  // --- FIN DEL EFECTO SECUNDARIO ---
+
+  // ========== NUEVAS FUNCIONES CON SCROLL ==========
+  const scrollToTop = () => {
+    // Intenta primero con el formRef
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+    // Y también scroll de la ventana por si acaso
+    window.scrollTo({ 
+      top: 0, 
+      behavior: 'smooth' 
+    });
+  };
+
+  const handleNextStep = () => {
+    nextStep();
+    // Pequeño delay para que el DOM se actualice antes del scroll
+    setTimeout(scrollToTop, 100);
+  };
+
+  const handlePrevStep = () => {
+    prevStep();
+    // Pequeño delay para que el DOM se actualice antes del scroll
+    setTimeout(scrollToTop, 100);
+  };
+  // ================================================
 
   const handleClearForm = () => {
     resetForm();
@@ -106,7 +131,7 @@ const VehicleRegistrationForm: React.FC = () => {
   const isStep5Complete = useMemo(() => {
     return (
       (formData.images?.length ?? 0) > 0 &&
-      (formData.description?.length ?? 0) > 50
+      (formData.description?.length ?? 0) >= 50
     );
   }, [formData.images, formData.description]);
 
@@ -126,7 +151,7 @@ const VehicleRegistrationForm: React.FC = () => {
       <div className="min-h-screen bg-background text-foreground py-8 px-4 ">
         <div className="relative">
           <div className="max-w-6xl mx-auto">
-            <Card className="shadow-xl border-border">
+            <Card className="shadow-xl border-border" ref={formRef}>
               <CardHeader className="text-center relative bg-muted/30 border-b">
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mx-auto mb-4 bg-primary/10 border-2 border-primary/20">
                   <Car className="w-10 h-10 text-primary" />
@@ -160,7 +185,6 @@ const VehicleRegistrationForm: React.FC = () => {
                   onStepClick={setCurrentStep}
                 />
                 
-                {/* El error general ahora se maneja con Sonner, así que no se necesita renderizar aquí */}
                 {currentStep === 6 ? (
                   <PaymentConfirmation
                     selectedBank={selectedBank}
@@ -232,7 +256,7 @@ const VehicleRegistrationForm: React.FC = () => {
                         {currentStep > 1 && currentStep < 6 && (
                           <Button
                             variant="outline"
-                            onClick={prevStep}
+                            onClick={handlePrevStep}
                             disabled={isSubmitting}
                             className="flex w-full sm:w-auto items-center justify-center gap-2"
                           >
@@ -260,14 +284,22 @@ const VehicleRegistrationForm: React.FC = () => {
                         )}
 
                         {currentStep < 5 && (
-                          <Button onClick={nextStep} disabled={isSubmitting || !isCurrentStepValid} className="flex w-full sm:w-auto items-center justify-center gap-2 bg-primary hover:bg-primary/90">
+                          <Button 
+                            onClick={handleNextStep}
+                            disabled={isSubmitting || !isCurrentStepValid} 
+                            className="flex w-full sm:w-auto items-center justify-center gap-2 bg-primary hover:bg-primary/90"
+                          >
                             Siguiente
                             <ArrowRight className="w-4 h-4" />
                           </Button>
                         )}
 
                         {currentStep === 5 && (
-                          <Button onClick={nextStep} disabled={isSubmitting || !isStep5Complete} className="flex w-full sm:w-auto items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-accent-foreground">
+                          <Button 
+                            onClick={handleNextStep}
+                            disabled={isSubmitting || !isStep5Complete} 
+                            className="flex w-full sm:w-auto items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-accent-foreground"
+                          >
                             Finalizar y Pagar
                             <ArrowRight className="w-4 h-4" />
                           </Button>

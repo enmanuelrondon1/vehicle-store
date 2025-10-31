@@ -7,10 +7,14 @@ import { type VehicleDataBackend, ApprovalStatus, Documentation } from "@/types/
 import type { Bank } from "@/constants/form-constants"
 import { useFormValidation } from "./use-form-validation"
 
-interface FormErrors {
-  [key: string]: string
+// ========== TIPOS ==========
+type FormErrors = { [key: string]: string };
+
+interface UseVehicleFormProps {
+  formRef: React.RefObject<HTMLDivElement>;
 }
 
+// ========== DATOS INICIALES ==========
 const initialFormData: Partial<VehicleDataBackend> = {
   features: [],
   images: [],
@@ -21,10 +25,12 @@ const initialFormData: Partial<VehicleDataBackend> = {
   isFeatured: false, // ✅ Añadido: Campo para vehículo destacado
 };
 
-export const useVehicleForm = () => {
+// ========== HOOK PRINCIPAL ==========
+export const useVehicleForm = ({ formRef }: UseVehicleFormProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [highestCompletedStep, setHighestCompletedStep] = useState(1);
-  const [formData, setFormData] = useState<Partial<VehicleDataBackend>>(initialFormData)
+  const [formData, setFormData] =
+    useState<Partial<VehicleDataBackend>>(initialFormData)
   const [errors, setErrors] = useState<FormErrors>({})
   const [isCurrentStepValid, setIsCurrentStepValid] = useState(false); // Nuevo estado
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -210,22 +216,41 @@ export const useVehicleForm = () => {
   }, [])
 
   const validateCurrentStep = useCallback(() => {
-    const validation = validateStep(currentStep, formData, selectedBank, paymentProof, referenceNumber)
-    setErrors(validation.errors)
-    return validation.isValid
-  }, [currentStep, formData, selectedBank, paymentProof, referenceNumber, validateStep])
+    const validation = validateStep(
+      currentStep,
+      formData,
+      selectedBank,
+      paymentProof,
+      referenceNumber
+    );
+    setErrors(validation.errors);
+    return validation.isValid;
+  }, [
+    currentStep,
+    formData,
+    selectedBank,
+    paymentProof,
+    referenceNumber,
+    validateStep,
+  ]);
+
+  const scrollToTop = () => {
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const nextStep = useCallback(() => {
     if (validateCurrentStep()) {
       const next = Math.min(currentStep + 1, 6);
       setCurrentStep(next);
-      setHighestCompletedStep(prev => Math.max(prev, next));
+      setHighestCompletedStep((prev) => Math.max(prev, next));
+      scrollToTop();
     }
   }, [validateCurrentStep, currentStep]);
 
   const prevStep = useCallback(() => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1))
-  }, [])
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+    scrollToTop();
+  }, []);
 
   // ✅ CORRECCIÓN: Agregar highestCompletedStep a las dependencias
   const manualSave = useCallback(() => {
