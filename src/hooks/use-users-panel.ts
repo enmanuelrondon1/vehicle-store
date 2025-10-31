@@ -8,6 +8,7 @@ interface UserData {
   fullName: string;
   email: string;
   role: string;
+  provider: string;
   createdAt: string;
   vehicleCount: number;
   lastSignInAt: string | null;

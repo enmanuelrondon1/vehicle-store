@@ -13,8 +13,8 @@ import React from 'react';
 import { renderAsync } from '@react-email/render';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const recipientEmail = process.env.CONTACT_RECIPIENT_EMAIL;
-const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+const fromEmail = process.env.EMAIL_FROM || "onboarding@resend.dev";
+const recipientEmail = process.env.CONTACT_RECIPIENT_EMAIL || "";
 
 // Configurar transportador de Gmail para rechazos
 const gmailTransporter = nodemailer.createTransport({
@@ -204,9 +204,21 @@ export async function sendVehicleRejectionEmailGmail(
   }
 }
 
-export async function sendPasswordResetEmail(userEmail: string, userName: string, resetUrl: string) {
-  if (process.env.NODE_ENV === 'production') {
+export async function sendPasswordResetEmail(
+  userEmail: string,
+  userName: string,
+  resetUrl: string
+) {
+  if (process.env.NODE_ENV === "production") {
     // --- Lógica de producción con Resend ---
+    if (!process.env.RESEND_API_KEY) {
+      logger.error(
+        "RESEND_API_KEY no está configurada. No se puede enviar el correo de reseteo de contraseña en producción."
+      );
+      throw new Error(
+        "El servidor no está configurado para enviar correos."
+      );
+    }
     try {
       const { data, error } = await resend.emails.send({
         from: `Soporte 1auto.market <${fromEmail}>`,

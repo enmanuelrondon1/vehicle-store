@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Users, Search, Trash2, Edit2, AlertCircle, Copy } from "lucide-react";
+import { Users, Search, Trash2, Edit2, AlertCircle, Copy, Mail, Github, Chrome } from "lucide-react";
 import { toast } from "sonner";
 import { SortSelector } from "@/components/ui/seraui-selector";
 
@@ -56,6 +56,9 @@ export const UsersPanel = () => {
   };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
+    if (!userToEdit) return;
+
+    const userName = userToEdit.fullName;
     setUserToEdit(null);
     setIsUpdating(true);
     try {
@@ -69,7 +72,7 @@ export const UsersPanel = () => {
         throw new Error(result.error || 'Failed to update role');
       }
       updateUserRoleInState(userId, newRole);
-      toast.success(`El rol de ${userToEdit?.fullName} se ha actualizado a ${newRole}.`);
+      toast.success(`El rol de ${userName} se ha actualizado a ${newRole}.`);
     } catch (err: unknown) {
       const error = err instanceof Error ? err.message : 'Error desconocido';
       console.error("Failed to update user role:", error);
@@ -172,6 +175,7 @@ export const UsersPanel = () => {
               <tr>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Nombre</th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Email</th>
+                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Proveedor</th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Rol</th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Miembro desde</th>
                 <th scope="col" className="px-6 py-4 text-left text-xs font-semibold tracking-wider text-gray-700 dark:text-gray-300">Último acceso</th>
@@ -197,6 +201,14 @@ export const UsersPanel = () => {
                     <span className="flex items-center gap-2">
                       {user.email}
                       <Copy className="h-4 w-4 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100" />
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                    <span className="flex items-center gap-2">
+                      {user.provider === 'google' && <Chrome className="h-4 w-4 text-red-500" />}
+                      {user.provider === 'github' && <Github className="h-4 w-4 text-gray-800 dark:text-gray-200" />}
+                      {user.provider === 'credentials' && <Mail className="h-4 w-4 text-blue-500" />}
+                      <span className="capitalize">{user.provider}</span>
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">

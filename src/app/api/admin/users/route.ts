@@ -18,6 +18,7 @@ async function handler() {
       id: user._id.toString(),
       fullName: user.name || "N/A",
       email: user.email || "No email",
+      provider: user.provider || 'credentials', // Añadimos el proveedor
       createdAt: user.createdAt || (user._id as ObjectId).getTimestamp(),
       lastSignInAt: user.lastSignInAt || null, // Asumiendo que este campo puede existir
       role: user.role || 'user',

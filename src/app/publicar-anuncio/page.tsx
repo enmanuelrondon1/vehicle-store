@@ -1,4 +1,3 @@
-
 // src/app/publicar-anuncio/page.tsx
 
 import VehicleRegistrationForm from "@/components/features/vehicles/registration/VehicleRegistrationForm";

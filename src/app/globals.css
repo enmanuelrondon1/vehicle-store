@@ -115,7 +115,7 @@
 }
 
 /* ========================================
-   UTILITY CLASSES (Opcionales pero útiles)
+   UTILITY CLASSES (reutilizables)
    ======================================== */
 @layer components {
   .container-max {
