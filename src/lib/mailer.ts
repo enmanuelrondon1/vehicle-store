@@ -204,77 +204,65 @@ export async function sendVehicleRejectionEmailGmail(
   }
 }
 
+const createTransporter = async () => {
+  if (process.env.NODE_ENV === "production") {
+    // Configuración para producción (Gmail)
+    return nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASSWORD,
+      },
+    });
+  } else {
+    // Configuración para desarrollo (Ethereal)
+    const testAccount = await nodemailer.createTestAccount();
+    return nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+  }
+};
+
 export async function sendPasswordResetEmail(
   userEmail: string,
   userName: string,
   resetUrl: string
 ) {
-  if (process.env.NODE_ENV === "production") {
-    // --- Lógica de producción con Resend ---
-    if (!process.env.RESEND_API_KEY) {
-      logger.error(
-        "RESEND_API_KEY no está configurada. No se puede enviar el correo de reseteo de contraseña en producción."
+  try {
+    const transporter = await createTransporter();
+
+    const mailOptions = {
+      from: `"Soporte 1auto.market" <${process.env.GMAIL_USER}>`,
+      to: userEmail,
+      subject: "Restablece tu contraseña en 1auto.market",
+      react: ResetPasswordEmail({ userName, resetLink: resetUrl }),
+      html: `<p>Hola ${userName},</p><p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p><a href="${resetUrl}">${resetUrl}</a>`,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+
+    if (process.env.NODE_ENV !== "production") {
+      logger.info("Correo de desarrollo enviado: %s", info.messageId);
+      logger.info(
+        "URL de previsualización: %s",
+        nodemailer.getTestMessageUrl(info)
       );
-      throw new Error(
-        "El servidor no está configurado para enviar correos."
-      );
+    } else {
+      logger.info("Correo de reseteo de contraseña enviado a:", userEmail);
     }
-    try {
-      const { data, error } = await resend.emails.send({
-        from: `Soporte 1auto.market <${fromEmail}>`,
-        to: [userEmail],
-        subject: 'Restablece tu contraseña en 1auto.market',
-        react: ResetPasswordEmail({ userName, resetLink: resetUrl }),
-        text: `Hola ${userName}, haz clic aquí para restablecer tu contraseña: ${resetUrl}`,
-      });
 
-      if (error) {
-        logger.error('Error al enviar email de reseteo de contraseña con Resend:', error);
-        throw new Error(error.message);
-      }
-      logger.info('Email de reseteo de contraseña enviado con Resend:', data);
-      return data;
-    } catch (error) {
-      logger.error('Fallo la función sendPasswordResetEmail en producción:', error);
-      throw error;
-    }
-  } else {
-    // --- Lógica de desarrollo con Nodemailer + Ethereal ---
-    try {
-      // Crea una cuenta de prueba de Ethereal
-      const testAccount = await nodemailer.createTestAccount();
-
-      // Crea un transportador reutilizable usando los datos de Ethereal
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: testAccount.user, // usuario generado por Ethereal
-          pass: testAccount.pass, // contraseña generada por Ethereal
-        },
-      });
-
-      const mailOptions = {
-        from: '"Soporte 1auto.market" <noreply@1auto.market>',
-        to: userEmail, // El correo del usuario que solicita el reseteo
-        subject: 'Restablece tu contraseña en 1auto.market',
-        text: `Hola ${userName}, haz clic aquí para restablecer tu contraseña: ${resetUrl}`,
-        html: `<p>Hola ${userName},</p><p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p><a href="${resetUrl}">${resetUrl}</a>`,
-      };
-
-      const info = await transporter.sendMail(mailOptions);
-
-      logger.info('Correo de desarrollo enviado: %s', info.messageId);
-      // La URL para previsualizar el correo se mostrará en la consola
-      logger.info('URL de previsualización: %s', nodemailer.getTestMessageUrl(info));
-
-      return {
-        previewUrl: nodemailer.getTestMessageUrl(info),
-      };
-    } catch (error) {
-      logger.error('Fallo la función sendPasswordResetEmail en desarrollo:', error);
-      throw error;
-    }
+    return info;
+  } catch (error) {
+    logger.error(
+      "Fallo la función sendPasswordResetEmail:",
+      error
+    );
+    throw error;
   }
 }
