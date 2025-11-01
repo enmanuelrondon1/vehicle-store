@@ -22,6 +22,7 @@ import {
   Archive,
   Power,
   PowerOff,
+  Pencil,
 } from "lucide-react";
 import { VehicleDataFrontend, ApprovalStatus } from "@/types/types";
 
@@ -33,6 +34,7 @@ interface VehicleActionsProps {
   onShowCommentDialog: (vehicle: VehicleDataFrontend) => void;
   onShowHistoryDialog: (vehicle: VehicleDataFrontend) => void;
   onShowDeleteDialog: (vehicle: VehicleDataFrontend) => void;
+  onGoToEditPage: (vehicle: VehicleDataFrontend) => void;
 }
 
 export const VehicleActions = ({
@@ -43,6 +45,7 @@ export const VehicleActions = ({
   onShowCommentDialog,
   onShowHistoryDialog,
   onShowDeleteDialog,
+  onGoToEditPage,
 }: VehicleActionsProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -125,6 +128,15 @@ export const VehicleActions = ({
           >
             <Eye className="h-4 w-4 text-primary flex-shrink-0" />
             <span className="font-medium">Ver detalles</span>
+          </button>
+
+          {/* Editar Anuncio */}
+          <button
+            onClick={() => handleAction(() => onGoToEditPage(vehicle))}
+            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left hover:bg-accent"
+          >
+            <Pencil className="h-4 w-4 text-primary flex-shrink-0" />
+            <span className="font-medium">Editar Anuncio</span>
           </button>
 
           <Separator />

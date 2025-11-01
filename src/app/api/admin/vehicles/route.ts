@@ -124,9 +124,9 @@ export async function GET(): Promise<NextResponse> {
         // Convertir fechas a strings para el frontend
         return {
           ...convertedVehicle,
-          postedDate: convertedVehicle.postedDate.toISOString(),
-          createdAt: convertedVehicle.createdAt?.toISOString(),
-          updatedAt: convertedVehicle.updatedAt?.toISOString(),
+          postedDate: convertedVehicle.postedDate instanceof Date ? convertedVehicle.postedDate.toISOString() : convertedVehicle.postedDate,
+          createdAt: convertedVehicle.createdAt instanceof Date ? convertedVehicle.createdAt.toISOString() : convertedVehicle.createdAt,
+          updatedAt: convertedVehicle.updatedAt instanceof Date ? convertedVehicle.updatedAt.toISOString() : convertedVehicle.updatedAt,
         };
       });
 

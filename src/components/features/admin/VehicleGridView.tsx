@@ -34,6 +34,7 @@ interface VehicleGridViewProps {
   onShowCommentDialog: (vehicle: VehicleDataFrontend) => void;
   onShowHistoryDialog: (vehicle: VehicleDataFrontend) => void;
   onShowDeleteDialog: (vehicle: VehicleDataFrontend) => void;
+  onGoToEditPage: (vehicleId: string) => void;
 }
 
 export const VehicleGridView = ({
@@ -46,6 +47,7 @@ export const VehicleGridView = ({
   onShowCommentDialog,
   onShowHistoryDialog,
   onShowDeleteDialog,
+  onGoToEditPage,
 }: VehicleGridViewProps) => {
   if (vehicles.length === 0) {
     return (
@@ -132,6 +134,7 @@ export const VehicleGridView = ({
                   onShowCommentDialog={onShowCommentDialog}
                   onShowHistoryDialog={() => onShowHistoryDialog(vehicle)}
                   onShowDeleteDialog={onShowDeleteDialog}
+                  onGoToEditPage={() => onGoToEditPage(vehicle._id!)}
                 />
               </div>
 

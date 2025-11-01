@@ -6,6 +6,7 @@ import {
   ApprovalStatus,
   VehicleDataFrontend,
   VehicleHistoryEntry,
+  Vehicle,
 } from "@/types/types";
 import { getServerSession } from "next-auth";
 import { ObjectId } from "mongodb";
@@ -101,9 +102,9 @@ export async function GET(
       const formattedVehicle = {
         ...vehicle,
         _id: vehicle._id.toString(),
-        postedDate: vehicle.postedDate?.toISOString(),
-        createdAt: vehicle.createdAt?.toISOString(),
-        updatedAt: vehicle.updatedAt?.toISOString(),
+        postedDate: vehicle.postedDate instanceof Date ? vehicle.postedDate.toISOString() : vehicle.postedDate,
+        createdAt: vehicle.createdAt instanceof Date ? vehicle.createdAt.toISOString() : vehicle.createdAt,
+        updatedAt: vehicle.updatedAt instanceof Date ? vehicle.updatedAt.toISOString() : vehicle.updatedAt,
       };
 
       return NextResponse.json(
@@ -306,6 +307,82 @@ export async function PATCH(
   }
 }
 
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+): Promise<NextResponse> {
+  try {
+    console.log("PUT /api/admin/vehicles/[id] - Iniciando...");
+
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json(createErrorResponse("Acceso no autorizado"), {
+        status: 403,
+      });
+    }
+
+    if (!ObjectId.isValid(params.id)) {
+      return NextResponse.json(createErrorResponse("ID de vehículo inválido"), {
+        status: 400,
+      });
+    }
+
+    const client = await clientPromise;
+    const db = client.db("vehicle_store");
+    const vehicleId = new ObjectId(params.id);
+
+    const vehicleToUpdate = await db
+      .collection("vehicles")
+      .findOne({ _id: vehicleId });
+
+    if (!vehicleToUpdate) {
+      return NextResponse.json(createErrorResponse("Vehículo no encontrado"), {
+        status: 404,
+      });
+    }
+
+    const body: Partial<Vehicle> = await request.json();
+
+    // Excluir campos que no deben ser actualizados directamente
+    const { _id, createdAt, updatedAt, ...updateData } = body;
+
+    const result = await db.collection("vehicles").updateOne(
+      { _id: vehicleId },
+      {
+        $set: {
+          ...updateData,
+          updatedAt: new Date(),
+        },
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      return NextResponse.json(
+        createSuccessResponse(null, "No se realizaron cambios en el vehículo")
+      );
+    }
+
+    const updatedVehicle = await db
+      .collection("vehicles")
+      .findOne({ _id: vehicleId });
+
+    return NextResponse.json(
+      createSuccessResponse(
+        updatedVehicle,
+        "Vehículo actualizado exitosamente"
+      ),
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error en PUT /api/admin/vehicles/[id]:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Error desconocido";
+    return NextResponse.json(
+      createErrorResponse(`Error interno del servidor: ${errorMessage}`),
+      { status: 500 }
+    );
+  }
+}
 
 
 export async function DELETE(

@@ -20,19 +20,19 @@ import type {
   VehicleHistoryEntry,
 } from "@/types/types";
 import { useAdminPanelEnhanced } from "@/hooks/use-admin-panel-enhanced";
-import { 
-  Shield, 
-  Users, 
-  Car, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  Shield,
+  Users,
+  Car,
+  CheckCircle2,
+  AlertCircle,
   Download,
   Filter,
   Grid,
   List,
   CheckSquare,
   XSquare,
-  Trash2
+  Trash2,
 } from "lucide-react";
 
 // Local components in order of first appearance in JSX
@@ -53,6 +53,7 @@ import { DeleteDialog } from "./DeleteDialog";
 import { MassApproveDialog } from "./MassApproveDialog";
 import { MassRejectDialog } from "./MassRejectDialog";
 import { MassDeleteDialog } from "./MassDeleteDialog";
+import { useRouter } from "next/navigation";
 
 // Mapeo explícito
 const ApprovalStatus = {
@@ -71,6 +72,7 @@ interface DialogState {
 }
 
 export const AdminPanel = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<AdminTab>("vehicles");
   const [isMobileView, setIsMobileView] = useState(false);
 
@@ -107,15 +109,12 @@ export const AdminPanel = () => {
   } = useAdminPanelEnhanced();
 
   const categoryCounts = useMemo(() => {
-    return allVehicles.reduce(
-      (acc, vehicle) => {
-        if (vehicle.category) {
-          acc[vehicle.category] = (acc[vehicle.category] || 0) + 1;
-        }
-        return acc;
-      },
-      {} as Record<string, number>
-    );
+    return allVehicles.reduce((acc, vehicle) => {
+      if (vehicle.category) {
+        acc[vehicle.category] = (acc[vehicle.category] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
   }, [allVehicles]);
 
   const [selectedVehicle, setSelectedVehicle] =
@@ -142,14 +141,26 @@ export const AdminPanel = () => {
     useState<VehicleDataFrontend | null>(null);
 
   // ========== Cálculo de Estadísticas ==========
-  const { pendingCount, approvedCount, rejectedCount, totalCount } = useMemo(() => {
-    const pending = allVehicles.filter(v => v.status === ApprovalStatus.PENDING).length;
-    const approved = allVehicles.filter(v => v.status === ApprovalStatus.APPROVED).length;
-    const rejected = allVehicles.filter(v => v.status === ApprovalStatus.REJECTED).length;
-    const total = allVehicles.length;
-    
-    return { pendingCount: pending, approvedCount: approved, rejectedCount: rejected, totalCount: total };
-  }, [allVehicles]);
+  const { pendingCount, approvedCount, rejectedCount, totalCount } =
+    useMemo(() => {
+      const pending = allVehicles.filter(
+        (v) => v.status === ApprovalStatus.PENDING
+      ).length;
+      const approved = allVehicles.filter(
+        (v) => v.status === ApprovalStatus.APPROVED
+      ).length;
+      const rejected = allVehicles.filter(
+        (v) => v.status === ApprovalStatus.REJECTED
+      ).length;
+      const total = allVehicles.length;
+
+      return {
+        pendingCount: pending,
+        approvedCount: approved,
+        rejectedCount: rejected,
+        totalCount: total,
+      };
+    }, [allVehicles]);
 
   const handleShowRejectDialog = (vehicle: VehicleDataFrontend) => {
     setDialogState({ type: "reject", vehicle });
@@ -419,6 +430,10 @@ export const AdminPanel = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleGoToEditPage = (vehicleId: string) => {
+    router.push(`/admin/vehicles/${vehicleId}/edit`);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground py-8 px-4 animate-in fade-in duration-500">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -444,44 +459,60 @@ export const AdminPanel = () => {
           <Card className="shadow-sm border-border hover:shadow-md transition-shadow">
             <CardContent className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Total</p>
-                <p className="text-2xl font-bold text-foreground">{totalCount}</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Total
+                </p>
+                <p className="text-2xl font-bold text-foreground">
+                  {totalCount}
+                </p>
               </div>
               <div className="p-2 rounded-lg bg-muted/50">
                 <Car className="w-5 h-5 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-sm border-border hover:shadow-md transition-shadow bg-muted/20">
             <CardContent className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Pendientes</p>
-                <p className="text-2xl font-bold text-accent">{pendingCount}</p> {/* Usando accent para pending */}
+                <p className="text-sm font-medium text-muted-foreground">
+                  Pendientes
+                </p>
+                <p className="text-2xl font-bold text-accent">{pendingCount}</p>{" "}
+                {/* Usando accent para pending */}
               </div>
               <div className="p-2 rounded-lg bg-accent/20">
                 <AlertCircle className="w-5 h-5 text-accent" />
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-sm border-border hover:shadow-md transition-shadow bg-primary/5">
             <CardContent className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Aprobados</p>
-                <p className="text-2xl font-bold text-primary">{approvedCount}</p> {/* Primary para approved */}
+                <p className="text-sm font-medium text-muted-foreground">
+                  Aprobados
+                </p>
+                <p className="text-2xl font-bold text-primary">
+                  {approvedCount}
+                </p>{" "}
+                {/* Primary para approved */}
               </div>
               <div className="p-2 rounded-lg bg-primary/10">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-sm border-border hover:shadow-md transition-shadow bg-destructive/5">
             <CardContent className="p-4 flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Rechazados</p>
-                <p className="text-2xl font-bold text-destructive">{rejectedCount}</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Rechazados
+                </p>
+                <p className="text-2xl font-bold text-destructive">
+                  {rejectedCount}
+                </p>
               </div>
               <div className="p-2 rounded-lg bg-destructive/10">
                 <XSquare className="w-5 h-5 text-destructive" />
@@ -491,24 +522,28 @@ export const AdminPanel = () => {
         </div>
 
         {/* ========== PESTAÑAS DE NAVEGACIÓN ========== */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as AdminTab)} className="w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as AdminTab)}
+          className="w-full"
+        >
           <TabsList className="grid w-full grid-cols-2 bg-muted rounded-lg shadow-sm border border-border/20 p-1">
-            <TabsTrigger 
-              value="vehicles" 
+            <TabsTrigger
+              value="vehicles"
               className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all hover:scale-105 rounded-md"
             >
               <Car className="w-4 h-4" />
               Vehículos
             </TabsTrigger>
-            <TabsTrigger 
-              value="users" 
+            <TabsTrigger
+              value="users"
               className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all hover:scale-105 rounded-md"
             >
               <Users className="w-4 h-4" />
               Usuarios
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="vehicles" className="space-y-6 mt-6">
             {/* Header mejorado */}
             <AdminPanelHeader
@@ -588,6 +623,7 @@ export const AdminPanel = () => {
                     onShowCommentDialog={handleShowCommentDialog}
                     onShowHistoryDialog={handleShowHistoryDialog}
                     onShowDeleteDialog={handleShowDeleteDialog}
+                    onGoToEditPage={handleGoToEditPage}
                   />
                 ) : viewMode === "grid" ? (
                   <VehicleGridView
@@ -600,6 +636,7 @@ export const AdminPanel = () => {
                     onShowCommentDialog={handleShowCommentDialog}
                     onShowHistoryDialog={handleShowHistoryDialog}
                     onShowDeleteDialog={handleShowDeleteDialog}
+                    onGoToEditPage={handleGoToEditPage}
                   />
                 ) : (
                   <VehicleListView
@@ -613,6 +650,7 @@ export const AdminPanel = () => {
                     onShowCommentDialog={handleShowCommentDialog}
                     onShowHistoryDialog={handleShowHistoryDialog}
                     onShowDeleteDialog={handleShowDeleteDialog}
+                    onGoToEditPage={handleGoToEditPage}
                   />
                 )}
 
@@ -631,7 +669,7 @@ export const AdminPanel = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="users" className="mt-6">
             <UsersPanel />
           </TabsContent>

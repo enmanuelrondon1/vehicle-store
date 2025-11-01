@@ -17,6 +17,7 @@ import {
   Trash2,
   History,
   Eye,
+  Pencil,
 } from "lucide-react";
 import { VehicleDataFrontend, ApprovalStatus } from "@/types/types";
 
@@ -26,8 +27,9 @@ interface MobileActionSheetProps {
   onStatusChange: (vehicleId: string, status: ApprovalStatus) => void;
   onShowRejectDialog: (vehicle: VehicleDataFrontend) => void;
   onShowCommentDialog: (vehicle: VehicleDataFrontend) => void;
-  onShowHistoryDialog: (vehicleId: string) => void;
+  onShowHistoryDialog: () => void;
   onShowDeleteDialog: (vehicle: VehicleDataFrontend) => void;
+  onGoToEditPage: (vehicle: VehicleDataFrontend) => void;
 }
 
 export const MobileActionSheet = ({
@@ -38,6 +40,7 @@ export const MobileActionSheet = ({
   onShowCommentDialog,
   onShowHistoryDialog,
   onShowDeleteDialog,
+  onGoToEditPage,
 }: MobileActionSheetProps) => {
   return (
     <Sheet>
@@ -60,6 +63,14 @@ export const MobileActionSheet = ({
           >
             <Eye className="mr-2 h-4 w-4" />
             Ver detalles
+          </Button>
+          <Button
+            variant="outline"
+            className="justify-start"
+            onClick={() => onGoToEditPage(vehicle)}
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            Editar
           </Button>
           <Button
             variant="outline"
@@ -89,7 +100,7 @@ export const MobileActionSheet = ({
           <Button
             variant="outline"
             className="justify-start"
-            onClick={() => onShowHistoryDialog(vehicle._id!)}
+            onClick={onShowHistoryDialog}
           >
             <History className="mr-2 h-4 w-4" />
             Ver historial
