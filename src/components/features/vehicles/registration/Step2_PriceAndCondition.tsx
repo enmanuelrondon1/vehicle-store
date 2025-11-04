@@ -577,7 +577,7 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
         >
           <SelectField
             value={formData.condition || ""}
-            onChange={(value) => handleInputChange("condition", value)}
+            onValueChange={(value) => handleInputChange("condition", value)}
             options={[VehicleCondition.EXCELLENT, VehicleCondition.GOOD].map((c) => ({
               value: c,
               label: VEHICLE_CONDITIONS_LABELS[c],
@@ -599,7 +599,7 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
         >
           <SelectField
             value={formData.warranty || ""}
-            onChange={(value) => handleInputChange("warranty", value)}
+            onValueChange={(value) => handleInputChange("warranty", value)}
             options={Object.values(WarrantyType).map((w) => ({
               value: w,
               label: WARRANTY_LABELS[w],

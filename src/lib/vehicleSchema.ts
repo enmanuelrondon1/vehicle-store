@@ -10,7 +10,7 @@ import {
 } from "@/types/shared";
 import { getAvailableFeatures } from "@/constants/form-constants";
 
-
+// 🔧 Schema actualizado con validación de teléfono corregida
 export const SellerContactBackendSchema = z.object({
   name: z
     .string()
@@ -27,15 +27,26 @@ export const SellerContactBackendSchema = z.object({
   phone: z.string().refine(
     (phone) => {
       if (!phone) return false;
-      const numberPart = phone.split(" ")[1] || "";
-      return /^\d{7}$/.test(numberPart);
+      // 🔧 SOLUCIÓN: Obtener el ÚLTIMO segmento después de dividir por espacios
+      const parts = phone.trim().split(/\s+/); // Divide por uno o más espacios
+      const numberPart = parts[parts.length - 1]; // Último elemento
+      const isValid = /^\d{7}$/.test(numberPart);
+      
+      console.log('🔍 Validando teléfono:', {
+        original: phone,
+        parts,
+        numberPart,
+        isValid
+      });
+      
+      return isValid;
     },
     {
       message: "El número de teléfono debe tener exactamente 7 dígitos.",
     }
   ),
+  userId: z.string().optional(), // 🔧 Agregado para que no falle la validación
 });
-
 
 const step1Schema = z.object({
   _id: z.string().optional(),
@@ -187,7 +198,6 @@ const step4Schema = z.object({
       }
     ),
 });
-
 
 export const step5Schema = z.object({
   description: z

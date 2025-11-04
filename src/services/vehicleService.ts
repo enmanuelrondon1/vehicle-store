@@ -353,7 +353,7 @@ export class VehicleService {
           "private-admin-notifications",
           "status-update",
           {
-            message: `El estado de "${backendData.brand} ${backendData.model}" ha cambiado a ${updateData.status}.`,
+            message: `El estado de \"${backendData.brand} ${backendData.model}\" ha cambiado a ${updateData.status}.`,
             vehicleId: id,
             status: updateData.status,
             timestamp: new Date().toISOString(),
@@ -693,6 +693,62 @@ export class VehicleService {
       return {
         success: false,
         error: "Error interno del servidor al buscar vehículos similares",
+      };
+    }
+  }
+
+  async addImagesToVehicle(
+    id: string,
+    imageUrls: string[]
+  ): Promise<ApiResponse<null>> {
+    try {
+      if (!ValidationUtils.isValidObjectId(id)) {
+        return { success: false, error: "ID de vehículo inválido" };
+      }
+
+      const result = await this.collection.updateOne(
+        { _id: new ObjectId(id) },
+        { $push: { images: { $each: imageUrls } } }
+      );
+
+      if (result.modifiedCount === 0) {
+        return { success: false, error: "Vehículo no encontrado o sin cambios" };
+      }
+
+      return { success: true, data: null, message: "Imágenes añadidas correctamente" };
+    } catch (error) {
+      console.error("Error añadiendo imágenes al vehículo:", error);
+      return {
+        success: false,
+        error: "Error interno del servidor al añadir imágenes",
+      };
+    }
+  }
+
+  async removeImageFromVehicle(
+    id: string,
+    imageUrl: string
+  ): Promise<ApiResponse<null>> {
+    try {
+      if (!ValidationUtils.isValidObjectId(id)) {
+        return { success: false, error: "ID de vehículo inválido" };
+      }
+
+      const result = await this.collection.updateOne(
+        { _id: new ObjectId(id) },
+        { $pull: { images: imageUrl } }
+      );
+
+      if (result.modifiedCount === 0) {
+        return { success: false, error: "Vehículo no encontrado o imagen no hallada" };
+      }
+
+      return { success: true, data: null, message: "Imagen eliminada correctamente" };
+    } catch (error) {
+      console.error("Error eliminando imagen del vehículo:", error);
+      return {
+        success: false,
+        error: "Error interno del servidor al eliminar la imagen",
       };
     }
   }

@@ -109,6 +109,8 @@ export const useVehicleForm = ({ formRef }: UseVehicleFormProps) => {
           // Si se desactiva, eliminamos financingDetails
           delete newState.financingDetails;
         }
+      } else if (field === 'isFeatured') {
+        newState.isFeatured = checked;
       }
       
       return newState;

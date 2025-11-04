@@ -15,24 +15,12 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
-  RotateCcw,
-  Download,
+  DoorOpen,
+  Users,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 interface Spec {
@@ -44,7 +32,7 @@ interface TechnicalSpecificationsProps {
   specs: Spec[];
 }
 
-// Función para obtener el icono apropiado según la etiqueta
+// ✅ FUNCIÓN MEJORADA: Iconos personalizados para cada campo
 const getIconForSpec = (label: string) => {
   const lowerLabel = label.toLowerCase();
 
@@ -70,6 +58,15 @@ const getIconForSpec = (label: string) => {
   if (lowerLabel.includes("color")) {
     return <Palette className="w-4 h-4 text-pink-500" />;
   }
+  
+  // ✅ NUEVOS ICONOS PERSONALIZADOS
+  if (lowerLabel.includes("puertas")) {
+    return <DoorOpen className="w-4 h-4 text-cyan-500" />;
+  }
+  if (lowerLabel.includes("asientos")) {
+    return <Users className="w-4 h-4 text-indigo-500" />;
+  }
+  
   if (lowerLabel.includes("garantía") || lowerLabel.includes("seguro")) {
     return <Shield className="w-4 h-4 text-red-500" />;
   }
@@ -80,7 +77,7 @@ const getIconForSpec = (label: string) => {
   return <Settings className="w-4 h-4 text-gray-500" />;
 };
 
-// Función para categorizar las especificaciones
+// ✅ FUNCIÓN MEJORADA: Categorización más específica
 const categorizeSpec = (label: string) => {
   const lowerLabel = label.toLowerCase();
 
@@ -91,14 +88,17 @@ const categorizeSpec = (label: string) => {
   ) {
     return "Información General";
   }
+  
   if (
     lowerLabel.includes("kilometraje") ||
     lowerLabel.includes("rendimiento") ||
     lowerLabel.includes("motor") ||
-    lowerLabel.includes("cilindraje")
+    lowerLabel.includes("cilindraje") ||
+    lowerLabel.includes("potencia")
   ) {
     return "Rendimiento";
   }
+  
   if (
     lowerLabel.includes("combustible") ||
     lowerLabel.includes("transmisión") ||
@@ -106,8 +106,22 @@ const categorizeSpec = (label: string) => {
   ) {
     return "Sistema de Propulsión";
   }
-  if (lowerLabel.includes("color") || lowerLabel.includes("garantía")) {
-    return "Características";
+  
+  // ✅ NUEVA CATEGORÍA: Para características físicas del vehículo
+  if (
+    lowerLabel.includes("color") ||
+    lowerLabel.includes("puertas") ||
+    lowerLabel.includes("asientos") ||
+    lowerLabel.includes("condición")
+  ) {
+    return "Características del Vehículo";
+  }
+  
+  if (
+    lowerLabel.includes("garantía") ||
+    lowerLabel.includes("seguro")
+  ) {
+    return "Garantía y Seguridad";
   }
 
   return "Otros";
@@ -224,54 +238,6 @@ const TechnicalSpecificationsComponent: React.FC<
     setSortBy("default");
   }, []);
 
-  // Función para exportar especificaciones en diferentes formatos
-  const exportSpecs = useCallback(
-    (format: "txt" | "csv" | "json") => {
-      let dataStr: string;
-      let mimeType: string;
-      let fileName: string;
-
-      switch (format) {
-        case "csv":
-          const header = "Característica,Valor";
-          const rows = filteredSpecs.map(
-            (spec) =>
-              `"${spec.label.replace(/"/g, '""')}","${String(
-                spec.value
-              ).replace(/"/g, '""')}"`
-          );
-          dataStr = [header, ...rows].join("\n");
-          mimeType = "text/csv;charset=utf-8,";
-          fileName = "especificaciones_tecnicas.csv";
-          break;
-
-        case "json":
-          dataStr = JSON.stringify(filteredSpecs, null, 2);
-          mimeType = "application/json;charset=utf-8,";
-          fileName = "especificaciones_tecnicas.json";
-          break;
-
-        case "txt":
-        default:
-          dataStr = filteredSpecs
-            .map((spec) => `${spec.label}: ${spec.value}`)
-            .join("\n");
-          mimeType = "text/plain;charset=utf-8,";
-          fileName = "especificaciones_tecnicas.txt";
-          break;
-      }
-
-      const dataUri = "data:" + mimeType + encodeURIComponent(dataStr);
-      const linkElement = document.createElement("a");
-      linkElement.setAttribute("href", dataUri);
-      linkElement.setAttribute("download", fileName);
-      document.body.appendChild(linkElement); // Requerido para Firefox
-      linkElement.click();
-      document.body.removeChild(linkElement);
-    },
-    [filteredSpecs]
-  );
-
   if (!specs || specs.length === 0) {
     return (
       <div className="p-6 rounded-xl border bg-card/50 border-border backdrop-blur-sm">
@@ -290,7 +256,7 @@ const TechnicalSpecificationsComponent: React.FC<
 
   return (
     <div className="p-6 rounded-xl border bg-card/50 border-border backdrop-blur-sm">
-      {/* Cabecera con título y búsqueda */}
+      {/* Cabecera con título */}
       <div className="flex flex-col lg:flex-row justify-between lg:items-center mb-6 gap-4">
         <div className="flex items-center gap-2">
           <Settings className="w-6 h-6 text-primary" />

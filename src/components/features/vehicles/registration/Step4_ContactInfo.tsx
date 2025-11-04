@@ -1,5 +1,4 @@
 // src/components/features/vehicles/registration/Step4_ContactInfo.tsx
-// VERSIÓN CON DISEÑO UNIFICADO USANDO SelectField
 
 "use client";
 import React, { useState, useCallback, useMemo, useEffect } from "react";
@@ -506,7 +505,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <SelectField
               value={formData.sellerContact?.phone?.split(" ")[0] || phoneCodes[0]}
-              onChange={handlePhoneCodeChange}
+              onValueChange={handlePhoneCodeChange}
               options={phoneCodes.map((code) => ({ value: code, label: code }))}
               className={`${inputClass} ${phoneFieldValidation.getBorderClassName()}`}
               placeholder="Código"
@@ -564,7 +563,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
             {/* Selector de Estado usando SelectField */}
             <SelectField
               value={selectedState}
-              onChange={handleStateChange}
+              onValueChange={handleStateChange} 
               options={stateOptions}
               className={`${inputClass} ${locationFieldValidation.getBorderClassName()}`}
               placeholder="Seleccionar estado"
@@ -572,7 +571,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
             
             {/* Input de Ciudad */}
             <input
-              type="text"
+              type="text"   
               value={city}
               onChange={handleCityChange}
               onBlur={handleCityBlur}

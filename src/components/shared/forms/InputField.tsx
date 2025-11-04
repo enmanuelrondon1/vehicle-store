@@ -1,9 +1,8 @@
-// src/components/shared/forms/InputField.tsx
+// src/components/shared/forms/InputField.tsx (Versión Mejorada)
 "use client";
 
 import React, { useState } from "react";
 import { Check, AlertCircle, Info, TrendingUp } from "lucide-react";
-// ¡Eliminada la dependencia de useDarkMode!
 
 interface InputFieldProps {
   label: string;
@@ -15,6 +14,7 @@ interface InputFieldProps {
   tooltip?: string;
   counter?: { current: number; max: number };
   tips?: string[];
+  layout?: "default" | "switch";
 }
 
 export const InputField: React.FC<InputFieldProps> = ({
@@ -27,28 +27,48 @@ export const InputField: React.FC<InputFieldProps> = ({
   tooltip,
   counter,
   tips,
+  layout = "default",
 }) => {
   const [showTips, setShowTips] = useState(false);
 
+  const labelContent = (
+    <label className="flex items-center text-sm font-medium text-foreground">
+      {icon && <span className="mr-2 text-muted-foreground">{icon}</span>}
+      {label}
+      {required && <span className="text-destructive ml-1">*</span>}
+      {tooltip && (
+        <span className="ml-2 cursor-help" title={tooltip}>
+          <Info className="w-3 h-3 text-muted-foreground" />
+        </span>
+      )}
+    </label>
+  );
+
+  if (layout === "switch") {
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center justify-between h-10">
+          {labelContent}
+          {children}
+        </div>
+        {error && (
+          <p className="text-sm text-destructive mt-1 flex items-center">
+            <AlertCircle className="w-4 h-4 mr-1" />
+            {error}
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
-    // Usamos 'text-foreground' y 'space-y-2' para consistencia
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <label className="flex items-center text-sm font-medium text-foreground">
-          {icon && <span className="mr-2 text-muted-foreground">{icon}</span>}
-          {label}
-          {required && <span className="text-destructive ml-1">*</span>}
-          {tooltip && (
-            <span className="ml-2 cursor-help" title={tooltip}>
-              <Info className="w-3 h-3 text-muted-foreground" />
-            </span>
-          )}
-        </label>
+        {labelContent}
         {tips && (
           <button
             type="button"
             onClick={() => setShowTips(!showTips)}
-            // Usamos colores de tema para el botón de tips
             className="ml-auto text-xs px-2 py-1 rounded-full transition-colors bg-muted text-muted-foreground hover:bg-muted/80"
           >
             <TrendingUp className="w-3 h-3 inline mr-1" />
@@ -58,11 +78,12 @@ export const InputField: React.FC<InputFieldProps> = ({
       </div>
       <div className="relative">
         {children}
-        {success && !error && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-600" />}
+        {/* CAMBIO CLAVE: Usamos colores que se adaptan al tema */}
+        {success && !error && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-600 dark:text-green-400" />}
         {error && <AlertCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-destructive" />}
       </div>
       {counter && (
-        <div className={`text-xs ${counter.current > counter.max * 0.9 ? "text-destructive" : "text-muted-foreground"}`}>
+        <div className={`text-xs transition-colors ${counter.current > counter.max * 0.9 ? "text-destructive" : "text-muted-foreground"}`}>
           {counter.current}/{counter.max} caracteres
         </div>
       )}
@@ -73,7 +94,6 @@ export const InputField: React.FC<InputFieldProps> = ({
         </p>
       )}
       {showTips && tips && (
-        // El contenedor de tips ahora usa colores de tema
         <div className="mt-2 p-3 rounded-lg space-y-1 bg-muted/50 border border-border">
           {tips.map((tip, index) => (
             <p key={index} className="text-xs text-muted-foreground">

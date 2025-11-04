@@ -39,7 +39,6 @@ declare module "next-auth" {
 
 // Componente principal
 const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
-  // const { isDarkMode } = useDarkMode(); // ❌ REMOVED
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -59,9 +58,6 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     translatedWarranty,
     translatedStatus,
   } = useVehicleData(vehicleId);
-
-
-  
 
   useEffect(() => {
     // console.log("Vehicle data in VehicleDetail:", vehicle);
@@ -167,26 +163,29 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
               images={vehicle.images}
               vehicleName={`${vehicle.brand} ${vehicle.model}`}
             />
+            {/* ✅ ESPECIFICACIONES TÉCNICAS ACTUALIZADAS */}
             <TechnicalSpecifications
               specs={[
                 { label: "Marca", value: vehicle.brand },
+                { label: "Modelo", value: vehicle.model },
+                { label: "Año", value: vehicle.year },
                 {
                   label: "Kilometraje",
                   value: `${formatMileage(vehicle.mileage)} km`,
                 },
-                { label: "Modelo", value: vehicle.model },
-                { label: "Transmisión", value: translatedTransmission || "" },
-                { label: "Año", value: vehicle.year },
-                { label: "Combustible", value: translatedFuelType || "" },
                 { label: "Condición", value: translatedCondition || "" },
+                { label: "Transmisión", value: translatedTransmission || "" },
+                { label: "Combustible", value: translatedFuelType || "" },
                 { label: "Motor", value: vehicle.engine || "N/A" },
+                { label: "Cilindraje", value: vehicle.displacement || "N/A" },
                 { label: "Color", value: vehicle.color },
-                { label: "Garantía", value: translatedWarranty || "" },
+                { label: "Puertas", value: vehicle.doors || "N/A" },
+                { label: "Asientos", value: vehicle.seats || "N/A" },
                 {
                   label: "Tracción",
                   value: vehicle.driveType?.toUpperCase() || "N/A",
                 },
-                { label: "Cilindraje", value: vehicle.displacement || "N/A" },
+                { label: "Garantía", value: translatedWarranty || "" },
               ]}
             />
             <VehicleDocumentation

@@ -1,4 +1,5 @@
 // Versión PROFESIONAL mejorada de Step1_BasicInfo.tsx
+//src/components/features/vehicles/registration/Step1_BasicInfo.tsx
 "use client";
 import React, { useMemo } from "react";
 import {
@@ -208,7 +209,7 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
         >
           <SelectField
             value={formData.category || ""}
-            onChange={(value) => {
+            onValueChange={(value) => {
               handleInputChange("category", value as VehicleCategory);
               handleInputChange("brand", "");
               handleInputChange("model", "");
@@ -238,7 +239,7 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
           
           <SelectField
             value={formData.brand || ""}
-            onChange={(value) => {
+            onValueChange={(value) => {
               handleInputChange("brand", value);
               handleInputChange("model", "");
             }}
@@ -292,7 +293,7 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
         >
           <SelectField
             value={formData.model || ""}
-            onChange={(value) => handleInputChange("model", value)}
+            onValueChange={(value) => handleInputChange("model", value)}
             disabled={!formData.brand}
             placeholder={
               !formData.brand
@@ -366,7 +367,7 @@ const Step1_BasicInfo: React.FC<StepProps> = ({
         >
           <SelectField
             value={formData.year?.toString() || ""}
-            onChange={(value) => handleInputChange("year", parseInt(value) || 0)}
+            onValueChange={(value) => handleInputChange("year", parseInt(value) || 0)}
             placeholder="Selecciona el año"
             options={yearOptions}
             className={`${inputClass} ${yearValidation.getBorderClassName()}`}

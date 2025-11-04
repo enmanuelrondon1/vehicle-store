@@ -18,8 +18,6 @@ import { useDebounce } from "@/hooks/useDebounce";
 const VehicleList: React.FC<{
   initialVehicles: Vehicle[];
 }> = ({ initialVehicles }) => {
-  const [vehicles] = useState<Vehicle[]>(initialVehicles);
-
   const [viewMode] = useState<"grid" | "list">("grid");
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
@@ -54,6 +52,10 @@ const VehicleList: React.FC<{
     filters.yearRange,
     sortBy,
   ]);
+
+  useEffect(() => {
+    // Forzar la actualización de los vehículos filtrados cuando la lista inicial cambie
+  }, [initialVehicles]);
 
   const handleRetry = useCallback(() => {
     window.location.reload();
@@ -112,7 +114,7 @@ const VehicleList: React.FC<{
           setShowOnlyPublishedColors={setShowOnlyPublishedColors}
           showOnlyPublishedLocations={showOnlyPublishedLocations}
           setShowOnlyPublishedLocations={setShowOnlyPublishedLocations}
-          totalVehicles={vehicles.length}
+          totalVehicles={initialVehicles.length}
         />
         {compareList.length > 0 && (
           <CompareBar
@@ -122,7 +124,7 @@ const VehicleList: React.FC<{
         )}
         {filteredVehicles.length === 0 ? (
           <NoResults
-            vehicles={vehicles.length}
+            vehicles={initialVehicles.length}
             clearAllFilters={clearAllFilters}
             handleRetry={handleRetry}
           />

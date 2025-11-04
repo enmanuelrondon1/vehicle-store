@@ -38,6 +38,7 @@ const CreateVehicleSchema = z.object({
   price: z.number().positive("El precio debe ser mayor a 0"),
   currency: z.nativeEnum(Currency).default(Currency.USD),
   isNegotiable: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
   offersFinancing: z.boolean().optional(),
   financingDetails: FinancingDetailsSchema.optional(),
   mileage: z.number().min(0, "El kilometraje no puede ser negativo"),

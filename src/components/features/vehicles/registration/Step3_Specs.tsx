@@ -48,13 +48,6 @@ interface StepProps {
 // CONFIGURACIÓN DE VALIDACIÓN
 // ============================================
 const VALIDATION_CONFIG = {
-  year: {
-    tips: [
-      "🎯 Año más reciente = mayor valor en el mercado",
-      "📅 Considera el modelo específico del año",
-      "⚡ Los cambios de generación afectan significativamente el precio",
-    ],
-  },
   color: {
     tips: [
       "🤍 Blanco, gris y negro tienen mayor demanda",
@@ -144,18 +137,13 @@ const SpecsPreviewCard: React.FC<{
       </div>
 
       <div className="space-y-3">
-        {formData.year && (
-          <div className="flex justify-between items-center py-2 border-b border-border/50">
-            <span className="text-sm text-muted-foreground">Año</span>
-            <span className="font-medium text-sm text-foreground">{formData.year}</span>
-          </div>
-        )}
-
         {formData.color && (
           <div className="flex justify-between items-center py-2 border-b border-border/50">
             <span className="text-sm text-muted-foreground">Color</span>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-sm text-foreground">{formData.color}</span>
+              <span className="font-medium text-sm text-foreground">
+                {formData.color}
+              </span>
             </div>
           </div>
         )}
@@ -163,7 +151,9 @@ const SpecsPreviewCard: React.FC<{
         {formData.displacement && (
           <div className="flex justify-between items-center py-2 border-b border-border/50">
             <span className="text-sm text-muted-foreground">Cilindraje</span>
-            <span className="font-medium text-sm text-foreground">{formData.displacement}</span>
+            <span className="font-medium text-sm text-foreground">
+              {formData.displacement}
+            </span>
           </div>
         )}
 
@@ -197,14 +187,18 @@ const SpecsPreviewCard: React.FC<{
         {formData.doors && (
           <div className="flex justify-between items-center py-2 border-b border-border/50">
             <span className="text-sm text-muted-foreground">Puertas</span>
-            <span className="font-medium text-sm text-foreground">{formData.doors}</span>
+            <span className="font-medium text-sm text-foreground">
+              {formData.doors}
+            </span>
           </div>
         )}
 
         {formData.seats && (
           <div className="flex justify-between items-center py-2">
             <span className="text-sm text-muted-foreground">Asientos</span>
-            <span className="font-medium text-sm text-foreground">{formData.seats}</span>
+            <span className="font-medium text-sm text-foreground">
+              {formData.seats}
+            </span>
           </div>
         )}
       </div>
@@ -353,7 +347,8 @@ const Step3_Specs: React.FC<StepProps> = ({
             Categoría no seleccionada
           </h3>
           <p className="text-muted-foreground">
-            Por favor, regresa al paso 1 y selecciona una categoría para continuar.
+            Por favor, regresa al paso 1 y selecciona una categoría para
+            continuar.
           </p>
         </div>
       </div>
@@ -381,7 +376,9 @@ const Step3_Specs: React.FC<StepProps> = ({
         {/* ========== BARRA DE PROGRESO ========== */}
         <div className="w-full max-w-md mx-auto pt-2">
           <div className="flex justify-between items-center mb-2.5">
-            <span className="text-sm font-medium text-muted-foreground">Progreso</span>
+            <span className="text-sm font-medium text-muted-foreground">
+              Progreso
+            </span>
             <span className="text-sm font-bold text-foreground tabular-nums">
               {Math.round(progressPercentage)}%
             </span>
@@ -392,27 +389,6 @@ const Step3_Specs: React.FC<StepProps> = ({
 
       {/* ========== FORMULARIO ========== */}
       <div className="space-y-7">
-        {/* AÑO */}
-        <InputField
-          label="Año"
-          required
-          error={errors.year}
-          icon={<Calendar className="w-4 h-4 text-primary" />}
-          tooltip="El año del vehículo afecta significativamente su valor de mercado"
-          success={yearValidation.isValid}
-          tips={VALIDATION_CONFIG.year.tips}
-        >
-          <input
-            type="text"
-            value={formData.year || ""}
-            onChange={handleYearChange}
-            className={`${inputClass} ${yearValidation.getBorderClassName()}`}
-            placeholder="2020"
-            maxLength={4}
-            inputMode="numeric"
-          />
-        </InputField>
-
         {/* COLOR */}
         <InputField
           label="Color"
@@ -427,7 +403,7 @@ const Step3_Specs: React.FC<StepProps> = ({
         >
           <SelectField
             value={formData.color || ""}
-            onChange={(value) => handleInputChange("color", value)}
+            onValueChange={(value) => handleInputChange("color", value)}
             placeholder="Selecciona un color"
             options={COMMON_COLORS.map((c) => ({ value: c, label: c }))}
             className={`${inputClass} ${colorValidation.getBorderClassName()}`}
@@ -457,7 +433,7 @@ const Step3_Specs: React.FC<StepProps> = ({
         >
           <SelectField
             value={formData.displacement || ""}
-            onChange={(value) => handleInputChange("displacement", value)}
+            onValueChange={(value) => handleInputChange("displacement", value)}
             placeholder="Selecciona cilindraje"
             options={generateDisplacementOptions().map((d) => ({
               value: d,
@@ -499,11 +475,11 @@ const Step3_Specs: React.FC<StepProps> = ({
         >
           <SelectField
             value={formData.transmission || ""}
-            onChange={(value) => handleInputChange("transmission", value)}
+            onValueChange={(value) => handleInputChange("transmission", value)}
             placeholder="Selecciona transmisión"
-            options={Object.entries(TRANSMISSION_TYPES_LABELS).map<
-              { value: string; label: string }
-            >(([value, label]) => ({ value, label }))}
+            options={Object.entries(TRANSMISSION_TYPES_LABELS).map(
+              ([value, label]) => ({ value, label })
+            )}
             className={`${inputClass} ${transmissionValidation.getBorderClassName()}`}
           />
         </InputField>
@@ -520,11 +496,11 @@ const Step3_Specs: React.FC<StepProps> = ({
         >
           <SelectField
             value={formData.fuelType || ""}
-            onChange={(value) => handleInputChange("fuelType", value)}
+            onValueChange={(value) => handleInputChange("fuelType", value)}
             placeholder="Selecciona combustible"
-            options={Object.entries(FUEL_TYPES_LABELS).map<
-              { value: string; label: string }
-            >(([value, label]) => ({ value, label }))}
+            options={Object.entries(FUEL_TYPES_LABELS).map(
+              ([value, label]) => ({ value, label })
+            )}
             className={`${inputClass} ${fuelTypeValidation.getBorderClassName()}`}
           />
         </InputField>
@@ -541,11 +517,11 @@ const Step3_Specs: React.FC<StepProps> = ({
           >
             <SelectField
               value={formData.driveType || ""}
-              onChange={(value) => handleInputChange("driveType", value)}
+              onValueChange={(value) => handleInputChange("driveType", value)}
               placeholder="Selecciona tracción"
-              options={Object.entries(DRIVE_TYPE_LABELS).map<
-                { value: string; label: string }
-              >(([value, label]) => ({ value, label }))}
+              options={Object.entries(DRIVE_TYPE_LABELS).map(
+                ([value, label]) => ({ value, label })
+              )}
               className={`${inputClass} ${driveTypeValidation.getBorderClassName()}`}
             />
           </InputField>

@@ -43,6 +43,7 @@ import { Label } from "@/components/ui/label";
 import { Documentation, VehicleCategory, VehicleDataBackend } from "@/types/types";
 import { InputField } from "@/components/shared/forms/InputField";
 import { useFieldValidation } from "@/hooks/useFieldValidation";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // ... (iconMap y getDynamicIcon sin cambios)
 const iconMap = {
@@ -387,22 +388,49 @@ const PublicationOptionsSection: React.FC<{
   <InputField
     label="Opciones de Publicación"
     icon={<Star className="w-4 h-4 text-primary" />}
-    tooltip="Destaca tu vehículo para que aparezca en la sección principal y atraiga más miradas."
+    tooltip="Opciones para mejorar la visibilidad de tu anuncio."
   >
-    <Card className="shadow-sm border-border">
+    <Card className={`shadow-sm transition-all duration-300 ${isFeatured ? 'border-primary' : 'border-border'}`}>
       <CardContent className="p-5">
-        <div className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
-          <Label htmlFor="featured-switch" className="flex flex-col space-y-1 cursor-pointer">
-            <span className="font-semibold text-foreground">Destacar Vehículo</span>
-            <span className="text-sm text-muted-foreground">
-              Aparecerá en la página de inicio y tendrá prioridad en las búsquedas.
-            </span>
-          </Label>
-          <Switch
-            id="featured-switch"
-            checked={isFeatured}
-            onCheckedChange={onFeaturedToggle}
-          />
+        <div className="flex items-center justify-between rounded-lg border border-transparent p-4 transition-colors hover:bg-muted/50">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0">
+              <div className={`p-2 rounded-full ${isFeatured ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                <Star className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <Label htmlFor="featured-switch" className="font-semibold text-foreground cursor-pointer">
+                Destacar Vehículo
+              </Label>
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <span>Tu anuncio aparecerá en la página principal y en los primeros resultados de búsqueda.</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">
+                        Al destacar tu vehículo, aumentas su visibilidad significativamente.
+                        Aparecerá en la sección "Destacados" de la página de inicio y
+                        tendrá una posición prioritaria en los resultados de búsqueda,
+                        llegando a más compradores potenciales.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col items-end space-y-1">
+            <Switch
+              id="featured-switch"
+              checked={isFeatured}
+              onCheckedChange={onFeaturedToggle}
+            />
+            <span className="text-sm font-medium text-primary">$5.00</span>
+          </div>
         </div>
       </CardContent>
     </Card>
