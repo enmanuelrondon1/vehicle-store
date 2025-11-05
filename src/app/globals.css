@@ -112,6 +112,32 @@
   .focus-ring {
     @apply transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
   }
+
+  /* ========================================
+   ESTILOS GLOBALES DEL NAVBAR (Movidos desde styled-jsx)
+   ======================================== */
+  /* Optimizaciones para Lighthouse y rendimiento */
+  header {
+    contain: layout style paint;
+    will-change: transform;
+  }
+
+  /* Mejoras de accesibilidad para usuarios con preferencia de movimiento reducido */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Estilo de focus visible para accesibilidad, usando variables del tema */
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: var(--radius);
+  }
 }
 
 /* ========================================

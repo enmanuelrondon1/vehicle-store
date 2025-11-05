@@ -4,7 +4,8 @@ import React, { memo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { siteConfig } from "@/config/site"; // 1. Importar siteConfig
+import { useRouter } from "next/navigation"; // <-- 1. Importa useRouter
+import { siteConfig } from "@/config/site";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -12,6 +13,8 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = memo(({ isOpen, onClose }) => {
+  const router = useRouter(); // <-- 2. Usa el hook de Next.js
+
   const handleBackdropClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -20,9 +23,9 @@ export const LoginModal: React.FC<LoginModalProps> = memo(({ isOpen, onClose }) 
 
   const handleLoginRedirect = useCallback(() => {
     onClose();
-    // 2. Usar la ruta desde siteConfig
-    window.location.href = "/login?callbackUrl=" + encodeURIComponent(siteConfig.paths.publishAd);
-  }, [onClose]);
+    // --- 3. Usa router.push para una navegación SPA fluida ---
+    router.push(`/login?callbackUrl=${encodeURIComponent(siteConfig.paths.publishAd)}`);
+  }, [onClose, router]);
 
   return (
     <AnimatePresence>
@@ -35,25 +38,19 @@ export const LoginModal: React.FC<LoginModalProps> = memo(({ isOpen, onClose }) 
           onClick={handleBackdropClick}
         >
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-transparent backdrop-blur-sm"
-          />
-          
-          <motion.div
             initial={{ scale: 0.7, opacity: 0, rotateY: -15 }}
             animate={{ scale: 1, opacity: 1, rotateY: 0 }}
             exit={{ scale: 0.7, opacity: 0, rotateY: 15 }}
-            transition={{ 
-              duration: 0.5, 
+            transition={{
+              duration: 0.5,
               delay: 0.1,
               type: "spring",
-              stiffness: 100
+              stiffness: 100,
             }}
             className="relative z-10 w-full max-w-md"
           >
-            <div className="relative rounded-2xl shadow-2xl border overflow-hidden bg-white/95 dark:bg-gray-800/95 border-gray-200 dark:border-gray-700 backdrop-blur-xl">
+            <div className="relative rounded-2xl shadow-2xl border overflow-hidden bg-card text-card-foreground backdrop-blur-xl">
+              {/* --- BARRA DE PROGRESO CON COLOR PRIMARIO --- */}
               <motion.div
                 animate={{
                   backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
@@ -61,21 +58,21 @@ export const LoginModal: React.FC<LoginModalProps> = memo(({ isOpen, onClose }) 
                 transition={{
                   duration: 3,
                   repeat: Infinity,
-                  ease: "linear"
+                  ease: "linear",
                 }}
-                className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-purple-500 to-indigo-500 bg-[length:200%_100%]"
+                className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%]"
               />
-              
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/5 dark:from-white/10 dark:to-black/10" />
-              
+
+              <div className="absolute inset-0 bg-gradient-to-br from-muted/5 via-transparent to-muted/5" />
+
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 z-10 p-2 rounded-full transition-all duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 backdrop-blur-sm"
+                className="absolute top-4 right-4 z-10 p-2 rounded-full transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted"
                 aria-label="Cerrar modal"
               >
                 <X className="w-5 h-5" />
               </button>
-              
+
               <div className="relative z-10 p-8 text-center">
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
@@ -83,33 +80,33 @@ export const LoginModal: React.FC<LoginModalProps> = memo(({ isOpen, onClose }) 
                   transition={{ duration: 0.6, delay: 0.2, type: "spring" }}
                   className="flex justify-center mb-6"
                 >
-                  <div className="p-4 rounded-full bg-gradient-to-r from-primary to-indigo-500 shadow-2xl">
-                    <User className="w-10 h-10 text-white" />
+                  <div className="p-4 rounded-full bg-primary text-primary-foreground shadow-2xl">
+                    <User className="w-10 h-10" />
                   </div>
                 </motion.div>
-                
+
                 <motion.h2
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.3 }}
-                  className="text-3xl font-bold mb-4 bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent"
+                  className="text-3xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
                 >
-                  {"¡Bienvenido de vuelta!"}
+                  ¡Bienvenido de vuelta!
                 </motion.h2>
-                
+
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.4 }}
-                  className="mb-8 leading-relaxed text-gray-600 dark:text-gray-300 text-lg"
+                  className="mb-8 leading-relaxed text-muted-foreground text-lg"
                 >
-                  {"Para publicar tu anuncio de vehículo necesitas tener una cuenta."}
+                  Para publicar tu anuncio de vehículo necesitas tener una cuenta.
                   <br />
-                  <span className="font-medium text-primary">
-                    {"¡Es rápido, seguro y gratuito!"}
+                  <span className="font-medium text-foreground">
+                    ¡Es rápido, seguro y gratuito!
                   </span>
                 </motion.p>
-                
+
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -118,32 +115,32 @@ export const LoginModal: React.FC<LoginModalProps> = memo(({ isOpen, onClose }) 
                 >
                   <Button
                     onClick={handleLoginRedirect}
-                    className="flex-1 bg-gradient-to-r from-primary to-indigo-500 hover:from-primary/90 hover:to-indigo-500/90 text-white border-none shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 text-lg py-6"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 text-lg py-6"
                   >
                     <User className="w-5 h-5 mr-2" />
-                    {"Iniciar Sesión"}
+                    Iniciar Sesión
                   </Button>
                   <Button
                     onClick={onClose}
                     variant="outline"
-                    className="flex-1 transition-all duration-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 text-lg py-6"
+                    className="flex-1 transition-all duration-200"
                   >
-                    {"Cancelar"}
+                    Cancelar
                   </Button>
                 </motion.div>
-                
+
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.4, delay: 0.6 }}
-                  className="text-sm text-gray-600 dark:text-gray-400"
+                  className="text-sm text-muted-foreground"
                 >
-                  {"¿No tienes cuenta?"}{" "}
+                  ¿No tienes cuenta?{" "}
                   <button
                     onClick={handleLoginRedirect}
-                    className="text-primary hover:text-primary/90 font-medium underline transition-colors"
+                    className="text-primary hover:text-primary/80 font-medium underline transition-colors"
                   >
-                    {"Regístrate aquí"}
+                    Regístrate aquí
                   </button>
                 </motion.p>
               </div>
@@ -153,6 +150,7 @@ export const LoginModal: React.FC<LoginModalProps> = memo(({ isOpen, onClose }) 
       )}
     </AnimatePresence>
   );
-});
+}
+)
 
 LoginModal.displayName = "LoginModal";

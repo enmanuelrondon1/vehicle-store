@@ -49,16 +49,21 @@ const socialLinks = [
 
 const Footer = () => {
   return (
-    <footer className="bg-background border-t border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+    // --- FOOTER CON ANIMACIÓN AOS "fade-up" ---
+    <footer
+      data-aos="fade-up"
+      data-aos-duration="1000"
+      className="bg-background border-t border-border"
+    >
+      <div className="container-max py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Columna 1: Logo y Descripción */}
           <div className="lg:col-span-1">
             <Link
               href={siteConfig.paths.home}
-              className="flex items-center gap-3 mb-4"
+              className="flex items-center gap-3 mb-4 group"
             >
-              <Icons.logo className="h-10 w-10 text-primary" />
+              <Icons.logo className="h-10 w-10 text-primary transition-transform duration-300 group-hover:scale-110" />
               <span className="font-heading font-bold text-2xl text-foreground">
                 {siteConfig.name}
               </span>
@@ -80,7 +85,7 @@ const Footer = () => {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-muted-foreground text-sm transition-colors hover:text-primary"
+                        className="text-muted-foreground text-sm transition-colors duration-200 hover:text-primary"
                       >
                         {link.label}
                       </Link>
@@ -101,14 +106,14 @@ const Footer = () => {
               <address className="space-y-3 not-italic">
                 <a
                   href="mailto:tech@1group.media"
-                  className="flex items-center gap-3 text-muted-foreground text-sm transition-colors hover:text-primary"
+                  className="flex items-center gap-3 text-muted-foreground text-sm transition-colors duration-200 hover:text-primary group"
                 >
                   <Mail className="h-5 w-5 flex-shrink-0" />
                   <span>tech@1group.media</span>
                 </a>
                 <a
                   href="tel:+1234567890"
-                  className="flex items-center gap-3 text-muted-foreground text-sm transition-colors hover:text-primary"
+                  className="flex items-center gap-3 text-muted-foreground text-sm transition-colors duration-200 hover:text-primary group"
                 >
                   <Phone className="h-5 w-5 flex-shrink-0" />
                   <span>+1 (234) 567-890</span>
@@ -147,7 +152,7 @@ const Footer = () => {
           </p>
           <Link
             href={siteConfig.paths.privacy}
-            className="text-sm text-muted-foreground transition-colors hover:text-primary"
+            className="text-sm text-muted-foreground transition-colors duration-200 hover:text-primary"
           >
             Política de Privacidad
           </Link>

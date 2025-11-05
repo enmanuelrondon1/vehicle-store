@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 interface StatCardProps {
   number: string;
   label: string;
-  index: number;
 }
 
 // ¡Mantengo tu AnimatedCounter! Es un detalle genial.
@@ -44,25 +43,26 @@ const AnimatedCounter = ({ value }: { value: string }) => {
     requestAnimationFrame(frame);
   }, [value]);
 
-  return <span className="font-black">{displayValue}</span>;
+  return <span className="font-bold">{displayValue}</span>;
 };
 
-export const StatCard: React.FC<StatCardProps> = memo(({ number, label, index }) => {
+export const StatCard: React.FC<StatCardProps> = memo(({ number, label }) => {
   return (
+    // --- ¡CAMBIO CLAVE! Usamos motion.div para que entienda whileHover ---
     <motion.div
-      initial={{ opacity: 0, scale: 0.8, y: 20 }}
-      whileInView={{ opacity: 1, scale: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, delay: index * 0.1, type: "spring", stiffness: 100 }}
-      whileHover={{ scale: 1.05, y: -2 }}
-      className="relative bg-card border-2 border-primary rounded-xl p-6 text-center shadow-sm hover:shadow-lg transition-all duration-300"
+      data-aos="zoom-in"
+      data-aos-duration="600"
+      whileHover={{ scale: 1.05, y: -2, transition: { duration: 200 } }}
+      className="relative bg-card border border-border rounded-xl p-6 text-center shadow-sm hover:shadow-lg transition-all duration-300"
     >
-      <p className="text-3xl sm:text-4xl font-heading font-black text-primary">
+      {/* --- El número usa tu color primario --- */}
+      <p className="text-3xl sm:text-4xl font-heading font-bold text-primary">
         <AnimatedCounter value={number} />
       </p>
       <p className="text-sm text-muted-foreground mt-2">{label}</p>
     </motion.div>
   );
-});
+}
+)
 
 StatCard.displayName = "StatCard";

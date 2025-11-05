@@ -76,7 +76,7 @@ export default function EditVehiclePage() {
                     <ChevronDown className="w-3 h-3 ml-1 transition-transform group-open:rotate-180" />
                   </summary>
                   {/* Contenido del Popover */}
-                  <div className="absolute z-20 mt-2 p-4 bg-popover border border-border rounded-md shadow-lg w-96 right-0">
+                  <div className="absolute z-20 mt-2 p-4 bg-popover border border-border rounded-md shadow-lg w-[90vw] sm:w-96 left-0 sm:left-auto sm:right-0">
                     <div className="space-y-1 text-xs font-mono">
                       <div><span className="text-muted-foreground">ID:</span> <span className="text-foreground">{apiResponse.data?._id}</span></div>
                       <div><span className="text-muted-foreground">Vehículo:</span> <span className="text-foreground">{apiResponse.data?.brand} {apiResponse.data?.model} ({apiResponse.data?.year})</span></div>

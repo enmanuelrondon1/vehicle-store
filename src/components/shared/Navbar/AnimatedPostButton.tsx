@@ -31,7 +31,8 @@ const AnimatedPostButton = ({ isMobile = false, onClick }: AnimatedPostButtonPro
   const isAuthenticated = status === "authenticated" && session?.user;
   const isLoading = status === "loading";
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
+  // 1. MANEJADOR DE CLICK SIMPLIFICADO
+  const handleButtonClick = useCallback((e: React.MouseEvent) => {
     if (isLoading) return;
     if (isAuthenticated) {
       router.push(siteConfig.paths.publishAd);
@@ -39,11 +40,17 @@ const AnimatedPostButton = ({ isMobile = false, onClick }: AnimatedPostButtonPro
       e.preventDefault();
       setOpen(true);
     }
-  }, [isAuthenticated, isLoading, router]);
+    onClick?.(); // Ejecuta el onClick prop si se proporciona
+  }, [isAuthenticated, isLoading, router, onClick]);
 
   const handleGoToLogin = useCallback(() => {
     setOpen(false);
-    window.location.href = "/login?callbackUrl=" + encodeURIComponent(siteConfig.paths.publishAd);
+    router.push(`/login?callbackUrl=${encodeURIComponent(siteConfig.paths.publishAd)}`);
+  }, []);
+
+  const handleGoToRegister = useCallback(() => {
+    setOpen(false);
+    router.push(`/login?callbackUrl=${encodeURIComponent(siteConfig.paths.publishAd)}`);
   }, []);
 
   const buttonClasses = useMemo(() => {
@@ -66,49 +73,39 @@ const AnimatedPostButton = ({ isMobile = false, onClick }: AnimatedPostButtonPro
     );
   }
 
+  // 2. COMPONENTE DE BOTÓN UNIFICADO (usa motion.button siempre)
+  const MotionButton = (
+    <motion.button
+      className={buttonClasses}
+      onClick={handleButtonClick}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      aria-label="Publicar nuevo anuncio de vehículo"
+    >
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+        initial={{ x: "-100%" }}
+        whileHover={{ x: "100%" }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+      />
+      <div className="relative flex items-center justify-center gap-3">
+        <Plus className="w-5 h-5" />
+        <span className="tracking-wide">¡Publica tu Anuncio!</span>
+      </div>
+    </motion.button>
+  );
+
   return (
     <div className={`relative ${isMobile ? "w-full" : ""}`}>
       {isAuthenticated ? (
-        <Link href={siteConfig.paths.publishAd} onClick={onClick} className={`block ${isMobile ? "w-full" : ""}`} aria-label="Publicar nuevo anuncio de vehículo">
-          <motion.div
-            className={buttonClasses}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-              initial={{ x: "-100%" }}
-              whileHover={{ x: "100%" }}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
-            />
-            <div className="relative flex items-center justify-center gap-3">
-              <Plus className="w-5 h-5" />
-              <span className="tracking-wide">¡Publica tu Anuncio!</span>
-            </div>
-          </motion.div>
+        // 3. ENVUELVE EL BOTÓN CON UN LINK PARA SEMÁNTICA Y SEO
+        <Link href={siteConfig.paths.publishAd} onClick={onClick} className={`block ${isMobile ? "w-full" : ""}`} passHref>
+          {MotionButton}
         </Link>
       ) : (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            {/* ¡El cambio clave está aquí! Usamos motion.button y movemos todas las clases y props. */}
-            <motion.button
-              className={buttonClasses}
-              onClick={handleClick}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Publicar nuevo anuncio de vehículo"
-            >
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                initial={{ x: "-100%" }}
-                whileHover={{ x: "100%" }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
-              />
-              <div className="relative flex items-center justify-center gap-3">
-                <Plus className="w-5 h-5" />
-                <span className="tracking-wide">¡Publica tu Anuncio!</span>
-              </div>
-            </motion.button>
+            {MotionButton}
           </DialogTrigger>
           <DialogContent className="bg-card text-card-foreground border-border max-w-md">
             <DialogHeader>
@@ -138,15 +135,13 @@ const AnimatedPostButton = ({ isMobile = false, onClick }: AnimatedPostButtonPro
             <div className="mt-4 text-center">
               <p className="text-sm text-muted-foreground">
                 ¿No tienes cuenta?{" "}
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    window.location.href = "/login?callbackUrl=" + encodeURIComponent(siteConfig.paths.publishAd);
-                  }}
-                  className="text-primary hover:text-primary/80 font-medium underline"
+                {/* 4. USA UN COMPONENTE DE ESTILO EN LUGAR DE UN BOTÓN PARA ENLACES */}
+                <span
+                  onClick={handleGoToRegister}
+                  className="text-primary hover:text-primary/80 font-medium underline cursor-pointer"
                 >
                   Regístrate aquí
-                </button>
+                </span>
               </p>
             </div>
           </DialogContent>

@@ -137,14 +137,17 @@ export default function VehicleEditForm({ vehicle }: VehicleEditFormProps) {
             <div className="space-y-2">
               <h2 className="text-xl font-heading text-foreground">Información de Contacto</h2>
               <div className="p-6 bg-card rounded-lg border border-border">
-                <ContactSection
-                  formData={formData}
-                  handleChange={handleChange}
-                  handleNestedChange={handleNestedChange}
-                  getInputClassName={getInputClassName}
-                  isFieldValid={isFieldValid}
-                  getFieldError={getFieldError}
-                />
+              <ContactSection
+                formData={formData}
+                handleChange={handleChange}
+                handleNestedChange={handleNestedChange}
+                getInputClassName={getInputClassName}
+                isFieldValid={isFieldValid}
+                getFieldError={getFieldError}
+                // --- PROPS AÑADIDAS ---
+                handleBlur={handleBlur}
+                isSubmitting={isSubmitting}
+              />
               </div>
             </div>
 
@@ -165,6 +168,8 @@ export default function VehicleEditForm({ vehicle }: VehicleEditFormProps) {
                   getInputClassName={getInputClassName}
                   isFieldValid={isFieldValid}
                   getFieldError={getFieldError}
+                  handleBlur={handleBlur}
+                  isSubmitting={isSubmitting}
                 />
               </div>
             </div>

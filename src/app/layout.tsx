@@ -4,6 +4,7 @@ import "./globals.css";
 import ClientLayout from "@/components/shared/layout/ClientLayout";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { AosInitializer } from "@/components/shared/AosInitializer"; // <-- 1. IMPÓRTA EL COMPONENTE
 
 export const metadata: Metadata = {
   title: "VehicleStore",
@@ -30,6 +31,7 @@ export const metadata: Metadata = {
       },
     ],
   },
+  // --- SECCIÓN RESTAURADA: TUS ICONOS ---
   icons: {
     icon: [
       { url: "/logo/favicon.svg", type: "image/svg+xml" },
@@ -40,9 +42,12 @@ export const metadata: Metadata = {
   },
 };
 
-// Cambiado a un azul que coincide con nuestro nuevo --primary
+// --- MEJORA MANTENIDA: themeColor dinámico ---
 export const viewport: Viewport = {
-  themeColor: "#3b4f8f",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "hsl(240 100% 47%)" }, // Tu --primary en modo claro
+    { media: "(prefers-color-scheme: dark)", color: "hsl(250 100% 60%)" },  // Tu --primary en modo oscuro
+  ],
 };
 
 export default function RootLayout({
@@ -52,10 +57,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      {/* 
-        Usamos las fuentes definidas en globals.css.
-        Añadimos 'font-heading' para que los h1-h6 la usen por defecto.
-      */}
       <body className="font-sans font-heading antialiased min-h-screen bg-background text-foreground transition-colors duration-300 pt-20">
         <ThemeProvider
           attribute="class"
@@ -64,11 +65,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ClientLayout>
+            {/* --- MEJORA MANTENIDA: Inicializador de AOS --- */}
+            <AosInitializer /> 
             {children}
-            {/* 
-              Toaster unificado y estilizado con nuestro tema.
-              Se adapta automáticamente al modo claro/oscuro.
-            */}
             <Toaster
               richColors
               theme="system"

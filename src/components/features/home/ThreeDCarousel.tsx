@@ -1,32 +1,22 @@
-// src/components/features/home/ThreeFeatures.tsx
+// src/components/features/home/ThreeDCarousel.tsx
 "use client";
 import Image from "next/image";
 import React, { useMemo, useRef, useEffect, useCallback } from "react";
 import { Card as UICard } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Quote, Star } from "lucide-react"; // Iconos para testimonios
 import { cn } from "@/lib/utils";
 
 /* 1️⃣  Assets ————————————————————————— */
-const FALLBACK =
+const FALLBACK_AVATAR =
   'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" ' +
   'width="160" height="220"><rect width="100%" height="100%" ' +
   'fill="%23e2e8f0"/><text x="50%" y="50%" dominant-baseline="middle"' +
-  ' text-anchor="middle" fill="%234a5568" font-size="18">Image</text></svg>';
+  ' text-anchor="middle" fill="%234a5568" font-size="18">Photo</text></svg>';
 
-// Por favor, reemplaza estas imágenes con las que me proporcionarás.
-const DEFAULT_IMAGES = [
-  "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2070&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=2070&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=2070&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=2070&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1542281286-9e0a16bb7366?q=80&w=2070&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1517672651691-24622a91b2dc?q=80&w=1974&auto=format&fit=crop",
-];
-
-/* 2️⃣  Config ————————————————————————— */
-const CARD_W = 180;
-const CARD_H = 240;
+// 2️⃣  Config ————————————————————————— */
+const CARD_W = 320; // Un poco más ancho para texto
+const CARD_H = 400; // Más alto para la foto y el texto
 const RADIUS = 240;
 const TILT_SENSITIVITY = 10;
 const DRAG_SENSITIVITY = 0.5;
@@ -34,19 +24,27 @@ const INERTIA_FRICTION = 0.95;
 const AUTOSPIN_SPEED = 0.08;
 const IDLE_TIMEOUT = 2000;
 
-/* 3️⃣  Card Component (Memoized for Performance) ——— */
-interface CardProps {
-  src: string;
+// 3️⃣  Nuevo Tipo de Dato para Testimonios ———————— */
+interface Testimonial {
+  id: string;
+  customerName: string;
+  customerPhoto: string;
+  vehicleName: string;
+  testimonial: string;
+  rating: number;
+}
+
+// 4️⃣  Componente de Tarjeta de Testimonio (Memoizado) ——— */
+interface TestimonialCardProps {
+  testimonial: Testimonial;
   transform: string;
   cardW: number;
   cardH: number;
   index: number;
-  title: string;
-  price: string;
 }
 
-const Card = React.memo(
-  ({ src, transform, cardW, cardH, index, title, price }: CardProps) => (
+const TestimonialCard = React.memo(
+  ({ testimonial, transform, cardW, cardH }: TestimonialCardProps) => (
     <div
       className="absolute"
       style={{
@@ -59,69 +57,81 @@ const Card = React.memo(
     >
       <UICard
         className={cn(
-          "w-full h-full rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105",
-          "bg-card border-border"
+          "w-full h-full rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105",
+          "bg-card text-card-foreground border-border flex flex-col"
         )}
         style={{ backfaceVisibility: "hidden" }}
       >
-        <div className="relative w-full h-full">
+        {/* Header con foto y nombre */}
+        <div className="flex items-center p-4 pb-2">
           <Image
-            src={src}
-            alt="Carousel item"
-            width={cardW}
-            height={cardH}
-            className="w-full h-full object-cover"
-            loading="lazy"
-            draggable="false"
+            src={testimonial.customerPhoto}
+            alt={`Foto de ${testimonial.customerName}`}
+            width={50}
+            height={50}
+            className="w-12 h-12 rounded-full object-cover mr-3"
             onError={(e) => {
-              e.currentTarget.src = FALLBACK;
+              e.currentTarget.src = FALLBACK_AVATAR;
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <h3 className="text-white font-bold text-lg font-heading mb-1">
-              {title}
-            </h3>
-            <p className="text-white text-sm">{price}</p>
+          <div>
+            <h4 className="font-heading font-bold text-foreground">{testimonial.customerName}</h4>
+            <p className="text-sm text-muted-foreground">Compró un {testimonial.vehicleName}</p>
           </div>
-          <div className="absolute top-3 right-3">
-            <Badge
-              variant="secondary"
-              className="bg-primary/20 text-primary-foreground border-primary/30"
-            >
-              Destacado
-            </Badge>
+        </div>
+
+        {/* Cuerpo con el testimonio */}
+        <div className="flex-1 px-4 pb-4 text-center flex flex-col justify-between">
+          <Quote className="w-8 h-8 text-primary/30 mx-auto mb-3 flex-shrink-0" />
+          <p className="text-sm text-muted-foreground italic line-clamp-4">
+            "{testimonial.testimonial}"
+          </p>
+        </div>
+
+        {/* Footer con rating y badge */}
+        <div className="flex items-center justify-between p-4 pt-2 border-t">
+          <div className="flex">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={cn(
+                  "w-4 h-4",
+                  i < testimonial.rating
+                    ? "text-yellow-400 fill-yellow-400"
+                    : "text-muted-foreground"
+                )}
+              />
+            ))}
           </div>
+          <Badge variant="secondary" className="text-xs">
+            Verificado
+          </Badge>
         </div>
       </UICard>
     </div>
   )
 );
 
-Card.displayName = "Card";
+TestimonialCard.displayName = "TestimonialCard";
 
-/* 4️⃣  Main component —————————————————— */
+/* 5️⃣  Componente Principal (con nuevas props) —————————— */
 interface ThreeDCarouselProps {
-  images?: string[];
+  testimonials: Testimonial[];
   radius?: number;
   cardW?: number;
   cardH?: number;
-  titles?: string[];
-  prices?: string[];
 }
 
 const ThreeDCarousel = React.memo(
   ({
-    images = DEFAULT_IMAGES,
+    testimonials,
     radius = RADIUS,
     cardW = CARD_W,
     cardH = CARD_H,
-    titles = Array(images.length).fill("Vehículo Premium"),
-    prices = Array(images.length).fill("$25,000"),
   }: ThreeDCarouselProps) => {
+    // (Toda la lógica de interacción, drag, etc. permanece exactamente igual)
     const parentRef = useRef<HTMLDivElement>(null);
     const wheelRef = useRef<HTMLDivElement>(null);
-
     const rotationRef = useRef(0);
     const tiltRef = useRef(0);
     const targetTiltRef = useRef(0);
@@ -135,26 +145,19 @@ const ThreeDCarousel = React.memo(
     useEffect(() => {
       const handleMouseMove = (e: MouseEvent) => {
         if (!parentRef.current || isDraggingRef.current) return;
-
         lastInteractionRef.current = Date.now();
         const parentRect = parentRef.current.getBoundingClientRect();
         const mouseY = e.clientY - parentRect.top;
         const normalizedY = (mouseY / parentRect.height - 0.5) * 2;
-
         targetTiltRef.current = -normalizedY * TILT_SENSITIVITY;
       };
-
       window.addEventListener("mousemove", handleMouseMove);
-
-      return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-      };
+      return () => window.removeEventListener("mousemove", handleMouseMove);
     }, []);
 
     useEffect(() => {
       const animate = () => {
         if (!isDraggingRef.current) {
-          // Apply inertia
           if (Math.abs(velocityRef.current) > 0.01) {
             rotationRef.current += velocityRef.current;
             velocityRef.current *= INERTIA_FRICTION;
@@ -162,18 +165,13 @@ const ThreeDCarousel = React.memo(
             rotationRef.current += AUTOSPIN_SPEED;
           }
         }
-
         tiltRef.current += (targetTiltRef.current - tiltRef.current) * 0.1;
-
         if (wheelRef.current) {
           wheelRef.current.style.transform = `rotateX(${tiltRef.current}deg) rotateY(${rotationRef.current}deg)`;
         }
-
         animationFrameRef.current = requestAnimationFrame(animate);
       };
-
       animationFrameRef.current = requestAnimationFrame(animate);
-
       return () => {
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
@@ -192,41 +190,34 @@ const ThreeDCarousel = React.memo(
     const handleDragMove = useCallback((clientX: number) => {
       if (!isDraggingRef.current) return;
       lastInteractionRef.current = Date.now();
-
       const deltaX = clientX - dragStartRef.current;
-      const newRotation =
-        initialRotationRef.current + deltaX * DRAG_SENSITIVITY;
-
+      const newRotation = initialRotationRef.current + deltaX * DRAG_SENSITIVITY;
       velocityRef.current = newRotation - rotationRef.current;
       rotationRef.current = newRotation;
     }, []);
 
-    // Handle drag end
     const handleDragEnd = useCallback(() => {
       isDraggingRef.current = false;
       lastInteractionRef.current = Date.now();
     }, []);
 
-    // Event listeners for mouse and touch
+      const onTouchEnd = useCallback(() => {
+      handleDragEnd();
+    }, []);
+
     const onMouseDown = (e: React.MouseEvent) => handleDragStart(e.clientX);
     const onMouseMove = (e: React.MouseEvent) => handleDragMove(e.clientX);
-    const onTouchStart = (e: React.TouchEvent) =>
-      handleDragStart(e.touches[0].clientX);
-    const onTouchMove = (e: React.TouchEvent) =>
-      handleDragMove(e.touches[0].clientX);
+    const onTouchStart = (e: React.TouchEvent) => handleDragStart(e.touches[0].clientX);
+    const onTouchMove = (e: React.TouchEvent) => handleDragMove(e.touches[0].clientX);
 
-    /* Pre-compute card transforms (only re-computes if images/radius change) */
     const cards = useMemo(
       () =>
-        images.map((src, idx) => {
-          const angle = (idx * 360) / images.length;
-          return {
-            key: idx,
-            src,
-            transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
-          };
-        }),
-      [images, radius]
+        testimonials.map((testimonial, idx) => ({
+          key: testimonial.id,
+          testimonial,
+          transform: `rotateY(${(idx * 360) / testimonials.length}deg) translateZ(${radius}px)`,
+        })),
+      [testimonials, radius]
     );
 
     return (
@@ -242,7 +233,7 @@ const ThreeDCarousel = React.memo(
             onMouseLeave={handleDragEnd}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
-            onTouchEnd={handleDragEnd}
+            onTouchEnd={onTouchEnd}
           >
             <div
               className="relative"
@@ -268,22 +259,19 @@ const ThreeDCarousel = React.memo(
                   marginTop: -cardH / 2,
                 }}
               >
-                {cards.map((card, idx) => (
-                  <Card
+                {cards.map((card) => (
+                  <TestimonialCard
                     key={card.key}
-                    src={card.src}
+                    testimonial={card.testimonial}
                     transform={card.transform}
                     cardW={cardW}
                     cardH={cardH}
-                    index={idx}
-                    title={titles[idx]}
-                    price={prices[idx]}
+                    index={0} // El index ya no se usa en la tarjeta
                   />
                 ))}
               </div>
             </div>
           </div>
-          
         </div>
       </div>
     );

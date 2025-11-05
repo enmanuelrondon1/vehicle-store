@@ -8,25 +8,22 @@ interface FeatureCardProps {
   icon: LucideIcon;
   title: string;
   description: string;
-  delay: number;
+  // La prop 'delay' ya no es necesaria aquí, pero no pasa nada si la dejas.
 }
 
 export const FeatureCard: React.FC<FeatureCardProps> = memo(({
   icon: Icon,
   title,
   description,
-  delay,
 }) => {
   return (
+    // --- MANTENEMOS FRAMER-MOTION PARA LA MICRO-INTERACCIÓN ---
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, delay }}
-      whileHover={{ y: -5 }}
+      // Eliminamos la animación de entrada 'whileInView', ya que AOS la controla ahora.
+      whileHover={{ y: -5, transition: { duration: 200 } }}
       className="group relative bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300"
     >
-      {/* El icono ahora usa el color primario para ser un ancla visual consistente */}
+      {/* El icono usa tu color primario, ¡perfecto! */}
       <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary text-primary-foreground mb-4 transition-transform duration-300 group-hover:scale-110">
         <Icon className="w-6 h-6" />
       </div> 
@@ -40,6 +37,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = memo(({
       </p>
     </motion.div>
   );
-});
+}
+)
 
 FeatureCard.displayName = "FeatureCard";

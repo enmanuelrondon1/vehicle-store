@@ -27,14 +27,15 @@ export const HeroCallToAction: React.FC<HeroCallToActionProps> = ({
   };
 
   return (
-    <motion.section
+    // --- SECCIÓN PRINCIPAL CON ANIMACIÓN AOS "fade-up" ---
+    <section
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      initial="initial"
-      whileInView="animate"
-      viewport={{ once: true, amount: 0.5 }}
-      className="relative w-full overflow-hidden bg-muted/50 py-20 md:py-28"
+      data-aos="fade-up"
+      data-aos-duration="1000"
+      className="relative w-full overflow-hidden bg-muted/50 section-padding"
     >
+      {/* --- EFECTO GRADIENTE QUE SIGUE AL RATÓN (Sin cambios, es perfecto) --- */}
       <div
         className="pointer-events-none absolute -inset-px rounded-lg opacity-0 transition-opacity duration-500"
         style={{
@@ -43,6 +44,7 @@ export const HeroCallToAction: React.FC<HeroCallToActionProps> = ({
       />
 
       <div className="container relative z-10 mx-auto text-center">
+        {/* --- TÍTULO CON ANIMACIÓN INTERNA (Framer Motion) --- */}
         <motion.div
           variants={{
             initial: { opacity: 0, y: 20 },
@@ -60,6 +62,7 @@ export const HeroCallToAction: React.FC<HeroCallToActionProps> = ({
           </SparklesText>
         </motion.div>
 
+        {/* --- PÁRRAFO CON ANIMACIÓN INTERNA (Framer Motion) --- */}
         <motion.p
           variants={{
             initial: { opacity: 0, y: 20 },
@@ -75,6 +78,7 @@ export const HeroCallToAction: React.FC<HeroCallToActionProps> = ({
           tu anuncio en minutos y llega a compradores serios.
         </motion.p>
 
+        {/* --- BOTÓN CON ANIMACIÓN INTERNA (Framer Motion) --- */}
         <motion.div
           variants={{
             initial: { opacity: 0, scale: 0.9 },
@@ -101,6 +105,6 @@ export const HeroCallToAction: React.FC<HeroCallToActionProps> = ({
           </Button>
         </motion.div>
       </div>
-    </motion.section>
+    </section>
   );
 };
