@@ -52,7 +52,10 @@ export const SuccessScreen: React.FC<SuccessScreenProps> = ({
               onEnded={() => setAnimationCompleted(true)}
               playsInline // Importante para móviles
             >
-              <source src="/animations/logo-success.mp4" type="video/mp4" />
+              <source
+                src="https://res.cloudinary.com/dcdawwvx2/video/upload/v1762559218/generated_video_1_udkh0n.mp4"
+                type="video/mp4"
+              />
               Tu navegador no soporta videos.
             </video>
           </div>
