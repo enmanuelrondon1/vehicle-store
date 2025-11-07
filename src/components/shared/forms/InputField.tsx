@@ -1,8 +1,9 @@
-// src/components/shared/forms/InputField.tsx (Versión Mejorada)
+// src/components/shared/forms/InputField.tsx (Versión Corregida)
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, cloneElement, ReactElement, isValidElement, Children } from "react";
 import { Check, AlertCircle, Info, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface InputFieldProps {
   label: string;
@@ -30,6 +31,9 @@ export const InputField: React.FC<InputFieldProps> = ({
   layout = "default",
 }) => {
   const [showTips, setShowTips] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const showSuccessIcon = success && !error && !isFocused;
 
   const labelContent = (
     <label className="flex items-center text-sm font-medium text-foreground">
@@ -61,8 +65,37 @@ export const InputField: React.FC<InputFieldProps> = ({
     );
   }
 
+  // CAMBIO: Función segura para clonar children con manejo de focus
+  const renderChildrenWithFocus = () => {
+    // Si es un solo elemento React válido
+    if (isValidElement(children)) {
+      return cloneElement(children as ReactElement, {
+        onFocus: (e: any) => {
+          setIsFocused(true);
+          const originalOnFocus = (children as ReactElement).props?.onFocus;
+          if (originalOnFocus) originalOnFocus(e);
+        },
+        onBlur: (e: any) => {
+          setIsFocused(false);
+          const originalOnBlur = (children as ReactElement).props?.onBlur;
+          if (originalOnBlur) originalOnBlur(e);
+        },
+      });
+    }
+    
+    // Si son múltiples elementos, envolvemos en un div con los handlers
+    return (
+      <div
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      >
+        {children}
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-2">
+    <div className={cn("space-y-2 focus-within:bg-primary/5 rounded-lg p-1 -m-1 transition-colors duration-200")}>
       <div className="flex items-center justify-between gap-2">
         {labelContent}
         {tips && (
@@ -77,12 +110,15 @@ export const InputField: React.FC<InputFieldProps> = ({
         )}
       </div>
       <div className="relative">
-        {children}
-        {/* CAMBIO CLAVE: Usamos colores que se adaptan al tema */}
-        {success && !error && <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-600 dark:text-green-400" />}
-        {error && <AlertCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-destructive" />}
+        {renderChildrenWithFocus()}
+        {showSuccessIcon && (
+          <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-600 dark:text-green-400 pointer-events-none" />
+        )}
+        {error && (
+          <AlertCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-destructive pointer-events-none" />
+        )}
       </div>
-      {counter && (
+      {counter && counter.current < counter.max && (
         <div className={`text-xs transition-colors ${counter.current > counter.max * 0.9 ? "text-destructive" : "text-muted-foreground"}`}>
           {counter.current}/{counter.max} caracteres
         </div>
@@ -93,15 +129,19 @@ export const InputField: React.FC<InputFieldProps> = ({
           {error}
         </p>
       )}
-      {showTips && tips && (
-        <div className="mt-2 p-3 rounded-lg space-y-1 bg-muted/50 border border-border">
-          {tips.map((tip, index) => (
-            <p key={index} className="text-xs text-muted-foreground">
-              {tip}
-            </p>
-          ))}
-        </div>
-      )}
+      <div
+        className={cn(
+          "mt-2 p-3 rounded-lg space-y-1 bg-muted/50 border border-border overflow-hidden",
+          "transition-all duration-300 ease-out",
+          showTips ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        )}
+      >
+        {tips && tips.map((tip, index) => (
+          <p key={index} className="text-xs text-muted-foreground">
+            {tip}
+          </p>
+        ))}
+      </div>
     </div>
   );
 };

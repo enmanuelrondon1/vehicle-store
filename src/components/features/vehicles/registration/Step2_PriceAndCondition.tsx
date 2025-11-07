@@ -57,46 +57,46 @@ interface StepProps {
 // ============================================
 // CONFIGURACIÓN DE VALIDACIÓN
 // ============================================
-const VALIDATION_CONFIG = {
-  price: {
-    min: 100,
-    max: 1000000,
-    tips: [
-      "Investiga precios similares en el mercado",
-      "Un precio justo atrae más compradores",
-      "Considera la depreciación por año y kilometraje",
-    ],
-  },
-  mileage: {
-    min: 0,
-    max: 999999,
-    tips: [
-      "Kilometraje bajo aumenta el valor del vehículo",
-      "El promedio anual es 15,000-20,000 km",
-      "Sé honesto con el kilometraje real",
-    ],
-  },
-  offersFinancing: {
-    tips: [
-      "Al activar esta opción, se mostrará una calculadora de financiamiento en tu anuncio",
-      "Ayuda a los compradores a entender las opciones de pago y puede aumentar el interés",
-    ],
-  },
-  condition: {
-    tips: [
-      "Sé honesto y preciso al describir la condición",
-      "Usa las fotos para mostrar detalles del estado del vehículo",
-      "Menciona cualquier reparación reciente o imperfección en la descripción",
-    ],
-  },
-  warranty: {
-    tips: [
-      "Ofrecer una garantía, aunque sea de concesionario, genera más confianza",
-      "Ten a mano la documentación que respalde la garantía",
-      "Sé transparente sobre la cobertura y las exclusiones de la garantía",
-    ],
-  },
-};
+ const VALIDATION_CONFIG = {
+   price: {
+     min: 500,
+     max: 1000000,
+     tips: [
+       "Investiga precios similares en el mercado",
+       "Un precio justo atrae más compradores",
+       "Considera la depreciación por año y kilometraje",
+     ],
+   },
+   mileage: {
+     min: 500,
+     max: 999999,
+     tips: [
+       "Kilometraje bajo aumenta el valor del vehículo",
+       "El promedio anual es 15,000-20,000 km",
+       "Sé honesto con el kilometraje real",
+     ],
+   },
+   offersFinancing: {
+     tips: [
+       "Al activar esta opción, se mostrará una calculadora de financiamiento en tu anuncio",
+       "Ayuda a los compradores a entender las opciones de pago y puede aumentar el interés",
+     ],
+   },
+   condition: {
+     tips: [
+       "Sé honesto y preciso al describir la condición",
+       "Usa las fotos para mostrar detalles del estado del vehículo",
+       "Menciona cualquier reparación reciente o imperfección en la descripción",
+     ],
+   },
+   warranty: {
+     tips: [
+       "Ofrecer una garantía, aunque sea de concesionario, genera más confianza",
+       "Ten a mano la documentación que respalde la garantía",
+       "Sé transparente sobre la cobertura y las exclusiones de la garantía",
+     ],
+   },
+ };
 
 // ============================================
 // COMPONENTE: Vista Previa
@@ -486,7 +486,6 @@ const Step2_PriceAndCondition: React.FC<StepProps> = ({
               </ul>
             </div>
           )}
-
           {/* Detalles de Financiación */}
           {formData.offersFinancing && (
             <div className="p-5 rounded-xl border-2 border-border bg-muted/30 space-y-5">

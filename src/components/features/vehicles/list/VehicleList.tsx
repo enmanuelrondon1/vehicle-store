@@ -1,23 +1,33 @@
 // src/components/features/vehicles/list/VehicleList.tsx
 "use client";
 
+// React y Core
 import { useState, useCallback, useEffect } from "react";
+
+// Third-party libraries
+import { motion, AnimatePresence } from "framer-motion";
+
+// Hooks y Types internos
+import { useVehicleFiltering } from "@/hooks/useVehicleFiltering";
+import { useDebounce } from "@/hooks/useDebounce";
+import type { Vehicle } from "@/types/types";
+
+// Componentes internos (ordenados por render)
 import VehicleListHeader from "./VehicleListHeader";
 import VehicleStats from "../common/VehicleStats";
 import SearchBar from "./SearchBar";
+import ActiveFiltersDisplay from "./ActiveFiltersDisplay";
+import AdvancedFiltersPanel from "./AdvancedFiltersPanel";
+import CompareBar from "../common/CompareBar";
+import VehicleGrid from "../common/VehicleGrid";
 import PaginationControls from "./PaginationControls";
 import NoResults from "../../../shared/feedback/NoResults";
-import CompareBar from "../common/CompareBar";
-import AdvancedFiltersPanel from "./AdvancedFiltersPanel";
-import ActiveFiltersDisplay from "./ActiveFiltersDisplay";
-import type { Vehicle } from "@/types/types";
-import VehicleGrid from "../common/VehicleGrid";
-import { useVehicleFiltering } from "@/hooks/useVehicleFiltering";
-import { useDebounce } from "@/hooks/useDebounce";
 
-const VehicleList: React.FC<{
-  initialVehicles: Vehicle[];
-}> = ({ initialVehicles }) => {
+// ... el resto de tu componente
+
+const VehicleList: React.FC<{ initialVehicles: Vehicle[] }> = ({
+  initialVehicles,
+}) => {
   const [viewMode] = useState<"grid" | "list">("grid");
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
@@ -53,10 +63,6 @@ const VehicleList: React.FC<{
     sortBy,
   ]);
 
-  useEffect(() => {
-    // Forzar la actualización de los vehículos filtrados cuando la lista inicial cambie
-  }, [initialVehicles]);
-
   const handleRetry = useCallback(() => {
     window.location.reload();
   }, []);
@@ -82,14 +88,21 @@ const VehicleList: React.FC<{
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+   // ✅ AÑADE ESTA FUNCIÓN MEMOIZADA
+  const handleSearch = useCallback((term: string) => {
+    setFilters((prev) => ({ ...prev, search: term }));
+  }, []); // <-- No tiene dependencias, por lo que nunca se volverá a crear.
+
+
   return (
-    // ✅ CAMBIO FINAL: Contenedor principal con espaciado controlado
     <div className="bg-background text-foreground min-h-screen pt-8 pb-16 px-4 mt-16 md:mt-16">
       <div className="max-w-7xl mx-auto space-y-6">
-        <VehicleListHeader />
+        {/* CAMBIO: Le pasamos el conteo de vehículos para que el header sea dinámico */}
+        <VehicleListHeader vehicleCount={filteredVehicles.length} />
+
         <VehicleStats filteredVehicles={filteredVehicles} />
         <SearchBar
-          onSearch={(term) => setFilters((prev) => ({ ...prev, search: term }))}
+          onSearch={handleSearch}
           onToggleFilters={() => setShowAdvancedFilters(!showAdvancedFilters)}
           isFiltersOpen={showAdvancedFilters}
           sortBy={sortBy}
@@ -101,27 +114,52 @@ const VehicleList: React.FC<{
           onFiltersChange={setFilters}
           onClearFilters={clearAllFilters}
         />
-        <AdvancedFiltersPanel
-          filters={filters}
-          filterOptions={filterOptions}
-          onFiltersChange={setFilters}
-          onClearFilters={clearAllFilters}
-          isOpen={showAdvancedFilters}
-          onToggle={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          showOnlyPublishedBrands={showOnlyPublishedBrands}
-          setShowOnlyPublishedBrands={setShowOnlyPublishedBrands}
-          showOnlyPublishedColors={showOnlyPublishedColors}
-          setShowOnlyPublishedColors={setShowOnlyPublishedColors}
-          showOnlyPublishedLocations={showOnlyPublishedLocations}
-          setShowOnlyPublishedLocations={setShowOnlyPublishedLocations}
-          totalVehicles={initialVehicles.length}
-        />
-        {compareList.length > 0 && (
-          <CompareBar
-            compareList={compareList}
-            setCompareList={setCompareList}
-          />
-        )}
+
+        <AnimatePresence>
+          {showAdvancedFilters && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              style={{ overflow: "hidden" }}
+            >
+              <AdvancedFiltersPanel
+                filters={filters}
+                filterOptions={filterOptions}
+                onFiltersChange={setFilters}
+                onClearFilters={clearAllFilters}
+                isOpen={showAdvancedFilters}
+                onToggle={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                showOnlyPublishedBrands={showOnlyPublishedBrands}
+                setShowOnlyPublishedBrands={setShowOnlyPublishedBrands}
+                showOnlyPublishedColors={showOnlyPublishedColors}
+                setShowOnlyPublishedColors={setShowOnlyPublishedColors}
+                showOnlyPublishedLocations={showOnlyPublishedLocations}
+                setShowOnlyPublishedLocations={setShowOnlyPublishedLocations}
+                totalVehicles={initialVehicles.length}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {compareList.length > 0 && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              style={{ overflow: "hidden" }}
+            >
+              <CompareBar
+                compareList={compareList}
+                setCompareList={setCompareList}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {filteredVehicles.length === 0 ? (
           <NoResults
             vehicles={initialVehicles.length}
@@ -130,12 +168,17 @@ const VehicleList: React.FC<{
           />
         ) : (
           <>
+            {/* 
+              CAMBIO: El VehicleGrid ahora es mucho más simple.
+              No necesita props de animación, se encarga él mismo.
+            */}
             <VehicleGrid
               vehicles={paginatedVehicles}
               viewMode={viewMode}
               compareList={compareList}
               toggleCompare={toggleCompare}
             />
+
             {totalPages > 1 && (
               <PaginationControls
                 currentPage={currentPage}

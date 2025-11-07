@@ -1,27 +1,45 @@
 // src/components/features/vehicles/detail/VehicleDetail.tsx
 "use client";
 
+// ========================================
+// React y Core
+// ========================================
 import React, { useEffect, Suspense, lazy } from "react";
 import { useRouter } from "next/navigation";
+
+// ========================================
+// Third-party Libraries
+// ========================================
 import { ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { Skeleton } from "@/components/ui/skeleton";
+
+// ========================================
+// Hooks y Tipos Internos
+// ========================================
+import { useVehicleData } from "@/hooks/useVehicleData";
 import { formatDate, formatMileage, DOCUMENTATION_MAP } from "@/lib/utils";
 import { Documentation } from "@/types/types";
-import { useVehicleData } from "@/hooks/useVehicleData";
-import { motion } from "framer-motion";
-import { containerVariants, itemVariants } from "@/lib/animations";
-import { VehicleDocumentation } from "./sections/VehicleDocumentation";
-import { VehicleFeatures } from "./sections/VehicleFeatures";
-import { VehicleDescription } from "./sections/VehicleDescription";
-import { ContactInfo } from "./sections/ContactInfo";
-import { VehicleAdditionalInfo } from "./sections/VehicleAdditionalInfo";
-import { VehicleWarranty } from "./sections/VehicleWarranty";
+
+// ========================================
+// Componentes de UI
+// ========================================
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+
+// ========================================
+// Componentes de la Página (ordenados por renderizado)
+// ========================================
 import { VehicleActions } from "./sections/VehicleActions";
 import { VehicleSummary } from "./sections/VehicleSummary";
 import { ImageGallery } from "./sections/ImageGallery";
 import { TechnicalSpecifications } from "./sections/TechnicalSpecifications";
+import { VehicleDocumentation } from "./sections/VehicleDocumentation";
+import { VehicleFeatures } from "./sections/VehicleFeatures";
+import { VehicleDescription } from "./sections/VehicleDescription";
+import { ContactInfo } from "./sections/ContactInfo";
 import { FinancingModal } from "./sections/FinancingModal";
+import { VehicleAdditionalInfo } from "./sections/VehicleAdditionalInfo";
+import { VehicleWarranty } from "./sections/VehicleWarranty";
 
 // Carga diferida para SimilarVehicles
 const SimilarVehicles = lazy(() =>
@@ -30,6 +48,9 @@ const SimilarVehicles = lazy(() =>
   }))
 );
 
+// ========================================
+// Configuración y Tipos
+// ========================================
 // Extiende el tipo Session para incluir accessToken
 declare module "next-auth" {
   interface Session {
@@ -116,19 +137,13 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
               {error || "No se pudo cargar la información del vehículo"}
             </p>
             <div className="flex justify-center gap-4">
-              <button
-                onClick={() => router.back()}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg rounded-lg transition-all duration-300"
-              >
-                <ArrowLeft className="w-5 h-5 mr-2 inline" />
+              <Button onClick={() => router.back()} className="gap-2">
+                <ArrowLeft className="w-5 h-5" />
                 Volver
-              </button>
-              <button
-                onClick={fetchVehicle}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 text-lg rounded-lg transition-all duration-300"
-              >
+              </Button>
+              <Button variant="secondary" onClick={fetchVehicle}>
                 Reintentar
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -140,110 +155,129 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     <div className="min-h-screen py-8 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
         {vehicle?._id && (
-          <VehicleActions
-            vehicleId={vehicle._id}
-            isFavorited={isFavorited}
-            onFavorite={() => setIsFavorited((prev) => !prev)}
-            onShare={handleShare}
-          />
+          // ✅ AOS: Animamos la barra de acciones desde arriba
+          <div data-aos="fade-down" data-aos-duration="600" data-aos-delay="100">
+            <VehicleActions
+              vehicleId={vehicle._id}
+              isFavorited={isFavorited}
+              onFavorite={() => setIsFavorited((prev) => !prev)}
+              onShare={handleShare}
+            />
+          </div>
         )}
 
-        <motion.div
-          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.div
-            className="lg:col-span-2 space-y-8"
-            variants={itemVariants}
-          >
-            <VehicleSummary vehicle={vehicle} />
-            <ImageGallery
-              images={vehicle.images}
-              vehicleName={`${vehicle.brand} ${vehicle.model}`}
-            />
-            {/* ✅ ESPECIFICACIONES TÉCNICAS ACTUALIZADAS */}
-            <TechnicalSpecifications
-              specs={[
-                { label: "Marca", value: vehicle.brand },
-                { label: "Modelo", value: vehicle.model },
-                { label: "Año", value: vehicle.year },
-                {
-                  label: "Kilometraje",
-                  value: `${formatMileage(vehicle.mileage)} km`,
-                },
-                { label: "Condición", value: translatedCondition || "" },
-                { label: "Transmisión", value: translatedTransmission || "" },
-                { label: "Combustible", value: translatedFuelType || "" },
-                { label: "Motor", value: vehicle.engine || "N/A" },
-                { label: "Cilindraje", value: vehicle.displacement || "N/A" },
-                { label: "Color", value: vehicle.color },
-                { label: "Puertas", value: vehicle.doors || "N/A" },
-                { label: "Asientos", value: vehicle.seats || "N/A" },
-                {
-                  label: "Tracción",
-                  value: vehicle.driveType?.toUpperCase() || "N/A",
-                },
-                { label: "Garantía", value: translatedWarranty || "" },
-              ]}
-            />
-            <VehicleDocumentation
-              documentation={(vehicle.documentation || []).map((doc) =>
-                Object.values(Documentation).includes(doc as Documentation)
-                  ? DOCUMENTATION_MAP[doc as Documentation]
-                  : doc
-              )}
-            />
-            <VehicleFeatures features={vehicle.features} />
-            <VehicleDescription description={vehicle.description} />
-          </motion.div>
-          <motion.div
-            className="lg:col-span-1 space-y-6 sticky top-24 self-start"
-            variants={itemVariants}
-          >
-            <ContactInfo
-              sellerContact={vehicle.sellerContact}
-              vehicleName={`${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
-              price={vehicle.price}
-            />
-            {vehicle.offersFinancing && vehicle.financingDetails && (
-              <FinancingModal
-                vehiclePrice={vehicle.price}
-                financingDetails={vehicle.financingDetails}
+        {/* ✅ CAMBIO: El contenedor principal ya no es de Framer Motion */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            {/* ✅ AOS: Animamos cada sección con diferentes efectos y retrasos para un efecto escalonado */}
+            <div data-aos="fade-up" data-aos-duration="800" data-aos-delay="200">
+              <VehicleSummary vehicle={vehicle} />
+            </div>
+            <div data-aos="zoom-in" data-aos-duration="800" data-aos-delay="300">
+              <ImageGallery
+                images={vehicle.images}
+                vehicleName={`${vehicle.brand} ${vehicle.model}`}
               />
+            </div>
+            <div data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+              <TechnicalSpecifications
+                specs={[
+                  { label: "Marca", value: vehicle.brand },
+                  { label: "Modelo", value: vehicle.model },
+                  { label: "Año", value: vehicle.year },
+                  {
+                    label: "Kilometraje",
+                    value: `${formatMileage(vehicle.mileage)} km`,
+                  },
+                  { label: "Condición", value: translatedCondition || "" },
+                  { label: "Transmisión", value: translatedTransmission || "" },
+                  { label: "Combustible", value: translatedFuelType || "" },
+                  { label: "Motor", value: vehicle.engine || "N/A" },
+                  { label: "Cilindraje", value: vehicle.displacement || "N/A" },
+                  { label: "Color", value: vehicle.color },
+                  { label: "Puertas", value: vehicle.doors || "N/A" },
+                  { label: "Asientos", value: vehicle.seats || "N/A" },
+                  {
+                    label: "Tracción",
+                    value: vehicle.driveType?.toUpperCase() || "N/A",
+                  },
+                  { label: "Garantía", value: translatedWarranty || "" },
+                  { label: "VIN", value: vehicle.vin || "N/A" },
+                ]}
+              />
+            </div>
+
+            {/* Sección de Documentación del Vehículo */}
+            <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="500">
+              <VehicleDocumentation
+                documentation={(vehicle.documentation || []).map((doc) =>
+                  Object.values(Documentation).includes(doc as Documentation)
+                    ? DOCUMENTATION_MAP[doc as Documentation]
+                    : doc
+                )}
+              />
+            </div>
+            <div data-aos="fade-right" data-aos-duration="800" data-aos-delay="600">
+              <VehicleFeatures features={vehicle.features} />
+            </div>
+            <div data-aos="fade-up" data-aos-duration="800" data-aos-delay="700">
+              <VehicleDescription description={vehicle.description} />
+            </div>
+          </div>
+          
+          <div className="lg:col-span-1 space-y-6 sticky top-16 md:top-24 self-start">
+            <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="800">
+              <ContactInfo
+                sellerContact={vehicle.sellerContact}
+                vehicleName={`${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
+                price={vehicle.price}
+              />
+            </div>
+            {vehicle.offersFinancing && vehicle.financingDetails && (
+              <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="900">
+                <FinancingModal
+                  vehiclePrice={vehicle.price}
+                  financingDetails={vehicle.financingDetails}
+                />
+              </div>
             )}
-            <VehicleAdditionalInfo
-              items={[
-                { label: "Categoría", value: vehicle.category },
-                { label: "Subcategoría", value: vehicle.subcategory },
-                { label: "Estado", value: translatedStatus || "" },
-                { label: "Publicado", value: formatDate(vehicle.createdAt) },
-                { label: "Visitas", value: vehicle.views },
-                {
-                  label: "Capacidad de carga",
-                  value: vehicle.loadCapacity
-                    ? `${vehicle.loadCapacity} kg`
-                    : undefined,
-                },
-              ]}
-            />
+            <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="1000">
+              <VehicleAdditionalInfo
+                items={[
+                  { label: "Categoría", value: vehicle.category },
+                  { label: "Subcategoría", value: vehicle.subcategory },
+                  { label: "Estado", value: translatedStatus || "" },
+                  { label: "Publicado", value: formatDate(vehicle.createdAt) },
+                  { label: "Visitas", value: vehicle.views },
+                  {
+                    label: "Capacidad de carga",
+                    value: vehicle.loadCapacity
+                      ? `${vehicle.loadCapacity} kg`
+                      : undefined,
+                  },
+                ]}
+              />
+            </div>
+            <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="1100">
+              <VehicleWarranty
+                warranty={vehicle.warranty}
+                translatedWarranty={translatedWarranty || ""}
+              />
+            </div>
+          </div>
+        </div>
 
-            <VehicleWarranty
-              warranty={vehicle.warranty}
-              translatedWarranty={translatedWarranty || ""}
+        {/* ✅ AOS: La última sección también se anima */}
+        <div data-aos="fade-up" data-aos-duration="800" data-aos-delay="1200">
+          <Suspense
+            fallback={<Skeleton className="h-64 w-full mt-8 rounded-xl" />}
+          >
+            <SimilarVehicles
+              vehicles={similarVehicles}
+              isLoading={isLoadingSimilar}
             />
-          </motion.div>
-        </motion.div>
-
-        <Suspense
-          fallback={<Skeleton className="h-64 w-full mt-8 rounded-xl" />}
-        >
-          <SimilarVehicles
-            vehicles={similarVehicles}
-            isLoading={isLoadingSimilar}
-          />
-        </Suspense>
+          </Suspense>
+        </div>
       </div>
     </div>
   );

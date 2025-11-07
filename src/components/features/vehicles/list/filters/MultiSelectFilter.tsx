@@ -3,6 +3,7 @@
 
 import * as React from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion"; // MEJORA: Para animar la salida de las badges
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -49,7 +50,10 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
 }) => {
   const [open, setOpen] = React.useState(false);
 
-  const handleUnselect = (item: string) => {
+  // MEJORA: Manejador de deselección más limpio
+  const handleUnselect = (item: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     onChange(selected.filter((i) => i !== item));
   };
 
@@ -62,118 +66,90 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
           aria-expanded={open}
           className={cn(
             "w-full justify-between h-auto min-h-10",
-            selected.length > 0 ? "h-full" : "",
+            selected.length > 0 && "h-full",
             className
           )}
         >
           <div className="flex gap-1 flex-wrap">
             {selected.length > 0 ? (
-              selected.map((value) => {
-                const optionLabel =
-                  options.find((opt) => opt.value === value)?.label ||
-                  value;
-                return (
-                  <Badge
-                    variant="secondary"
-                    key={value}
-                    className="mr-1 mb-1 flex items-center"
-                  >
-                    <span className="mr-1">{optionLabel}</span>
-                    <div
-                      role="button"
-                      aria-label={`Quitar ${optionLabel}`}
-                      tabIndex={0}
-                      className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
-                      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleUnselect(value)}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleUnselect(value);
-                      }}
+              <AnimatePresence mode="popLayout">
+                {selected.map((value) => {
+                  const optionLabel = options.find((opt) => opt.value === value)?.label || value;
+                  return (
+                    // MEJORA: Animamos la salida de cada badge
+                    <motion.div
+                      key={value}
+                      initial={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                    </div>
-                  </Badge>
-                );
-              })
+                      <Badge variant="secondary" key={value} className="mr-1 mb-1 flex items-center gap-1">
+                        <span className="truncate max-w-[100px]">{optionLabel}</span>
+                        <button
+                          type="button"
+                          role="button"
+                          aria-label={`Quitar ${optionLabel}`}
+                          tabIndex={0}
+                          className="rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 cursor-pointer hover:bg-destructive/20 transition-colors p-0.5"
+                          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleUnselect(value, e as any)}
+                          onClick={(e) => handleUnselect(value, e)}
+                        >
+                          <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                        </button>
+                      </Badge>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             ) : (
-              <span
-                className="text-muted-foreground"
-              >
-                {placeholder}
-              </span>
+              <span className="text-muted-foreground">{placeholder}</span>
             )}
           </div>
           <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="w-[var(--radix-popover-trigger-width)] p-0 z-50"
-      >
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 z-50" align="start">
         <Command>
           {showPublishedToggle && onPublishedOnlyChange && (
-            <div className="px-2 py-1.5">
-              <div
-                className="flex items-center space-x-2 cursor-pointer px-2 py-1.5 rounded-md hover:bg-accent"
-                onClick={() => onPublishedOnlyChange(!isPublishedOnly)}
-              >
-                <Checkbox
-                  id="published-only"
-                  checked={isPublishedOnly}
-                  onCheckedChange={(checked) => {
-                    if (onPublishedOnlyChange) {
-                      onPublishedOnlyChange(checked === true);
-                    }
-                  }}
-                />
-                <label
-                  htmlFor="published-only"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                >
+            // MEJORA: El toggle ahora es un CommandItem para mejor integración
+            <CommandItem onSelect={() => onPublishedOnlyChange(!isPublishedOnly)}>
+              <div className="flex items-center space-x-2 w-full">
+                <Checkbox id="published-only" checked={isPublishedOnly} />
+                <label htmlFor="published-only" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1">
                   {publishedOnlyLabel}
                 </label>
               </div>
-            </div>
+            </CommandItem>
           )}
-          <CommandInput placeholder="Buscar..." />
+          <CommandInput placeholder="Buscar opción..." />
           <CommandList className="max-h-[300px] overflow-y-auto">
-            <CommandEmpty>No se encontraron resultados.</CommandEmpty>
+            <CommandEmpty>No se encontraron opciones.</CommandEmpty>
             <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  onSelect={() => {
-                    if (singleSelect) {
-                      onChange(selected[0] === option.value ? [] : [option.value]);
-                      setOpen(false);
-                    } else {
-                      onChange(
-                        selected.includes(option.value)
-                          ? selected.filter((item) => item !== option.value)
-                          : [...selected, option.value]
-                      );
-                      setOpen(true);
-                    }
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      selected.includes(option.value)
-                        ? "opacity-100"
-                        : "opacity-0"
+              {options.map((option) => {
+                const isSelected = selected.includes(option.value);
+                return (
+                  <CommandItem
+                    key={option.value}
+                    onSelect={() => {
+                      if (singleSelect) {
+                        onChange(isSelected ? [] : [option.value]);
+                        setOpen(false);
+                      } else {
+                        onChange(isSelected ? selected.filter((item) => item !== option.value) : [...selected, option.value]);
+                      }
+                    }}
+                  >
+                    <Check className={cn("mr-2 h-4 w-4", isSelected ? "opacity-100" : "opacity-0")} />
+                    <span className="flex-1 truncate">{option.label}</span>
+                    {option.count !== undefined && option.count > 0 && (
+                      // MEJORA: Usamos una Badge secundaria para no competir visualmente
+                      <Badge variant="secondary" className="text-xs font-semibold">
+                        {option.count}
+                      </Badge>
                     )}
-                  />
-                  <span className="flex-1">{option.label}</span>
-                  {option.count !== undefined && option.count > 0 && (
-                    <span
-                      className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground"
-                    >
-                      {option.count}
-                    </span>
-                  )}
-                </CommandItem>
-              ))}
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           </CommandList>
         </Command>

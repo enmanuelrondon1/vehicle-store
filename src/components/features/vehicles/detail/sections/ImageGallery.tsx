@@ -150,13 +150,19 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
   if (validImages.length === 0) {
     return (
-      <div className="aspect-video rounded-lg bg-muted flex items-center justify-center">
-        <div className="text-center">
-          <Car className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-semibold mb-2">
+      <div 
+        className="aspect-video rounded-xl bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center shadow-lg"
+        data-aos="fade-up"
+        data-aos-duration="700"
+      >
+        <div className="text-center p-6">
+          <div className="w-20 h-20 mx-auto mb-4 bg-muted-foreground/10 rounded-full flex items-center justify-center">
+            <Car className="w-10 h-10 text-muted-foreground" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">
             Sin imágenes disponibles
           </h3>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground max-w-md mx-auto">
             Este vehículo no tiene imágenes disponibles en este momento.
           </p>
         </div>
@@ -166,9 +172,14 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
   return (
     <>
-      <div className="relative">
+      <div 
+        className="relative"
+        data-aos="zoom-in"
+        data-aos-duration="800"
+        data-aos-easing="ease-out-cubic"
+      >
         {/* Imagen principal */}
-        <div className="relative aspect-video rounded-lg overflow-hidden group">
+        <div className="relative aspect-video rounded-xl overflow-hidden group shadow-xl">
           <div className="relative w-full h-full">
             <Image
               src={
@@ -177,7 +188,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   : images[currentImageIndex]
               }
               alt={`${vehicleName} - Imagen ${currentImageIndex + 1}`}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
               onError={() => handleImageError(currentImageIndex)}
@@ -185,7 +196,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           </div>
 
           {/* Controles superpuestos */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500">
             <div className="absolute inset-0 flex items-center justify-between p-4">
               {images.length > 1 && (
                 <>
@@ -193,17 +204,17 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                     variant="ghost"
                     size="icon"
                     onClick={prevImage}
-                    className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                    className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 hover:scale-110 backdrop-blur-sm"
                   >
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-6 h-6" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={nextImage}
-                    className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                    className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 hover:scale-110 backdrop-blur-sm"
                   >
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-6 h-6" />
                   </Button>
                 </>
               )}
@@ -217,7 +228,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                       variant="ghost"
                       size="icon"
                       onClick={() => setShowImageInfo(!showImageInfo)}
-                      className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                      className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 hover:scale-110 backdrop-blur-sm"
                     >
                       <Info className="w-5 h-5" />
                     </Button>
@@ -235,7 +246,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsFullscreen(true)}
-                      className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                      className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 hover:scale-110 backdrop-blur-sm"
                     >
                       <Maximize2 className="w-5 h-5" />
                     </Button>
@@ -250,10 +261,15 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
           {/* Indicador de imagen actual */}
           {images.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+            <div 
+              className="absolute bottom-4 left-1/2 transform -translate-x-1/2"
+              data-aos="fade-up"
+              data-aos-duration="600"
+              data-aos-delay="200"
+            >
               <Badge
                 variant="secondary"
-                className="bg-black/50 text-white border-none"
+                className="bg-black/60 text-white border-none backdrop-blur-sm px-3 py-1 text-sm"
               >
                 {currentImageIndex + 1} / {images.length}
               </Badge>
@@ -262,14 +278,17 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
           {/* Información de la imagen */}
           {showImageInfo && (
-            <div className="absolute bottom-4 left-4 bg-black/70 text-white p-3 rounded-lg max-w-xs">
+            <div 
+              className="absolute bottom-4 left-4 bg-black/80 text-white p-4 rounded-xl max-w-xs backdrop-blur-md border border-white/10"
+              data-aos="fade-up"
+              data-aos-duration="400"
+            >
               <h4 className="font-semibold mb-1">{vehicleName}</h4>
               <p className="text-sm opacity-90">
                 Imagen {currentImageIndex + 1} de {images.length}
               </p>
               <p className="text-xs opacity-75 mt-1">
-                Haz clic en los botones para navegar o usa las flechas del
-                teclado
+                Haz clic en los botones para navegar o usa las flechas del teclado
               </p>
             </div>
           )}
@@ -277,33 +296,38 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
         {/* Miniaturas */}
         {images.length > 1 && (
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+          <div 
+            className="mt-6 flex gap-3 overflow-x-auto pb-2 px-1"
+            data-aos="fade-up"
+            data-aos-duration="700"
+            data-aos-delay="300"
+          >
             {images.map((image, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
                 className={cn(
-                  "relative w-20 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all",
+                  "relative w-24 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-105",
                   currentImageIndex === index
-                    ? "border-primary scale-105 shadow-md"
+                    ? "border-primary shadow-lg scale-105 ring-2 ring-primary/30"
                     : "border-transparent hover:border-muted-foreground/30"
                 )}
               >
                 <Image
                   src={
                     imageErrors[index]
-                      ? "/placeholder.svg?height=64&width=80"
+                      ? "/placeholder.svg?height=80&width=96"
                       : image
                   }
                   alt={`Miniatura ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                   fill
-                  sizes="80px"
+                  sizes="96px"
                   onError={() => handleImageError(index)}
                 />
                 {currentImageIndex === index && (
                   <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-primary rounded-full" />
+                    <div className="w-3 h-3 bg-primary rounded-full shadow-lg shadow-primary/50" />
                   </div>
                 )}
               </button>
@@ -316,8 +340,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
       {isFullscreen && (
         <div className="fixed inset-0 bg-black/95 z-50 flex flex-col">
           {/* Barra de herramientas superior */}
-          <div className="flex items-center justify-between p-4 bg-black/50">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between p-4 bg-black/70 backdrop-blur-md">
+            <div className="flex items-center gap-3">
               <Badge
                 variant="secondary"
                 className="bg-black/50 text-white border-none"
@@ -335,7 +359,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                       variant="ghost"
                       size="icon"
                       onClick={handleZoomOut}
-                      className="text-white hover:bg-white/20"
+                      className="text-white hover:bg-white/20 transition-all duration-200 hover:scale-110"
                     >
                       <ZoomOut className="w-5 h-5" />
                     </Button>
@@ -353,7 +377,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                       variant="ghost"
                       size="icon"
                       onClick={handleZoomIn}
-                      className="text-white hover:bg-white/20"
+                      className="text-white hover:bg-white/20 transition-all duration-200 hover:scale-110"
                     >
                       <ZoomIn className="w-5 h-5" />
                     </Button>
@@ -371,7 +395,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                       variant="ghost"
                       size="icon"
                       onClick={handleRotate}
-                      className="text-white hover:bg-white/20"
+                      className="text-white hover:bg-white/20 transition-all duration-200 hover:scale-110"
                     >
                       <RotateCw className="w-5 h-5" />
                     </Button>
@@ -390,7 +414,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                       size="icon"
                       onClick={handleDownload}
                       disabled={isDownloading}
-                      className="text-white hover:bg-white/20"
+                      className="text-white hover:bg-white/20 transition-all duration-200 hover:scale-110"
                     >
                       {isDownloading ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -409,7 +433,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsFullscreen(false)}
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-white/20 transition-all duration-200 hover:scale-110"
               >
                 <X className="w-5 h-5" />
               </Button>
@@ -420,7 +444,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
             <div className="relative w-full h-full flex items-center justify-center">
               <div
-                className="relative w-full h-full transition-transform duration-300"
+                className="relative w-full h-full transition-transform duration-500"
                 style={{
                   transform: `scale(${zoomLevel}) rotate(${imageRotation}deg)`,
                 }}
@@ -446,17 +470,17 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                     variant="ghost"
                     size="icon"
                     onClick={prevImage}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-14 h-14 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 hover:scale-110 backdrop-blur-sm"
                   >
-                    <ChevronLeft className="w-6 h-6" />
+                    <ChevronLeft className="w-7 h-7" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={nextImage}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 w-14 h-14 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 hover:scale-110 backdrop-blur-sm"
                   >
-                    <ChevronRight className="w-6 h-6" />
+                    <ChevronRight className="w-7 h-7" />
                   </Button>
                 </>
               )}
@@ -465,29 +489,29 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
           {/* Miniaturas en pantalla completa */}
           {images.length > 1 && (
-            <div className="p-4 bg-black/50">
-              <div className="flex gap-2 overflow-x-auto justify-center">
+            <div className="p-4 bg-black/70 backdrop-blur-md">
+              <div className="flex gap-3 overflow-x-auto justify-center">
                 {images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
                     className={cn(
-                      "relative w-16 h-12 flex-shrink-0 rounded overflow-hidden border-2 transition-all",
+                      "relative w-20 h-16 flex-shrink-0 rounded overflow-hidden border-2 transition-all duration-300",
                       currentImageIndex === index
-                        ? "border-white scale-110"
-                        : "border-transparent hover:border-white/50"
+                        ? "border-white scale-110 shadow-lg ring-2 ring-white/50"
+                        : "border-transparent hover:border-white/50 hover:scale-105"
                     )}
                   >
                     <Image
                       src={
                         imageErrors[index]
-                          ? "/placeholder.svg?height=48&width=64"
+                          ? "/placeholder.svg?height=64&width=80"
                           : image
                       }
                       alt={`Miniatura ${index + 1}`}
                       className="w-full h-full object-cover"
                       fill
-                      sizes="64px"
+                      sizes="80px"
                       onError={() => handleImageError(index)}
                     />
                   </button>

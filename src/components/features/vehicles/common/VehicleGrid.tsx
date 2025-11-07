@@ -4,9 +4,13 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+// CAMBIO: Ya no necesitamos 'Variants' de framer-motion aquí
+import { motion, AnimatePresence } from "framer-motion";
 import { Vehicle } from "@/types/types";
 import VehicleCard from "./VehicleCard";
+
+// CAMBIO: Importamos nuestros componentes de animación reutilizables
+import { AnimatedContainer, AnimatedItem } from "@/components/shared/animation/AnimatedContainer";
 
 interface VehicleGridProps {
   vehicles: Vehicle[];
@@ -15,21 +19,7 @@ interface VehicleGridProps {
   toggleCompare: (vehicleId: string) => void;
 }
 
-// ✅ VARIANTES DE ANIMACIÓN: Para el efecto "stagger" (escalonado)
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1, // ✅ Cada card aparecerá 0.1s después del anterior
-    },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
+// CAMBIO: Eliminamos las variantes de aquí, porque ahora viven en AnimatedContainer
 
 const VehicleGrid: React.FC<VehicleGridProps> = ({
   vehicles,
@@ -38,12 +28,13 @@ const VehicleGrid: React.FC<VehicleGridProps> = ({
   toggleCompare,
 }) => {
   const { data: session } = useSession();
-  const [favoritedVehicles, setFavoritedVehicles] = useState<Set<string>>(new Set());
+  const [favoritedVehicles, setFavoritedVehicles] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
-    // ✅ MEJORA: No hacer fetch si no hay sesión
     if (!session) {
-      setFavoritedVehicles(new Set()); // Aseguramos que esté vacío si no hay sesión
+      setFavoritedVehicles(new Set());
       return;
     }
 
@@ -62,10 +53,7 @@ const VehicleGrid: React.FC<VehicleGridProps> = ({
     fetchFavorites();
   }, [session]);
 
-  const handleFavoriteToggle = (
-    vehicleId: string,
-    isNowFavorited: boolean
-  ) => {
+  const handleFavoriteToggle = (vehicleId: string, isNowFavorited: boolean) => {
     setFavoritedVehicles((prev) => {
       const newFavorites = new Set(prev);
       if (isNowFavorited) {
@@ -78,38 +66,37 @@ const VehicleGrid: React.FC<VehicleGridProps> = ({
   };
 
   return (
-    // ✅ CONTENEDOR CON ANIMACIÓN STAGGER
-    <motion.div
-      layout
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
+    // CAMBIO: Usamos AnimatedContainer en lugar de motion.div
+    <AnimatedContainer
+      // La 'key' sigue siendo crucial aquí para reiniciar la animación al filtrar/paginar
+      key={
+        vehicles.length > 0
+          ? `${vehicles[0]._id}-${vehicles.length}`
+          : "empty-grid"
+      }
       className={`
-        ${viewMode === "grid"
-          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
-          : "space-y-6"}
+        ${
+          viewMode === "grid"
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
+            : "space-y-6"
+        }
       `}
     >
       <AnimatePresence mode="popLayout">
         {vehicles.map((vehicle) => (
-          <motion.div
-            key={vehicle._id}
-            layout
-            variants={itemVariants} // ✅ Aplicamos las variantes del item
-            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-          >
+          // CAMBIO: Usamos AnimatedItem en lugar de motion.div
+          <AnimatedItem key={vehicle._id}>
             <VehicleCard
               vehicle={vehicle}
-              // viewMode={viewMode}
               onToggleCompare={toggleCompare}
               isInCompareList={compareList.includes(vehicle._id)}
               isFavorited={favoritedVehicles.has(vehicle._id)}
               onFavoriteToggle={handleFavoriteToggle}
             />
-          </motion.div>
+          </AnimatedItem>
         ))}
       </AnimatePresence>
-    </motion.div>
+    </AnimatedContainer>
   );
 };
 

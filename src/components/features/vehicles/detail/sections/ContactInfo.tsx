@@ -1,11 +1,12 @@
-//src/components/features/vehicles/detail/sections/ContactInfo.tsx
+// src/components/features/vehicles/detail/sections/ContactInfo.tsx
 "use client";
 
 import React from "react";
 import type { VehicleDataFrontend } from "@/types/types";
-import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Phone, MessageSquare, Mail } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Phone, MessageSquare, Mail, MapPin, CheckCircle, Shield, Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,16 @@ interface ContactInfoProps {
   vehicleName: string;
   price: number;
 }
+
+// ✅ FUNCIÓN LOCAL para formatear el precio con el símbolo de dólar al inicio
+const formatPriceDisplay = (price: number) => {
+  const formattedNumber = new Intl.NumberFormat('es-ES', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price);
+  
+  return `$${formattedNumber}`;
+};
 
 const ContactInfoComponent: React.FC<ContactInfoProps> = ({
   sellerContact,
@@ -30,7 +41,7 @@ const ContactInfoComponent: React.FC<ContactInfoProps> = ({
     const body = encodeURIComponent(
       `Hola ${
         sellerContact.name
-      },\n\nEstoy interesado en tu ${vehicleName} por ${formatPrice(
+      },\n\nEstoy interesado en tu ${vehicleName} por ${formatPriceDisplay(
         price
       )}.\n\n¿Podrías darme más información?\n\nGracias.`
     );
@@ -44,7 +55,7 @@ const ContactInfoComponent: React.FC<ContactInfoProps> = ({
     const message = encodeURIComponent(
       `Hola ${
         sellerContact.name
-      }, estoy interesado en tu ${vehicleName} por ${formatPrice(
+      }, estoy interesado en tu ${vehicleName} por ${formatPriceDisplay(
         price
       )}. ¿Podrías darme más información?`
     );
@@ -58,67 +69,136 @@ const ContactInfoComponent: React.FC<ContactInfoProps> = ({
   };
 
   return (
-    <Card className="overflow-hidden shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-xl font-heading">
-          Información de Contacto
-        </CardTitle>
+    <Card 
+      className="overflow-hidden shadow-lg border-border/50 sticky top-24"
+      data-aos="fade-up"
+      data-aos-duration="700"
+      data-aos-delay="600"
+    >
+      <CardHeader className="pb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <Phone className="w-5 h-5 text-primary" />
+          </div>
+          <CardTitle className="text-xl">
+            Contacto del Vendedor
+          </CardTitle>
+        </div>
       </CardHeader>
+      
       <CardContent className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Avatar className="w-14 h-14 border-2 border-primary/20">
-            <AvatarFallback className="text-xl font-bold">
+        {/* Información del vendedor */}
+        <div 
+          className="flex items-center gap-4"
+          data-aos="fade-up"
+          data-aos-duration="600"
+          data-aos-delay="100"
+        >
+          <Avatar className="w-16 h-16 border-2 border-primary/20">
+            <AvatarFallback className="text-xl font-bold bg-primary text-primary-foreground">
               {sellerContact.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div>
+          <div className="flex-1">
             <p className="font-bold text-lg text-foreground">
               {sellerContact.name}
             </p>
-            <p className="text-sm text-muted-foreground font-medium">Vendedor</p>
+            <p className="text-sm text-muted-foreground">Vendedor</p>
           </div>
         </div>
 
+        <Separator />
+
+        {/* Botones de contacto */}
         <div className="grid grid-cols-1 gap-3">
-          <Button
-            onClick={handleCall}
-            variant="outline"
-            className="w-full h-auto justify-start p-3 transition-all duration-300 ease-in-out group hover:bg-blue-500/10 border-blue-500/20 hover:border-blue-500"
+          <div
+            data-aos="fade-up"
+            data-aos-duration="500"
+            data-aos-delay="200"
           >
-            <Phone className="mr-4 h-5 w-5 text-blue-500 transition-transform group-hover:scale-110" />
-            <div className="text-left">
-              <p className="font-semibold text-sm text-foreground">Llamar</p>
-              <p className="text-xs text-muted-foreground group-hover:text-blue-600">
-                {sellerContact.phone}
+            <Button
+              onClick={handleCall}
+              variant="outline"
+              className="w-full h-auto justify-start p-4 transition-all duration-300 group hover:bg-blue-500/10 border-blue-500/20 hover:border-blue-500 hover:shadow-md"
+            >
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors">
+                <Phone className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-sm text-foreground">Llamar ahora</p>
+                <p className="text-xs text-muted-foreground group-hover:text-blue-600 truncate max-w-[180px]">
+                  {sellerContact.phone}
+                </p>
+              </div>
+            </Button>
+          </div>
+          
+          <div
+            data-aos="fade-up"
+            data-aos-duration="500"
+            data-aos-delay="300"
+          >
+            <Button
+              onClick={handleWhatsApp}
+              variant="outline"
+              className="w-full h-auto justify-start p-4 transition-all duration-300 group hover:bg-green-500/10 border-green-500/20 hover:border-green-500 hover:shadow-md"
+            >
+              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3 group-hover:bg-green-200 transition-colors">
+                <MessageSquare className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-sm text-foreground">Enviar WhatsApp</p>
+                <p className="text-xs text-muted-foreground group-hover:text-green-600">
+                  Respuesta rápida
+                </p>
+              </div>
+            </Button>
+          </div>
+          
+          <div
+            data-aos="fade-up"
+            data-aos-duration="500"
+            data-aos-delay="400"
+          >
+            <Button
+              onClick={handleEmail}
+              variant="outline"
+              className="w-full h-auto justify-start p-4 transition-all duration-300 group hover:bg-gray-500/10 border-gray-500/20 hover:border-gray-500 hover:shadow-md"
+            >
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3 group-hover:bg-gray-200 transition-colors">
+                <Mail className="h-5 w-5 text-gray-600" />
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-sm text-foreground">Enviar Email</p>
+                <p className="text-xs text-muted-foreground group-hover:text-gray-600 truncate max-w-[180px]">
+                  {sellerContact.email}
+                </p>
+              </div>
+            </Button>
+          </div>
+        </div>
+
+        {/* Sección de confianza - ✅ MODIFICADA para no depender de 'type' o 'memberSince' */}
+        <div 
+          className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20"
+          data-aos="fade-up"
+          data-aos-duration="600"
+          data-aos-delay="500"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Shield className="w-4 h-4 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-sm flex items-center gap-2">
+                Vendedor Verificado
+                <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+              </h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                Este vendedor ha sido verificado por nuestro equipo de seguridad para garantizar una transacción segura.
               </p>
             </div>
-          </Button>
-          <Button
-            onClick={handleWhatsApp}
-            variant="outline"
-            className="w-full h-auto justify-start p-3 transition-all duration-300 ease-in-out group hover:bg-green-500/10 border-green-500/20 hover:border-green-500"
-          >
-            <MessageSquare className="mr-4 h-5 w-5 text-green-500 transition-transform group-hover:scale-110" />
-            <div className="text-left">
-              <p className="font-semibold text-sm text-foreground">WhatsApp</p>
-              <p className="text-xs text-muted-foreground group-hover:text-green-600">
-                Enviar mensaje
-              </p>
-            </div>
-          </Button>
-          <Button
-            onClick={handleEmail}
-            variant="outline"
-            className="w-full h-auto justify-start p-3 transition-all duration-300 ease-in-out group hover:bg-gray-500/10 border-gray-500/20 hover:border-gray-500"
-          >
-            <Mail className="mr-4 h-5 w-5 text-muted-foreground transition-transform group-hover:scale-110" />
-            <div className="text-left">
-              <p className="font-semibold text-sm text-foreground">Email</p>
-              <p className="text-xs text-muted-foreground truncate max-w-[150px] group-hover:text-gray-600">
-                {sellerContact.email}
-              </p>
-            </div>
-          </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

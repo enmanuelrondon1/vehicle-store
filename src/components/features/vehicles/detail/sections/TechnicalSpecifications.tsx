@@ -15,12 +15,14 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   DoorOpen,
   Users,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface Spec {
@@ -167,6 +169,7 @@ const TechnicalSpecificationsComponent: React.FC<
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [sortBy, setSortBy] = useState<"label" | "category" | "default">(
     "default"
   );
@@ -240,178 +243,219 @@ const TechnicalSpecificationsComponent: React.FC<
 
   if (!specs || specs.length === 0) {
     return (
-      <div className="p-6 rounded-xl border bg-card/50 border-border backdrop-blur-sm">
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <Settings className="w-12 h-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">
-            Sin especificaciones disponibles
-          </h3>
-          <p className="text-muted-foreground">
-            Este vehículo no tiene especificaciones técnicas disponibles.
-          </p>
-        </div>
-      </div>
+      <Card 
+        className="shadow-lg border-border/50 overflow-hidden"
+        data-aos="fade-up"
+        data-aos-duration="700"
+      >
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Settings className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">
+              Sin especificaciones disponibles
+            </h3>
+            <p className="text-muted-foreground max-w-md">
+              Este vehículo no tiene especificaciones técnicas disponibles.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="p-6 rounded-xl border bg-card/50 border-border backdrop-blur-sm">
-      {/* Cabecera con título */}
-      <div className="flex flex-col lg:flex-row justify-between lg:items-center mb-6 gap-4">
-        <div className="flex items-center gap-2">
-          <Settings className="w-6 h-6 text-primary" />
-          <h3 className="text-2xl font-bold text-foreground">
-            Especificaciones Técnicas
-          </h3>
-        </div>
-      </div>
-
-      {/* Filtros de categoría */}
-      <div className="flex flex-wrap gap-2 mb-6 pb-4 border-b border-border">
-        <Button
-          variant={selectedCategory === null ? "default" : "outline"}
-          size="sm"
-          onClick={() => setSelectedCategory(null)}
-          className="text-xs"
-        >
-          Todas ({specs.length})
-        </Button>
-        {categories.map((category) => {
-          const count = categorizedSpecs[category].length;
-          return (
-            <Button
-              key={category}
-              variant={selectedCategory === category ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(category)}
-              className="text-xs"
-            >
-              {category} ({count})
-            </Button>
-          );
-        })}
-      </div>
-
-      {/* Lista de especificaciones */}
-      {displaySpecs.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-6 gap-y-2">
-          <div className="space-y-2">
-            {firstHalf.map((spec, index) => (
-              <SpecRow
-                key={spec.label}
-                label={spec.label}
-                value={spec.value}
-                isHighlighted={
-                  !!searchTerm &&
-                  (spec.label
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase()) ||
-                    spec.value
-                      .toString()
-                      .toLowerCase()
-                      .includes(searchTerm.toLowerCase()))
-                }
-                index={index}
-              />
-            ))}
+    <Card 
+      className="shadow-lg border-border/50 overflow-hidden"
+      data-aos="fade-up"
+      data-aos-duration="700"
+      data-aos-delay="200"
+    >
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Settings className="w-5 h-5 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">
+              Especificaciones Técnicas
+            </CardTitle>
           </div>
-          <div className="space-y-2">
-            {secondHalf.map((spec, index) => (
-              <SpecRow
-                key={spec.label}
-                label={spec.label}
-                value={spec.value}
-                isHighlighted={
-                  !!searchTerm &&
-                  (spec.label
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase()) ||
-                    spec.value
-                      .toString()
-                      .toLowerCase()
-                      .includes(searchTerm.toLowerCase()))
-                }
-                index={index + midPoint}
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="text-center py-8">
-          <Search className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-muted-foreground">
-            No se encontraron especificaciones que coincidan con tu búsqueda.
-          </p>
           <Button
             variant="ghost"
             size="sm"
-            onClick={clearFilters}
-            className="mt-4"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="gap-1 text-sm"
           >
-            Limpiar filtros
-          </Button>
-        </div>
-      )}
-
-      {/* Botón para mostrar más/menos */}
-      {filteredSpecs.length > 8 && (
-        <div className="mt-6 pt-4 border-t border-border">
-          <Button
-            variant="outline"
-            onClick={() => setShowAll(!showAll)}
-            className="w-full"
-          >
-            {showAll ? (
+            {isExpanded ? (
               <>
-                <ChevronUp className="w-4 h-4 mr-2" />
-                Mostrar menos
+                Ocultar
+                <ChevronUp className="w-4 h-4" />
               </>
             ) : (
               <>
-                <ChevronDown className="w-4 h-4 mr-2" />
-                Mostrar más ({filteredSpecs.length - 8} restantes)
+                Mostrar
+                <ChevronDown className="w-4 h-4" />
               </>
             )}
           </Button>
         </div>
-      )}
+      </CardHeader>
+      
+      {isExpanded && (
+        <CardContent className="pt-0">
+          {/* Filtros de categoría */}
+          <div className="flex flex-wrap gap-2 mb-6 pb-4 border-b border-border">
+            <Button
+              variant={selectedCategory === null ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(null)}
+              className="text-xs"
+            >
+              Todas ({specs.length})
+            </Button>
+            {categories.map((category) => {
+              const count = categorizedSpecs[category].length;
+              return (
+                <Button
+                  key={category}
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category)}
+                  className="text-xs"
+                >
+                  {category} ({count})
+                </Button>
+              );
+            })}
+          </div>
 
-      {/* Resumen de especificaciones */}
-      <div className="mt-6 p-4 bg-muted/30 rounded-lg">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-muted-foreground mt-0.5" />
-          <div className="flex-1">
-            <h4 className="font-semibold text-sm mb-1">
-              Resumen de especificaciones
-            </h4>
-            <p className="text-xs text-muted-foreground">
-              Este vehículo tiene {specs.length} especificaciones técnicas
-              distribuidas en {categories.length} categorías.
-              {selectedCategory &&
-                ` Actualmente se muestran las especificaciones de la categoría "${selectedCategory}".`}
-              {searchTerm && ` Filtradas por el término "${searchTerm}".`}
-            </p>
-          </div>
-          <div className="flex -space-x-2">
-            {categories.slice(0, 4).map((category, index) => (
-              <div
-                key={category}
-                className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center"
+          {/* Lista de especificaciones */}
+          {displaySpecs.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-6 gap-y-2">
+              <div className="space-y-2">
+                {firstHalf.map((spec, index) => (
+                  <SpecRow
+                    key={spec.label}
+                    label={spec.label}
+                    value={spec.value}
+                    isHighlighted={
+                      !!searchTerm &&
+                      (spec.label
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                        spec.value
+                          .toString()
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase()))
+                    }
+                    index={index}
+                  />
+                ))}
+              </div>
+              <div className="space-y-2">
+                {secondHalf.map((spec, index) => (
+                  <SpecRow
+                    key={spec.label}
+                    label={spec.label}
+                    value={spec.value}
+                    isHighlighted={
+                      !!searchTerm &&
+                      (spec.label
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                        spec.value
+                          .toString()
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase()))
+                    }
+                    index={index + midPoint}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4 mx-auto">
+                <Search className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground mb-4">
+                No se encontraron especificaciones que coincidan con tu búsqueda.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearFilters}
               >
-                {getIconForSpec(category)}
+                Limpiar filtros
+              </Button>
+            </div>
+          )}
+
+          {/* Botón para mostrar más/menos */}
+          {filteredSpecs.length > 8 && (
+            <div className="mt-6 pt-4 border-t border-border">
+              <Button
+                variant="outline"
+                onClick={() => setShowAll(!showAll)}
+                className="w-full"
+              >
+                {showAll ? (
+                  <>
+                    <ChevronUp className="w-4 h-4 mr-2" />
+                    Mostrar menos
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4 mr-2" />
+                    Mostrar más ({filteredSpecs.length - 8} restantes)
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Resumen de especificaciones */}
+          <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Info className="w-4 h-4 text-primary" />
               </div>
-            ))}
-            {categories.length > 4 && (
-              <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                <span className="text-xs font-medium">
-                  +{categories.length - 4}
-                </span>
+              <div className="flex-1">
+                <h4 className="font-semibold text-sm mb-1">
+                  Resumen de especificaciones
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  Este vehículo tiene {specs.length} especificaciones técnicas
+                  distribuidas en {categories.length} categorías.
+                  {selectedCategory &&
+                    ` Actualmente se muestran las especificaciones de la categoría "${selectedCategory}".`}
+                  {searchTerm && ` Filtradas por el término "${searchTerm}".`}
+                </p>
               </div>
-            )}
+              <div className="flex -space-x-2">
+                {categories.slice(0, 4).map((category, index) => (
+                  <div
+                    key={category}
+                    className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center"
+                  >
+                    {getIconForSpec(category)}
+                  </div>
+                ))}
+                {categories.length > 4 && (
+                  <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center">
+                    <span className="text-xs font-medium">
+                      +{categories.length - 4}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </CardContent>
+      )}
+    </Card>
   );
 };
 

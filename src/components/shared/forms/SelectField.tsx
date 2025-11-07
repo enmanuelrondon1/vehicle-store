@@ -1,4 +1,4 @@
-// src/components/shared/forms/SelectField.tsx (Versión Profesional)
+// src/components/shared/forms/SelectField.tsx (Versión Corregida)
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -22,10 +22,10 @@ export const SelectField: React.FC<SelectFieldProps> = ({
   value,
   onValueChange,
   onBlur,
-  disabled,
+  disabled = false,
   placeholder,
   options,
-  isLoading,
+  isLoading = false,
   className = "",
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -78,7 +78,9 @@ export const SelectField: React.FC<SelectFieldProps> = ({
       return;
     }
     switch (e.key) {
-      case 'Escape': setIsOpen(false); break;
+      case 'Escape': 
+        setIsOpen(false); 
+        break;
       case 'ArrowDown':
         e.preventDefault();
         setHighlightedIndex(prev => (prev + 1) % filteredOptions.length);
@@ -93,15 +95,21 @@ export const SelectField: React.FC<SelectFieldProps> = ({
           handleSelectOption(filteredOptions[highlightedIndex]);
         }
         break;
-      case 'Tab': setIsOpen(false); break;
+      case 'Tab': 
+        setIsOpen(false); 
+        break;
     }
   };
 
+  // CAMBIO PRINCIPAL: Construimos las clases de forma segura
+  const baseClasses = "flex items-center justify-between p-2 min-h-[40px] text-sm border border-input bg-background rounded-md shadow-sm transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background";
+  const disabledClasses = disabled || isLoading ? 'cursor-not-allowed opacity-50' : '';
+  const combinedClasses = `${baseClasses} ${disabledClasses} ${className || ''}`.trim();
+
   return (
     <div className="relative w-full" ref={wrapperRef} onBlur={onBlur}>
-      {/* CAMBIOS AQUÍ: Usamos tu sistema de diseño */}
       <div
-        className={`flex items-center justify-between p-2 min-h-[40px] text-sm border border-input bg-background rounded-md shadow-sm transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background ${className} ${disabled || isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
+        className={combinedClasses}
         onClick={() => !disabled && !isLoading && setIsOpen(prev => !prev)}
         onKeyDown={handleKeyDown}
         tabIndex={disabled ? -1 : 0}
@@ -110,8 +118,8 @@ export const SelectField: React.FC<SelectFieldProps> = ({
           {selectedOption?.label || placeholder}
         </span>
         <div className="flex items-center">
-            {isLoading && <Loader2 className="w-4 h-4 animate-spin text-primary mr-2" />}
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          {isLoading && <Loader2 className="w-4 h-4 animate-spin text-primary mr-2" />}
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </div>
       </div>
 
@@ -133,7 +141,11 @@ export const SelectField: React.FC<SelectFieldProps> = ({
               filteredOptions.map((option, index) => (
                 <li
                   key={option.value}
-                  className={`flex items-center justify-between p-2 cursor-pointer rounded-md transition-colors duration-150 ${highlightedIndex === index ? 'bg-primary text-primary-foreground' : 'text-popover-foreground hover:bg-accent hover:text-accent-foreground'}`}
+                  className={`flex items-center justify-between p-2 cursor-pointer rounded-md transition-colors duration-150 ${
+                    highlightedIndex === index 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'text-popover-foreground hover:bg-accent hover:text-accent-foreground'
+                  }`}
                   onClick={() => handleSelectOption(option)}
                   onMouseEnter={() => setHighlightedIndex(index)}
                 >
@@ -148,14 +160,14 @@ export const SelectField: React.FC<SelectFieldProps> = ({
         </div>
       )}
       <style>{`
-          @keyframes popover-in {
-              from { opacity: 0; transform: scale(0.95) translateY(-10px); }
-              to { opacity: 1; transform: scale(1) translateY(0); }
-          }
-          .animate-popover-in {
-              transform-origin: top;
-              animation: popover-in 0.1s ease-out forwards;
-          }
+        @keyframes popover-in {
+          from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-popover-in {
+          transform-origin: top;
+          animation: popover-in 0.1s ease-out forwards;
+        }
       `}</style>
     </div>
   );
