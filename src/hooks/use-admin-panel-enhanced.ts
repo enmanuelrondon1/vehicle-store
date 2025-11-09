@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 // ✅ CORRECCIÓN: Importar ApprovalStatus como valor, no solo como tipo
 import type { VehicleDataFrontend } from "@/types/types";
 import { ApprovalStatus } from "@/types/types";
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 export interface AdminPanelFilters {
   status: ApprovalStatus | "all";
@@ -37,7 +37,7 @@ export const useAdminPanelEnhanced = () => {
   const [allVehicles, setAllVehicles] = useState<VehicleDataFrontend[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   // ELIMINADO: El estado `recentlyUpdatedVehicleId` y su lógica asociada,
   // ya que volvemos al enfoque anterior que funcionaba correctamente.
 
@@ -154,7 +154,8 @@ export const useAdminPanelEnhanced = () => {
 
     if (filters.category.length > 0) {
       filtered = filtered.filter(
-        (vehicle) => vehicle.category && filters.category.includes(vehicle.category)
+        (vehicle) =>
+          vehicle.category && filters.category.includes(vehicle.category)
       );
     }
 
@@ -178,7 +179,8 @@ export const useAdminPanelEnhanced = () => {
     // Filtrado por destacado
     if (filters.featured !== "all") {
       filtered = filtered.filter(
-        (vehicle: VehicleDataFrontend) => vehicle.isFeatured === filters.featured
+        (vehicle: VehicleDataFrontend) =>
+          vehicle.isFeatured === filters.featured
       );
     }
 

@@ -303,7 +303,14 @@ const TechnicalSpecificationsComponent: React.FC<
         </div>
       </CardHeader>
       
-      {isExpanded && (
+      {/* ✅ CORRECCIÓN: Contenedor con transición suave */}
+      <div 
+        className="transition-all duration-500 ease-in-out overflow-hidden"
+        style={{
+          maxHeight: isExpanded ? '5000px' : '0px',
+          opacity: isExpanded ? 1 : 0
+        }}
+      >
         <CardContent className="pt-0">
           {/* Filtros de categoría */}
           <div className="flex flex-wrap gap-2 mb-6 pb-4 border-b border-border">
@@ -454,7 +461,7 @@ const TechnicalSpecificationsComponent: React.FC<
             </div>
           </div>
         </CardContent>
-      )}
+      </div>
     </Card>
   );
 };

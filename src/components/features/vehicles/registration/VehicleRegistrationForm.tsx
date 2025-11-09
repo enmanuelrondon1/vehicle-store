@@ -37,6 +37,7 @@ import {
 
 // Auth
 import ProtectedRoute from "@/components/features/auth/ProtectedRoute";
+import { useSession } from "next-auth/react";
 
 // Hooks
 import { useVehicleForm } from "@/hooks/use-vehicle-form";
@@ -62,6 +63,7 @@ const VehicleRegistrationForm: React.FC = () => {
   const router = useRouter();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
 
   const {
     currentStep,
@@ -257,6 +259,7 @@ const VehicleRegistrationForm: React.FC = () => {
                           errors={errors}
                           handleInputChange={handleInputChange}
                           phoneCodes={phoneCodes}
+                          userSession={session?.user}
                         />
                       </div>
                     )}

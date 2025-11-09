@@ -25,10 +25,21 @@ export const SuccessScreen: React.FC<SuccessScreenProps> = ({
   const [animationCompleted, setAnimationCompleted] = useState(false);
   const [showContent, setShowContent] = useState(false);
 
-  // Pequeño retraso para que la animación Lottie se inicie suavemente
+  // Controla la aparición del contenido y la animación de entrada
   useEffect(() => {
-    const timer = setTimeout(() => setShowContent(true), 100);
-    return () => clearTimeout(timer);
+    const contentTimer = setTimeout(() => setShowContent(true), 100);
+
+    // Como el video está en bucle, el evento `onEnded` nunca se dispara.
+    // Usamos un temporizador para mostrar el resto del contenido después
+    // de que el video haya completado su primer ciclo (aprox.).
+    const animationTimer = setTimeout(() => {
+      setAnimationCompleted(true);
+    }, 2000); // Duración de la animación del video en ms
+
+    return () => {
+      clearTimeout(contentTimer);
+      clearTimeout(animationTimer);
+    };
   }, []);
 
   return (
@@ -49,7 +60,7 @@ export const SuccessScreen: React.FC<SuccessScreenProps> = ({
               className="w-32 h-32 mx-auto rounded-lg"
               autoPlay
               muted
-              onEnded={() => setAnimationCompleted(true)}
+              loop // El video se reproduce en bucle
               playsInline // Importante para móviles
             >
               <source

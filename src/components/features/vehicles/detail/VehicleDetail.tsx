@@ -4,7 +4,7 @@
 // ========================================
 // React y Core
 // ========================================
-import React, { useEffect, Suspense, lazy } from "react";
+import React, { useEffect, Suspense, lazy, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 // ========================================
@@ -17,6 +17,7 @@ import { useSession } from "next-auth/react";
 // Hooks y Tipos Internos
 // ========================================
 import { useVehicleData } from "@/hooks/useVehicleData";
+import { useMatchHeight } from "@/hooks/useMatchHeight";
 import { formatDate, formatMileage, DOCUMENTATION_MAP } from "@/lib/utils";
 import { Documentation } from "@/types/types";
 
@@ -63,6 +64,8 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
   const router = useRouter();
   const { data: session } = useSession();
 
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
   const {
     vehicle,
     isLoading,
@@ -79,6 +82,8 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     translatedWarranty,
     translatedStatus,
   } = useVehicleData(vehicleId);
+
+  useMatchHeight("main-content-column", sidebarRef);
 
   useEffect(() => {
     // console.log("Vehicle data in VehicleDetail:", vehicle);
@@ -155,7 +160,6 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     <div className="min-h-screen py-8 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
         {vehicle?._id && (
-          // ✅ AOS: Animamos la barra de acciones desde arriba
           <div data-aos="fade-down" data-aos-duration="600" data-aos-delay="100">
             <VehicleActions
               vehicleId={vehicle._id}
@@ -166,10 +170,10 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
           </div>
         )}
 
-        {/* ✅ CAMBIO: El contenedor principal ya no es de Framer Motion */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            {/* ✅ AOS: Animamos cada sección con diferentes efectos y retrasos para un efecto escalonado */}
+        {/* Grid principal con items-start para alinear ambas columnas arriba */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-start">
+          {/* Columna principal de contenido */}
+          <div id="main-content-column" className="lg:col-span-2 space-y-8">
             <div data-aos="fade-up" data-aos-duration="800" data-aos-delay="200">
               <VehicleSummary vehicle={vehicle} />
             </div>
@@ -179,6 +183,16 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
                 vehicleName={`${vehicle.brand} ${vehicle.model}`}
               />
             </div>
+
+            {/* ✅ Panel de contacto en MÓVIL - visible solo en pantallas pequeñas */}
+            <div className="lg:hidden" data-aos="fade-up" data-aos-duration="800" data-aos-delay="350">
+              <ContactInfo
+                sellerContact={vehicle.sellerContact}
+                vehicleName={`${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
+                price={vehicle.price}
+              />
+            </div>
+
             <div data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
               <TechnicalSpecifications
                 specs={[
@@ -207,7 +221,6 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
               />
             </div>
 
-            {/* Sección de Documentación del Vehículo */}
             <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="500">
               <VehicleDocumentation
                 documentation={(vehicle.documentation || []).map((doc) =>
@@ -225,7 +238,11 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
             </div>
           </div>
           
-          <div className="lg:col-span-1 space-y-6 sticky top-16 md:top-24 self-start">
+          {/* ✅ Sidebar SIN sticky - permanece fijo en su posición */}
+          <div 
+            ref={sidebarRef} 
+            className="lg:col-span-1 space-y-6"
+          >
             <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="800">
               <ContactInfo
                 sellerContact={vehicle.sellerContact}
@@ -267,7 +284,6 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
           </div>
         </div>
 
-        {/* ✅ AOS: La última sección también se anima */}
         <div data-aos="fade-up" data-aos-duration="800" data-aos-delay="1200">
           <Suspense
             fallback={<Skeleton className="h-64 w-full mt-8 rounded-xl" />}

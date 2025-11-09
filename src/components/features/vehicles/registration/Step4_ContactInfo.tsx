@@ -28,12 +28,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+
 interface StepProps {
   formData: Partial<VehicleDataBackend>;
   errors: FormErrors;
   handleInputChange: (field: string, value: string | undefined) => void;
   phoneCodes: string[];
+  userSession?: {
+    name?: string | null;
+    email?: string | null;
+  };
 }
+
 
 // ============================================
 // CONFIGURACIÓN DE VALIDACIÓN (Sin cambios)
@@ -249,12 +255,25 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
   errors,
   handleInputChange,
   phoneCodes,
+  userSession,
 }) => {
   const [showEmailPreview, setShowEmailPreview] = useState(false);
-  
+
   // Estados locales para manejar ciudad y estado por separado
   const [selectedState, setSelectedState] = useState("");
   const [city, setCity] = useState("");
+
+  useEffect(() => {
+    if (userSession) {
+      if (!formData.sellerContact?.name && userSession.name) {
+        handleInputChange("sellerContact.name", userSession.name ?? undefined);
+      }
+      if (!formData.sellerContact?.email && userSession.email) {
+        handleInputChange("sellerContact.email", userSession.email ?? undefined);
+      }
+    }
+  }, [userSession, formData.sellerContact, handleInputChange]);
+
 
   const inputClass =
     "w-full px-4 py-3.5 rounded-xl border-2 border-border bg-background text-foreground " +

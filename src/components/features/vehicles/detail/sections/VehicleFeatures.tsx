@@ -33,7 +33,6 @@ const categorizeFeature = (feature: string) => {
     return { category: "Navegación", icon: Navigation, color: "text-chart-2", bgColor: "bg-chart-2/10" };
   }
   
-  // Cambiado a text-primary para que los carritos sean azules
   return { category: "General", icon: Car, color: "text-primary", bgColor: "bg-primary/10" };
 };
 
@@ -169,7 +168,14 @@ const VehicleFeaturesComponent: React.FC<VehicleFeaturesProps> = ({ features }) 
         </div>
       </CardHeader>
       
-      {isExpanded && (
+      {/* Contenedor con transición suave usando max-height */}
+      <div 
+        className="transition-all duration-500 ease-in-out overflow-hidden"
+        style={{
+          maxHeight: isExpanded ? '5000px' : '0px',
+          opacity: isExpanded ? 1 : 0
+        }}
+      >
         <CardContent className="pt-0">
           <div 
             className="relative mb-6"
@@ -297,7 +303,7 @@ const VehicleFeaturesComponent: React.FC<VehicleFeaturesProps> = ({ features }) 
             </div>
           </div>
         </CardContent>
-      )}
+      </div>
     </Card>
   );
 };

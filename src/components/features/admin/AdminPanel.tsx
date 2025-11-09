@@ -1,9 +1,9 @@
 // src/components/features/admin/AdminPanel.tsx
-// VERSIÓN CON DISEÑO MEJORADO - Completo y sin abreviaciones
+// VERSIÓN CON DISEÑO MEJORADO - Vista grid por defecto y scroll mejorado
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -75,6 +75,10 @@ export const AdminPanel = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<AdminTab>("vehicles");
   const [isMobileView, setIsMobileView] = useState(false);
+  
+  // Ref para mantener la posición del scroll
+  const contentRef = useRef<HTMLDivElement>(null);
+  const scrollPositionRef = useRef<number>(0);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
@@ -108,6 +112,13 @@ export const AdminPanel = () => {
     setAllVehicles,
   } = useAdminPanelEnhanced();
 
+  // Establecer vista grid como predeterminada
+  useEffect(() => {
+    if (viewMode !== 'grid' && viewMode !== 'list') {
+      setViewMode('grid');
+    }
+  }, []);
+
   const categoryCounts = useMemo(() => {
     return allVehicles.reduce((acc, vehicle) => {
       if (vehicle.category) {
@@ -139,6 +150,30 @@ export const AdminPanel = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [vehicleFromNotification, setVehicleFromNotification] =
     useState<VehicleDataFrontend | null>(null);
+
+  // ========== Guardar posición del scroll ==========
+  useEffect(() => {
+    const handleScroll = () => {
+      scrollPositionRef.current = window.scrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // ========== Restaurar scroll después de actualizaciones ==========
+  useEffect(() => {
+    if (!isLoading && scrollPositionRef.current > 0) {
+      // Pequeño delay para asegurar que el DOM se haya actualizado
+      const timer = setTimeout(() => {
+        window.scrollTo({
+          top: scrollPositionRef.current,
+          behavior: 'smooth'
+        });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [vehicles, isLoading]);
 
   // ========== Cálculo de Estadísticas ==========
   const { pendingCount, approvedCount, rejectedCount, totalCount } =
@@ -224,6 +259,9 @@ export const AdminPanel = () => {
             }
             return [fullVehicleData, ...prevVehicles];
           });
+
+          // Scroll al inicio cuando se agrega un nuevo vehículo desde notificación
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           console.error(
             "Error al obtener datos del vehículo desde la notificación:",
@@ -434,8 +472,24 @@ export const AdminPanel = () => {
     router.push(`/admin/vehicles/${vehicleId}/edit`);
   };
 
+  // Función mejorada para cambio de página que va al inicio
+  const handlePageChange = (page: number) => {
+    goToPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNextPage = () => {
+    nextPage();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePrevPage = () => {
+    prevPage();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <div className="min-h-screen bg-background text-foreground py-8 px-4 animate-in fade-in duration-500">
+    <div ref={contentRef} className="min-h-screen bg-background text-foreground py-8 px-4 animate-in fade-in duration-500">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* ========== ENCABEZADO MEJORADO ========== */}
         <div className="text-center space-y-4">
@@ -478,8 +532,7 @@ export const AdminPanel = () => {
                 <p className="text-sm font-medium text-muted-foreground">
                   Pendientes
                 </p>
-                <p className="text-2xl font-bold text-accent">{pendingCount}</p>{" "}
-                {/* Usando accent para pending */}
+                <p className="text-2xl font-bold text-accent">{pendingCount}</p>
               </div>
               <div className="p-2 rounded-lg bg-accent/20">
                 <AlertCircle className="w-5 h-5 text-accent" />
@@ -495,8 +548,7 @@ export const AdminPanel = () => {
                 </p>
                 <p className="text-2xl font-bold text-primary">
                   {approvedCount}
-                </p>{" "}
-                {/* Primary para approved */}
+                </p>
               </div>
               <div className="p-2 rounded-lg bg-primary/10">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
@@ -658,12 +710,12 @@ export const AdminPanel = () => {
                 <div className="mt-6">
                   <AdminPagination
                     pagination={pagination}
-                    onPageChange={goToPage}
+                    onPageChange={handlePageChange}
                     onItemsPerPageChange={(itemsPerPage) =>
                       updatePagination({ itemsPerPage })
                     }
-                    onNextPage={nextPage}
-                    onPrevPage={prevPage}
+                    onNextPage={handleNextPage}
+                    onPrevPage={handlePrevPage}
                   />
                 </div>
               </CardContent>
