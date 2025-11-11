@@ -47,7 +47,7 @@ interface AdminFiltersProps {
   onSelectAll: () => void;
   onClearSelection: () => void;
   selectedCount: number;
-  categoryCounts: Record<string, number>;
+  categoryCounts?: Record<string, number>;
   isMobileView: boolean;
 }
 
@@ -60,7 +60,7 @@ export const AdminFilters = ({
   onSelectAll,
   onClearSelection,
   selectedCount,
-  categoryCounts,
+  categoryCounts = {},
   isMobileView,
 }: AdminFiltersProps) => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);

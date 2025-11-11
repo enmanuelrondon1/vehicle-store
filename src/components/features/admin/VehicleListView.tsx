@@ -33,6 +33,7 @@ interface VehicleListViewProps {
   vehicles: VehicleDataFrontend[];
   selectedVehicles: Set<string>;
   onToggleSelection: (id: string) => void;
+  onSelectAll: () => void;
   onClearSelection: () => void;
   onStatusChange: (id: string, status: ApprovalStatus, reason?: string) => void;
   onVehicleSelect: (vehicle: VehicleDataFrontend) => void;
@@ -47,6 +48,8 @@ export const VehicleListView = ({
   vehicles,
   selectedVehicles,
   onToggleSelection,
+  onClearSelection,
+  onSelectAll,
   onStatusChange,
   onVehicleSelect,
   onShowRejectDialog,

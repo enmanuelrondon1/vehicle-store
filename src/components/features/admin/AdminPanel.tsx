@@ -2,7 +2,6 @@
 // VERSIÓN CON DISEÑO MEJORADO - Vista grid por defecto y scroll mejorado
 
 "use client";
-
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,12 +19,11 @@ import type {
   VehicleHistoryEntry,
 } from "@/types/types";
 import { useAdminPanelEnhanced } from "@/hooks/use-admin-panel-enhanced";
+import { exportToCSV } from "@/lib/utils/export";
 import {
   Shield,
   Users,
   Car,
-  CheckCircle2,
-  AlertCircle,
   Download,
   Filter,
   Grid,
@@ -33,13 +31,15 @@ import {
   CheckSquare,
   XSquare,
   Trash2,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
-
 // Local components in order of first appearance in JSX
 import { AdminPanelLoading } from "./AdminPanelLoading";
 import { AdminPanelAccessDenied } from "./AdminPanelAccessDenied";
 import { AdminPanelError } from "./AdminPanelError";
 import { AdminPanelHeader } from "./AdminPanelHeader";
+import { AdminStats } from "./AdminStats";
 import { AdminFilters } from "./AdminFilters";
 import { VehicleGridView } from "./VehicleGridView";
 import { VehicleListView } from "./VehicleListView";
@@ -54,6 +54,8 @@ import { MassApproveDialog } from "./MassApproveDialog";
 import { MassRejectDialog } from "./MassRejectDialog";
 import { MassDeleteDialog } from "./MassDeleteDialog";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { AdminDialogs } from "./AdminDialogs";
 
 // Mapeo explícito
 const ApprovalStatus = {
@@ -75,11 +77,10 @@ export const AdminPanel = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<AdminTab>("vehicles");
   const [isMobileView, setIsMobileView] = useState(false);
-  
+
   // Ref para mantener la posición del scroll
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef<number>(0);
-
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
     const handleResize = (e: MediaQueryListEvent) => setIsMobileView(e.matches);
@@ -92,7 +93,7 @@ export const AdminPanel = () => {
 
   const {
     vehicles,
-    allVehicles,
+    stats,
     isLoading,
     error,
     isAdmin,
@@ -109,25 +110,16 @@ export const AdminPanel = () => {
     handleStatusChange,
     fetchVehicles,
     deleteVehicle,
-    setAllVehicles,
   } = useAdminPanelEnhanced();
 
   // Establecer vista grid como predeterminada
   useEffect(() => {
-    if (viewMode !== 'grid' && viewMode !== 'list') {
-      setViewMode('grid');
+    if (viewMode !== "grid" && viewMode !== "list") {
+      setViewMode("grid");
     }
   }, []);
 
-  const categoryCounts = useMemo(() => {
-    return allVehicles.reduce((acc, vehicle) => {
-      if (vehicle.category) {
-        acc[vehicle.category] = (acc[vehicle.category] || 0) + 1;
-      }
-      return acc;
-    }, {} as Record<string, number>);
-  }, [allVehicles]);
-
+ 
   const [selectedVehicle, setSelectedVehicle] =
     useState<VehicleDataFrontend | null>(null);
   const [selectedVehicles, setSelectedVehicles] = useState<Set<string>>(
@@ -148,8 +140,9 @@ export const AdminPanel = () => {
   );
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-  const [vehicleFromNotification, setVehicleFromNotification] =
-    useState<VehicleDataFrontend | null>(null);
+const [vehicleFromNotification, setVehicleFromNotification] =
+useState<VehicleDataFrontend | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // ========== Guardar posición del scroll ==========
   useEffect(() => {
@@ -157,8 +150,8 @@ export const AdminPanel = () => {
       scrollPositionRef.current = window.scrollY;
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // ========== Restaurar scroll después de actualizaciones ==========
@@ -168,34 +161,14 @@ export const AdminPanel = () => {
       const timer = setTimeout(() => {
         window.scrollTo({
           top: scrollPositionRef.current,
-          behavior: 'smooth'
+          behavior: "smooth",
         });
       }, 100);
       return () => clearTimeout(timer);
     }
   }, [vehicles, isLoading]);
 
-  // ========== Cálculo de Estadísticas ==========
-  const { pendingCount, approvedCount, rejectedCount, totalCount } =
-    useMemo(() => {
-      const pending = allVehicles.filter(
-        (v) => v.status === ApprovalStatus.PENDING
-      ).length;
-      const approved = allVehicles.filter(
-        (v) => v.status === ApprovalStatus.APPROVED
-      ).length;
-      const rejected = allVehicles.filter(
-        (v) => v.status === ApprovalStatus.REJECTED
-      ).length;
-      const total = allVehicles.length;
 
-      return {
-        pendingCount: pending,
-        approvedCount: approved,
-        rejectedCount: rejected,
-        totalCount: total,
-      };
-    }, [allVehicles]);
 
   const handleShowRejectDialog = (vehicle: VehicleDataFrontend) => {
     setDialogState({ type: "reject", vehicle });
@@ -219,24 +192,8 @@ export const AdminPanel = () => {
     setDialogState({ type: null, vehicle: null });
   };
 
-  useEffect(() => {
-    const fetchAllVehiclesInitially = async () => {
-      if (allVehicles.length === 0) {
-        try {
-          const response = await fetch("/api/admin/vehicles?status=all");
-          const result = await response.json();
-          if (result.success) {
-            setAllVehicles(result.data);
-          } else {
-            console.error("Error al cargar todos los vehículos:", result.error);
-          }
-        } catch (error) {
-          console.error("Error de red al cargar todos los vehículos:", error);
-        }
-      }
-    };
-    fetchAllVehiclesInitially();
-  }, [setAllVehicles, allVehicles.length]);
+  // ELIMINADO: Este useEffect cargaba todos los vehículos y ya no es necesario.
+  // useEffect(() => { ... }, [setAllVehicles, allVehicles.length]);
 
   useEffect(() => {
     const fetchAndDisplayVehicle = async (vehicleId: string) => {
@@ -247,21 +204,9 @@ export const AdminPanel = () => {
         if (result.success) {
           const fullVehicleData: VehicleDataFrontend = result.data;
           setSelectedVehicle(fullVehicleData);
-
-          setAllVehicles((prevVehicles) => {
-            const vehicleIndex = prevVehicles.findIndex(
-              (v) => v._id === fullVehicleData._id
-            );
-            if (vehicleIndex > -1) {
-              const updatedVehicles = [...prevVehicles];
-              updatedVehicles[vehicleIndex] = fullVehicleData;
-              return updatedVehicles;
-            }
-            return [fullVehicleData, ...prevVehicles];
-          });
-
-          // Scroll al inicio cuando se agrega un nuevo vehículo desde notificación
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          // Simplemente refrescamos los datos para asegurar que todo esté actualizado
+          fetchVehicles();
+          window.scrollTo({ top: 0, behavior: "smooth" });
         } else {
           console.error(
             "Error al obtener datos del vehículo desde la notificación:",
@@ -278,12 +223,11 @@ export const AdminPanel = () => {
     if (vehicleFromNotification?._id) {
       fetchAndDisplayVehicle(vehicleFromNotification._id);
     }
-  }, [vehicleFromNotification, setAllVehicles]);
+  }, [vehicleFromNotification, fetchVehicles]);
 
   if (status === "loading" || isLoading) {
     return <AdminPanelLoading />;
   }
-
   if (!isAdmin) {
     return <AdminPanelAccessDenied />;
   }
@@ -298,13 +242,19 @@ export const AdminPanel = () => {
       const result = await addVehicleComment(vehicleId, comment);
       if (result.success) {
         await loadVehicleComments(vehicleId);
+        toast.success("Comentario agregado exitosamente.");
       } else {
-        console.error(
-          "Error al agregar comentario desde la API. La operación no tuvo éxito."
-        );
+        // CORRECCIÓN: Se elimina la referencia a result.error
+        toast.error("Error al agregar comentario", {
+          description:
+            "La operación no tuvo éxito. Por favor, inténtelo de nuevo.",
+        });
       }
     } catch (error) {
-      console.error("Error al agregar comentario:", error);
+      toast.error("Error al agregar comentario", {
+        description:
+          "Ocurrió un error de red. Por favor, verifique su conexión.",
+      });
     } finally {
       setIsLoadingComments(false);
     }
@@ -317,6 +267,9 @@ export const AdminPanel = () => {
       setVehicleComments(comments);
     } catch (error) {
       console.error("Error al cargar comentarios:", error);
+      toast.error("Error al cargar comentarios", {
+        description: "No se pudieron obtener los comentarios del vehículo.",
+      });
     } finally {
       setIsLoadingComments(false);
     }
@@ -329,32 +282,41 @@ export const AdminPanel = () => {
       setVehicleHistory(history);
     } catch (error) {
       console.error("Error al cargar historial:", error);
+      toast.error("Error al cargar el historial", {
+        description: "No se pudo obtener el historial del vehículo.",
+      });
     } finally {
       setIsLoadingHistory(false);
     }
   };
 
   const handleDeleteVehicle = async (vehicleId: string) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
-      const result = await deleteVehicle(vehicleId);
-
-      if (result.success) {
-        handleCloseDialog();
-        console.log("Vehículo eliminado exitosamente");
-      } else {
-        console.error("Error al eliminar:", result.error);
-      }
+      await deleteVehicle(vehicleId);
+      handleCloseDialog();
     } catch (error) {
-      console.error("Error al eliminar vehículo:", error);
+      console.error("Fallo el proceso de eliminación:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleRejectWithReason = async (vehicleId: string, reason: string) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await handleStatusChange(vehicleId, ApprovalStatus.REJECTED, reason);
       handleCloseDialog();
     } catch (error) {
+      toast.error("Error al rechazar el vehículo", {
+        description:
+          "Ocurrió un error inesperado. Por favor, inténtelo de nuevo.",
+      });
       console.error("Error al rechazar:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -370,8 +332,14 @@ export const AdminPanel = () => {
         handleStatusChange(vehicleId, ApprovalStatus.REJECTED, reason)
       );
       await Promise.all(promises);
+      toast.success(
+        `${selectedVehicles.size} vehículo(s) han sido rechazados.`
+      );
       setSelectedVehicles(new Set());
     } catch (error) {
+      toast.error("Error en el rechazo masivo", {
+        description: "Algunos vehículos no pudieron ser rechazados.",
+      });
       console.error("Error en rechazo masivo:", error);
     }
     setShowMassRejectDialog(false);
@@ -383,9 +351,27 @@ export const AdminPanel = () => {
       const promises = Array.from(selectedVehicles).map((vehicleId) =>
         deleteVehicle(vehicleId)
       );
-      await Promise.all(promises);
+      const results = await Promise.allSettled(promises);
+
+      const successCount = results.filter(
+        (r) =>
+          r.status === "fulfilled" && (r.value as { success: boolean }).success
+      ).length;
+      const errorCount = results.length - successCount;
+if (successCount > 0) {
+        toast.success(
+          `${successCount} vehículo(s) han sido eliminados exitosamente.`
+        );
+      }
+      if (errorCount > 0) {
+        toast.error(`${errorCount} vehículo(s) no pudieron ser eliminados.`);
+      }
+
       setSelectedVehicles(new Set());
     } catch (error) {
+      toast.error("Error en la eliminación masiva", {
+        description: "Ocurrió un error inesperado.",
+      });
       console.error("Error en eliminación masiva:", error);
     }
     setShowMassDeleteDialog(false);
@@ -398,8 +384,16 @@ export const AdminPanel = () => {
         handleStatusChange(vehicleId, action)
       );
       await Promise.all(promises);
+      if (action === "approved") {
+        toast.success(
+          `${selectedVehicles.size} vehículo(s) han sido aprobados.`
+        );
+      }
       setSelectedVehicles(new Set());
     } catch (error) {
+      toast.error(`Error en la acción masiva de ${action}`, {
+        description: "Algunas operaciones pueden haber fallado.",
+      });
       console.error("Error en acción masiva:", error);
     }
   };
@@ -424,48 +418,36 @@ export const AdminPanel = () => {
   };
 
   const exportData = () => {
-    const csvContent = [
-      [
-        "ID",
-        "Marca",
-        "Modelo",
-        "Año",
-        "Precio",
-        "Estado",
-        "Ubicación",
-        "Vendedor",
-        "Email Vendedor",
-        "Teléfono Vendedor",
-        "Fecha Creación",
-      ],
-      ...allVehicles.map((v) =>
-        [
-          v._id,
-          `"${v.brand}"`,
-          `"${v.model}"`,
-          v.year,
-          v.price,
-          v.status,
-          `"${v.location.replace(/"/g, '""')}"`,
-          `"${v.sellerContact.name.replace(/"/g, '""')}"`,
-          v.sellerContact.email,
-          v.sellerContact.phone,
-          v.createdAt ? new Date(v.createdAt).toLocaleDateString() : "N/A",
-        ].join(",")
-      ),
-    ].join("\n");
+    if (vehicles.length === 0) {
+      toast.warning("No hay datos para exportar", {
+        description: "Los filtros actuales no devuelven resultados.",
+      });
+      return;
+    }
 
-    const blob = new Blob([`\uFEFF${csvContent}`], {
-      type: "text/csv;charset=utf-8;",
+    toast.success("Exportando datos...", {
+      description: `Se exportarán ${vehicles.length} vehículos.`,
     });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `vehiculos_${new Date().toISOString().split("T")[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+
+    // Mapea los datos para un formato más legible en el CSV
+    const dataToExport = vehicles.map(v => ({
+      ID: v._id,
+      Marca: v.brand,
+      Modelo: v.model,
+      Año: v.year,
+      Precio: v.price,
+      Estado: v.status,
+      // FIX: Usar la propiedad correcta `sellerContact` del tipo VehicleDataFrontend
+      Vendedor: v.sellerContact?.name || "N/A",
+      EmailVendedor: v.sellerContact?.email || "N/A",
+      // FIX: Comprobar que createdAt no sea undefined
+      FechaCreacion: v.createdAt ? new Date(v.createdAt).toLocaleDateString() : "N/A",
+      Vistas: v.views,
+      // FIX: Usar la propiedad correcta `isFeatured`
+      Destacado: v.isFeatured ? "Sí" : "No",
+    }));
+
+    exportToCSV(dataToExport, `vehiculos-${new Date().toISOString().split('T')[0]}.csv`);
   };
 
   const handleGoToEditPage = (vehicleId: string) => {
@@ -475,21 +457,24 @@ export const AdminPanel = () => {
   // Función mejorada para cambio de página que va al inicio
   const handlePageChange = (page: number) => {
     goToPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleNextPage = () => {
-    nextPage();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+nextPage();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handlePrevPage = () => {
     prevPage();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <div ref={contentRef} className="min-h-screen bg-background text-foreground py-8 px-4 animate-in fade-in duration-500">
+    <div
+      ref={contentRef}
+      className="min-h-screen bg-background text-foreground py-8 px-4 animate-in fade-in duration-500"
+    >
       <div className="max-w-7xl mx-auto space-y-8">
         {/* ========== ENCABEZADO MEJORADO ========== */}
         <div className="text-center space-y-4">
@@ -517,7 +502,7 @@ export const AdminPanel = () => {
                   Total
                 </p>
                 <p className="text-2xl font-bold text-foreground">
-                  {totalCount}
+                  {stats.total}
                 </p>
               </div>
               <div className="p-2 rounded-lg bg-muted/50">
@@ -532,7 +517,9 @@ export const AdminPanel = () => {
                 <p className="text-sm font-medium text-muted-foreground">
                   Pendientes
                 </p>
-                <p className="text-2xl font-bold text-accent">{pendingCount}</p>
+                <p className="text-2xl font-bold text-accent">
+                  {stats.pending}
+                </p>
               </div>
               <div className="p-2 rounded-lg bg-accent/20">
                 <AlertCircle className="w-5 h-5 text-accent" />
@@ -547,7 +534,7 @@ export const AdminPanel = () => {
                   Aprobados
                 </p>
                 <p className="text-2xl font-bold text-primary">
-                  {approvedCount}
+                  {stats.approved}
                 </p>
               </div>
               <div className="p-2 rounded-lg bg-primary/10">
@@ -563,7 +550,7 @@ export const AdminPanel = () => {
                   Rechazados
                 </p>
                 <p className="text-2xl font-bold text-destructive">
-                  {rejectedCount}
+                  {stats.rejected}
                 </p>
               </div>
               <div className="p-2 rounded-lg bg-destructive/10">
@@ -615,8 +602,8 @@ export const AdminPanel = () => {
               onSelectAll={selectAllVisible}
               onClearSelection={clearSelection}
               selectedCount={selectedVehicles.size}
-              categoryCounts={categoryCounts}
-              isMobileView={isMobileView}
+              // categoryCounts={categoryCounts} // <-- ELIMINADO TEMPORALMENTE
+              isMobileView ={isMobileView} 
             />
 
             {/* Acciones masivas */}
@@ -690,22 +677,23 @@ export const AdminPanel = () => {
                     onShowDeleteDialog={handleShowDeleteDialog}
                     onGoToEditPage={handleGoToEditPage}
                   />
-                ) : (
-                  <VehicleListView
-                    vehicles={vehicles}
-                    selectedVehicles={selectedVehicles}
-                    onToggleSelection={toggleVehicleSelection}
-                    onClearSelection={clearSelection}
-                    onStatusChange={handleStatusChange}
-                    onVehicleSelect={setSelectedVehicle}
-                    onShowRejectDialog={handleShowRejectDialog}
-                    onShowCommentDialog={handleShowCommentDialog}
-                    onShowHistoryDialog={handleShowHistoryDialog}
-                    onShowDeleteDialog={handleShowDeleteDialog}
-                    onGoToEditPage={handleGoToEditPage}
-                  />
-                )}
-
+                ) : ( 
+                  <VehicleListView 
+                    vehicles ={vehicles} 
+                    selectedVehicles ={selectedVehicles} 
+                    onToggleSelection ={toggleVehicleSelection} 
+                    onSelectAll={selectAllVisible}
+                    onClearSelection ={clearSelection} 
+                    onStatusChange ={handleStatusChange} 
+                    onVehicleSelect ={setSelectedVehicle} 
+                    onShowRejectDialog ={handleShowRejectDialog} 
+                    onShowCommentDialog ={handleShowCommentDialog} 
+                    onShowHistoryDialog ={handleShowHistoryDialog} 
+                    onShowDeleteDialog ={handleShowDeleteDialog} 
+                    onGoToEditPage ={handleGoToEditPage} 
+                  /> 
+                )} 
+ 
                 {/* Paginación */}
                 <div className="mt-6">
                   <AdminPagination
@@ -727,73 +715,30 @@ export const AdminPanel = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Dialog para ver detalles del vehículo */}
-        <VehicleDetailsDialog
-          vehicle={selectedVehicle}
-          isOpen={!!selectedVehicle}
-          onOpenChange={(open) => !open && setSelectedVehicle(null)}
+         <AdminDialogs
+          dialogState={dialogState}
+          handleCloseDialog={handleCloseDialog}
+          selectedVehicle={selectedVehicle}
+          setSelectedVehicle={setSelectedVehicle}
+          vehicleComments={vehicleComments}
+          isLoadingComments={isLoadingComments}
+          handleAddComment={handleAddComment}
+          vehicleHistory={vehicleHistory}
+          isLoadingHistory={isLoadingHistory}
+          handleDeleteVehicle={handleDeleteVehicle}
+          handleRejectWithReason={handleRejectWithReason}
+          showMassApproveDialog={showMassApproveDialog}
+          setShowMassApproveDialog={setShowMassApproveDialog}
+          handleMassApprove={handleMassApprove}
+          showMassRejectDialog={showMassRejectDialog}
+          setShowMassRejectDialog={setShowMassRejectDialog}
+          handleMassReject={handleMassReject}
+          showMassDeleteDialog={showMassDeleteDialog}
+          setShowMassDeleteDialog={setShowMassDeleteDialog}
+          handleMassDelete={handleMassDelete}
+          selectedVehicles={selectedVehicles}
         />
-
-        {/* Dialog para rechazar con razón */}
-        <RejectDialog
-          isOpen={dialogState.type === "reject"}
-          onOpenChange={handleCloseDialog}
-          onConfirm={(reason) =>
-            dialogState.vehicle &&
-            handleRejectWithReason(dialogState.vehicle._id!, reason)
-          }
-        />
-
-        {/* Dialog para agregar comentarios */}
-        <CommentDialog
-          isOpen={dialogState.type === "comment"}
-          onOpenChange={handleCloseDialog}
-          comments={vehicleComments}
-          isLoading={isLoadingComments}
-          onAddComment={(comment) => {
-            if (dialogState.vehicle) {
-              handleAddComment(dialogState.vehicle._id!, comment);
-            }
-          }}
-        />
-
-        {/* Dialog para ver historial */}
-        <HistoryDialog
-          isOpen={dialogState.type === "history"}
-          onOpenChange={handleCloseDialog}
-          history={vehicleHistory}
-          isLoading={isLoadingHistory}
-        />
-
-        {/* Dialog para confirmar eliminación */}
-        <DeleteDialog
-          isOpen={dialogState.type === "delete"}
-          onOpenChange={handleCloseDialog}
-          onConfirm={() =>
-            dialogState.vehicle && handleDeleteVehicle(dialogState.vehicle._id!)
-          }
-        />
-
-        {/* Diálogos de acciones masivas */}
-        <MassApproveDialog
-          isOpen={showMassApproveDialog}
-          onOpenChange={setShowMassApproveDialog}
-          onConfirm={handleMassApprove}
-          count={selectedVehicles.size}
-        />
-        <MassRejectDialog
-          isOpen={showMassRejectDialog}
-          onOpenChange={setShowMassRejectDialog}
-          onConfirm={handleMassReject}
-          count={selectedVehicles.size}
-        />
-        <MassDeleteDialog
-          isOpen={showMassDeleteDialog}
-          onOpenChange={setShowMassDeleteDialog}
-          onConfirm={handleMassDelete}
-          count={selectedVehicles.size}
-        />
-      </div>
-    </div>
-  );
-};
+       </div>
+     </div>
+   );
+ };
