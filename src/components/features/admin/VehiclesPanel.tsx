@@ -28,7 +28,7 @@ interface VehiclesPanelProps {
   // Handlers from useAdminPanelEnhanced
   onFiltersChange: (newFilters: Partial<AdminPanelFilters>) => void;
   onViewModeChange: (mode: "grid" | "list") => void;
-  onStatusChange: (vehicleId: string, newStatus: ApprovalStatusType, reason?: string) => Promise<void>;
+  onStatusChange: (vehicleId: string, newStatus: ApprovalStatusType, reason?: string) => Promise<any>;
   fetchVehicles: () => void;
 
   // Handlers from AdminPanel

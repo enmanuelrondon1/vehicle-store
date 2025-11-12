@@ -20,6 +20,7 @@ interface MassDeleteDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   onConfirm: () => void;
   count: number;
+  isSubmitting: boolean;
 }
 
 export const MassDeleteDialog: React.FC<MassDeleteDialogProps> = ({
@@ -27,6 +28,7 @@ export const MassDeleteDialog: React.FC<MassDeleteDialogProps> = ({
   onOpenChange,
   onConfirm,
   count,
+  isSubmitting,
 }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -80,15 +82,25 @@ export const MassDeleteDialog: React.FC<MassDeleteDialogProps> = ({
         </div>
 
         <AlertDialogFooter className="flex-col sm:flex-row gap-3">
-          <AlertDialogCancel className="w-full sm:w-auto">
+          <AlertDialogCancel
+            className="w-full sm:w-auto"
+            disabled={isSubmitting}
+          >
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive hover:bg-destructive/90 text-destructive-foreground w-full sm:w-auto"
+            disabled={isSubmitting}
           >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Eliminar permanentemente
+            {isSubmitting ? (
+              "Eliminando..."
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Eliminar permanentemente
+              </>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

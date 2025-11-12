@@ -20,6 +20,7 @@ interface MassApproveDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   onConfirm: () => void;
   count: number;
+  isSubmitting: boolean;
 }
 
 export const MassApproveDialog: React.FC<MassApproveDialogProps> = ({
@@ -27,6 +28,7 @@ export const MassApproveDialog: React.FC<MassApproveDialogProps> = ({
   onOpenChange,
   onConfirm,
   count,
+  isSubmitting,
 }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -80,15 +82,25 @@ export const MassApproveDialog: React.FC<MassApproveDialogProps> = ({
         </div>
 
         <AlertDialogFooter className="flex-col sm:flex-row gap-3">
-          <AlertDialogCancel className="w-full sm:w-auto">
+          <AlertDialogCancel
+            className="w-full sm:w-auto"
+            disabled={isSubmitting}
+          >
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
+            disabled={isSubmitting}
           >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Aprobar vehículos
+            {isSubmitting ? (
+              "Aprobando..."
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Aprobar vehículos
+              </>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

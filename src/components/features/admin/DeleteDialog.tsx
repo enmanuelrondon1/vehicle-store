@@ -19,9 +19,15 @@ interface DeleteDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onConfirm: () => void;
+  isSubmitting: boolean;
 }
 
-export const DeleteDialog = ({ isOpen, onOpenChange, onConfirm }: DeleteDialogProps) => {
+export const DeleteDialog = ({
+  isOpen,
+  onOpenChange,
+  onConfirm,
+  isSubmitting,
+}: DeleteDialogProps) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-md mx-auto">
@@ -73,15 +79,25 @@ export const DeleteDialog = ({ isOpen, onOpenChange, onConfirm }: DeleteDialogPr
         </div>
 
         <AlertDialogFooter className="flex-col sm:flex-row gap-3">
-          <AlertDialogCancel className="w-full sm:w-auto">
+          <AlertDialogCancel
+            className="w-full sm:w-auto"
+            disabled={isSubmitting}
+          >
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive hover:bg-destructive/90 text-destructive-foreground w-full sm:w-auto"
+            disabled={isSubmitting}
           >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Eliminar Permanentemente
+            {isSubmitting ? (
+              "Eliminando..."
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Eliminar Permanentemente
+              </>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,3 +1,4 @@
+//src/components/features/admin/AdminDialogs.tsx
 import type {
   VehicleDataFrontend,
   VehicleComment,
@@ -39,6 +40,7 @@ interface AdminDialogsProps {
   setShowMassDeleteDialog: (show: boolean) => void;
   handleMassDelete: () => Promise<void>;
   selectedVehicles: Set<string>;
+  isSubmitting: boolean;
 }
 
 export const AdminDialogs = ({
@@ -63,6 +65,7 @@ export const AdminDialogs = ({
   setShowMassDeleteDialog,
   handleMassDelete,
   selectedVehicles,
+  isSubmitting,
 }: AdminDialogsProps) => {
   return (
     <>
@@ -81,6 +84,7 @@ export const AdminDialogs = ({
           dialogState.vehicle &&
           handleRejectWithReason(dialogState.vehicle._id!, reason)
         }
+        isSubmitting={isSubmitting}
       />
 
       {/* Dialog para agregar comentarios */}
@@ -94,6 +98,7 @@ export const AdminDialogs = ({
             handleAddComment(dialogState.vehicle._id!, comment);
           }
         }}
+        isSubmitting={isSubmitting}
       />
 
       {/* Dialog para ver historial */}
@@ -111,6 +116,7 @@ export const AdminDialogs = ({
         onConfirm={() =>
           dialogState.vehicle && handleDeleteVehicle(dialogState.vehicle._id!)
         }
+        isSubmitting={isSubmitting}
       />
 
       {/* Diálogos de acciones masivas */}
@@ -119,18 +125,21 @@ export const AdminDialogs = ({
         onOpenChange={setShowMassApproveDialog}
         onConfirm={handleMassApprove}
         count={selectedVehicles.size}
+        isSubmitting={isSubmitting}
       />
       <MassRejectDialog
         isOpen={showMassRejectDialog}
         onOpenChange={setShowMassRejectDialog}
         onConfirm={handleMassReject}
         count={selectedVehicles.size}
+        isSubmitting={isSubmitting}
       />
       <MassDeleteDialog
         isOpen={showMassDeleteDialog}
         onOpenChange={setShowMassDeleteDialog}
         onConfirm={handleMassDelete}
         count={selectedVehicles.size}
+        isSubmitting={isSubmitting}
       />
     </>
   );

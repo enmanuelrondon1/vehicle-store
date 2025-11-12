@@ -23,9 +23,16 @@ interface RejectDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   onConfirm: (reason: string) => void;
   initialReason?: string;
+  isSubmitting: boolean;
 }
 
-export const RejectDialog = ({ isOpen, onOpenChange, onConfirm, initialReason = "" }: RejectDialogProps) => {
+export const RejectDialog = ({
+  isOpen,
+  onOpenChange,
+  onConfirm,
+  initialReason = "",
+  isSubmitting,
+}: RejectDialogProps) => {
   const [reason, setReason] = useState(initialReason);
 
   // ========== Clase Mejorada de Inputs ==========
@@ -78,15 +85,25 @@ export const RejectDialog = ({ isOpen, onOpenChange, onConfirm, initialReason = 
         </div>
         
         <AlertDialogFooter className="flex-col sm:flex-row gap-3">
-          <AlertDialogCancel className="w-full sm:w-auto">
+          <AlertDialogCancel
+            className="w-full sm:w-auto"
+            disabled={isSubmitting}
+          >
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={() => onConfirm(reason)}
             className="bg-destructive hover:bg-destructive/90 text-destructive-foreground w-full sm:w-auto"
+            disabled={isSubmitting}
           >
-            <Archive className="w-4 h-4 mr-2" />
-            Archivar Anuncio
+            {isSubmitting ? (
+              "Archivando..."
+            ) : (
+              <>
+                <Archive className="w-4 h-4 mr-2" />
+                Archivar Anuncio
+              </>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

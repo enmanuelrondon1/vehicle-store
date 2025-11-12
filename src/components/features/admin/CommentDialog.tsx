@@ -33,6 +33,7 @@ interface CommentDialogProps {
   comments: VehicleComment[];
   isLoading: boolean;
   onAddComment: (comment: string) => void;
+  isSubmitting: boolean;
 }
 
 export const CommentDialog = ({
@@ -41,6 +42,7 @@ export const CommentDialog = ({
   comments,
   isLoading,
   onAddComment,
+  isSubmitting,
 }: CommentDialogProps) => {
   const [commentText, setCommentText] = useState("");
 
@@ -183,20 +185,21 @@ export const CommentDialog = ({
             variant="outline"
             onClick={() => onOpenChange(false)}
             className="w-full sm:w-auto"
+            disabled={isSubmitting}
           >
             Cancelar
           </Button>
           <Button
             onClick={handleAddComment}
-            disabled={!commentText.trim() || isLoading}
+            disabled={!commentText.trim() || isLoading || isSubmitting}
             className="w-full sm:w-auto"
           >
-            {isLoading ? (
+            {isSubmitting ? (
               <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
             ) : (
               <Plus className="w-4 h-4 mr-2" />
             )}
-            Agregar comentario
+            {isSubmitting ? "Agregando..." : "Agregar comentario"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -22,6 +22,7 @@ interface MassRejectDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   onConfirm: (reason: string) => void;
   count: number;
+  isSubmitting: boolean;
 }
 
 export const MassRejectDialog: React.FC<MassRejectDialogProps> = ({
@@ -29,8 +30,9 @@ export const MassRejectDialog: React.FC<MassRejectDialogProps> = ({
   onOpenChange,
   onConfirm,
   count,
+  isSubmitting,
 }) => {
-  const [reason, setReason] = useState('');
+  const [reason, setReason] = useState("");
 
   // ========== Clase Mejorada de Inputs ==========
   const inputClass =
@@ -123,16 +125,26 @@ export const MassRejectDialog: React.FC<MassRejectDialogProps> = ({
         </div>
 
         <AlertDialogFooter className="flex-col sm:flex-row gap-3">
-          <AlertDialogCancel onClick={handleCancel} className="w-full sm:w-auto">
+          <AlertDialogCancel
+            onClick={handleCancel}
+            className="w-full sm:w-auto"
+            disabled={isSubmitting}
+          >
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
-            disabled={!reason.trim()}
+            disabled={!reason.trim() || isSubmitting}
             className="bg-yellow-600 hover:bg-yellow-700 text-white w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Archive className="w-4 h-4 mr-2" />
-            Archivar vehículos
+            {isSubmitting ? (
+              "Archivando..."
+            ) : (
+              <>
+                <Archive className="w-4 h-4 mr-2" />
+                Archivar vehículos
+              </>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
