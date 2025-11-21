@@ -3,8 +3,8 @@
 
 import { type FC, useState } from "react";
 import * as Slider from "@radix-ui/react-slider";
-import { cn } from "@/lib/utils"; // MEJORA: Para unir clases
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // MEJORA: Para mostrar los valores
+import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RangeSliderFilterProps {
   min: number;
@@ -12,7 +12,7 @@ interface RangeSliderFilterProps {
   step: number;
   value: [number, number];
   onChange: (value: [number, number]) => void;
-  formatValue?: (value: number) => string; // MEJORA: Para formatear (ej: a moneda)
+  formatValue?: (value: number) => string;
 }
 
 const RangeSliderFilter: FC<RangeSliderFilterProps> = ({
@@ -21,9 +21,8 @@ const RangeSliderFilter: FC<RangeSliderFilterProps> = ({
   step,
   value,
   onChange,
-  formatValue = (val) => val.toString(), // Por defecto, solo muestra el número
+  formatValue = (val) => val.toString(),
 }) => {
-  // MEJORA: Estado local para mostrar el valor mientras se arrastra
   const [localValues, setLocalValues] = useState(value);
 
   const handleValueChange = (newValue: number[]) => {
@@ -32,7 +31,6 @@ const RangeSliderFilter: FC<RangeSliderFilterProps> = ({
   };
 
   return (
-    // MEJORA: TooltipProvider es necesario para que los tooltips funcionen
     <TooltipProvider delayDuration={0}>
       <div className="py-3 px-1">
         <Slider.Root
@@ -44,47 +42,88 @@ const RangeSliderFilter: FC<RangeSliderFilterProps> = ({
           step={step}
           minStepsBetweenThumbs={1}
         >
-          <Slider.Track className="relative grow rounded-full h-[6px] bg-muted">
-            <Slider.Range className="absolute rounded-full h-full bg-primary group-hover:opacity-80 transition-opacity" />
+          {/* Track mejorado para modo oscuro */}
+          <Slider.Track 
+            className="relative grow rounded-full h-[6px]"
+            style={{ 
+              backgroundColor: "var(--muted)",
+              boxShadow: "inset 0 1px 3px rgba(0, 0, 0, 0.2)"
+            }}
+          >
+            {/* Range mejorado con gradiente y sombra para modo oscuro */}
+            <Slider.Range 
+              className="absolute rounded-full h-full transition-all group-hover:opacity-90"
+              style={{ 
+                background: "var(--gradient-accent)",
+                boxShadow: "0 0 10px rgba(var(--accent-rgb), 0.3)"
+              }}
+            />
           </Slider.Track>
           
-          {/* MEJORA: Thumb para el valor mínimo con Tooltip */}
+          {/* Thumb para el valor mínimo mejorado */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Slider.Thumb
                 className={cn(
-                  "block h-5 w-5 rounded-full cursor-grab focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all",
-                  "bg-primary hover:scale-110 hover:ring-offset-background"
+                  "block h-5 w-5 rounded-full cursor-grab focus:outline-none transition-all",
+                  "hover:scale-110 focus-visible:scale-110"
                 )}
+                style={{
+                  backgroundColor: "var(--accent)",
+                  boxShadow: "0 2px 10px rgba(var(--accent-rgb), 0.5), 0 0 0 2px var(--background)",
+                  border: "2px solid var(--accent)"
+                }}
                 aria-label={`Valor mínimo: ${formatValue(localValues[0])}`}
               />
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent 
+              className="border-border bg-card text-card-foreground shadow-hard"
+              sideOffset={5}
+            >
               <p className="font-semibold">{formatValue(localValues[0])}</p>
             </TooltipContent>
           </Tooltip>
 
-          {/* MEJORA: Thumb para el valor máximo con Tooltip */}
+          {/* Thumb para el valor máximo mejorado */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Slider.Thumb
                 className={cn(
-                  "block h-5 w-5 rounded-full cursor-grab focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all",
-                  "bg-primary hover:scale-110 hover:ring-offset-background"
+                  "block h-5 w-5 rounded-full cursor-grab focus:outline-none transition-all",
+                  "hover:scale-110 focus-visible:scale-110"
                 )}
+                style={{
+                  backgroundColor: "var(--accent)",
+                  boxShadow: "0 2px 10px rgba(var(--accent-rgb), 0.5), 0 0 0 2px var(--background)",
+                  border: "2px solid var(--accent)"
+                }}
                 aria-label={`Valor máximo: ${formatValue(localValues[1])}`}
               />
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent 
+              className="border-border bg-card text-card-foreground shadow-hard"
+              sideOffset={5}
+            >
               <p className="font-semibold">{formatValue(localValues[1])}</p>
             </TooltipContent>
           </Tooltip>
         </Slider.Root>
         
-        {/* MEJORA: Mostrar los valores seleccionados debajo del slider */}
-        <div className="flex justify-between mt-2 text-xs text-muted-foreground font-mono">
-          <span>{formatValue(localValues[0])}</span>
-          <span>{formatValue(localValues[1])}</span>
+        {/* Valores seleccionados completamente rediseñados para modo oscuro */}
+        <div className="flex justify-between mt-2 text-xs font-mono">
+          {/* Valor mínimo con diseño mejorado para modo oscuro */}
+          <div className="px-2 py-1 rounded-md font-bold">
+            <span className="dark:text-white text-foreground">
+              {formatValue(localValues[0])}
+            </span>
+          </div>
+          
+          {/* Valor máximo con diseño mejorado para modo oscuro */}
+          <div className="px-2 py-1 rounded-md font-bold">
+            <span className="dark:text-white text-foreground">
+              {formatValue(localValues[1])}
+            </span>
+          </div>
         </div>
       </div>
     </TooltipProvider>

@@ -2,7 +2,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { InputField } from "@/components/shared/forms/InputField"; // Usamos InputField para consistencia
+import { InputField } from "@/components/shared/forms/InputField";
 import { SelectField } from "@/components/shared/forms/SelectField";
 import { VehicleDataBackend } from "@/types/types";
 import { useCallback, useEffect, useState, useMemo } from "react";
@@ -18,24 +18,77 @@ const capitalizeWords = (str: string): string => {
     .join(" ");
 };
 
-// --- (Lógica de validación y constantes sin cambios, ya es eficiente) ---
-const VALIDATION_CONFIG = { phone: { exactLength: 7 }, location: { cityMinLength: 4, cityMaxLength: 100 } };
-const validatePhone = (phoneCode?: string, phoneNumber?: string): { isValid: boolean; error?: string } => {
+// --- Lógica de validación y constantes ---
+const VALIDATION_CONFIG = {
+  phone: { exactLength: 7 },
+  location: { cityMinLength: 4, cityMaxLength: 100 },
+};
+
+const validatePhone = (
+  phoneCode?: string,
+  phoneNumber?: string
+): { isValid: boolean; error?: string } => {
   if (!phoneCode || !phoneNumber) return { isValid: false };
-  if (phoneNumber.length !== VALIDATION_CONFIG.phone.exactLength) return { isValid: false, error: `El teléfono debe tener ${VALIDATION_CONFIG.phone.exactLength} dígitos` };
-  if (!/^\d+$/.test(phoneNumber)) return { isValid: false, error: "El teléfono solo debe contener números" };
+  if (phoneNumber.length !== VALIDATION_CONFIG.phone.exactLength)
+    return {
+      isValid: false,
+      error: `El teléfono debe tener ${VALIDATION_CONFIG.phone.exactLength} dígitos`,
+    };
+  if (!/^\d+$/.test(phoneNumber))
+    return { isValid: false, error: "El teléfono solo debe contener números" };
   return { isValid: true };
 };
-const validateLocation = (location?: string): { isValid: boolean; error?: string } => {
+
+const validateLocation = (
+  location?: string
+): { isValid: boolean; error?: string } => {
   if (!location) return { isValid: false };
   const parts = location.split(",");
-  if (parts.length < 2 || !parts[0].trim() || !parts[1].trim()) return { isValid: false, error: "Debes especificar ciudad y estado" };
+  if (parts.length < 2 || !parts[0].trim() || !parts[1].trim())
+    return { isValid: false, error: "Debes especificar ciudad y estado" };
   const city = parts[0].trim();
-  if (city.length < VALIDATION_CONFIG.location.cityMinLength) return { isValid: false, error: `La ciudad debe tener al menos ${VALIDATION_CONFIG.location.cityMinLength} caracteres` };
+  if (city.length < VALIDATION_CONFIG.location.cityMinLength)
+    return {
+      isValid: false,
+      error: `La ciudad debe tener al menos ${VALIDATION_CONFIG.location.cityMinLength} caracteres`,
+    };
   return { isValid: true };
 };
-const PHONE_CODES = [{ value: "+58 412", label: "+58 412 (Digitel)" }, { value: "+58 414", label: "+58 414 (Movilnet)" }, { value: "+58 424", label: "+58 424 (Movistar)" }, { value: "+58 416", label: "+58 416 (Movistar)" }, { value: "+58 426", label: "+58 426 (Movistar)" }];
-const ESTADOS_VENEZUELA = ["Amazonas", "Anzoátegui", "Apure", "Aragua", "Barinas", "Bolívar", "Carabobo", "Cojedes", "Delta Amacuro", "Distrito Capital", "Falcón", "Guárico", "Lara", "Mérida", "Miranda", "Monagas", "Nueva Esparta", "Portuguesa", "Sucre", "Táchira", "Trujillo", "Vargas", "Yaracuy", "Zulia"];
+
+const PHONE_CODES = [
+  { value: "+58 412", label: "+58 412 (Digitel)" },
+  { value: "+58 414", label: "+58 414 (Movilnet)" },
+  { value: "+58 424", label: "+58 424 (Movistar)" },
+  { value: "+58 416", label: "+58 416 (Movistar)" },
+  { value: "+58 426", label: "+58 426 (Movistar)" },
+];
+
+const ESTADOS_VENEZUELA = [
+  "Amazonas",
+  "Anzoátegui",
+  "Apure",
+  "Aragua",
+  "Barinas",
+  "Bolívar",
+  "Carabobo",
+  "Cojedes",
+  "Delta Amacuro",
+  "Distrito Capital",
+  "Falcón",
+  "Guárico",
+  "Lara",
+  "Mérida",
+  "Miranda",
+  "Monagas",
+  "Nueva Esparta",
+  "Portuguesa",
+  "Sucre",
+  "Táchira",
+  "Trujillo",
+  "Vargas",
+  "Yaracuy",
+  "Zulia",
+];
 
 interface ContactSectionProps {
   formData: Partial<VehicleDataBackend>;
@@ -58,7 +111,6 @@ export function ContactSection({
   getFieldError,
   isSubmitting,
 }: ContactSectionProps) {
-  // --- Estados locales para la ubicación (sin cambios, es correcto) ---
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
 
@@ -70,22 +122,29 @@ export function ContactSection({
     }
   }, [formData.location]);
 
-  // --- 1. MANEJADORES DE EVENTOS REFACTORIZADOS CON useCallback ---
+  // --- Manejadores de eventos ---
   const handleNameChange = useCallback(
     (value: string) => handleNestedChange("sellerContact", "name", value),
     [handleNestedChange]
   );
+
   const handleEmailChange = useCallback(
     (value: string) => handleNestedChange("sellerContact", "email", value),
     [handleNestedChange]
   );
+
   const handlePhoneCodeChange = useCallback(
     (value: string) => handleNestedChange("sellerContact", "phoneCode", value),
     [handleNestedChange]
   );
+
   const handlePhoneNumberChange = useCallback(
     (value: string) =>
-      handleNestedChange("sellerContact", "phoneNumber", value.replace(/\D/g, "")),
+      handleNestedChange(
+        "sellerContact",
+        "phoneNumber",
+        value.replace(/\D/g, "")
+      ),
     [handleNestedChange]
   );
 
@@ -106,176 +165,185 @@ export function ContactSection({
     [handleChange, city]
   );
 
-  const handleBlurAndCapitalize = useCallback(
-    (fieldName: string) => {
-      if (fieldName === "sellerContact.name") {
-        const currentValue = formData.sellerContact?.name;
-        if (currentValue) {
-          const capitalized = capitalizeWords(currentValue);
-          if (currentValue !== capitalized) {
-            handleNestedChange("sellerContact", "name", capitalized);
-          }
-        }
-      } else if (fieldName === "location") {
-        if (city) {
-          const capitalized = capitalizeWords(city);
-          if (city !== capitalized) {
-            setCity(capitalized);
-            handleChange("location", `${capitalized}, ${state}`);
-          }
-        }
-      }
-      handleBlur(fieldName);
-    },
-    [
-      formData.sellerContact?.name,
-      city,
-      state,
-      handleNestedChange,
-      handleChange,
-      handleBlur,
-    ]
-  );
-
-  // --- Validación local (sin cambios, es eficiente) ---
+  // --- Validación local ---
   const phoneValidation = useMemo(() => {
     const phoneCode = (formData.sellerContact as any)?.phoneCode;
     const phoneNumber = (formData.sellerContact as any)?.phoneNumber;
     return validatePhone(phoneCode, phoneNumber);
   }, [formData.sellerContact]);
 
-  const locationValidation = useMemo(() => validateLocation(formData.location), [formData.location]);
+  const locationValidation = useMemo(
+    () => validateLocation(formData.location),
+    [formData.location]
+  );
 
   return (
-    // 2. CONTENEDOR UNIFICADO CON HOVER Y GRID RESPONSIVO
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-start p-6 -m-6 rounded-lg transition-all duration-300 hover:bg-muted/20">
-      
-      <InputField
-        label="Nombre del Vendedor"
-        required
-        error={getFieldError("sellerContact.name")}
-        success={isFieldValid("sellerContact.name")}
-        icon={<User />}
-      >
-        <Input
-          id="sellerContact.name"
-          value={formData.sellerContact?.name || ""}
-          onChange={(e) => handleNameChange(e.target.value)}
-          onBlur={(e) => {
-            const capitalized = capitalizeWords(e.target.value);
-            if (formData.sellerContact?.name !== capitalized) {
-              handleNameChange(capitalized);
-            }
-            handleBlur("sellerContact.name");
-          }}
-          className={getInputClassName("sellerContact.name")}
-          placeholder="Ej: Juan Pérez"
-          maxLength={100}
-          disabled={isSubmitting}
-        />
-      </InputField>
+    <div className="card-premium p-6 space-y-6 animate-fade-in">
+      {/* Header de sección */}
+      <div className="flex items-center gap-3 pb-4 border-b border-border">
+        <div className="p-2 rounded-lg bg-accent/10">
+          <User className="w-5 h-5 text-accent" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">
+            Información de Contacto
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Datos del vendedor para contacto directo
+          </p>
+        </div>
+      </div>
 
-      <InputField
-        label="Email"
-        required
-        error={getFieldError("sellerContact.email")}
-        success={isFieldValid("sellerContact.email")}
-        icon={<Mail />}
-      >
-        <Input
-          id="sellerContact.email"
-          type="email"
-          value={formData.sellerContact?.email || ""}
-          onChange={(e) => handleEmailChange(e.target.value)}
-          onBlur={() => handleBlur("sellerContact.email")}
-          className={getInputClassName("sellerContact.email")}
-          placeholder="Ej: juan@ejemplo.com"
-          maxLength={255}
-          disabled={isSubmitting}
-        />
-      </InputField>
+      {/* Grid de campos */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        {/* Nombre del Vendedor */}
+        <InputField
+          label="Nombre del Vendedor"
+          required
+          error={getFieldError("sellerContact.name")}
+          success={isFieldValid("sellerContact.name")}
+          icon={<User className="w-4 h-4" />}
+        >
+          <Input
+            id="sellerContact.name"
+            value={formData.sellerContact?.name || ""}
+            onChange={(e) => handleNameChange(e.target.value)}
+            onBlur={(e) => {
+              const capitalized = capitalizeWords(e.target.value);
+              if (formData.sellerContact?.name !== capitalized) {
+                handleNameChange(capitalized);
+              }
+              handleBlur("sellerContact.name");
+            }}
+            className={`input-premium ${getInputClassName("sellerContact.name")}`}
+            placeholder="Ej: Juan Pérez"
+            maxLength={100}
+            disabled={isSubmitting}
+          />
+        </InputField>
 
-      <InputField
-        label="Código de Área"
-        required
-        error={phoneValidation.error}
-        success={phoneValidation.isValid}
-        icon={<Phone />}
-      >
-        <SelectField
-          value={(formData.sellerContact as any)?.phoneCode || ""}
-          onValueChange={handlePhoneCodeChange}
-          onBlur={() => handleBlur("sellerContact.phoneCode")}
-          options={PHONE_CODES}
-          placeholder="Selecciona el código"
-          className={getInputClassName("sellerContact.phoneCode")}
-          disabled={isSubmitting}
-        />
-      </InputField>
+        {/* Email */}
+        <InputField
+          label="Email"
+          required
+          error={getFieldError("sellerContact.email")}
+          success={isFieldValid("sellerContact.email")}
+          icon={<Mail className="w-4 h-4" />}
+        >
+          <Input
+            id="sellerContact.email"
+            type="email"
+            value={formData.sellerContact?.email || ""}
+            onChange={(e) => handleEmailChange(e.target.value)}
+            onBlur={() => handleBlur("sellerContact.email")}
+            className={`input-premium ${getInputClassName("sellerContact.email")}`}
+            placeholder="ejemplo@correo.com"
+            maxLength={255}
+            disabled={isSubmitting}
+          />
+        </InputField>
 
-      <InputField
-        label="Número de Teléfono"
-        required
-        tooltip="7 dígitos"
-        error={phoneValidation.error}
-        success={phoneValidation.isValid}
-        icon={<Phone />}
-      >
-        <Input
-          id="sellerContact.phoneNumber"
-          type="tel"
-          value={(formData.sellerContact as any)?.phoneNumber || ""}
-          onChange={(e) => handlePhoneNumberChange(e.target.value)}
-          onBlur={() => handleBlur("sellerContact.phoneNumber")}
-          className={getInputClassName("sellerContact.phoneNumber")}
-          placeholder="1234567"
-          maxLength={7}
-          disabled={isSubmitting}
-        />
-      </InputField>
+        {/* Código de Área */}
+        <InputField
+          label="Código de Área"
+          required
+          error={phoneValidation.error}
+          success={phoneValidation.isValid}
+          icon={<Phone className="w-4 h-4" />}
+        >
+          <SelectField
+            value={(formData.sellerContact as any)?.phoneCode || ""}
+            onValueChange={handlePhoneCodeChange}
+            onBlur={() => handleBlur("sellerContact.phoneCode")}
+            options={PHONE_CODES}
+            placeholder="Selecciona código"
+            className={getInputClassName("sellerContact.phoneCode")}
+            disabled={isSubmitting}
+          />
+        </InputField>
 
-      <InputField
-        label="Ciudad / Municipio"
-        required
-        tooltip="Mínimo 4 caracteres"
-        error={locationValidation.error}
-        success={locationValidation.isValid}
-        icon={<MapPin />}
-      >
-        <Input
-          id="city"
-          value={city}
-          onChange={handleCityChange}
-          onBlur={(e) => {
-            const capitalizedCity = capitalizeWords(e.target.value);
-            setCity(capitalizedCity);
-            handleChange("location", `${capitalizedCity}, ${state}`);
-            handleBlur("location");
-          }}
-          className={getInputClassName("location")}
-          placeholder="Ej: Caracas, Maturín, Valencia"
-          maxLength={100}
-          disabled={isSubmitting}
-        />
-      </InputField>
+        {/* Número de Teléfono */}
+        <InputField
+          label="Número de Teléfono"
+          required
+          tooltip="7 dígitos"
+          error={phoneValidation.error}
+          success={phoneValidation.isValid}
+          icon={<Phone className="w-4 h-4" />}
+        >
+          <Input
+            id="sellerContact.phoneNumber"
+            type="tel"
+            value={(formData.sellerContact as any)?.phoneNumber || ""}
+            onChange={(e) => handlePhoneNumberChange(e.target.value)}
+            onBlur={() => handleBlur("sellerContact.phoneNumber")}
+            className={`input-premium ${getInputClassName("sellerContact.phoneNumber")}`}
+            placeholder="1234567"
+            maxLength={7}
+            disabled={isSubmitting}
+          />
+        </InputField>
 
-      <InputField
-        label="Estado"
-        required
-        error={locationValidation.error}
-        success={locationValidation.isValid}
-        icon={<MapPin />}
-      >
-        <SelectField
-          value={state}
-          onValueChange={handleStateChange}
-          onBlur={() => handleBlur("location")}
-          options={ESTADOS_VENEZUELA.map((estado) => ({ value: estado, label: estado }))}
-          placeholder="Selecciona el estado"
-          className={getInputClassName("location")}
-          disabled={isSubmitting}
-        />
-      </InputField>
+        {/* Ciudad */}
+        <InputField
+          label="Ciudad / Municipio"
+          required
+          tooltip="Mínimo 4 caracteres"
+          error={locationValidation.error}
+          success={locationValidation.isValid}
+          icon={<MapPin className="w-4 h-4" />}
+        >
+          <Input
+            id="city"
+            value={city}
+            onChange={handleCityChange}
+            onBlur={(e) => {
+              const capitalizedCity = capitalizeWords(e.target.value);
+              setCity(capitalizedCity);
+              handleChange("location", `${capitalizedCity}, ${state}`);
+              handleBlur("location");
+            }}
+            className={`input-premium ${getInputClassName("location")}`}
+            placeholder="Ej: Caracas, Valencia"
+            maxLength={100}
+            disabled={isSubmitting}
+          />
+        </InputField>
+
+        {/* Estado */}
+        <InputField
+          label="Estado"
+          required
+          error={locationValidation.error}
+          success={locationValidation.isValid}
+          icon={<MapPin className="w-4 h-4" />}
+        >
+          <SelectField
+            value={state}
+            onValueChange={handleStateChange}
+            onBlur={() => handleBlur("location")}
+            options={ESTADOS_VENEZUELA.map((estado) => ({
+              value: estado,
+              label: estado,
+            }))}
+            placeholder="Selecciona estado"
+            className={getInputClassName("location")}
+            disabled={isSubmitting}
+          />
+        </InputField>
+      </div>
+
+      {/* Badge informativo */}
+      <div className="flex items-center gap-2 pt-4 border-t border-border">
+        <div className="badge-accent">
+          <Phone className="w-3 h-3 mr-1" />
+          Contacto Verificado
+        </div>
+        <div className="badge-success">
+          <MapPin className="w-3 h-3 mr-1" />
+          Venezuela
+        </div>
+      </div>
     </div>
   );
 }

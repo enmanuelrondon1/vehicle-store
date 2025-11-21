@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import type { ApiResponseBackend } from "@/types/types";
 
+export const dynamic = "force-dynamic";
+
 // Define the expected structure for the stats object
 interface VehicleStats {
   total: number;

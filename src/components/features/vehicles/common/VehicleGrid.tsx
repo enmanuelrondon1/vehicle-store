@@ -4,13 +4,9 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-// CAMBIO: Ya no necesitamos 'Variants' de framer-motion aquí
 import { motion, AnimatePresence } from "framer-motion";
 import { Vehicle } from "@/types/types";
 import VehicleCard from "./VehicleCard";
-
-// CAMBIO: Importamos nuestros componentes de animación reutilizables
-import { AnimatedContainer, AnimatedItem } from "@/components/shared/animation/AnimatedContainer";
 
 interface VehicleGridProps {
   vehicles: Vehicle[];
@@ -18,8 +14,6 @@ interface VehicleGridProps {
   compareList: string[];
   toggleCompare: (vehicleId: string) => void;
 }
-
-// CAMBIO: Eliminamos las variantes de aquí, porque ahora viven en AnimatedContainer
 
 const VehicleGrid: React.FC<VehicleGridProps> = ({
   vehicles,
@@ -65,15 +59,38 @@ const VehicleGrid: React.FC<VehicleGridProps> = ({
     });
   };
 
+  // Variantes de animación para el contenedor
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+        ease: [0.04, 0.62, 0.23, 0.98],
+      },
+    },
+  };
+
+  // Variantes de animación para los elementos
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 10,
+      },
+    },
+  };
+
   return (
-    // CAMBIO: Usamos AnimatedContainer en lugar de motion.div
-    <AnimatedContainer
-      // La 'key' sigue siendo crucial aquí para reiniciar la animación al filtrar/paginar
-      key={
-        vehicles.length > 0
-          ? `${vehicles[0]._id}-${vehicles.length}`
-          : "empty-grid"
-      }
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
       className={`
         ${
           viewMode === "grid"
@@ -83,9 +100,20 @@ const VehicleGrid: React.FC<VehicleGridProps> = ({
       `}
     >
       <AnimatePresence mode="popLayout">
-        {vehicles.map((vehicle) => (
-          // CAMBIO: Usamos AnimatedItem en lugar de motion.div
-          <AnimatedItem key={vehicle._id}>
+        {vehicles.map((vehicle, index) => (
+          <motion.div
+            key={vehicle._id}
+            variants={itemVariants}
+            layout
+            initial="hidden"
+            animate="visible"
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ 
+              duration: 0.3,
+              delay: index * 0.05,
+              ease: [0.04, 0.62, 0.23, 0.98]
+            }}
+          >
             <VehicleCard
               vehicle={vehicle}
               onToggleCompare={toggleCompare}
@@ -93,10 +121,10 @@ const VehicleGrid: React.FC<VehicleGridProps> = ({
               isFavorited={favoritedVehicles.has(vehicle._id)}
               onFavoriteToggle={handleFavoriteToggle}
             />
-          </AnimatedItem>
+          </motion.div>
         ))}
       </AnimatePresence>
-    </AnimatedContainer>
+    </motion.div>
   );
 };
 

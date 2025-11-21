@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Info, Calendar, MapPin, Eye, Package, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,27 +18,27 @@ interface VehicleAdditionalInfoProps {
   items: InfoItem[];
 }
 
-// ✅ FUNCIÓN DE ICONOS MEJORADA CON COLORES DEL TEMA
+// ✅ FUNCIÓN DE ICONOS CON TEMA ADAPTATIVO
 const getIconForLabel = (label: string) => {
   const lowerLabel = label.toLowerCase();
   
   if (lowerLabel.includes("publicado") || lowerLabel.includes("fecha")) {
-    return { icon: <Calendar className="w-4 h-4" />, color: "text-blue-500" };
+    return <Calendar className="w-4 h-4 text-primary" />;
   }
   if (lowerLabel.includes("categoría") || lowerLabel.includes("subcategoría")) {
-    return { icon: <Package className="w-4 h-4" />, color: "text-purple-500" };
+    return <Package className="w-4 h-4 text-accent" />;
   }
   if (lowerLabel.includes("visitas") || lowerLabel.includes("vistas")) {
-    return { icon: <Eye className="w-4 h-4" />, color: "text-green-500" };
+    return <Eye className="w-4 h-4 text-success" />;
   }
   if (lowerLabel.includes("capacidad") || lowerLabel.includes("carga")) {
-    return { icon: <TrendingUp className="w-4 h-4" />, color: "text-orange-500" };
+    return <TrendingUp className="w-4 h-4 text-orange-500" />;
   }
   if (lowerLabel.includes("ubicación") || lowerLabel.includes("localización")) {
-    return { icon: <MapPin className="w-4 h-4" />, color: "text-red-500" };
+    return <MapPin className="w-4 h-4 text-red-500" />;
   }
   
-  return { icon: <Info className="w-4 h-4" />, color: "text-muted-foreground" };
+  return <Info className="w-4 h-4 text-muted-foreground" />;
 };
 
 // ✅ FUNCIÓN DE FORMATEO MEJORADA
@@ -64,33 +65,37 @@ const formatValue = (label: string, value: string | number) => {
   return value;
 };
 
-// ✅ COMPONENTE DE FILA REDISEÑADO COMO TARJETA INDIVIDUAL
+// ✅ COMPONENTE DE FILA MEJORADO CON ANIMACIONES
 const InfoRow: React.FC<{ label: string; value: string | number; index: number; }> = ({
   label,
   value,
   index,
 }) => {
-  const { icon, color } = getIconForLabel(label);
+  const icon = getIconForLabel(label);
   const formattedValue = formatValue(label, value);
   
   return (
-    <div
+    <motion.div
       className={cn(
-        "flex items-center justify-between p-3 rounded-lg border transition-all duration-300 hover:shadow-sm hover:scale-[1.01]",
-        index % 2 === 0 ? "bg-muted/20" : "bg-background"
+        "flex items-center justify-between p-4 rounded-xl transition-all duration-300 card-hover",
+        index % 2 === 0 ? "bg-muted" : "bg-card"
       )}
-      data-aos="fade-up"
-      data-aos-duration="500"
-      data-aos-delay={index * 50}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      whileHover={{ scale: 1.02 }}
     >
       <div className="flex items-center gap-3">
-        <div className={cn("w-8 h-8 rounded-full bg-muted flex items-center justify-center", color)}>
+        <motion.div 
+          className="w-10 h-10 rounded-full card-glass flex items-center justify-center"
+          whileHover={{ scale: 1.1, rotate: 5 }}
+        >
           {icon}
-        </div>
-        <span className="text-sm font-medium text-foreground">{label}</span>
+        </motion.div>
+        <span className="font-medium text-foreground">{label}</span>
       </div>
       <span className="text-sm font-semibold text-foreground">{String(formattedValue)}</span>
-    </div>
+    </motion.div>
   );
 };
 
@@ -108,118 +113,167 @@ const VehicleAdditionalInfoComponent: React.FC<VehicleAdditionalInfoProps> = ({
   
   if (validItems.length === 0) {
     return (
-      <Card 
-        className="overflow-hidden shadow-lg border-border/50"
-        data-aos="fade-up"
-        data-aos-duration="700"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
       >
-        <CardContent className="p-6">
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Info className="w-8 h-8 text-muted-foreground" />
+        <Card className="card-premium shadow-xl overflow-hidden">
+          <CardContent className="p-8">
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <motion.div 
+                className="w-20 h-20 rounded-full flex items-center justify-center mb-6 animate-float"
+                style={{ backgroundColor: 'var(--muted)' }}
+              >
+                <Info className="w-10 h-10 text-muted-foreground" />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-3 text-gradient-primary">
+                Sin información adicional
+              </h3>
+              <p className="text-muted-foreground max-w-md">
+                No hay datos adicionales disponibles para este vehículo.
+              </p>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Sin información adicional</h3>
-            <p className="text-muted-foreground max-w-md">
-              No hay datos adicionales disponibles para este vehículo.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
   return (
-    <Card 
-      className="overflow-hidden shadow-lg border-border/50"
-      data-aos="fade-up"
-      data-aos-duration="700"
-      data-aos-delay="700"
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
     >
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Info className="w-5 h-5 text-primary" />
-            </div>
-            <CardTitle className="text-xl">
-              Información Adicional
-            </CardTitle>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="gap-1 text-sm"
-          >
-            {isExpanded ? (
-              <>
-                Ocultar
-                <ChevronUp className="w-4 h-4" />
-              </>
-            ) : (
-              <>
-                Mostrar
-                <ChevronDown className="w-4 h-4" />
-              </>
-            )}
-          </Button>
-        </div>
-      </CardHeader>
-      
-      {isExpanded && (
-        <CardContent className="pt-0">
-          <div className="space-y-2">
-            {validItems.map((item, index) => (
-              <InfoRow
-                key={item.label}
-                label={item.label}
-                value={item.value}
-                index={index}
-              />
-            ))}
-          </div>
-          
-          {/* ✅ SECCIÓN DE RESUMEN MEJORADA */}
-          <div 
-            className="mt-6 p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20"
-            data-aos="fade-up"
-            data-aos-duration="500"
-            data-aos-delay={validItems.length * 50 + 100}
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Info className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-sm mb-1">Resumen de información</h4>
-                <p className="text-xs text-muted-foreground">
-                  Este vehículo tiene {validItems.length} puntos de datos adicionales disponibles.
+      <Card className="card-premium shadow-xl overflow-hidden">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <motion.div 
+                className="w-12 h-12 rounded-full flex items-center justify-center glow-effect"
+                style={{ background: 'var(--gradient-primary)' }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Info className="w-6 h-6 text-primary-foreground" />
+              </motion.div>
+              <div>
+                <CardTitle className="text-2xl font-bold">
+                  Información Adicional
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {validItems.length} puntos de datos adicionales
                 </p>
               </div>
-              <div className="flex -space-x-2">
-                {validItems.slice(0, 4).map((item) => {
-                  const { icon, color } = getIconForLabel(item.label);
-                  return (
-                    <div
-                      key={item.label}
-                      className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center"
-                      title={item.label}
-                    >
-                      <div className={color}>{icon}</div>
-                    </div>
-                  );
-                })}
-                {validItems.length > 4 && (
-                  <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center" title={`${validItems.length - 4} más`}>
-                    <span className="text-xs font-medium">+{validItems.length - 4}</span>
-                  </div>
-                )}
-              </div>
             </div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="gap-1"
+              >
+                {isExpanded ? (
+                  <>
+                    Ocultar
+                    <ChevronUp className="w-4 h-4" />
+                  </>
+                ) : (
+                  <>
+                    Mostrar
+                    <ChevronDown className="w-4 h-4" />
+                  </>
+                )}
+              </Button>
+            </motion.div>
           </div>
-        </CardContent>
-      )}
-    </Card>
+        </CardHeader>
+        
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <CardContent className="pt-0">
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: {
+                        staggerChildren: 0.1,
+                      },
+                    },
+                  }}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-3"
+                >
+                  {validItems.map((item, index) => (
+                    <InfoRow
+                      key={item.label}
+                      label={item.label}
+                      value={item.value}
+                      index={index}
+                    />
+                  ))}
+                </motion.div>
+                
+                {/* ✅ SECCIÓN DE RESUMEN MEJORADA */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="mt-6 p-6 rounded-xl card-glass"
+                >
+                  <div className="flex items-start gap-4">
+                    <motion.div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: 'var(--primary-10)' }}
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                    >
+                      <Info className="w-5 h-5 text-primary" />
+                    </motion.div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold mb-2">
+                        Resumen de información
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Este vehículo tiene {validItems.length} puntos de datos adicionales disponibles.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {validItems.slice(0, 4).map((item) => {
+                          const icon = getIconForLabel(item.label);
+                          return (
+                            <div
+                              key={item.label}
+                              className="w-8 h-8 rounded-full card-glass border border-glass-border flex items-center justify-center"
+                              title={item.label}
+                            >
+                              {icon}
+                            </div>
+                          );
+                        })}
+                        {validItems.length > 4 && (
+                          <div className="w-8 h-8 rounded-full card-glass border border-glass-border flex items-center justify-center" title={`${validItems.length - 4} más`}>
+                            <span className="text-xs font-medium">+{validItems.length - 4}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </CardContent>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Card>
+    </motion.div>
   );
 };
 

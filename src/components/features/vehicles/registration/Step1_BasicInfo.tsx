@@ -1,4 +1,5 @@
-// Versión PROFESIONAL Refactorizada de Step1_BasicInfo.tsx
+// Versión PROFESIONAL MEJORADA de Step1_BasicInfo.tsx
+//src/components/features/vehicles/registration/Step1_BasicInfo.tsx
 "use client";
 import React, { useMemo } from "react";
 import {
@@ -11,6 +12,8 @@ import {
   Layers,
   Award,
   Sparkles,
+  Info,
+  ChevronDown,
 } from "lucide-react";
 import { VehicleCategory, VEHICLE_CATEGORIES_LABELS } from "@/types/shared";
 import { VehicleDataBackend } from "@/types/types";
@@ -20,6 +23,7 @@ import { InputField } from "@/components/shared/forms/InputField";
 import { SelectField } from "@/components/shared/forms/SelectField";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 
 // ===========================================
 // TIPOS Y CONSTANTES
@@ -37,6 +41,47 @@ interface StepProps {
   isLoading?: boolean;
 }
 
+// ============================================
+// CONFIGURACIÓN DE VALIDACIÓN Y CONSEJOS
+// ============================================
+const VALIDATION_CONFIG = {
+  category: {
+    tips: [
+      "La categoría correcta ayuda a los compradores a encontrar tu vehículo más fácilmente",
+      "Los SUV y pickups suelen mantener mejor su valor de reventa",
+      "Las categorías más populares en tu región pueden generar más interés",
+    ],
+  },
+  brand: {
+    tips: [
+      "Las marcas reconocidas generalmente tienen mejor demanda en el mercado",
+      "Si tu marca no está en la lista, selecciona 'Otra' y especifícala",
+      "Algunas marcas tienen mejor reputación de confiabilidad y durabilidad",
+    ],
+  },
+  model: {
+    tips: [
+      "Sé específico con el modelo para atraer a compradores interesados",
+      "Los modelos más recientes suelen tener mejor valor de reventa",
+      "Incluir detalles adicionales como '4x4' o 'híbrido' puede aumentar el interés",
+    ],
+  },
+  year: {
+    tips: [
+      "Los vehículos de 3-5 años suelen tener el mejor equilibrio entre precio y confiabilidad",
+      "Los modelos más nuevos pueden justificar un precio más alto",
+      "Considera incluir el año exacto del modelo, no solo el año de fabricación",
+    ],
+  },
+  version: {
+    tips: [
+      "Incluir la versión correcta puede aumentar significativamente el valor del vehículo",
+      "Versiones como 'Limited', 'Sport' o 'XEI' tienen características específicas",
+      "Si no estás seguro, revisa la documentación del vehículo o la póliza de seguro",
+    ],
+  },
+};
+
 const INPUT_CLASS =
   "w-full px-4 py-3.5 rounded-xl border-2 border-border bg-background text-foreground " +
   "placeholder:text-muted-foreground/60 " +
@@ -49,20 +94,24 @@ const INPUT_CLASS =
 // SUB-COMPONENTE: Encabezado y Progreso
 // ===========================================
 const FormHeader: React.FC<{ progress: number }> = React.memo(({ progress }) => (
-  <div className="text-center space-y-4">
-    <div className="flex items-center justify-center gap-3">
-      <div className="p-3.5 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10">
-        <Car className="w-7 h-7 text-primary-foreground" />
-      </div>
-      <div className="text-left">
-        <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">
-          Información Básica
-        </h2>
-        <p className="text-base text-muted-foreground mt-0.5">
-          Completa los datos principales de tu vehículo
-        </p>
+  <div className="text-center space-y-6">
+    <div className="relative">
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-3xl blur-xl"></div>
+      <div className="relative flex items-center justify-center gap-4 p-6 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 border border-border/50 shadow-glass">
+        <div className="p-4 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10">
+          <Car className="w-8 h-8 text-primary-foreground" />
+        </div>
+        <div className="text-left">
+          <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">
+            Información Básica
+          </h2>
+          <p className="text-base text-muted-foreground mt-1">
+            Completa los datos principales de tu vehículo
+          </p>
+        </div>
       </div>
     </div>
+    
     <div className="w-full max-w-md mx-auto pt-2">
       <div className="flex justify-between items-center mb-2.5">
         <span className="text-sm font-medium text-muted-foreground">Progreso</span>
@@ -70,7 +119,11 @@ const FormHeader: React.FC<{ progress: number }> = React.memo(({ progress }) => 
           {Math.round(progress)}%
         </span>
       </div>
-      <Progress value={progress} className="h-2.5 bg-muted" />
+      <Progress value={progress} className="h-3 bg-muted" />
+      <div className="flex justify-between mt-1">
+        <span className="text-xs text-muted-foreground">Completando información</span>
+        <span className="text-xs text-muted-foreground">Paso 1 de 5</span>
+      </div>
     </div>
   </div>
 ));
@@ -98,47 +151,55 @@ const BasicInfoFormFields: React.FC<FormFieldsProps> = React.memo(
 
     return (
       <div className="space-y-7">
-        <InputField
-          label="Categoría del Vehículo"
-          required
-          error={errors.category}
-          success={categoryValidation.isValid}
-          icon={<Layers className="w-4 h-4 text-primary" />}
-        >
-          <SelectField
-            value={formData.category || ""}
-            onValueChange={(value) => {
-              handleInputChange("category", value as VehicleCategory);
-              handleInputChange("brand", "");
-              handleInputChange("model", "");
-            }}
-            placeholder="Selecciona el tipo de vehículo"
-            options={categoryOptions}
-            className={`${INPUT_CLASS} ${categoryValidation.getBorderClassName()}`}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InputField
+            label="Categoría del Vehículo"
+            required
             error={errors.category}
-          />
-        </InputField>
+            success={categoryValidation.isValid}
+            icon={<Layers className="w-4 h-4 text-primary" />}
+            tooltip="Selecciona el tipo de vehículo que deseas publicar"
+            tips={VALIDATION_CONFIG.category.tips}
+          >
+            <SelectField
+              value={formData.category || ""}
+              onValueChange={(value) => {
+                handleInputChange("category", value as VehicleCategory);
+                handleInputChange("brand", "");
+                handleInputChange("model", "");
+              }}
+              placeholder="Selecciona el tipo de vehículo"
+              options={categoryOptions}
+              className={`${INPUT_CLASS} ${categoryValidation.getBorderClassName()}`}
+              error={errors.category}
+              icon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            />
+          </InputField>
 
-        <InputField
-          label="Marca"
-          required
-          error={errors.brand}
-          success={brandValidation.isValid}
-          icon={<Award className="w-4 h-4 text-primary" />}
-        >
-          <SelectField
-            value={formData.brand || ""}
-            onValueChange={(value) => {
-              handleInputChange("brand", value);
-              handleInputChange("model", "");
-            }}
-            disabled={!formData.category}
-            placeholder={!formData.category ? "Primero selecciona una categoría" : "Selecciona la marca"}
-            options={brandOptions}
-            className={`${INPUT_CLASS} ${brandValidation.getBorderClassName()}`}
+          <InputField
+            label="Marca"
+            required
             error={errors.brand}
-          />
-        </InputField>
+            success={brandValidation.isValid}
+            icon={<Award className="w-4 h-4 text-primary" />}
+            tooltip="Selecciona la marca del fabricante"
+            tips={VALIDATION_CONFIG.brand.tips}
+          >
+            <SelectField
+              value={formData.brand || ""}
+              onValueChange={(value) => {
+                handleInputChange("brand", value);
+                handleInputChange("model", "");
+              }}
+              disabled={!formData.category}
+              placeholder={!formData.category ? "Primero selecciona una categoría" : "Selecciona la marca"}
+              options={brandOptions}
+              className={`${INPUT_CLASS} ${brandValidation.getBorderClassName()}`}
+              error={errors.brand}
+              icon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            />
+          </InputField>
+        </div>
 
         {formData.brand === "Otra" && (
           <InputField
@@ -148,6 +209,12 @@ const BasicInfoFormFields: React.FC<FormFieldsProps> = React.memo(
             success={brandOtherValidation.isValid}
             icon={<Award className="w-4 h-4 text-primary" />}
             counter={{ current: formData.brandOther?.length || 0, max: 50 }}
+            tooltip="Ingresa el nombre de la marca si no está en la lista"
+            tips={[
+              "Incluye el nombre completo de la marca para mayor claridad",
+              "Verifica la ortografía correcta para facilitar la búsqueda",
+              "Si es una marca poco conocida, considera añadir información adicional en la descripción"
+            ]}
           >
             <input
               type="text"
@@ -160,23 +227,48 @@ const BasicInfoFormFields: React.FC<FormFieldsProps> = React.memo(
           </InputField>
         )}
 
-        <InputField
-          label="Modelo"
-          required
-          error={errors.model}
-          success={modelValidation.isValid}
-          icon={<Search className="w-4 h-4 text-primary" />}
-        >
-          <SelectField
-            value={formData.model || ""}
-            onValueChange={(value) => handleInputChange("model", value)}
-            disabled={!formData.brand}
-            placeholder={!formData.brand ? "Primero selecciona una marca" : "Selecciona el modelo"}
-            options={modelOptions}
-            className={`${INPUT_CLASS} ${modelValidation.getBorderClassName()}`}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InputField
+            label="Modelo"
+            required
             error={errors.model}
-          />
-        </InputField>
+            success={modelValidation.isValid}
+            icon={<Search className="w-4 h-4 text-primary" />}
+            tooltip="Selecciona el modelo específico del vehículo"
+            tips={VALIDATION_CONFIG.model.tips}
+          >
+            <SelectField
+              value={formData.model || ""}
+              onValueChange={(value) => handleInputChange("model", value)}
+              disabled={!formData.brand}
+              placeholder={!formData.brand ? "Primero selecciona una marca" : "Selecciona el modelo"}
+              options={modelOptions}
+              className={`${INPUT_CLASS} ${modelValidation.getBorderClassName()}`}
+              error={errors.model}
+              icon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            />
+          </InputField>
+
+          <InputField
+            label="Año"
+            required
+            error={errors.year}
+            success={yearValidation.isValid}
+            icon={<Calendar className="w-4 h-4 text-primary" />}
+            tooltip="Selecciona el año de fabricación del vehículo"
+            tips={VALIDATION_CONFIG.year.tips}
+          >
+            <SelectField
+              value={formData.year?.toString() || ""}
+              onValueChange={(value) => handleInputChange("year", parseInt(value) || 0)}
+              placeholder="Selecciona el año"
+              options={yearOptions}
+              className={`${INPUT_CLASS} ${yearValidation.getBorderClassName()}`}
+              error={errors.year}
+              icon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            />
+          </InputField>
+        </div>
 
         {formData.model === "Otro" && (
           <InputField
@@ -186,6 +278,12 @@ const BasicInfoFormFields: React.FC<FormFieldsProps> = React.memo(
             success={modelOtherValidation.isValid}
             icon={<Search className="w-4 h-4 text-primary" />}
             counter={{ current: formData.modelOther?.length || 0, max: 50 }}
+            tooltip="Ingresa el nombre del modelo si no está en la lista"
+            tips={[
+              "Incluye detalles específicos como '4x4', 'híbrido' o 'eléctrico'",
+              "Añade información sobre el tipo de carrocería si es relevante",
+              "Si es una edición especial, menciónalo aquí"
+            ]}
           >
             <input
               type="text"
@@ -205,6 +303,7 @@ const BasicInfoFormFields: React.FC<FormFieldsProps> = React.memo(
           icon={<Tag className="w-4 h-4 text-primary" />}
           tooltip="Añade detalles específicos del modelo. Ej: XEI, Limited, 4x4, etc."
           counter={{ current: formData.version?.length || 0, max: 100 }}
+          tips={VALIDATION_CONFIG.version.tips}
         >
           <input
             type="text"
@@ -215,23 +314,6 @@ const BasicInfoFormFields: React.FC<FormFieldsProps> = React.memo(
             placeholder="Ej: XEI, Limited, Sport, 4x4"
             autoComplete="off"
             disabled={!formData.model}
-          />
-        </InputField>
-
-        <InputField
-          label="Año"
-          required
-          error={errors.year}
-          success={yearValidation.isValid}
-          icon={<Calendar className="w-4 h-4 text-primary" />}
-        >
-          <SelectField
-            value={formData.year?.toString() || ""}
-            onValueChange={(value) => handleInputChange("year", parseInt(value) || 0)}
-            placeholder="Selecciona el año"
-            options={yearOptions}
-            className={`${INPUT_CLASS} ${yearValidation.getBorderClassName()}`}
-            error={errors.year}
           />
         </InputField>
       </div>
@@ -248,11 +330,35 @@ const SmartSuggestions: React.FC<{ category?: VehicleCategory }> = React.memo(({
     if (!category) return [];
     switch (category) {
       case VehicleCategory.CAR:
-        return ["Los sedanes son ideales para familias", "Los hatchback son perfectos para la ciudad"];
+        return [
+          { title: "Para familias", desc: "Los sedanes son ideales para viajes largos y mayor comodidad" },
+          { title: "Para la ciudad", desc: "Los hatchback son perfectos para estacionamiento y maniobrabilidad" }
+        ];
       case VehicleCategory.MOTORCYCLE:
-        return ["Las motos de trabajo son muy demandadas", "Verifica que tenga SOAT vigente"];
+        return [
+          { title: "Alta demanda", desc: "Las motos de trabajo son muy demandadas en el mercado actual" },
+          { title: "Documentación", desc: "Verifica que tenga SOAT vigente y documentación en regla" }
+        ];
       case VehicleCategory.SUV:
-        return ["Los SUV mantienen mejor su valor", "Perfectos para terrenos difíciles"];
+        return [
+          { title: "Valor de reventa", desc: "Los SUV mantienen mejor su valor en el mercado de segunda mano" },
+          { title: "Versatilidad", desc: "Perfectos para terrenos difíciles y condiciones climáticas adversas" }
+        ];
+      case VehicleCategory.TRUCK:
+        return [
+          { title: "Capacidad de carga", desc: "Ideal para trabajo y transporte de objetos pesados" },
+          { title: "Durabilidad", desc: "Mantenimiento regular es clave para prolongar su vida útil" }
+        ];
+      case VehicleCategory.VAN:
+        return [
+          { title: "Espacio", desc: "Perfecto para familias numerosas o transporte de pasajeros" },
+          { title: "Negocio", desc: "Excelente opción para servicios de transporte o delivery" }
+        ];
+      case VehicleCategory.BUS:
+        return [
+            { title: "Transporte de pasajeros", desc: "Ideal para rutas urbanas o viajes largos" },
+            { title: "Regulaciones", desc: "Asegúrate de cumplir con todas las normativas de transporte público" }
+        ];
       default:
         return [];
     }
@@ -261,24 +367,33 @@ const SmartSuggestions: React.FC<{ category?: VehicleCategory }> = React.memo(({
   if (suggestions.length === 0) return null;
 
   return (
-    <div className="p-5 rounded-xl border border-border bg-gradient-to-br from-primary/5 via-transparent to-accent/5 shadow-sm backdrop-blur-sm">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="p-1.5 rounded-lg bg-primary/10">
-          <Sparkles className="w-4 h-4 text-primary" />
+    <Card className="card-glass border-border/50 overflow-hidden">
+      <CardContent className="p-0">
+        <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 border-b border-border/30">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-primary/20">
+              <Sparkles className="w-4 h-4 text-primary" />
+            </div>
+            <h4 className="text-sm font-semibold text-foreground">
+              Consejos para tu {VEHICLE_CATEGORIES_LABELS[category!] || "vehículo"}
+            </h4>
+          </div>
         </div>
-        <h4 className="text-sm font-semibold text-foreground">
-          Consejos para tu {VEHICLE_CATEGORIES_LABELS[category!] || "vehículo"}
-        </h4>
-      </div>
-      <ul className="space-y-2">
-        {suggestions.map((suggestion, index) => (
-          <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
-            <span className="text-primary mt-0.5 font-bold">•</span>
-            <span className="leading-relaxed">{suggestion}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+        <div className="p-4 space-y-3">
+          {suggestions.map((suggestion, index) => (
+            <div key={index} className="flex gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                <Info className="w-3 h-3 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">{suggestion.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{suggestion.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 });
 SmartSuggestions.displayName = "SmartSuggestions";
@@ -288,19 +403,20 @@ SmartSuggestions.displayName = "SmartSuggestions";
 // ===========================================
 const CompletionSummary: React.FC<{ progress: number }> = React.memo(({ progress }) => {
   const isComplete = progress >= 100;
-  const borderColor = isComplete ? "border-green-500/40" : "border-amber-500/40";
-  const bgColor = isComplete ? "bg-green-50/50 dark:bg-green-950/20" : "bg-amber-50/50 dark:bg-amber-950/20";
-  const iconBgColor = isComplete ? "bg-green-500/20" : "bg-amber-500/20";
+  const borderColor = isComplete ? "border-success/40" : "border-amber-500/40";
+  const bgColor = isComplete ? "bg-success/5 dark:bg-success/5" : "bg-amber-500/5 dark:bg-amber-950/20";
+  const iconBgColor = isComplete ? "bg-success/20" : "bg-amber-500/20";
+  const textColor = isComplete ? "text-success" : "text-amber-600 dark:text-amber-400";
 
   return (
-    <div className={`p-5 rounded-xl border-2 shadow-sm transition-all duration-300 ${borderColor} ${bgColor}`}>
-      <div className="flex items-center justify-between mb-2">
+    <div className={`p-5 rounded-xl border-2 shadow-sm transition-all duration-300 ${borderColor} ${bgColor} card-hover`}>
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-lg ${iconBgColor}`}>
             {isComplete ? (
-              <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <CheckCircle2 className={`w-5 h-5 ${textColor}`} />
             ) : (
-              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <AlertCircle className={`w-5 h-5 ${textColor}`} />
             )}
           </div>
           <div>
@@ -316,13 +432,24 @@ const CompletionSummary: React.FC<{ progress: number }> = React.memo(({ progress
           {Math.round(progress)}%
         </Badge>
       </div>
+      
+      {!isComplete && (
+        <div className="mt-3">
+          <div className="w-full bg-muted rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-primary to-accent h-2 rounded-full transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });
 CompletionSummary.displayName = "CompletionSummary";
 
 // ===========================================
-// COMPONENTE PRINCIPAL (AHORA MÁS PEQUEÑO)
+// COMPONENTE PRINCIPAL
 // ===========================================
 const Step1_BasicInfo: React.FC<StepProps> = ({ formData, errors, handleInputChange }) => {
   
@@ -367,7 +494,7 @@ const Step1_BasicInfo: React.FC<StepProps> = ({ formData, errors, handleInputCha
   }, []);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in-0 duration-500">
+    <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
       <FormHeader progress={progressPercentage} />
 
       <div className="space-y-7">

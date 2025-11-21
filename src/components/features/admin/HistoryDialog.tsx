@@ -34,9 +34,10 @@ interface HistoryDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   history: VehicleHistoryEntry[];
   isLoading: boolean;
+  vehicleId?: string;
 }
 
-export const HistoryDialog = ({ isOpen, onOpenChange, history, isLoading }: HistoryDialogProps) => {
+export const HistoryDialog = ({ isOpen, onOpenChange, history, isLoading, vehicleId }: HistoryDialogProps) => {
   const getActionIcon = (action: string) => {
     if (action.includes("aprobado")) return <CheckCircle className="w-4 h-4" />;
     if (action.includes("rechazado")) return <XCircle className="w-4 h-4" />;

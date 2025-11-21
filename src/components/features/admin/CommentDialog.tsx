@@ -34,6 +34,7 @@ interface CommentDialogProps {
   isLoading: boolean;
   onAddComment: (comment: string) => void;
   isSubmitting: boolean;
+  vehicleId?: string;
 }
 
 export const CommentDialog = ({
@@ -43,6 +44,7 @@ export const CommentDialog = ({
   isLoading,
   onAddComment,
   isSubmitting,
+  vehicleId,
 }: CommentDialogProps) => {
   const [commentText, setCommentText] = useState("");
 
@@ -55,7 +57,7 @@ export const CommentDialog = ({
     "transition-all duration-200 ease-out hover:border-border/80";
 
   const handleAddComment = () => {
-    if (commentText.trim()) {
+    if (commentText.trim() && vehicleId) {
       onAddComment(commentText);
       setCommentText("");
     }
@@ -191,7 +193,7 @@ export const CommentDialog = ({
           </Button>
           <Button
             onClick={handleAddComment}
-            disabled={!commentText.trim() || isLoading || isSubmitting}
+            disabled={!commentText.trim() || isLoading || isSubmitting || !vehicleId}
             className="w-full sm:w-auto"
           >
             {isSubmitting ? (

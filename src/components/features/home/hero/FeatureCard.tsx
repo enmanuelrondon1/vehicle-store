@@ -1,4 +1,4 @@
-// src/components/features/home/hero/FeatureCard.tsx
+// src/components/features/home/hero/FeatureCard.tsx (versión mejorada)
 "use client";
 import React, { memo } from "react";
 import { motion } from "framer-motion";
@@ -8,7 +8,6 @@ interface FeatureCardProps {
   icon: LucideIcon;
   title: string;
   description: string;
-  // La prop 'delay' ya no es necesaria aquí, pero no pasa nada si la dejas.
 }
 
 export const FeatureCard: React.FC<FeatureCardProps> = memo(({
@@ -17,24 +16,117 @@ export const FeatureCard: React.FC<FeatureCardProps> = memo(({
   description,
 }) => {
   return (
-    // --- MANTENEMOS FRAMER-MOTION PARA LA MICRO-INTERACCIÓN ---
     <motion.div
-      // Eliminamos la animación de entrada 'whileInView', ya que AOS la controla ahora.
-      whileHover={{ y: -5, transition: { duration: 200 } }}
-      className="group relative bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300"
+      whileHover={{ y: -8, transition: { duration: 300 } }}
+      className="card-premium card-hover group relative h-full p-6 glow-effect"
     >
-      {/* El icono usa tu color primario, ¡perfecto! */}
-      <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary text-primary-foreground mb-4 transition-transform duration-300 group-hover:scale-110">
-        <Icon className="w-6 h-6" />
-      </div> 
+      {/* Efecto de brillo en hover mejorado */}
+      <motion.div 
+        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at center, var(--accent-10) 0%, transparent 70%)'
+        }}
+        animate={{
+          opacity: [0, 0.1, 0],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          repeatDelay: 2,
+        }}
+      />
       
-      <h3 className="font-heading font-semibold text-lg text-card-foreground mb-2">
-        {title}
+      {/* Contenedor del icono con efectos premium mejorados */}
+      <motion.div
+        className="flex items-center justify-center w-16 h-16 rounded-2xl mb-6 transition-all duration-300 group-hover:scale-110 shadow-lg relative overflow-hidden"
+        style={{
+          background: 'var(--gradient-primary)',
+          boxShadow: '0 10px 25px -5px var(--primary-20), 0 10px 10px -5px var(--primary-10)'
+        }}
+        whileHover={{ rotate: [0, -10, 10, 0] }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Efecto shimmer en el icono mejorado */}
+        <motion.div 
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          style={{
+            background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent)',
+          }}
+          animate={{
+            x: ["-100%", "100%"]
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            repeatDelay: 1,
+            ease: "easeInOut"
+          }}
+        />
+        
+        <Icon 
+          className="w-8 h-8 relative z-10" 
+          style={{ color: 'var(--primary-foreground)' }} 
+          strokeWidth={2} 
+        />
+      </motion.div> 
+      
+      <h3 
+        className="font-heading font-semibold text-xl mb-3 transition-colors duration-300"
+        style={{ color: 'var(--card-foreground)' }}
+      >
+        <motion.span 
+          className="group-hover:inline-block transition-transform duration-300"
+          whileHover={{ x: 2 }}
+        >
+          {title}
+        </motion.span>
       </h3>
       
-      <p className="text-sm text-muted-foreground leading-relaxed">
+      <p 
+        className="text-sm leading-relaxed"
+        style={{ color: 'var(--muted-foreground)' }}
+      >
         {description}
       </p>
+
+      {/* Efecto decorativo premium mejorado */}
+      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <div 
+          className="absolute inset-0 rounded-xl"
+          style={{
+            background: 'linear-gradient(135deg, var(--accent-5) 0%, transparent 50%)'
+          }}
+        />
+        <motion.div 
+          className="absolute top-0 left-0 w-full h-1 rounded-t-xl"
+          style={{
+            background: 'linear-gradient(to right, var(--accent), var(--primary), transparent)'
+          }}
+          animate={{
+            x: ["-100%", "100%"]
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            repeatDelay: 2,
+            ease: "easeInOut"
+          }}
+        />
+      </div>
+
+      {/* Indicador interactivo mejorado */}
+      <motion.div
+        className="absolute bottom-4 right-4 w-2 h-2 rounded-full opacity-0 group-hover:opacity-100"
+        style={{ backgroundColor: 'var(--accent)' }}
+        animate={{ scale: [1, 1.5, 1] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+
+      {/* Línea decorativa animada mejorada */}
+      <motion.div
+        className="absolute bottom-0 left-4 h-0.5 rounded-full w-0 group-hover:w-8 transition-all duration-500"
+        style={{ backgroundColor: 'var(--accent)' }}
+      />
     </motion.div>
   );
 }

@@ -2,13 +2,12 @@
 "use client";
 
 import type { FC } from "react";
-import { memo } from "react"; // MEJORA: Memoizamos para evitar re-renders
+import { memo } from "react";
 import { X } from "lucide-react";
-import { motion } from "framer-motion"; // MEJORA: Para animar la salida
-import { cn } from "@/lib/utils"; // MEJORA: Para unir clases de forma condicional
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
-// MEJORA: Añadimos una prop 'variant' para mayor flexibilidad futura
-type FilterChipVariant = "default" | "secondary";
+type FilterChipVariant = "default" | "secondary" | "range";
 
 interface FilterChipProps {
   label: string;
@@ -16,40 +15,43 @@ interface FilterChipProps {
   variant?: FilterChipVariant;
 }
 
-// MEJORA: Variantes de animación para la salida del chip
 const chipExitVariants = {
   initial: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
 };
 
-// MEJORA: Memoizamos el componente para rendimiento en listas grandes
 const FilterChip: FC<FilterChipProps> = memo(({ label, onRemove, variant = "default" }) => {
   const handleRemove = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Evita que el clic se propague al padre
+    e.stopPropagation();
     onRemove();
   };
 
-  // MEJORA: Clases base y variantes para un estilo más controlado
+  // Clases base y variantes con soporte para modo oscuro
   const baseClasses = "group flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-1";
+  
   const variantClasses = {
-    default: "bg-primary/10 text-primary hover:bg-primary/20 hover:scale-105",
-    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:scale-105",
+    default: "bg-primary/10 text-primary hover:bg-primary/20 hover:scale-105 dark:bg-primary/20 dark:text-primary dark:hover:bg-primary/30",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:scale-105 dark:bg-secondary/80 dark:text-secondary-foreground dark:hover:bg-secondary/60",
+    // Nueva variante específica para rangos con mejor contraste en modo oscuro
+    range: "bg-accent/10 text-accent-foreground hover:bg-accent/20 hover:scale-105 dark:bg-accent/20 dark:text-accent-foreground dark:hover:bg-accent/30 border border-accent/20 dark:border-accent/30"
   };
 
+  // Determinar si es un chip de rango (precio, año, km)
+  const isRangeChip = label.includes("Precio:") || label.includes("Año:") || label.includes("Kilómetros:");
+  const chipVariant = isRangeChip ? "range" : variant;
+
   return (
-    // MEJORA: Usamos motion.div para animar la salida del chip
     <motion.div
       layout
       variants={chipExitVariants}
       initial="initial"
       exit="exit"
-      className={cn(baseClasses, variantClasses[variant])}
+      className={cn(baseClasses, variantClasses[chipVariant])}
     >
       <span className="truncate max-w-[150px]">{label}</span>
-      {/* MEJORA: El botón de remover tiene más feedback visual */}
       <button
         onClick={handleRemove}
-        className="p-0.5 rounded-full opacity-70 transition-opacity hover:opacity-100 hover:bg-black/10 focus-visible:opacity-100 focus-visible:bg-black/10"
+        className="p-0.5 rounded-full opacity-70 transition-opacity hover:opacity-100 hover:bg-black/10 focus-visible:opacity-100 focus-visible:bg-black/10 dark:hover:bg-white/10 dark:focus-visible:bg-white/10"
         aria-label={`Remover filtro: ${label}`}
         type="button"
       >
@@ -59,6 +61,6 @@ const FilterChip: FC<FilterChipProps> = memo(({ label, onRemove, variant = "defa
   );
 });
 
-FilterChip.displayName = "FilterChip"; // Buenas prácticas para componentes memoizados
+FilterChip.displayName = "FilterChip";
 
 export default FilterChip;

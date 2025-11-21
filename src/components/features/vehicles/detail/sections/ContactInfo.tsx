@@ -2,11 +2,12 @@
 "use client";
 
 import React from "react";
+import { motion } from "framer-motion";
 import type { VehicleDataFrontend } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Phone, MessageSquare, Mail, MapPin, CheckCircle, Shield, Star } from "lucide-react";
+import { Phone, MessageSquare, Mail, MapPin, CheckCircle, Shield, Star, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ interface ContactInfoProps {
   sellerContact: VehicleDataFrontend["sellerContact"];
   vehicleName: string;
   price: number;
+  location: string;
 }
 
 // ✅ FUNCIÓN LOCAL para formatear el precio con el símbolo de dólar al inicio
@@ -31,6 +33,7 @@ const ContactInfoComponent: React.FC<ContactInfoProps> = ({
   sellerContact,
   vehicleName,
   price,
+  location,
 }) => {
   const handleCall = () => {
     window.open(`tel:${sellerContact.phone}`, "_self");
@@ -69,139 +72,195 @@ const ContactInfoComponent: React.FC<ContactInfoProps> = ({
   };
 
   return (
-    <Card 
-      className="overflow-hidden shadow-lg border-border/50 sticky top-24"
-      data-aos="fade-up"
-      data-aos-duration="700"
-      data-aos-delay="600"
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
     >
-      <CardHeader className="pb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <Phone className="w-5 h-5 text-primary" />
-          </div>
-          <CardTitle className="text-xl">
-            Contacto del Vendedor
-          </CardTitle>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-6">
-        {/* Información del vendedor */}
-        <div 
-          className="flex items-center gap-4"
-          data-aos="fade-up"
-          data-aos-duration="600"
-          data-aos-delay="100"
-        >
-          <Avatar className="w-16 h-16 border-2 border-primary/20">
-            <AvatarFallback className="text-xl font-bold bg-primary text-primary-foreground">
-              {sellerContact.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <p className="font-bold text-lg text-foreground">
-              {sellerContact.name}
-            </p>
-            <p className="text-sm text-muted-foreground">Vendedor</p>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Botones de contacto */}
-        <div className="grid grid-cols-1 gap-3">
-          <div
-            data-aos="fade-up"
-            data-aos-duration="500"
-            data-aos-delay="200"
-          >
-            <Button
-              onClick={handleCall}
-              variant="outline"
-              className="w-full h-auto justify-start p-4 transition-all duration-300 group hover:bg-blue-500/10 border-blue-500/20 hover:border-blue-500 hover:shadow-md"
+      <Card className="card-premium shadow-xl overflow-hidden">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-3">
+            <motion.div 
+              className="w-12 h-12 rounded-full flex items-center justify-center glow-effect"
+              style={{ background: 'var(--gradient-primary)' }}
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 group-hover:bg-blue-200 transition-colors">
-                <Phone className="h-5 w-5 text-blue-600" />
-              </div>
-              <div className="text-left">
-                <p className="font-semibold text-sm text-foreground">Llamar ahora</p>
-                <p className="text-xs text-muted-foreground group-hover:text-blue-600 truncate max-w-[180px]">
-                  {sellerContact.phone}
-                </p>
-              </div>
-            </Button>
-          </div>
-          
-          <div
-            data-aos="fade-up"
-            data-aos-duration="500"
-            data-aos-delay="300"
-          >
-            <Button
-              onClick={handleWhatsApp}
-              variant="outline"
-              className="w-full h-auto justify-start p-4 transition-all duration-300 group hover:bg-green-500/10 border-green-500/20 hover:border-green-500 hover:shadow-md"
-            >
-              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3 group-hover:bg-green-200 transition-colors">
-                <MessageSquare className="h-5 w-5 text-green-600" />
-              </div>
-              <div className="text-left">
-                <p className="font-semibold text-sm text-foreground">Enviar WhatsApp</p>
-                <p className="text-xs text-muted-foreground group-hover:text-green-600">
-                  Respuesta rápida
-                </p>
-              </div>
-            </Button>
-          </div>
-          
-          <div
-            data-aos="fade-up"
-            data-aos-duration="500"
-            data-aos-delay="400"
-          >
-            <Button
-              onClick={handleEmail}
-              variant="outline"
-              className="w-full h-auto justify-start p-4 transition-all duration-300 group hover:bg-gray-500/10 border-gray-500/20 hover:border-gray-500 hover:shadow-md"
-            >
-              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3 group-hover:bg-gray-200 transition-colors">
-                <Mail className="h-5 w-5 text-gray-600" />
-              </div>
-              <div className="text-left">
-                <p className="font-semibold text-sm text-foreground">Enviar Email</p>
-                <p className="text-xs text-muted-foreground group-hover:text-gray-600 truncate max-w-[180px]">
-                  {sellerContact.email}
-                </p>
-              </div>
-            </Button>
-          </div>
-        </div>
-
-        {/* Sección de confianza - ✅ MODIFICADA para no depender de 'type' o 'memberSince' */}
-        <div 
-          className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20"
-          data-aos="fade-up"
-          data-aos-duration="600"
-          data-aos-delay="500"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-4 h-4 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-semibold text-sm flex items-center gap-2">
-                Vendedor Verificado
-                <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-              </h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                Este vendedor ha sido verificado por nuestro equipo de seguridad para garantizar una transacción segura.
+              <Phone className="w-6 h-6 text-primary-foreground" />
+            </motion.div>
+            <div>
+              <CardTitle className="text-2xl font-bold">
+                Contacto del Vendedor
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Comunícate directamente con el vendedor
               </p>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardHeader>
+        
+        <CardContent className="space-y-6">
+          {/* Información del vendedor */}
+          <motion.div 
+            className="flex items-center gap-4"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Avatar className="w-16 h-16 border-2" style={{ borderColor: 'var(--primary-20)' }}>
+                <AvatarFallback className="text-xl font-bold" style={{ background: 'var(--gradient-primary)', color: 'var(--primary-foreground)' }}>
+                  {sellerContact.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </motion.div>
+            <div className="flex-1">
+              <p className="font-bold text-lg text-foreground">
+                {sellerContact.name}
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge className="badge-premium">
+                  Vendedor Verificado
+                </Badge>
+                <div className="flex items-center gap-1">
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <Separator />
+
+          <div className="grid grid-cols-1 gap-3">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <Button
+                onClick={handleCall}
+                variant="outline"
+                className="w-full h-auto justify-start p-4 card-hover group"
+              >
+                <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3 card-glass">
+                  <Phone className="h-5 w-5 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-sm text-foreground">Llamar ahora</p>
+                  <p className="text-xs text-muted-foreground truncate max-w-[180px]">
+                    {sellerContact.phone}
+                  </p>
+                </div>
+              </Button>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <Button
+                onClick={handleWhatsApp}
+                variant="outline"
+                className="w-full h-auto justify-start p-4 card-hover group"
+              >
+                <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ backgroundColor: 'var(--success-10)' }}>
+                  <MessageSquare className="h-5 w-5 text-success" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-sm text-foreground">Enviar WhatsApp</p>
+                  <p className="text-xs text-muted-foreground">
+                    Respuesta rápida
+                  </p>
+                </div>
+              </Button>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              <Button
+                onClick={handleEmail}
+                variant="outline"
+                className="w-full h-auto justify-start p-4 card-hover group"
+              >
+                <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3 card-glass">
+                  <Mail className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-sm text-foreground">Enviar Email</p>
+                  <p className="text-xs text-muted-foreground truncate max-w-[180px]">
+                    {sellerContact.email}
+                  </p>
+                </div>
+              </Button>
+            </motion.div>
+          </div>
+
+          {/* Sección de confianza */}
+          <motion.div
+            className="p-6 rounded-xl card-glass"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <div className="flex items-start gap-4">
+              <motion.div 
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: 'var(--primary-10)' }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
+                <Shield className="w-5 h-5 text-primary" />
+              </motion.div>
+              <div className="flex-1">
+                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                  Compra Protegida
+                  <CheckCircle className="w-4 h-4 text-success" />
+                </h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Este vendedor ha sido verificado por nuestro equipo de seguridad para garantizar una transacción segura.
+                </p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  <span>Tiempo de respuesta promedio: 2 horas</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Ubicación */}
+          <motion.div
+            className="p-4 rounded-xl card-glass"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--accent-10)' }}>
+                <MapPin className="w-4 h-4 text-accent" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-sm mb-1">
+                  Ubicación del Vendedor
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {location || "Ciudad, País"}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 

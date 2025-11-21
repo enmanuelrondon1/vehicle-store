@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Settings,
@@ -18,16 +19,21 @@ import {
   ChevronRight,
   DoorOpen,
   Users,
+  Grid3X3,
+  List,
+  RotateCcw,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 interface Spec {
   label: string;
   value: string | number;
+  icon?: string; // Icono opcional desde el componente padre
 }
 
 interface TechnicalSpecificationsProps {
@@ -35,17 +41,22 @@ interface TechnicalSpecificationsProps {
 }
 
 // ✅ FUNCIÓN MEJORADA: Iconos personalizados para cada campo
-const getIconForSpec = (label: string) => {
+const getIconForSpec = (label: string, providedIcon?: string) => {
+  // Si se proporciona un icono desde el componente padre, usarlo
+  if (providedIcon) {
+    return <span className="text-lg">{providedIcon}</span>;
+  }
+
   const lowerLabel = label.toLowerCase();
 
   if (lowerLabel.includes("marca") || lowerLabel.includes("modelo")) {
-    return <Car className="w-4 h-4 text-blue-500" />;
+    return <Car className="w-4 h-4 text-primary" />;
   }
   if (
     lowerLabel.includes("kilometraje") ||
     lowerLabel.includes("rendimiento")
   ) {
-    return <Gauge className="w-4 h-4 text-green-500" />;
+    return <Gauge className="w-4 h-4 text-accent" />;
   }
   if (lowerLabel.includes("combustible")) {
     return <Fuel className="w-4 h-4 text-orange-500" />;
@@ -70,13 +81,13 @@ const getIconForSpec = (label: string) => {
   }
   
   if (lowerLabel.includes("garantía") || lowerLabel.includes("seguro")) {
-    return <Shield className="w-4 h-4 text-red-500" />;
+    return <Shield className="w-4 h-4 text-success" />;
   }
   if (lowerLabel.includes("tracción") || lowerLabel.includes("potencia")) {
     return <Zap className="w-4 h-4 text-yellow-500" />;
   }
 
-  return <Settings className="w-4 h-4 text-gray-500" />;
+  return <Settings className="w-4 h-4 text-muted-foreground" />;
 };
 
 // ✅ FUNCIÓN MEJORADA: Categorización más específica
@@ -135,20 +146,31 @@ const SpecRow: React.FC<{
   value: string | number;
   isHighlighted?: boolean;
   index?: number;
-}> = ({ label, value, isHighlighted = false, index = 0 }) => {
-  const icon = getIconForSpec(label);
+  icon?: string;
+}> = ({ label, value, isHighlighted = false, index = 0, icon }) => {
+  const specIcon = getIconForSpec(label, icon);
 
   return (
-    <div
+    <motion.div
       className={cn(
-        "flex justify-between items-center py-3 px-4 rounded-lg transition-all duration-200",
-        "hover:bg-muted/50 hover:shadow-sm",
-        isHighlighted && "bg-primary/10 border border-primary/20",
-        index % 2 === 0 && !isHighlighted && "bg-muted/20"
+        "flex justify-between items-center py-3 px-4 rounded-xl transition-all duration-300",
+        "hover:bg-glass-bg hover:shadow-md hover:-translate-y-0.5",
+        isHighlighted ? "border border-primary glow-effect" : "",
+        index % 2 === 0 && !isHighlighted && "bg-muted"
       )}
+      style={{
+        backgroundColor: isHighlighted ? 'var(--primary-10)' : 
+                         index % 2 === 0 ? 'var(--muted)' : 'transparent'
+      }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+      whileHover={{ scale: 1.02 }}
     >
       <div className="flex items-center gap-3">
-        <div className="p-1.5 rounded-full bg-muted">{icon}</div>
+        <div className="p-2 rounded-full card-glass">
+          {specIcon}
+        </div>
         <span className="font-medium text-foreground">{label}</span>
       </div>
       <div className="flex items-center gap-2">
@@ -159,7 +181,7 @@ const SpecRow: React.FC<{
           </Badge>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -173,6 +195,7 @@ const TechnicalSpecificationsComponent: React.FC<
   const [sortBy, setSortBy] = useState<"label" | "category" | "default">(
     "default"
   );
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Agrupar especificaciones por categoría
   const categorizedSpecs = useMemo(() => {
@@ -230,10 +253,6 @@ const TechnicalSpecificationsComponent: React.FC<
   // Especificaciones a mostrar (limitadas si no se muestra todo)
   const displaySpecs = showAll ? filteredSpecs : filteredSpecs.slice(0, 8);
 
-  const midPoint = Math.ceil(displaySpecs.length / 2);
-  const firstHalf = displaySpecs.slice(0, midPoint);
-  const secondHalf = displaySpecs.slice(midPoint);
-
   // Función para limpiar filtros
   const clearFilters = useCallback(() => {
     setSearchTerm("");
@@ -241,228 +260,350 @@ const TechnicalSpecificationsComponent: React.FC<
     setSortBy("default");
   }, []);
 
+  // Variants para animaciones
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   if (!specs || specs.length === 0) {
     return (
-      <Card 
-        className="shadow-lg border-border/50 overflow-hidden"
-        data-aos="fade-up"
-        data-aos-duration="700"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
       >
-        <CardContent className="p-6">
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Settings className="w-8 h-8 text-muted-foreground" />
+        <Card className="card-premium shadow-xl overflow-hidden">
+          <CardContent className="p-8">
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <motion.div 
+                className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6 animate-float"
+              >
+                <Settings className="w-10 h-10 text-muted-foreground" />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-3 text-gradient-primary">
+                Sin especificaciones disponibles
+              </h3>
+              <p className="text-muted-foreground max-w-md">
+                Este vehículo no tiene especificaciones técnicas disponibles.
+              </p>
             </div>
-            <h3 className="text-xl font-semibold mb-2">
-              Sin especificaciones disponibles
-            </h3>
-            <p className="text-muted-foreground max-w-md">
-              Este vehículo no tiene especificaciones técnicas disponibles.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
   return (
-    <Card 
-      className="shadow-lg border-border/50 overflow-hidden"
-      data-aos="fade-up"
-      data-aos-duration="700"
-      data-aos-delay="200"
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
     >
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Settings className="w-5 h-5 text-primary" />
-            </div>
-            <CardTitle className="text-2xl">
-              Especificaciones Técnicas
-            </CardTitle>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="gap-1 text-sm"
-          >
-            {isExpanded ? (
-              <>
-                Ocultar
-                <ChevronUp className="w-4 h-4" />
-              </>
-            ) : (
-              <>
-                Mostrar
-                <ChevronDown className="w-4 h-4" />
-              </>
-            )}
-          </Button>
-        </div>
-      </CardHeader>
-      
-      {/* ✅ CORRECCIÓN: Contenedor con transición suave */}
-      <div 
-        className="transition-all duration-500 ease-in-out overflow-hidden"
-        style={{
-          maxHeight: isExpanded ? '5000px' : '0px',
-          opacity: isExpanded ? 1 : 0
-        }}
-      >
-        <CardContent className="pt-0">
-          {/* Filtros de categoría */}
-          <div className="flex flex-wrap gap-2 mb-6 pb-4 border-b border-border">
-            <Button
-              variant={selectedCategory === null ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(null)}
-              className="text-xs"
-            >
-              Todas ({specs.length})
-            </Button>
-            {categories.map((category) => {
-              const count = categorizedSpecs[category].length;
-              return (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className="text-xs"
-                >
-                  {category} ({count})
-                </Button>
-              );
-            })}
-          </div>
-
-          {/* Lista de especificaciones */}
-          {displaySpecs.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-6 gap-y-2">
-              <div className="space-y-2">
-                {firstHalf.map((spec, index) => (
-                  <SpecRow
-                    key={spec.label}
-                    label={spec.label}
-                    value={spec.value}
-                    isHighlighted={
-                      !!searchTerm &&
-                      (spec.label
-                        .toLowerCase()
-                        .includes(searchTerm.toLowerCase()) ||
-                        spec.value
-                          .toString()
-                          .toLowerCase()
-                          .includes(searchTerm.toLowerCase()))
-                    }
-                    index={index}
-                  />
-                ))}
-              </div>
-              <div className="space-y-2">
-                {secondHalf.map((spec, index) => (
-                  <SpecRow
-                    key={spec.label}
-                    label={spec.label}
-                    value={spec.value}
-                    isHighlighted={
-                      !!searchTerm &&
-                      (spec.label
-                        .toLowerCase()
-                        .includes(searchTerm.toLowerCase()) ||
-                        spec.value
-                          .toString()
-                          .toLowerCase()
-                          .includes(searchTerm.toLowerCase()))
-                    }
-                    index={index + midPoint}
-                  />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4 mx-auto">
-                <Search className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <p className="text-muted-foreground mb-4">
-                No se encontraron especificaciones que coincidan con tu búsqueda.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearFilters}
+      <Card className="card-premium shadow-xl overflow-hidden">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <motion.div 
+                className="w-12 h-12 rounded-full flex items-center justify-center glow-effect"
+                style={{ background: 'var(--gradient-primary)' }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Limpiar filtros
-              </Button>
-            </div>
-          )}
-
-          {/* Botón para mostrar más/menos */}
-          {filteredSpecs.length > 8 && (
-            <div className="mt-6 pt-4 border-t border-border">
-              <Button
-                variant="outline"
-                onClick={() => setShowAll(!showAll)}
-                className="w-full"
-              >
-                {showAll ? (
-                  <>
-                    <ChevronUp className="w-4 h-4 mr-2" />
-                    Mostrar menos
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="w-4 h-4 mr-2" />
-                    Mostrar más ({filteredSpecs.length - 8} restantes)
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
-
-          {/* Resumen de especificaciones */}
-          <div className="mt-6 p-4 bg-muted/30 rounded-lg">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Info className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-sm mb-1">
-                  Resumen de especificaciones
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  Este vehículo tiene {specs.length} especificaciones técnicas
-                  distribuidas en {categories.length} categorías.
-                  {selectedCategory &&
-                    ` Actualmente se muestran las especificaciones de la categoría "${selectedCategory}".`}
-                  {searchTerm && ` Filtradas por el término "${searchTerm}".`}
+                <Settings className="w-6 h-6 text-primary-foreground" />
+              </motion.div>
+              <div>
+                <CardTitle className="text-2xl font-bold">
+                  Especificaciones Técnicas
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {specs.length} especificaciones técnicas disponibles
                 </p>
               </div>
-              <div className="flex -space-x-2">
-                {categories.slice(0, 4).map((category, index) => (
-                  <div
-                    key={category}
-                    className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center"
-                  >
-                    {getIconForSpec(category)}
-                  </div>
-                ))}
-                {categories.length > 4 && (
-                  <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                    <span className="text-xs font-medium">
-                      +{categories.length - 4}
-                    </span>
-                  </div>
-                )}
-              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+                  className="gap-1"
+                >
+                  {viewMode === "grid" ? (
+                    <List className="w-4 h-4" />
+                  ) : (
+                    <Grid3X3 className="w-4 h-4" />
+                  )}
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="gap-1"
+                >
+                  {isExpanded ? (
+                    <>
+                      Ocultar
+                      <ChevronUp className="w-4 h-4" />
+                    </>
+                  ) : (
+                    <>
+                      Mostrar
+                      <ChevronDown className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              </motion.div>
             </div>
           </div>
-        </CardContent>
-      </div>
-    </Card>
+        </CardHeader>
+        
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <CardContent className="pt-0">
+                {/* Barra de búsqueda y filtros */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar especificaciones..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 input-premium"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSortBy(sortBy === "label" ? "default" : "label")}
+                      className="gap-1"
+                    >
+                      Ordenar
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearFilters}
+                      className="gap-1"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Limpiar
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Tabs de categorías - MEJORADO */}
+                <div className="mb-6">
+                  <div className="relative">
+                    {/* Contenedor con scroll horizontal */}
+                    <div className="overflow-x-auto pb-2 -mb-2">
+                      <Tabs
+                        value={selectedCategory || "all"}
+                        onValueChange={(value) =>
+                          setSelectedCategory(value === "all" ? null : value)
+                        }
+                        className="w-full min-w-max"
+                      >
+                        <TabsList 
+                          className="inline-flex h-auto w-auto min-w-max gap-2 p-2 card-glass rounded-xl whitespace-nowrap"
+                        >
+                          <TabsTrigger
+                            value="all"
+                            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-all duration-200"
+                          >
+                            Todas ({specs.length})
+                          </TabsTrigger>
+                          {categories.map((category) => {
+                            const count = categorizedSpecs[category].length;
+                            return (
+                              <TabsTrigger
+                                key={category}
+                                value={category}
+                                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-all duration-200"
+                              >
+                                {category} ({count})
+                              </TabsTrigger>
+                            );
+                          })}
+                        </TabsList>
+                      </Tabs>
+                    </div>
+                    {/* Indicador de scroll */}
+                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card to-transparent pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Lista de especificaciones */}
+                {displaySpecs.length > 0 ? (
+                  viewMode === "grid" ? (
+                    <motion.div
+                      variants={containerVariants}
+                      initial="hidden"
+                      animate="visible"
+                      className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    >
+                      {displaySpecs.map((spec, index) => (
+                        <SpecRow
+                          key={spec.label}
+                          label={spec.label}
+                          value={spec.value}
+                          icon={spec.icon}
+                          isHighlighted={
+                            !!searchTerm &&
+                            (spec.label
+                              .toLowerCase()
+                              .includes(searchTerm.toLowerCase()) ||
+                              spec.value
+                                .toString()
+                                .toLowerCase()
+                                .includes(searchTerm.toLowerCase()))
+                          }
+                          index={index}
+                        />
+                      ))}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      variants={containerVariants}
+                      initial="hidden"
+                      animate="visible"
+                      className="space-y-3"
+                    >
+                      {displaySpecs.map((spec, index) => (
+                        <SpecRow
+                          key={spec.label}
+                          label={spec.label}
+                          value={spec.value}
+                          icon={spec.icon}
+                          isHighlighted={
+                            !!searchTerm &&
+                            (spec.label
+                              .toLowerCase()
+                              .includes(searchTerm.toLowerCase()) ||
+                              spec.value
+                                .toString()
+                                .toLowerCase()
+                                .includes(searchTerm.toLowerCase()))
+                          }
+                          index={index}
+                        />
+                      ))}
+                    </motion.div>
+                  )
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-12"
+                  >
+                    <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6 mx-auto animate-float">
+                      <Search className="w-10 h-10 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-3">
+                      No se encontraron especificaciones
+                    </h3>
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                      No se encontraron especificaciones que coincidan con tu búsqueda.
+                    </p>
+                    <Button variant="outline" onClick={clearFilters} className="btn-accent">
+                      Limpiar filtros
+                    </Button>
+                  </motion.div>
+                )}
+
+                {/* Botón para mostrar más/menos */}
+                {filteredSpecs.length > 8 && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="mt-8 pt-6 border-t border-border"
+                  >
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowAll(!showAll)}
+                      className="w-full btn-accent"
+                    >
+                      {showAll ? (
+                        <>
+                          <ChevronUp className="w-4 h-4 mr-2" />
+                          Mostrar menos
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="w-4 h-4 mr-2" />
+                          Mostrar más ({filteredSpecs.length - 8} restantes)
+                        </>
+                      )}
+                    </Button>
+                  </motion.div>
+                )}
+
+                {/* Resumen de especificaciones */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="mt-8 p-6 rounded-xl card-glass"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                         style={{ backgroundColor: 'var(--primary-10)' }}>
+                      <Info className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold mb-2">
+                        Resumen de especificaciones
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Este vehículo tiene {specs.length} especificaciones técnicas
+                        distribuidas en {categories.length} categorías.
+                        {selectedCategory &&
+                          ` Actualmente se muestran las especificaciones de la categoría "${selectedCategory}".`}
+                        {searchTerm && ` Filtradas por el término "${searchTerm}".`}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {categories.map((category) => (
+                          <Badge
+                            key={category}
+                            variant="secondary"
+                            className="gap-1 card-glass"
+                          >
+                            {getIconForSpec(category)}
+                            {category} ({categorizedSpecs[category].length})
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </CardContent>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Card>
+    </motion.div>
   );
 };
 

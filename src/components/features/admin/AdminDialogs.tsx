@@ -99,6 +99,7 @@ export const AdminDialogs = ({
           }
         }}
         isSubmitting={isSubmitting}
+        vehicleId={dialogState.vehicle?._id}
       />
 
       {/* Dialog para ver historial */}
@@ -107,6 +108,7 @@ export const AdminDialogs = ({
         onOpenChange={handleCloseDialog}
         history={vehicleHistory}
         isLoading={isLoadingHistory}
+        vehicleId={dialogState.vehicle?._id}
       />
 
       {/* Dialog para confirmar eliminación */}

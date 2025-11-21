@@ -7,6 +7,7 @@ import { Popover, Transition } from '@headlessui/react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { VehicleDataFrontend } from "@/types/types";
 
 interface Notification {
@@ -87,14 +88,16 @@ export const NotificationBell = ({ onNotificationClick, className }: Notificatio
       {({ close }) => (
         <>
           <Popover.Button
+            as={Button}
+            variant="outline"
+            size="sm"
             onClick={handleOpen}
-            className="relative p-2 rounded-lg transition-colors bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+            className="relative"
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
               <Badge
-                variant="destructive"
-                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-destructive text-destructive-foreground"
               >
                 {unreadCount}
               </Badge>
@@ -109,15 +112,17 @@ export const NotificationBell = ({ onNotificationClick, className }: Notificatio
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 translate-y-1"
           >
-            <Popover.Panel className="absolute right-0 z-10 mt-2 w-80 max-w-sm transform px-4 sm:px-0">
-              <div className="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-                <div className="relative grid gap-8 bg-white dark:bg-gray-800 p-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Notificaciones</h3>
+            <Popover.Panel className="absolute right-0 z-50 mt-2 w-80 max-w-sm transform">
+              <div className="overflow-hidden rounded-2xl shadow-lg ring-1 ring-black ring-opacity-5 card-glass border border-border/20">
+                <div className="relative p-4">
+                  <div className="flex justify-between items-center pb-3 border-b border-border/20">
+                    <h3 className="text-lg font-heading font-semibold text-gradient-primary">
+                      Notificaciones
+                    </h3>
                     {notifications.length > 0 && (
                       <button
                         onClick={handleClearAll}
-                        className="text-xs text-blue-600 hover:underline dark:text-blue-400 focus:outline-none"
+                        className="text-xs text-primary hover:underline focus:outline-none"
                         aria-label="Limpiar todas las notificaciones"
                       >
                         Limpiar todo
@@ -125,28 +130,28 @@ export const NotificationBell = ({ onNotificationClick, className }: Notificatio
                     )}
                   </div>
                   {notifications.length > 0 ? (
-                    <div className="flow-root max-h-96 overflow-y-auto -mr-4 pr-4">
-                      <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <div className="flow-root max-h-96 overflow-y-auto -mr-4 pr-4 mt-3">
+                      <ul role="list" className="divide-y divide-border/20">
                         {notifications.map((item, index) => (
                           <li
-                            key={`${item.vehicleId}-${item.timestamp}-${index}`} // Usamos un key más robusto
+                            key={`${item.vehicleId}-${item.timestamp}-${index}`}
                             onClick={() => handleNotificationClick(item, close)}
-                            className={`flex items-center py-4 space-x-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer -mx-4 px-4 rounded-md transition-colors duration-300 ${
-                              !item.read ? 'bg-blue-50 dark:bg-blue-900/30' : ''
+                            className={`flex items-center py-3 space-x-3 hover:bg-primary/10 cursor-pointer -mx-4 px-4 rounded-md transition-colors duration-200 ${
+                              !item.read ? 'bg-primary/5' : ''
                             }`}
                           >
-                            <div className="flex-shrink-0">
+                            <div className="flex-shrink-0 p-2 rounded-lg bg-primary/10">
                               {item.type === 'new-vehicle' ? (
-                                <Car className="h-6 w-6 text-blue-500" />
+                                <Car className="h-5 w-5 text-primary" />
                               ) : (
-                                <CheckCircle className="h-6 w-6 text-green-500" />
+                                <CheckCircle className="h-5 w-5 text-green-500" />
                               )}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className={`text-sm ${!item.read ? 'text-gray-800 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'}`}>
+                              <p className={`text-sm font-medium ${!item.read ? 'text-foreground' : 'text-muted-foreground'}`}>
                                 {item.message}
                               </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <p className="text-xs text-muted-foreground/80 mt-1">
                                 {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true, locale: es })}
                               </p>
                             </div>
@@ -155,9 +160,10 @@ export const NotificationBell = ({ onNotificationClick, className }: Notificatio
                       </ul>
                     </div>
                   ) : (
-                    <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-                      <Bell className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>No tienes notificaciones nuevas.</p>
+                    <div className="text-center text-muted-foreground py-10">
+                      <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p className="font-medium">No tienes notificaciones</p>
+                      <p className="text-sm">Las nuevas alertas aparecerán aquí.</p>
                     </div>
                   )}
                 </div>

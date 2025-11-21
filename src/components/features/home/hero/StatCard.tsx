@@ -8,7 +8,6 @@ interface StatCardProps {
   label: string;
 }
 
-// ¡Mantengo tu AnimatedCounter! Es un detalle genial.
 const AnimatedCounter = ({ value }: { value: string }) => {
   const [displayValue, setDisplayValue] = useState("0");
 
@@ -43,23 +42,88 @@ const AnimatedCounter = ({ value }: { value: string }) => {
     requestAnimationFrame(frame);
   }, [value]);
 
-  return <span className="font-bold">{displayValue}</span>;
+  return (
+    <span 
+      className="font-bold relative text-4xl sm:text-5xl"
+      style={{ 
+        color: 'var(--accent)',
+        textShadow: '0 0 20px var(--accent-20), 0 0 40px var(--accent-10)',
+        filter: 'brightness(1.3)'
+      }}
+    >
+      {displayValue}
+      {/* Efecto shimmer para mayor visibilidad */}
+      <span 
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          animation: 'shimmer 3s infinite'
+        }}
+      >
+        {displayValue}
+      </span>
+    </span>
+  );
 };
 
 export const StatCard: React.FC<StatCardProps> = memo(({ number, label }) => {
   return (
-    // --- ¡CAMBIO CLAVE! Usamos motion.div para que entienda whileHover ---
     <motion.div
       data-aos="zoom-in"
       data-aos-duration="600"
       whileHover={{ scale: 1.05, y: -2, transition: { duration: 200 } }}
-      className="relative bg-card border border-border rounded-xl p-6 text-center shadow-sm hover:shadow-lg transition-all duration-300"
+      className="relative card-premium card-hover group h-full p-6 text-center"
     >
-      {/* --- El número usa tu color primario --- */}
-      <p className="text-3xl sm:text-4xl font-heading font-bold text-primary">
+      {/* Efecto de brillo en hover */}
+      <div 
+        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at center, var(--accent-10) 0%, transparent 70%)'
+        }}
+      />
+      
+      {/* Número con efectos mejorados */}
+      <p className="mb-2">
         <AnimatedCounter value={number} />
       </p>
-      <p className="text-sm text-muted-foreground mt-2">{label}</p>
+      
+      {/* Etiqueta con mejor contraste */}
+      <p 
+        className="text-sm font-semibold leading-relaxed"
+        style={{ 
+          color: 'var(--foreground)',
+          textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+        }}
+      >
+        {label}
+      </p>
+
+      {/* Efecto decorativo */}
+      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <div 
+          className="absolute inset-0 rounded-xl"
+          style={{
+            background: 'linear-gradient(135deg, var(--accent-5) 0%, transparent 50%)'
+          }}
+        />
+        <div 
+          className="absolute top-0 left-0 w-full h-1 rounded-t-xl"
+          style={{
+            background: 'linear-gradient(to right, var(--accent), var(--primary), transparent)'
+          }}
+        />
+      </div>
+
+      {/* Indicador animado */}
+      <motion.div
+        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-2 h-2 rounded-full"
+        style={{ backgroundColor: 'var(--accent)' }}
+        animate={{ scale: [1, 1.5, 1] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
     </motion.div>
   );
 }

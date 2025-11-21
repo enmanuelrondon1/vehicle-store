@@ -4,8 +4,9 @@ import Image from "next/image";
 import React, { useMemo, useRef, useEffect, useCallback } from "react";
 import { Card as UICard } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Quote, Star } from "lucide-react"; // Iconos para testimonios
+import { Quote, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {motion} from "framer-motion"
 
 /* 1️⃣  Assets ————————————————————————— */
 const FALLBACK_AVATAR =
@@ -15,9 +16,9 @@ const FALLBACK_AVATAR =
   ' text-anchor="middle" fill="%234a5568" font-size="18">Photo</text></svg>';
 
 // 2️⃣  Config ————————————————————————— */
-const CARD_W = 320; // Un poco más ancho para texto
-const CARD_H = 400; // Más alto para la foto y el texto
-const RADIUS = 240;
+const CARD_W = 320;
+const CARD_H = 420; // Aumentado ligeramente para mejor visibilidad
+const RADIUS = 260; // Aumentado para mejor efecto 3D
 const TILT_SENSITIVITY = 10;
 const DRAG_SENSITIVITY = 0.5;
 const INERTIA_FRICTION = 0.95;
@@ -42,7 +43,6 @@ interface TestimonialCardProps {
   cardH: number;
   index: number;
 }
-
 const TestimonialCard = React.memo(
   ({ testimonial, transform, cardW, cardH }: TestimonialCardProps) => (
     <div
@@ -57,61 +57,118 @@ const TestimonialCard = React.memo(
     >
       <UICard
         className={cn(
-          "w-full h-full rounded-2xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105",
-          "bg-card text-card-foreground border-border flex flex-col"
+          "w-full h-full rounded-2xl overflow-hidden shadow-glass transition-all duration-500 hover:shadow-xl hover:scale-105 card-glass glow-effect group",
+          "text-card-foreground flex flex-col relative"
         )}
         style={{ backfaceVisibility: "hidden" }}
       >
+        {/* Efecto de brillo en hover mejorado */}
+        <motion.div 
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
+          style={{
+            background: 'radial-gradient(circle at center, var(--accent-10) 0%, transparent 70%)'
+          }}
+          animate={{
+            opacity: [0, 0.1, 0],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            repeatDelay: 2,
+          }}
+        />
+
         {/* Header con foto y nombre */}
-        <div className="flex items-center p-4 pb-2">
-          <Image
-            src={testimonial.customerPhoto}
-            alt={`Foto de ${testimonial.customerName}`}
-            width={50}
-            height={50}
-            className="w-12 h-12 rounded-full object-cover mr-3"
-            onError={(e) => {
-              e.currentTarget.src = FALLBACK_AVATAR;
-            }}
-          />
+        <div className="flex items-center p-4 pb-2 relative z-10">
+          <div className="relative">
+            <Image
+              src={testimonial.customerPhoto}
+              alt={`Foto de ${testimonial.customerName}`}
+              width={50}
+              height={50}
+              className="w-12 h-12 rounded-full object-cover mr-3 ring-2 ring-offset-2 transition-all duration-300 group-hover:ring-accent/50"
+              style={{ 
+                '--ring-color': 'var(--accent)',
+                ringOffsetColor: 'var(--card)'
+              } as React.CSSProperties}
+              onError={(e) => {
+                e.currentTarget.src = FALLBACK_AVATAR;
+              }}
+            />
+            {/* Indicador de verificación mejorado */}
+            <motion.div 
+              className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'var(--success)' }}
+              whileHover={{ scale: 1.2 }}
+              transition={{ type: "spring", stiffness: 500 }}
+            >
+              <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </motion.div>
+          </div>
           <div>
-            <h4 className="font-heading font-bold text-foreground">{testimonial.customerName}</h4>
+            <motion.h4 
+              className="font-heading font-bold text-foreground group-hover:text-accent transition-colors duration-300"
+              whileHover={{ x: 2 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
+              {testimonial.customerName}
+            </motion.h4>
             <p className="text-sm text-muted-foreground">Compró un {testimonial.vehicleName}</p>
           </div>
         </div>
 
         {/* Cuerpo con el testimonio */}
-        <div className="flex-1 px-4 pb-4 text-center flex flex-col justify-between">
-          <Quote className="w-8 h-8 text-primary/30 mx-auto mb-3 flex-shrink-0" />
-          <p className="text-sm text-muted-foreground italic line-clamp-4">
+        <div className="flex-1 px-4 pb-4 text-center flex flex-col justify-between relative z-10">
+          <Quote 
+            className="w-8 h-8 mx-auto mb-3 flex-shrink-0" 
+            style={{ color: 'var(--primary-50)' }}
+          />
+          <p className="text-sm text-muted-foreground italic line-clamp-4 leading-relaxed">
             "{testimonial.testimonial}"
           </p>
         </div>
 
         {/* Footer con rating y badge */}
-        <div className="flex items-center justify-between p-4 pt-2 border-t">
+        <div className="flex items-center justify-between p-4 pt-2 border-t border-glass-border relative z-10">
           <div className="flex">
             {[...Array(5)].map((_, i) => (
-              <Star
+              <motion.div
                 key={i}
-                className={cn(
-                  "w-4 h-4",
-                  i < testimonial.rating
-                    ? "text-yellow-400 fill-yellow-400"
-                    : "text-muted-foreground"
-                )}
-              />
+                whileHover={{ scale: 1.2, rotate: 10 }}
+                transition={{ type: "spring", stiffness: 500 }}
+              >
+                <Star
+                  className={cn(
+                    "w-4 h-4 transition-all duration-300",
+                    i < testimonial.rating
+                      ? "fill-current"
+                      : "text-muted-foreground"
+                  )}
+                  style={{
+                    color: i < testimonial.rating ? 'var(--accent)' : 'inherit'
+                  }}
+                />
+              </motion.div>
             ))}
           </div>
-          <Badge variant="secondary" className="text-xs">
-            Verificado
-          </Badge>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 500 }}
+          >
+            <Badge 
+              variant="secondary" 
+              className="badge-accent shimmer-effect"
+            >
+              Verificado
+            </Badge>
+          </motion.div>
         </div>
       </UICard>
     </div>
   )
 );
-
 TestimonialCard.displayName = "TestimonialCard";
 
 /* 5️⃣  Componente Principal (con nuevas props) —————————— */
@@ -129,7 +186,6 @@ const ThreeDCarousel = React.memo(
     cardW = CARD_W,
     cardH = CARD_H,
   }: ThreeDCarouselProps) => {
-    // (Toda la lógica de interacción, drag, etc. permanece exactamente igual)
     const parentRef = useRef<HTMLDivElement>(null);
     const wheelRef = useRef<HTMLDivElement>(null);
     const rotationRef = useRef(0);
@@ -201,7 +257,7 @@ const ThreeDCarousel = React.memo(
       lastInteractionRef.current = Date.now();
     }, []);
 
-      const onTouchEnd = useCallback(() => {
+    const onTouchEnd = useCallback(() => {
       handleDragEnd();
     }, []);
 
@@ -221,11 +277,11 @@ const ThreeDCarousel = React.memo(
     );
 
     return (
-      <div className="w-full py-4">
+      <div className="w-full py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div
             ref={parentRef}
-            className="w-full h-96 flex items-center justify-center overflow-hidden font-sans cursor-grab active:cursor-grabbing bg-background/50 rounded-xl"
+            className="w-full h-[500px] flex items-center justify-center overflow-hidden font-sans cursor-grab active:cursor-grabbing card-glass rounded-xl"
             style={{ userSelect: "none" }}
             onMouseDown={onMouseDown}
             onMouseMove={onMouseMove}
@@ -266,7 +322,7 @@ const ThreeDCarousel = React.memo(
                     transform={card.transform}
                     cardW={cardW}
                     cardH={cardH}
-                    index={0} // El index ya no se usa en la tarjeta
+                    index={0}
                   />
                 ))}
               </div>

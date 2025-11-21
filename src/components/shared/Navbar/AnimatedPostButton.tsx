@@ -1,10 +1,10 @@
-// src/components/shared/Navbar/AnimatedPostButton.tsx
+// src/components/shared/Navbar/AnimatedPostButton.tsx (versión mejorada)
 "use client";
 
 import React, { useCallback, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Plus, User } from "lucide-react";
+import { Plus, User, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,10 +28,9 @@ const AnimatedPostButton = ({ isMobile = false, onClick }: AnimatedPostButtonPro
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
 
-  const isAuthenticated = status === "authenticated" && session?.user;
+  const isAuthenticated = status === "authenticated";
   const isLoading = status === "loading";
 
-  // 1. MANEJADOR DE CLICK SIMPLIFICADO
   const handleButtonClick = useCallback((e: React.MouseEvent) => {
     if (isLoading) return;
     if (isAuthenticated) {
@@ -40,114 +39,180 @@ const AnimatedPostButton = ({ isMobile = false, onClick }: AnimatedPostButtonPro
       e.preventDefault();
       setOpen(true);
     }
-    onClick?.(); // Ejecuta el onClick prop si se proporciona
+    onClick?.();
   }, [isAuthenticated, isLoading, router, onClick]);
 
   const handleGoToLogin = useCallback(() => {
     setOpen(false);
     router.push(`/login?callbackUrl=${encodeURIComponent(siteConfig.paths.publishAd)}`);
-  }, []);
-
-  const handleGoToRegister = useCallback(() => {
-    setOpen(false);
-    router.push(`/login?callbackUrl=${encodeURIComponent(siteConfig.paths.publishAd)}`);
-  }, []);
+  }, [router]);
 
   const buttonClasses = useMemo(() => {
-    const baseClasses = "relative overflow-hidden rounded-full font-bold text-accent-foreground transition-all duration-300 shadow-lg hover:shadow-xl group";
-    const sizeClasses = isMobile ? "w-full p-4 text-lg" : "px-6 py-3 text-sm";
-    const colorClasses = "bg-accent hover:bg-accent/90";
-    return `${baseClasses} ${sizeClasses} ${colorClasses}`;
+    const baseClasses = "btn-accent relative overflow-hidden rounded-full font-bold text-accent-foreground transition-all duration-300 shadow-lg hover:shadow-xl group glow-effect";
+    const sizeClasses = isMobile ? "w-full px-6 py-4 text-base" : "px-6 py-3 text-sm";
+    return `${baseClasses} ${sizeClasses}`;
   }, [isMobile]);
 
-  if (isLoading) {
-    return (
-      <div className={`relative ${isMobile ? "w-full" : ""}`}>
-        <div className={buttonClasses}>
-          <div className="relative flex items-center justify-center gap-3 opacity-80">
-            <div className="w-5 h-5 border-2 border-accent-foreground border-t-transparent rounded-full animate-spin" />
-            <span className="tracking-wide">Cargando...</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Efecto shimmer dorado premium mejorado
+  const ShimmerEffect = (
+    <motion.div
+      className="absolute inset-0 opacity-30"
+      style={{
+        background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent)'
+      }}
+      initial={{ x: "-100%" }}
+      whileHover={{ x: "100%" }}
+      transition={{ duration: 0.6, ease: "easeInOut" }}
+    />
+  );
 
-  // 2. COMPONENTE DE BOTÓN UNIFICADO (usa motion.button siempre)
-  const MotionButton = (
+  // Efecto de partículas brillantes
+  const SparklesEffect = (
+    <motion.div
+      className="absolute inset-0 pointer-events-none overflow-hidden"
+      initial={{ opacity: 0 }}
+      whileHover={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+    >
+      {[...Array(6)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 bg-white rounded-full"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+          }}
+          animate={{
+            opacity: [0, 1, 0],
+            scale: [0, 1, 0],
+            y: [0, -10, -20],
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            delay: i * 0.2,
+            ease: "easeOut",
+          }}
+        />
+      ))}
+    </motion.div>
+  );
+
+  const ButtonContent = (
     <motion.button
       className={buttonClasses}
       onClick={handleButtonClick}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      aria-label="Publicar nuevo anuncio de vehículo"
+      whileHover={{ scale: 1.05, y: -2 }}
+      whileTap={{ scale: 0.95, y: 0 }}
+      transition={{ type: "spring", stiffness: 400 }}
     >
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-        initial={{ x: "-100%" }}
-        whileHover={{ x: "100%" }}
-        transition={{ duration: 0.6, ease: "easeInOut" }}
-      />
-      <div className="relative flex items-center justify-center gap-3">
-        <Plus className="w-5 h-5" />
-        <span className="tracking-wide">¡Publica tu Anuncio!</span>
+      {ShimmerEffect}
+      {SparklesEffect}
+      <div className="relative flex items-center gap-3">
+        <motion.span
+          animate={{ rotate: isLoading ? 360 : 0 }}
+          transition={{ duration: 1, repeat: isLoading ? Infinity : 0 }}
+        >
+          {isLoading ? (
+            <div className="w-5 h-5 border-2 border-accent-foreground border-t-transparent rounded-full" />
+          ) : (
+            <Plus className="w-5 h-5" />
+          )}
+        </motion.span>
+        <span className="tracking-wide font-semibold">
+          {isLoading ? "Cargando..." : "¡Publica tu Anuncio!"}
+        </span>
       </div>
     </motion.button>
   );
 
+  // Variante para mobile con animación de entrada
+  const MobileWrapper = ({ children }: { children: React.ReactNode }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1, type: "spring" }}
+    >
+      {children}
+    </motion.div>
+  );
+
+  const DesktopWrapper = ({ children }: { children: React.ReactNode }) => (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ type: "spring", stiffness: 300 }}
+    >
+      {children}
+    </motion.div>
+  );
+
+  const Wrapper = isMobile ? MobileWrapper : DesktopWrapper;
+
   return (
-    <div className={`relative ${isMobile ? "w-full" : ""}`}>
+    <Wrapper>
       {isAuthenticated ? (
-        // 3. ENVUELVE EL BOTÓN CON UN LINK PARA SEMÁNTICA Y SEO
-        <Link href={siteConfig.paths.publishAd} onClick={onClick} className={`block ${isMobile ? "w-full" : ""}`} passHref>
-          {MotionButton}
+        <Link href={siteConfig.paths.publishAd} onClick={onClick} className="block w-full" passHref>
+          {ButtonContent}
         </Link>
       ) : (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            {MotionButton}
+            {ButtonContent}
           </DialogTrigger>
-          <DialogContent className="bg-card text-card-foreground border-border max-w-md">
-            <DialogHeader>
-              <div className="flex justify-center mb-4">
-                <div className="p-3 rounded-full bg-primary text-primary-foreground">
-                  <User className="w-8 h-8" />
+          <DialogContent className="card-glass max-w-md p-0 overflow-hidden">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring" }}
+            >
+              <DialogHeader className="p-6 pb-4 border-b border-glass-border" style={{ background: 'var(--gradient-hero)' }}>
+                <div className="flex justify-center mb-4">
+                  <motion.div 
+                    className="p-3 rounded-full glow-effect"
+                    style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <User className="w-8 h-8" />
+                  </motion.div>
+                </div>
+                <DialogTitle className="text-xl font-heading font-bold text-center text-gradient">
+                  ¡Inicia Sesión para Continuar!
+                </DialogTitle>
+              </DialogHeader>
+              <div className="p-6 pt-4">
+                <DialogDescription className="text-center mb-6 leading-relaxed text-muted-foreground">
+                  Para publicar tu anuncio necesitas tener una cuenta.
+                  <br />
+                  <span className="font-semibold text-foreground">¡Es rápido y gratuito!</span>
+                </DialogDescription>
+                <div className="flex flex-col gap-3">
+                  <Button onClick={handleGoToLogin} className="btn-primary">
+                    <User className="w-4 h-4 mr-2" />
+                    Iniciar Sesión
+                  </Button>
+                  <Button variant="outline" onClick={() => setOpen(false)}>
+                    Cancelar
+                  </Button>
+                </div>
+                <div className="mt-4 text-center text-sm">
+                  <span className="text-muted-foreground">¿No tienes cuenta? </span>
+                  <button
+                    onClick={handleGoToLogin}
+                    className="font-semibold underline-offset-4 hover:underline cursor-pointer flex items-center gap-1 mx-auto"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    Regístrate aquí
+                  </button>
                 </div>
               </div>
-              <DialogTitle className="text-xl font-heading font-bold text-center mb-3">
-                ¡Inicia Sesión para Continuar!
-              </DialogTitle>
-            </DialogHeader>
-            <DialogDescription className="text-center mb-6 leading-relaxed text-muted-foreground">
-              Para publicar tu anuncio de vehículo necesitas tener una cuenta.
-              <br />
-              <span className="font-medium text-foreground">¡Es rápido y gratuito!</span>
-            </DialogDescription>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button onClick={handleGoToLogin} className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground">
-                <User className="w-4 h-4 mr-2" />
-                Iniciar Sesión
-              </Button>
-              <Button onClick={() => setOpen(false)} variant="outline" className="flex-1">
-                Cancelar
-              </Button>
-            </div>
-            <div className="mt-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                ¿No tienes cuenta?{" "}
-                {/* 4. USA UN COMPONENTE DE ESTILO EN LUGAR DE UN BOTÓN PARA ENLACES */}
-                <span
-                  onClick={handleGoToRegister}
-                  className="text-primary hover:text-primary/80 font-medium underline cursor-pointer"
-                >
-                  Regístrate aquí
-                </span>
-              </p>
-            </div>
+            </motion.div>
           </DialogContent>
         </Dialog>
       )}
-    </div>
+    </Wrapper>
   );
 };
 

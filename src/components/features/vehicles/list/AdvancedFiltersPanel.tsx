@@ -2,15 +2,14 @@
 "use client";
 
 import { useMemo, type FC, useState, useEffect } from "react";
-import { X, SlidersHorizontal } from "lucide-react"; // MEJORA: Iconos para el header
+import { motion, AnimatePresence } from "framer-motion";
+import { X, SlidersHorizontal, Sparkles, Filter } from "lucide-react";
 import type { AdvancedFilters, FilterOptions } from "@/types/types";
-import FilterGroup from "./filters/FilterGroup";
 import CheckboxFilter from "./filters/CheckboxFilter";
 import RangeSliderFilter from "./filters/RangeSliderFilter";
 import { MultiSelectFilter } from "./filters/MultiSelectFilter";
-// MEJORA: Importamos componentes de UI para consistencia
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface AdvancedFiltersPanelProps {
   filters: AdvancedFilters;
@@ -68,7 +67,6 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
   };
 
   const activeFiltersCount = useMemo(() => {
-    // ... (tu lógica de conteo se mantiene igual, es perfecta)
     let count = 0;
     if (filters.colors.length > 0) count++;
     if (filters.brands.length > 0) count++;
@@ -92,212 +90,428 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
   }
 
   return (
-    // MEJORA: Usamos el componente Card para unificar el diseño con el resto de la app
-    <Card className="shadow-xl border-border card-hover">
-      {/* MEJORA: Usamos CardHeader para un header estructurado y accesible */}
-      <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <SlidersHorizontal className="w-5 h-5 text-primary" />
-          Filtros Avanzados
-          {activeFiltersCount > 0 && (
-            <span className="text-sm font-normal text-muted-foreground">
-              ({activeFiltersCount} activos)
-            </span>
-          )}
-        </CardTitle>
-        <div className="flex items-center gap-2">
-          {activeFiltersCount > 0 && (
-            // MEJORA: Usamos el componente Button para consistencia y mejor feedback
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClearFilters}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20"
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className="w-full overflow-hidden"
+    >
+      <div className="card-glass rounded-xl shadow-hard border border-border/50 overflow-hidden">
+        {/* Efecto de brillo superior */}
+        <div
+          className="h-1 w-full"
+          style={{ background: "var(--gradient-accent)" }}
+        />
+        
+        {/* Header mejorado */}
+        <div className="flex items-center justify-between p-6 pb-4">
+          <div className="flex items-center gap-3">
+            <motion.div
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: "var(--primary-10)" }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Limpiar Todo
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggle}
-            aria-label="Cerrar filtros avanzados"
-          >
-            <X className="w-4 h-4" />
-          </Button>
+              <SlidersHorizontal className="w-5 h-5" style={{ color: "var(--primary)" }} />
+            </motion.div>
+            
+            <h3 className="text-lg font-semibold font-heading">Filtros Avanzados</h3>
+            
+            {/* Contador con efecto de brillo */}
+            {activeFiltersCount > 0 && (
+              <motion.div
+                className="relative"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Badge 
+                  className="text-xs font-bold px-2 py-1" 
+                  style={{ 
+                    background: "var(--gradient-accent)",
+                    color: "var(--accent-foreground)"
+                  }}
+                >
+                  {activeFiltersCount}
+                </Badge>
+                
+                {/* Efecto de pulso en el contador */}
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  style={{ backgroundColor: "var(--accent-20)" }}
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+              </motion.div>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {activeFiltersCount > 0 && (
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onClearFilters}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 gap-2"
+                >
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <X className="w-4 h-4" />
+                  </motion.div>
+                  <span className="hidden sm:inline">Limpiar</span>
+                </Button>
+              </motion.div>
+            )}
+            
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggle}
+                aria-label="Cerrar filtros avanzados"
+                className="rounded-full"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </motion.div>
+          </div>
         </div>
-      </CardHeader>
 
-      <CardContent className="pt-0">
-        {/* MEJORA: Grid más responsivo para evitar que los grupos sean demasiado anchos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {/* 
-            MEJORA: Sugerencia para el futuro.
-            Si tu componente FilterGroup no tiene un borde o fondo, 
-            considera añadirle una clase como "p-4 border border-border/50 rounded-lg" 
-            para que cada grupo esté visualmente separado.
-          */}
-          <FilterGroup
-            label={`Categoría (${
-              filters.category !== "all" ? "1 seleccionada" : "ninguna"
-            })`}
-          >
-            <MultiSelectFilter
-              options={[
-                {
-                  value: "all",
-                  label: "Todas las categorías",
-                  count: totalVehicles,
-                },
-                ...filterOptions.categories,
-              ]}
-              selected={filters.category === "all" ? [] : [filters.category]}
-              onChange={(newSelection) => {
-                if (newSelection.length === 0) {
-                  updateFilter("category", "all");
-                } else {
-                  const singleSelection = newSelection[newSelection.length - 1];
-                  updateFilter("category", singleSelection);
+        {/* Contenido de filtros */}
+        <div className="px-6 pb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {/* Categoría */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Categoría</h4>
+                {filters.category !== "all" && (
+                  <Badge 
+                    className="text-xs px-2 py-0.5" 
+                    style={{ 
+                      backgroundColor: "var(--accent)", 
+                      color: "#ffffff"
+                    }}
+                  >
+                    1 seleccionada
+                  </Badge>
+                )}
+              </div>
+              <MultiSelectFilter
+                options={[
+                  {
+                    value: "all",
+                    label: "Todas las categorías",
+                    count: totalVehicles,
+                  },
+                  ...filterOptions.categories,
+                ]}
+                selected={filters.category === "all" ? [] : [filters.category]}
+                onChange={(newSelection) => {
+                  if (newSelection.length === 0) {
+                    updateFilter("category", "all");
+                  } else {
+                    const singleSelection = newSelection[newSelection.length - 1];
+                    updateFilter("category", singleSelection);
+                  }
+                }}
+                placeholder="Seleccionar categoría..."
+                singleSelect={true}
+              />
+            </div>
+
+            {/* Precio */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Precio</h4>
+                {(filters.priceRange[0] > 0 || filters.priceRange[1] < 1000000) && (
+                  <Badge 
+                    className="text-xs px-2 py-0.5" 
+                    style={{ 
+                      backgroundColor: "var(--accent)", 
+                      color: "#ffffff"
+                    }}
+                  >
+                    Activo
+                  </Badge>
+                )}
+              </div>
+              <RangeSliderFilter
+                min={0}
+                max={1000000}
+                step={10000}
+                value={filters.priceRange}
+                onChange={(value) => updateFilter("priceRange", value)}
+                formatValue={(val) => `$${val.toLocaleString()}`}
+              />
+            </div>
+
+            {/* Año */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Año</h4>
+                {(filters.yearRange[0] > 2000 || filters.yearRange[1] < 2025) && (
+                  <Badge 
+                    className="text-xs px-2 py-0.5" 
+                    style={{ 
+                      backgroundColor: "var(--accent)", 
+                      color: "#ffffff"
+                    }}
+                  >
+                    Activo
+                  </Badge>
+                )}
+              </div>
+              <RangeSliderFilter
+                min={2000}
+                max={maxYear}
+                step={1}
+                value={filters.yearRange}
+                onChange={(value) =>
+                  updateFilter("yearRange", value as [number, number])
                 }
-              }}
-              placeholder="Seleccionar categoría..."
-              singleSelect={true}
-            />
-          </FilterGroup>
-          {/* // En AdvancedFiltersPanel.tsx */}
-          <FilterGroup
-            label={`Precio: $${filters.priceRange[0].toLocaleString()} - $${filters.priceRange[1].toLocaleString()}`}
-          >
-            <RangeSliderFilter
-              min={0}
-              max={1000000}
-              step={10000}
-              value={filters.priceRange}
-              onChange={(value) => updateFilter("priceRange", value)}
-              formatValue={(val) => `$${val.toLocaleString()}`} // Para el tooltip y el texto inferior
-            />
-          </FilterGroup>
-          <FilterGroup
-            label={`Año: ${filters.yearRange[0]} - ${filters.yearRange[1]}`}
-          >
-            <RangeSliderFilter
-              min={2000}
-              max={maxYear}
-              step={1}
-              value={filters.yearRange}
-              onChange={(value) =>
-                updateFilter("yearRange", value as [number, number])
-              }
-            />
-          </FilterGroup>
-          <FilterGroup
-            label={`Kilometraje: ${filters.mileageRange[0].toLocaleString()} - ${filters.mileageRange[1].toLocaleString()} km`}
-          >
-            <RangeSliderFilter
-              min={0}
-              max={500000}
-              step={5000}
-              value={filters.mileageRange}
-              onChange={(value) =>
-                updateFilter("mileageRange", value as [number, number])
-              }
-            />
-          </FilterGroup>
-          <FilterGroup
-            label={`Marcas (${filters.brands.length} seleccionadas)`}
-          >
-            <MultiSelectFilter
-              options={filterOptions.brands}
-              selected={filters.brands}
-              onChange={(newSelection) => updateFilter("brands", newSelection)}
-              placeholder="Seleccionar marcas..."
-              showPublishedToggle={true}
-              isPublishedOnly={showOnlyPublishedBrands}
-              onPublishedOnlyChange={setShowOnlyPublishedBrands}
-              publishedOnlyLabel="Mostrar solo marcas con vehículos publicados"
-            />
-          </FilterGroup>
-          <FilterGroup label={`Color (${filters.colors.length} seleccionados)`}>
-            <MultiSelectFilter
-              options={filterOptions.colors}
-              selected={filters.colors}
-              onChange={(newSelection) => updateFilter("colors", newSelection)}
-              placeholder="Seleccionar colores..."
-              showPublishedToggle={true}
-              isPublishedOnly={showOnlyPublishedColors}
-              onPublishedOnlyChange={setShowOnlyPublishedColors}
-              publishedOnlyLabel="Mostrar solo colores con vehículos publicados"
-            />
-          </FilterGroup>
-          <FilterGroup
-            label={`Condición (${filters.condition.length} seleccionadas)`}
-          >
-            <CheckboxFilter
-              options={filterOptions.conditions}
-              selected={filters.condition}
-              onChange={(condition) =>
-                toggleArrayFilter("condition", condition, filters.condition)
-              }
-              maxHeight="max-h-full"
-            />
-          </FilterGroup>
-          <FilterGroup
-            label={`Combustible (${filters.fuelType.length} seleccionadas)`}
-          >
-            <CheckboxFilter
-              options={filterOptions.fuelTypes}
-              selected={filters.fuelType}
-              onChange={(fuel) =>
-                toggleArrayFilter("fuelType", fuel, filters.fuelType)
-              }
-              maxHeight="max-h-full"
-            />
-          </FilterGroup>
-          <FilterGroup
-            label={`Transmisión (${filters.transmission.length} seleccionadas)`}
-          >
-            <CheckboxFilter
-              options={filterOptions.transmissions}
-              selected={filters.transmission}
-              onChange={(transmission) =>
-                toggleArrayFilter(
-                  "transmission",
-                  transmission,
-                  filters.transmission
-                )
-              }
-              maxHeight="max-h-full"
-            />
-          </FilterGroup>
-          <FilterGroup
-            label={`Ubicación (${filters.location.length} seleccionadas)`}
-          >
-            <MultiSelectFilter
-              options={filterOptions.locations}
-              selected={filters.location}
-              onChange={(newSelection) =>
-                updateFilter("location", newSelection)
-              }
-              placeholder="Seleccionar ubicaciones..."
-              showPublishedToggle={true}
-              isPublishedOnly={showOnlyPublishedLocations}
-              onPublishedOnlyChange={setShowOnlyPublishedLocations}
-              publishedOnlyLabel="Mostrar solo ubicaciones con vehículos publicados"
-            />
-          </FilterGroup>
-          <FilterGroup label="Tipo de Tracción">
-            <CheckboxFilter
-              options={filterOptions.driveTypes}
-              selected={filters.driveType}
-              onChange={(driveType) =>
-                toggleArrayFilter("driveType", driveType, filters.driveType)
-              }
-              maxHeight="max-h-full"
-            />
-          </FilterGroup>
+              />
+            </div>
+
+            {/* Kilometraje */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Kilometraje</h4>
+                {(filters.mileageRange[0] > 0 || filters.mileageRange[1] < 500000) && (
+                  <Badge 
+                    className="text-xs px-2 py-0.5" 
+                    style={{ 
+                      backgroundColor: "var(--accent)", 
+                      color: "#ffffff"
+                    }}
+                  >
+                    Activo
+                  </Badge>
+                )}
+              </div>
+              <RangeSliderFilter
+                min={0}
+                max={500000}
+                step={5000}
+                value={filters.mileageRange}
+                onChange={(value) =>
+                  updateFilter("mileageRange", value as [number, number])
+                }
+              />
+            </div>
+
+            {/* Marcas */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Marcas</h4>
+                {filters.brands.length > 0 && (
+                  <Badge 
+                    className="text-xs px-2 py-0.5" 
+                    style={{ 
+                      backgroundColor: "var(--accent)", 
+                      color: "#ffffff"
+                    }}
+                  >
+                    {filters.brands.length} seleccionadas
+                  </Badge>
+                )}
+              </div>
+              <MultiSelectFilter
+                options={filterOptions.brands}
+                selected={filters.brands}
+                onChange={(newSelection) => updateFilter("brands", newSelection)}
+                placeholder="Seleccionar marcas..."
+                showPublishedToggle={true}
+                isPublishedOnly={showOnlyPublishedBrands}
+                onPublishedOnlyChange={setShowOnlyPublishedBrands}
+                publishedOnlyLabel="Mostrar solo marcas con vehículos publicados"
+              />
+            </div>
+
+            {/* Colores */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Color</h4>
+                {filters.colors.length > 0 && (
+                  <Badge 
+                    className="text-xs px-2 py-0.5" 
+                    style={{ 
+                      backgroundColor: "var(--accent)", 
+                      color: "#ffffff"
+                    }}
+                  >
+                    {filters.colors.length} seleccionados
+                  </Badge>
+                )}
+              </div>
+              <MultiSelectFilter
+                options={filterOptions.colors}
+                selected={filters.colors}
+                onChange={(newSelection) => updateFilter("colors", newSelection)}
+                placeholder="Seleccionar colores..."
+                showPublishedToggle={true}
+                isPublishedOnly={showOnlyPublishedColors}
+                onPublishedOnlyChange={setShowOnlyPublishedColors}
+                publishedOnlyLabel="Mostrar solo colores con vehículos publicados"
+              />
+            </div>
+
+            {/* Condición */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Condición</h4>
+                {filters.condition.length > 0 && (
+                  <Badge 
+                    className="text-xs px-2 py-0.5" 
+                    style={{ 
+                      backgroundColor: "var(--accent)", 
+                      color: "#ffffff"
+                    }}
+                  >
+                    {filters.condition.length} seleccionadas
+                  </Badge>
+                )}
+              </div>
+              <CheckboxFilter
+                options={filterOptions.conditions}
+                selected={filters.condition}
+                onChange={(condition) =>
+                  toggleArrayFilter("condition", condition, filters.condition)
+                }
+                maxHeight="max-h-full"
+              />
+            </div>
+
+            {/* Combustible */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Combustible</h4>
+                {filters.fuelType.length > 0 && (
+                  <Badge 
+                    className="text-xs px-2 py-0.5" 
+                    style={{ 
+                      backgroundColor: "var(--accent)", 
+                      color: "#ffffff"
+                    }}
+                  >
+                    {filters.fuelType.length} seleccionadas
+                  </Badge>
+                )}
+              </div>
+              <CheckboxFilter
+                options={filterOptions.fuelTypes}
+                selected={filters.fuelType}
+                onChange={(fuel) =>
+                  toggleArrayFilter("fuelType", fuel, filters.fuelType)
+                }
+                maxHeight="max-h-full"
+              />
+            </div>
+
+            {/* Transmisión */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Transmisión</h4>
+                {filters.transmission.length > 0 && (
+                  <Badge 
+                    className="text-xs px-2 py-0.5" 
+                    style={{ 
+                      backgroundColor: "var(--accent)", 
+                      color: "#ffffff"
+                    }}
+                  >
+                    {filters.transmission.length} seleccionadas
+                  </Badge>
+                )}
+              </div>
+              <CheckboxFilter
+                options={filterOptions.transmissions}
+                selected={filters.transmission}
+                onChange={(transmission) =>
+                  toggleArrayFilter(
+                    "transmission",
+                    transmission,
+                    filters.transmission
+                  )
+                }
+                maxHeight="max-h-full"
+              />
+            </div>
+
+            {/* Ubicación */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Ubicación</h4>
+                {filters.location.length > 0 && (
+                  <Badge 
+                    className="text-xs px-2 py-0.5" 
+                    style={{ 
+                      backgroundColor: "var(--accent)", 
+                      color: "#ffffff"
+                    }}
+                  >
+                    {filters.location.length} seleccionadas
+                  </Badge>
+                )}
+              </div>
+              <MultiSelectFilter
+                options={filterOptions.locations}
+                selected={filters.location}
+                onChange={(newSelection) =>
+                  updateFilter("location", newSelection)
+                }
+                placeholder="Seleccionar ubicaciones..."
+                showPublishedToggle={true}
+                isPublishedOnly={showOnlyPublishedLocations}
+                onPublishedOnlyChange={setShowOnlyPublishedLocations}
+                publishedOnlyLabel="Mostrar solo ubicaciones con vehículos publicados"
+              />
+            </div>
+
+            {/* Tipo de Tracción */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Tipo de Tracción</h4>
+                {filters.driveType.length > 0 && (
+                  <Badge 
+                    className="text-xs px-2 py-0.5" 
+                    style={{ 
+                      backgroundColor: "var(--accent)", 
+                      color: "#ffffff"
+                    }}
+                  >
+                    {filters.driveType.length} seleccionadas
+                  </Badge>
+                )}
+              </div>
+              <CheckboxFilter
+                options={filterOptions.driveTypes}
+                selected={filters.driveType}
+                onChange={(driveType) =>
+                  toggleArrayFilter("driveType", driveType, filters.driveType)
+                }
+                maxHeight="max-h-full"
+              />
+            </div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+        
+        {/* Footer con indicador de mejora */}
+        <div className="px-6 pb-4">
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <motion.div
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Sparkles className="w-3 h-3" style={{ color: "var(--accent)" }} />
+            </motion.div>
+            <span>Los filtros se aplican automáticamente</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 

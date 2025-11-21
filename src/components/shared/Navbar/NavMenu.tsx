@@ -1,7 +1,7 @@
-//src/components/shared/Navbar/NavMenu.tsx
+// src/components/shared/Navbar/NavMenu.tsx (versión mejorada)
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { memo, useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,6 +14,7 @@ import {
   Shield,
   Heart,
   List,
+  Plus,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -34,53 +35,81 @@ import {
 import { useSession, signOut } from "next-auth/react";
 import { useLanguage } from "@/context/LanguajeContext";
 import AnimatedPostButton from "./AnimatedPostButton";
-
 import UserInfo from "./UserInfo";
 import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
 
-// Tipos e Interfaces
-interface NavItem {
-  label: string;
-  href?: string;
-  icon?: React.ReactNode;
-  requiresAdmin?: boolean;
-}
+// Componente NavItem estandarizado (mejorado)
+const NavItem = memo(
+  ({
+    item,
+    onClick,
+    isMobile = false,
+  }: {
+    item: any;
+    onClick?: () => void;
+    isMobile?: boolean;
+  }) => {
+    return (
+      <motion.li whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        <Link
+          href={item.href || "#"}
+          className={cn(
+            "relative overflow-hidden group",
+            buttonVariants({ variant: "ghost" }),
+            isMobile ? "w-full justify-start gap-3 text-lg py-6" : "gap-2",
+            item.requiresAdmin &&
+              "hover:bg-destructive/10 hover:text-destructive"
+          )}
+          onClick={onClick}
+          style={{
+            color: item.requiresAdmin ? "var(--destructive)" : "inherit",
+          }}
+        >
+          {/* Efecto de subrayado animado para escritorio */}
+          {!isMobile && (
+            <motion.span
+              className="absolute bottom-0 left-0 h-0.5 w-full origin-left"
+              style={{ backgroundColor: "var(--accent)" }}
+              initial={{ scaleX: 0 }}
+              whileHover={{ scaleX: 1 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            />
+          )}
+          
+          <motion.span
+            style={{ color: "var(--accent)" }}
+            whileHover={{ rotate: [0, -10, 10, 0] }}
+            transition={{ duration: 0.3 }}
+          >
+            {item.icon}
+          </motion.span>
+          <span>{item.label}</span>
+        </Link>
+      </motion.li>
+    );
+  }
+);
 
-interface UserInfo {
-  name?: string | null;
-  email?: string | null;
-  role?: string;
-  image?: string | null;
-}
-
-interface SessionUser {
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-  role?: string;
-}
+NavItem.displayName = "NavItem";
 
 const NavMenu = () => {
   const { translations } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session, status } = useSession();
 
-  const userInfo = useMemo((): UserInfo | null => {
+  const userInfo = useMemo(() => {
     if (!session?.user) return null;
-    const sessionUser = session.user as SessionUser;
     return {
-      name: sessionUser.name,
-      email: sessionUser.email,
-      role: sessionUser.role,
-      image: sessionUser.image,
+      name: session.user.name,
+      email: session.user.email,
+      role: session.user.role,
+      image: session.user.image,
     };
   }, [session]);
 
-  const isAdmin = useMemo(() => {
-    return status === "authenticated" && userInfo?.role === "admin";
-  }, [status, userInfo]);
+  const isAdmin = status === "authenticated" && userInfo?.role === "admin";
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -90,7 +119,7 @@ const NavMenu = () => {
     }
   }, []);
 
-  const navItems: NavItem[] = useMemo(
+  const navItems = useMemo(
     () => [
       {
         label: translations.contact,
@@ -111,25 +140,17 @@ const NavMenu = () => {
     [translations.contact, isAdmin]
   );
 
-  const handleToggleMenu = useCallback(() => {
-    setIsMenuOpen((prev) => !prev);
-  }, []);
-
-  const handleCloseMenu = useCallback(() => {
-    setIsMenuOpen(false);
-  }, []);
-
   return (
     <>
-      {/* --- Menú Móvil (Sheet) --- */}
+      {/* Menú Móvil (Sheet) - con glassmorphism mejorado */}
       <div className="sm:hidden">
         <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <SheetTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              onClick={handleToggleMenu}
               aria-label="Abrir menú de navegación"
+              className="card-glass hover:bg-accent/10"
             >
               <AnimatePresence mode="wait">
                 <motion.div
@@ -137,130 +158,156 @@ const NavMenu = () => {
                   initial={{ rotate: -90, opacity: 0 }}
                   animate={{ rotate: 0, opacity: 1 }}
                   exit={{ rotate: 90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.2, type: "spring" }}
                 >
-                  {isMenuOpen ? <X /> : <Menu />}
+                  {isMenuOpen ? (
+                    <X className="w-6 h-6" />
+                  ) : (
+                    <Menu className="w-6 h-6" />
+                  )}
                 </motion.div>
               </AnimatePresence>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] p-6 flex flex-col">
+          <SheetContent side="left" className="w-[300px] p-0 card-glass">
             <SheetTitle className="sr-only">Menú de Navegación</SheetTitle>
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-foreground">Menú</h2>
-              <p
-                id="menu-description"
-                className="text-sm mt-2 text-muted-foreground"
-              >
-                Navega y publica tus anuncios fácilmente.
-              </p>
-            </div>
-            <div className="mb-6">
-              <AnimatedPostButton isMobile={true} onClick={handleCloseMenu} />
-            </div>
-            <nav
-              className="flex-1"
-              role="navigation"
-              aria-label="Navegación móvil"
+
+            {/* Header del menú mobile con gradient mejorado */}
+            <div
+              className="p-6 border-b border-glass-border relative overflow-hidden"
+              style={{
+                background: "var(--gradient-hero)",
+              }}
             >
-              <ul className="space-y-2">
-                {navItems.map((item, index) => (
-                  <motion.li
-                    key={`${item.label}-${index}`}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Link
-                      href={item.href || "#"}
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "w-full justify-start gap-3 text-lg",
-                        item.requiresAdmin &&
-                          "text-destructive hover:text-destructive-foreground focus:text-destructive-foreground"
-                      )}
-                      onClick={handleCloseMenu}
+              {/* Efecto de brillo sutil en el header */}
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
+              </div>
+              
+              <div className="relative z-10">
+                <h2 className="text-2xl font-heading font-bold text-gradient">
+                  Menú
+                </h2>
+                <p className="text-sm mt-1 text-muted-foreground">
+                  Navega y publica tus anuncios fácilmente.
+                </p>
+              </div>
+            </div>
+
+            {/* Botón Publicar en mobile */}
+            <div className="p-4 border-b border-glass-border">
+              <AnimatedPostButton
+                isMobile={true}
+                onClick={() => setIsMenuOpen(false)}
+              />
+            </div>
+
+            {/* Items de navegación */}
+            <nav className="flex-1 overflow-y-auto py-2" role="navigation">
+              <ul className="space-y-1">
+                <AnimatePresence>
+                  {navItems.map((item, index) => (
+                    <motion.div
+                      key={item.label}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ delay: index * 0.05, type: "spring" }}
                     >
-                      {item.icon}
-                      {item.label}
-                    </Link>
-                  </motion.li>
-                ))}
+                      <NavItem
+                        item={item}
+                        onClick={() => setIsMenuOpen(false)}
+                        isMobile={true}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </ul>
             </nav>
-            <div className="mt-auto space-y-4 pt-6 border-t">
+
+            {/* Sección de usuario */}
+            <div className="mt-auto p-4 border-t border-glass-border space-y-3">
               {status === "authenticated" && userInfo ? (
-                <div className="flex flex-col space-y-2">
-                  <UserInfo user={userInfo} isMobile={true} />
-                  <DropdownMenuSeparator />
-                  <Link
-                    href={siteConfig.paths.profile}
-                    onClick={handleCloseMenu}
-                    className={cn(
-                      buttonVariants({ variant: "ghost" }),
-                      "justify-start gap-2"
-                    )}
+                <div className="space-y-2">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring" }}
                   >
-                    <User className="w-4 h-4" /> Perfil
-                  </Link>
-                  <Link
-                    href={siteConfig.paths.myFavorites}
-                    onClick={handleCloseMenu}
-                    className={cn(
-                      buttonVariants({ variant: "ghost" }),
-                      "justify-start gap-2"
-                    )}
-                  >
-                    <Heart className="w-4 h-4" /> Mis Favoritos
-                  </Link>
-                  <Link
-                    href={siteConfig.paths.vehicleList}
-                    onClick={handleCloseMenu}
-                    className={cn(
-                      buttonVariants({ variant: "ghost" }),
-                      "justify-start gap-2"
-                    )}
-                  >
-                    <List className="w-4 h-4" /> Ver Publicaciones
-                  </Link>
+                    <UserInfo user={userInfo} isMobile={true} />
+                  </motion.div>
+                  <DropdownMenuSeparator className="bg-glass-border" />
+                  <NavItem
+                    item={{
+                      label: "Perfil",
+                      href: siteConfig.paths.profile,
+                      icon: <User className="w-5 h-5" />,
+                    }}
+                    onClick={() => setIsMenuOpen(false)}
+                    isMobile={true}
+                  />
+                  <NavItem
+                    item={{
+                      label: "Mis Favoritos",
+                      href: siteConfig.paths.myFavorites,
+                      icon: <Heart className="w-5 h-5" />,
+                    }}
+                    onClick={() => setIsMenuOpen(false)}
+                    isMobile={true}
+                  />
+                  <NavItem
+                    item={{
+                      label: "Ver Publicaciones",
+                      href: siteConfig.paths.vehicleList,
+                      icon: <List className="w-5 h-5" />,
+                    }}
+                    onClick={() => setIsMenuOpen(false)}
+                    isMobile={true}
+                  />
                   {isAdmin && (
-                    <Link
-                      href={siteConfig.paths.adminPanel}
-                      onClick={handleCloseMenu}
-                      className={cn(
-                        buttonVariants({ variant: "ghost" }),
-                        "justify-start gap-2 text-destructive"
-                      )}
-                    >
-                      <Shield className="w-4 h-4" /> AdminPanel
-                    </Link>
+                    <NavItem
+                      item={{
+                        label: "AdminPanel",
+                        href: siteConfig.paths.adminPanel,
+                        icon: <Shield className="w-5 h-5" />,
+                        requiresAdmin: true,
+                      }}
+                      onClick={() => setIsMenuOpen(false)}
+                      isMobile={true}
+                    />
                   )}
-                  <DropdownMenuSeparator />
                   <Button
                     variant="outline"
-                    className="w-full justify-start gap-2"
+                    className="w-full justify-start gap-3 hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => {
                       handleSignOut();
-                      handleCloseMenu();
+                      setIsMenuOpen(false);
                     }}
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-5 h-5" />
                     Cerrar Sesión
                   </Button>
                 </div>
               ) : (
-                <Button variant="default" className="w-full" asChild>
-                  <Link
-                    href={siteConfig.paths.login}
-                    onClick={handleCloseMenu}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <User className="w-4 h-4" />
-                    {translations.signIn}
-                  </Link>
-                </Button>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: "spring" }}
+                >
+                  <Button className="btn-primary w-full" asChild>
+                    <Link
+                      href={siteConfig.paths.login}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Iniciar Sesión
+                    </Link>
+                  </Button>
+                </motion.div>
               )}
-              <div className="flex justify-center">
+
+              {/* Theme toggle centrado */}
+              <div className="flex justify-center pt-2">
                 <ThemeToggle />
               </div>
             </div>
@@ -268,112 +315,108 @@ const NavMenu = () => {
         </Sheet>
       </div>
 
-      {/* --- Menú de Escritorio --- */}
-      <nav
-        className="hidden sm:flex items-center"
-        role="navigation"
-        aria-label="Navegación principal"
-      >
-        <ul className="flex space-x-2 items-center">
+      {/* Menú de Escritorio - con animaciones premium */}
+      <nav className="hidden sm:flex items-center" role="navigation">
+        <motion.ul
+          className="flex space-x-2 items-center"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2, type: "spring" }}
+        >
           <li>
             <AnimatedPostButton />
           </li>
+
           {navItems.map((item, index) => (
-            <motion.li
-              key={`${item.label}-${index}`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link
-                href={item.href || "#"}
-                className={cn(
-                  buttonVariants({ variant: "ghost" }),
-                  item.requiresAdmin &&
-                    "text-destructive hover:text-destructive-foreground focus:text-destructive-foreground"
-                )}
-              >
-                {item.icon}
-                <span className="ml-2">{item.label}</span>
-              </Link>
-            </motion.li>
+            <NavItem key={item.label} item={item} />
           ))}
+
           {status === "authenticated" && userInfo ? (
-            <li className="relative">
+            <li>
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="rounded-full h-auto p-2 flex items-center"
-                    aria-label="Abrir menú de mi cuenta"
-                    aria-expanded="false" // shadcn/ui maneja este atributo, pero es bueno saberlo
+                    className="rounded-full h-auto p-2 hover:bg-accent/10"
                   >
                     <UserInfo user={userInfo} />
                     <ChevronDown className="w-4 h-4 ml-2 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="w-56"
+                  className="w-56 card-glass"
                   align="end"
                   sideOffset={8}
                 >
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: -10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 0.15 }}
+                    transition={{ duration: 0.2, type: "spring" }}
                   >
-                    <DropdownMenuLabel className="font-semibold">
+                    <DropdownMenuLabel className="font-heading font-bold text-gradient">
                       Mi Cuenta
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-glass-border" />
                     <DropdownMenuGroup>
                       <DropdownMenuItem asChild>
                         <Link
                           href={siteConfig.paths.profile}
-                          className="flex items-center w-full cursor-pointer"
+                          className="flex items-center gap-3 cursor-pointer hover:bg-accent/10"
                         >
-                          <User className="w-4 h-4 mr-2" />
+                          <User
+                            className="w-4 h-4"
+                            style={{ color: "var(--accent)" }}
+                          />
                           Perfil
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link
                           href={siteConfig.paths.myFavorites}
-                          className="flex items-center w-full cursor-pointer"
+                          className="flex items-center gap-3 cursor-pointer hover:bg-accent/10"
                         >
-                          <Heart className="w-4 h-4 mr-2" />
+                          <Heart
+                            className="w-4 h-4"
+                            style={{ color: "var(--accent)" }}
+                          />
                           Mis Favoritos
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link
                           href={siteConfig.paths.vehicleList}
-                          className="flex items-center w-full cursor-pointer"
+                          className="flex items-center gap-3 cursor-pointer hover:bg-accent/10"
                         >
-                          <List className="w-4 h-4 mr-2" />
+                          <List
+                            className="w-4 h-4"
+                            style={{ color: "var(--accent)" }}
+                          />
                           Ver Publicaciones
                         </Link>
                       </DropdownMenuItem>
                       {isAdmin && (
                         <>
-                          <DropdownMenuSeparator />
+                          <DropdownMenuSeparator className="bg-glass-border" />
                           <DropdownMenuItem asChild>
                             <Link
                               href={siteConfig.paths.adminPanel}
-                              className="flex items-center w-full text-destructive cursor-pointer"
+                              className="flex items-center gap-3 cursor-pointer hover:bg-destructive/10"
+                              style={{ color: "var(--destructive)" }}
                             >
-                              <Shield className="w-4 h-4 mr-2" />
+                              <Shield className="w-4 h-4" />
                               AdminPanel
                             </Link>
                           </DropdownMenuItem>
                         </>
                       )}
                     </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-glass-border" />
                     <DropdownMenuItem
                       onClick={handleSignOut}
-                      className="text-destructive focus:bg-destructive focus:text-destructive-foreground cursor-pointer"
+                      className="flex items-center gap-3 cursor-pointer hover:bg-destructive/10"
+                      style={{ color: "var(--destructive)" }}
                     >
-                      <LogOut className="w-4 h-4 mr-2" />
+                      <LogOut className="w-4 h-4" />
                       Cerrar Sesión
                     </DropdownMenuItem>
                   </motion.div>
@@ -381,18 +424,24 @@ const NavMenu = () => {
               </DropdownMenu>
             </li>
           ) : (
-            <li>
-              <Button variant="ghost" size="icon" asChild>
+            <motion.li whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="hover:bg-accent/10"
+              >
                 <Link href={siteConfig.paths.login} aria-label="Iniciar sesión">
-                  <User />
+                  <User className="w-5 h-5" />
                 </Link>
               </Button>
-            </li>
+            </motion.li>
           )}
+
           <li>
             <ThemeToggle />
           </li>
-        </ul>
+        </motion.ul>
       </nav>
     </>
   );

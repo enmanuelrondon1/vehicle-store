@@ -251,7 +251,7 @@ export const AdminFilters = ({
               { value: "all", label: "Todos" },
               { value: "pending", label: "Pendientes" },
               { value: "approved", label: "Aprobados" },
-              { value: "rejected", label: "Rechazados" },
+              { value: "rejected", label: "Archivados" },
             ].map((status) => (
               <Button
                 key={status.value}

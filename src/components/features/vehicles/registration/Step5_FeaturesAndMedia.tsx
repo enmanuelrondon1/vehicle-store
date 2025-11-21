@@ -1,6 +1,5 @@
 // src/components/features/vehicles/registration/Step5_FeaturesAndMedia.tsx
-// VERSIÓN CON DISEÑO UNIFICADO
-
+// VERSIÓN CON DISEÑO UNIFICADO Y PREMIUM
 "use client";
 import React, { useMemo, useState, useEffect } from "react";
 import {
@@ -20,18 +19,15 @@ import {
   CheckCircle2,
   Eye,
   Info,
+  Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import { getAvailableFeatures } from "@/constants/form-constants";
 import { ImageUploader } from "@/components/shared/forms/ImageUploader";
 import { SelectableChip } from "@/components/shared/forms/SelectableChip";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Accordion,
   AccordionContent,
@@ -43,26 +39,16 @@ import { Label } from "@/components/ui/label";
 import { Documentation, VehicleCategory, VehicleDataBackend } from "@/types/types";
 import { InputField } from "@/components/shared/forms/InputField";
 import { useFieldValidation } from "@/hooks/useFieldValidation";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-// ... (iconMap y getDynamicIcon sin cambios)
-const iconMap = {
-  Car,
-  Shield,
-  Users,
-  Package,
-  Zap,
-  Navigation,
-  Wrench,
-  Truck,
-} as const;
-
-const getDynamicIcon = (iconName: keyof typeof iconMap = "Car") => {
-  const IconComponent = iconMap[iconName] || iconMap.Car;
-  return <IconComponent className="w-4 h-4" />;
-};
-
-// ... (interfaces y constantes sin cambios)
+// ============================================
+// TIPOS Y CONSTANTES
+// ============================================
 interface FormErrors {
   [key: string]: string | undefined;
 }
@@ -85,210 +71,98 @@ const DOCUMENTATION_OPTIONS = [
   { label: "Placas Bolivarianas", value: Documentation.BOLIVARIAN_PLATES },
 ];
 
-// Componente principal corregido
-const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
-  formData,
-  errors,
-  handleInputChange,
-  handleSwitchChange,
-  handleFeatureToggle,
-  handleDocumentationToggle,
-  isDocumentationSelected,
-  handleImagesChange,
-}) => {
-  // ========== Clase Mejorada de Inputs ==========
-  const inputClass =
-    "w-full px-4 py-3.5 rounded-xl border-2 border-border bg-background text-foreground " +
-    "placeholder:text-muted-foreground/60 " +
-    "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 " +
-    "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/30 " +
-    "transition-all duration-200 ease-out hover:border-border/80";
-
-  // ========== Hooks de Validación ==========
-  const descriptionValidation = useFieldValidation(formData.description, errors.description);
-  const featuresValidation = useFieldValidation(formData.features, errors.features);
-  const documentationValidation = useFieldValidation(formData.documentation, errors.documentation);
-  const imagesValidation = useFieldValidation(formData.images, errors.images);
-
-  // ========== Cálculo de Progreso ==========
-  const { progressPercentage, isComplete } = useMemo(() => {
-    const fields = [
-      (formData.description?.length || 0) > 50,
-      (formData.images?.length || 0) > 0,
-    ];
-
-    if (formData.category) {
-      const categoryFeatures = getAvailableFeatures(formData.category);
-      const categoryHasFeatures = Object.keys(categoryFeatures).length > 0;
-      if (categoryHasFeatures) {
-        fields.push((formData.features?.length || 0) > 0);
-      }
-    }
-
-    const completedCount = fields.filter(Boolean).length;
-    const totalFields = fields.length;
-    const progress = totalFields > 0 ? (completedCount / totalFields) * 100 : 0;
-
-    return { progressPercentage: progress, isComplete: progress === 100 };
-  }, [
-    formData.description,
-    formData.images,
-    formData.category,
-    formData.features,
-  ]);
-
-  const availableFeatures = useMemo(() => {
-    if (!formData.category) {
-      return {};
-    }
-    return getAvailableFeatures(formData.category);
-  }, [formData.category]);
-
-  const hasFeatures = Object.keys(availableFeatures).length > 0;
-
-  if (!formData.category) {
-    return (
-      <div className="max-w-2xl mx-auto">
-        <div className="p-8 rounded-xl border-2 border-dashed border-border bg-card text-center">
-          <div className="p-3 rounded-full bg-muted/50 w-fit mx-auto mb-4">
-            <AlertCircle className="w-8 h-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">
-            Categoría no seleccionada
-          </h3>
-          <p className="text-muted-foreground">
-            Por favor, regresa al paso 1 y selecciona una categoría para continuar.
+// ============================================
+// SUB-COMPONENTE: Encabezado y Progreso
+// ============================================
+const FormHeader: React.FC<{ progress: number }> = React.memo(({ progress }) => (
+  <div className="text-center space-y-6">
+    <div className="relative">
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-3xl blur-xl"></div>
+      <div className="relative flex items-center justify-center gap-4 p-6 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 border border-border/50 shadow-glass">
+        <div className="p-4 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10">
+          <FileBadge className="w-8 h-8 text-primary-foreground" />
+        </div>
+        <div className="text-left">
+          <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">
+            Características y Multimedia
+          </h2>
+          <p className="text-base text-muted-foreground mt-1">
+            Completa los detalles que enamorarán a los compradores
           </p>
         </div>
       </div>
-    );
-  }
+    </div>
+    
+    <div className="w-full max-w-md mx-auto pt-2">
+      <div className="flex justify-between items-center mb-2.5">
+        <span className="text-sm font-medium text-muted-foreground">Progreso</span>
+        <span className="text-sm font-bold text-foreground tabular-nums">
+          {Math.round(progress)}%
+        </span>
+      </div>
+      <Progress value={progress} variant="glow" className="h-3 bg-muted" />
+      <div className="flex justify-between mt-1">
+        <span className="text-xs text-muted-foreground">Completando información</span>
+        <span className="text-xs text-muted-foreground">Paso 5 de 5</span>
+      </div>
+    </div>
+  </div>
+));
+FormHeader.displayName = "FormHeader";
+
+// ============================================
+// SUB-COMPONENTE: Resumen de Completitud
+// ============================================
+const CompletionSummary: React.FC<{ progress: number }> = React.memo(({ progress }) => {
+  const isComplete = progress >= 100;
+  const borderColor = isComplete ? "border-success/40" : "border-amber-500/40";
+  const bgColor = isComplete ? "bg-success/5 dark:bg-success/5" : "bg-amber-500/5 dark:bg-amber-950/20";
+  const iconBgColor = isComplete ? "bg-success/20" : "bg-amber-500/20";
+  const textColor = isComplete ? "text-success" : "text-amber-600 dark:text-amber-400";
 
   return (
-    // ========== ESTRUCTURA PRINCIPAL CONSISTENTE ==========
-    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in-0 duration-500">
-      {/* ========== ENCABEZADO MEJORADO ========== */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-3">
-          <div className="p-3.5 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10">
-            <FileBadge className="w-7 h-7 text-primary-foreground" />
+    <div className={`p-5 rounded-xl border-2 shadow-sm transition-all duration-300 ${borderColor} ${bgColor} card-hover`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${iconBgColor}`}>
+            {isComplete ? (
+              <CheckCircle2 className={`w-5 h-5 ${textColor}`} />
+            ) : (
+              <AlertCircle className={`w-5 h-5 ${textColor}`} />
+            )}
           </div>
-          <div className="text-left">
-            <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">
-              Características y Multimedia
-            </h2>
-            <p className="text-base text-muted-foreground mt-0.5">
-              Completa los detalles que enamorarán a los compradores
+          <div>
+            <p className="font-semibold text-foreground text-base">
+              {isComplete ? "¡Información multimedia completa!" : "Faltan algunos campos"}
+            </p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {isComplete ? "Puedes continuar al siguiente paso" : `${Math.round(progress)}% completado`}
             </p>
           </div>
         </div>
-
-        {/* ========== BARRA DE PROGRESO MEJORADA ========== */}
-        <div className="w-full max-w-md mx-auto pt-2">
-          <div className="flex justify-between items-center mb-2.5">
-            <span className="text-sm font-medium text-muted-foreground">Progreso</span>
-            <span className="text-sm font-bold text-foreground tabular-nums">
-              {Math.round(progressPercentage)}%
-            </span>
-          </div>
-          <Progress value={progressPercentage} className="h-2.5 bg-muted" />
-        </div>
+        <Badge variant={isComplete ? "default" : "secondary"} className="text-sm font-bold px-3 py-1">
+          {Math.round(progress)}%
+        </Badge>
       </div>
-
-      {/* ========== FORMULARIO ========== */}
-      <div className="space-y-7">
-        {hasFeatures && (
-          <FeaturesSection
-            category={formData.category}
-            availableFeatures={availableFeatures}
-            selectedFeatures={formData.features || []}
-            onFeatureToggle={handleFeatureToggle}
-            error={errors.features}
-            validation={featuresValidation}
-            inputClass={inputClass}
-          />
-        )}
-
-        <DocumentationSection
-          isDocumentationSelected={isDocumentationSelected}
-          onDocumentationToggle={handleDocumentationToggle}
-          error={errors.documentation}
-          validation={documentationValidation}
-          inputClass={inputClass}
-        />
-
-        <DescriptionSection
-          description={formData.description || ""}
-          onDescriptionChange={(value) => handleInputChange("description", value)}
-          error={errors.description}
-          validation={descriptionValidation}
-          inputClass={inputClass}
-        />
-
-        <MediaSection
-          initialUrls={formData.images || []}
-          onUploadChange={handleImagesChange}
-          error={errors.images}
-          validation={imagesValidation}
-          inputClass={inputClass}
-        />
-
-        <PublicationOptionsSection
-          isFeatured={formData.isFeatured || false}
-          onFeaturedToggle={(value) => handleSwitchChange("isFeatured", value)}
-        />
-
-        <CategoryTips category={formData.category} />
-
-        {/* ========== RESUMEN DE COMPLETITUD MEJORADO ========== */}
-        <div
-          className={`p-5 rounded-xl border-2 shadow-sm transition-all duration-300 ${
-            isComplete
-              ? "border-green-500/40 bg-green-50/50 dark:bg-green-950/20"
-              : "border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/20"
-          }`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div
-                className={`p-2 rounded-lg ${
-                  isComplete ? "bg-green-500/20" : "bg-amber-500/20"
-                }`}
-              >
-                {isComplete ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-                ) : (
-                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                )}
-              </div>
-              <div>
-                <p className="font-semibold text-foreground text-base">
-                  {isComplete
-                    ? "¡Información multimedia completa!"
-                    : "Faltan algunos campos obligatorios"}
-                </p>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {isComplete
-                    ? "Puedes continuar al siguiente paso"
-                    : `${Math.round(progressPercentage)}% completado`}
-                </p>
-              </div>
-            </div>
-            <Badge
-              variant={isComplete ? "default" : "secondary"}
-              className="text-sm font-bold px-3 py-1"
-            >
-              {Math.round(progressPercentage)}%
-            </Badge>
+      
+      {!isComplete && (
+        <div className="mt-3">
+          <div className="w-full bg-muted rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-primary to-accent h-2 rounded-full transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            ></div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
-};
+});
+CompletionSummary.displayName = "CompletionSummary";
 
-// --- Sub-componentes especializados ---
-
+// ============================================
+// SUB-COMPONENTE: Sección de Características
+// ============================================
 const FeaturesSection: React.FC<{
   category: VehicleCategory;
   availableFeatures: ReturnType<typeof getAvailableFeatures>;
@@ -296,8 +170,35 @@ const FeaturesSection: React.FC<{
   onFeatureToggle: (feature: string) => void;
   error?: string;
   validation: any;
-  inputClass: string;
-}> = ({ category, availableFeatures, selectedFeatures, onFeatureToggle, error, validation, inputClass }) => {
+}> = ({ category, availableFeatures, selectedFeatures, onFeatureToggle, error, validation }) => {
+  const iconMap = {
+    Car,
+    Shield,
+    Users,
+    Package,
+    Zap,
+    Navigation,
+    Wrench,
+    Truck,
+  } as const;
+
+  const getDynamicIcon = (iconName: keyof typeof iconMap = "Car") => {
+    const IconComponent = iconMap[iconName] || iconMap.Car;
+    return <IconComponent className="w-4 h-4" />;
+  };
+
+  const getCategoryName = (category: VehicleCategory): string => {
+    const names: Record<VehicleCategory, string> = {
+      [VehicleCategory.CAR]: "Vehículo",
+      [VehicleCategory.MOTORCYCLE]: "Motocicleta",
+      [VehicleCategory.TRUCK]: "Camión",
+      [VehicleCategory.BUS]: "Autobús",
+      [VehicleCategory.SUV]: "SUV",
+      [VehicleCategory.VAN]: "Van",
+    };
+    return names[category] || "Vehículo";
+  };
+
   const firstCategoryData = Object.values(availableFeatures)[0];
 
   return (
@@ -312,37 +213,33 @@ const FeaturesSection: React.FC<{
       error={error}
       success={validation.isValid}
     >
-      <Card className="shadow-sm border-border">
+      <Card className="card-glass border-border/50 overflow-hidden">
         <CardContent className="p-0">
           <Accordion type="multiple" defaultValue={Object.keys(availableFeatures)}>
-            {Object.entries(availableFeatures).map(
-              ([categoryName, categoryData]) => (
-                <AccordionItem value={categoryName} key={categoryName} className="border-border">
-                  <AccordionTrigger className="px-5 py-4 hover:no-underline">
-                    <h4 className="text-md font-semibold flex items-center text-foreground">
-                      <span className="mr-2 text-primary">
-                        {getDynamicIcon(
-                          categoryData.iconName as keyof typeof iconMap
-                        )}
-                      </span>
-                      {categoryName}
-                    </h4>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="flex flex-wrap gap-3 pt-4 pb-5 px-5">
-                      {categoryData.features.map((feature) => (
-                        <SelectableChip
-                          key={feature}
-                          label={feature}
-                          isSelected={selectedFeatures.includes(feature)}
-                          onToggle={() => onFeatureToggle(feature)}
-                        />
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              )
-            )}
+            {Object.entries(availableFeatures).map(([categoryName, categoryData]) => (
+              <AccordionItem value={categoryName} key={categoryName} className="border-border">
+                <AccordionTrigger className="px-5 py-4 hover:no-underline">
+                  <h4 className="text-md font-semibold flex items-center text-foreground">
+                    <span className="mr-2 text-primary">
+                      {getDynamicIcon(categoryData.iconName as keyof typeof iconMap)}
+                    </span>
+                    {categoryName}
+                  </h4>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-wrap gap-3 pt-4 pb-5 px-5">
+                    {categoryData.features.map((feature) => (
+                      <SelectableChip
+                        key={feature}
+                        label={feature}
+                        isSelected={selectedFeatures.includes(feature)}
+                        onToggle={() => onFeatureToggle(feature)}
+                      />
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
           </Accordion>
         </CardContent>
       </Card>
@@ -350,12 +247,14 @@ const FeaturesSection: React.FC<{
   );
 };
 
+// ============================================
+// SUB-COMPONENTE: Sección de Documentación
+// ============================================
 const DocumentationSection: React.FC<{
   isDocumentationSelected: (doc: Documentation) => boolean;
   onDocumentationToggle: (doc: Documentation) => void;
   error?: string;
   validation: any;
-  inputClass: string;
 }> = ({ isDocumentationSelected, onDocumentationToggle, error, validation }) => (
   <InputField
     label="Documentación del Vehículo"
@@ -364,7 +263,7 @@ const DocumentationSection: React.FC<{
     error={error}
     success={validation.isValid}
   >
-    <Card className="shadow-sm border-border">
+    <Card className="card-glass border-border/50 overflow-hidden">
       <CardContent className="p-5">
         <div className="flex flex-wrap gap-3">
           {DOCUMENTATION_OPTIONS.map(({ label, value }) => (
@@ -381,6 +280,95 @@ const DocumentationSection: React.FC<{
   </InputField>
 );
 
+// ============================================
+// SUB-COMPONENTE: Sección de Descripción
+// ============================================
+const DescriptionSection: React.FC<{
+  description: string;
+  onDescriptionChange: (value: string) => void;
+  error?: string;
+  validation: any;
+}> = ({ description, onDescriptionChange, error, validation }) => {
+  const [localDescription, setLocalDescription] = useState(description);
+
+  useEffect(() => {
+    setLocalDescription(description);
+  }, [description]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (localDescription !== description) {
+        onDescriptionChange(localDescription);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [localDescription, onDescriptionChange, description]);
+
+  const inputClass =
+    "w-full px-4 py-3.5 rounded-xl border-2 border-border bg-background text-foreground " +
+    "placeholder:text-muted-foreground/60 " +
+    "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 " +
+    "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/30 " +
+    "transition-all duration-200 ease-out hover:border-border/80";
+
+  return (
+    <InputField
+      label="Descripción del Vehículo"
+      required
+      error={error}
+      success={validation.isValid}
+      icon={<FileText className="w-4 h-4 text-primary" />}
+      tooltip="Sé detallado: menciona mantenimientos, extras, historial, o cualquier detalle único."
+      counter={{ current: localDescription.length, max: 2000 }}
+      tips={[
+        "✅ Describe el estado real, incluyendo detalles positivos y negativos.",
+        "🔧 Menciona mantenimientos recientes o piezas nuevas.",
+        "⭐ Destaca características únicas que lo diferencian de otros.",
+      ]}
+    >
+      <textarea
+        value={localDescription}
+        onChange={(e) => setLocalDescription(e.target.value)}
+        rows={6}
+        className={`${inputClass} ${validation.getBorderClassName()} resize-y`}
+        placeholder="Ej: Vehículo en excelentes condiciones, único dueño, cauchos nuevos, servicio de aceite y filtros recién hecho..."
+        maxLength={2000}
+      />
+    </InputField>
+  );
+};
+
+// ============================================
+// SUB-COMPONENTE: Sección de Multimedia
+// ============================================
+const MediaSection: React.FC<{
+  initialUrls: string[];
+  onUploadChange: (urls: string[]) => void;
+  error?: string;
+  validation: any;
+}> = ({ initialUrls, onUploadChange, error, validation }) => (
+  <InputField
+    label="Fotos del Vehículo"
+    required
+    icon={<ImageIcon className="w-4 h-4 text-primary" />}
+    tooltip="Sube al menos una foto de buena calidad: exterior, interior, motor y detalles."
+    error={error}
+    success={validation.isValid}
+  >
+    <ImageUploader
+      onUploadChange={onUploadChange}
+      initialUrls={initialUrls}
+      maxSizeMB={5}
+    />
+  </InputField>
+);
+
+// ============================================
+// SUB-COMPONENTE: Sección de Opciones de Publicación
+// ============================================
 const PublicationOptionsSection: React.FC<{
   isFeatured: boolean;
   onFeaturedToggle: (value: boolean) => void;
@@ -390,7 +378,7 @@ const PublicationOptionsSection: React.FC<{
     icon={<Star className="w-4 h-4 text-primary" />}
     tooltip="Opciones para mejorar la visibilidad de tu anuncio."
   >
-    <Card className={`shadow-sm transition-all duration-300 ${isFeatured ? 'border-primary' : 'border-border'}`}>
+    <Card className={`card-glass border-border/50 overflow-hidden transition-all duration-300 ${isFeatured ? 'border-primary/50' : ''}`}>
       <CardContent className="p-5">
         <div className="flex items-center justify-between rounded-lg border border-transparent p-4 transition-colors hover:bg-muted/50">
           <div className="flex items-start space-x-4">
@@ -437,184 +425,228 @@ const PublicationOptionsSection: React.FC<{
   </InputField>
 );
 
-const DescriptionSection: React.FC<{
-  description: string;
-  onDescriptionChange: (value: string) => void;
-  error?: string;
-  validation: any;
-  inputClass: string;
-}> = ({ description, onDescriptionChange, error, validation, inputClass }) => {
-  const [localDescription, setLocalDescription] = useState(description);
-
-  useEffect(() => {
-    setLocalDescription(description);
-  }, [description]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (localDescription !== description) {
-        onDescriptionChange(localDescription);
-      }
-    }, 500);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [localDescription, onDescriptionChange, description]);
-
-  return (
-    <InputField
-      label="Descripción del Vehículo"
-      required
-      error={error}
-      success={validation.isValid}
-      icon={<FileText className="w-4 h-4 text-primary" />}
-      tooltip="Sé detallado: menciona mantenimientos, extras, historial, o cualquier detalle único."
-      counter={{ current: localDescription.length, max: 2000 }}
-      tips={[
-        "✅ Describe el estado real, incluyendo detalles positivos y negativos.",
-        "🔧 Menciona mantenimientos recientes o piezas nuevas.",
-        "⭐ Destaca características únicas que lo diferencien de otros.",
-      ]}
-    >
-      <textarea
-        value={localDescription}
-        onChange={(e) => setLocalDescription(e.target.value)}
-        rows={6}
-        className={`${inputClass} ${validation.getBorderClassName()} resize-y`}
-        placeholder="Ej: Vehículo en excelentes condiciones, único dueño, cauchos nuevos, servicio de aceite y filtros recién hecho..."
-        maxLength={2000}
-      />
-    </InputField>
-  );
-};
-
-const MediaSection: React.FC<{
-  initialUrls: string[];
-  onUploadChange: (urls: string[]) => void;
-  error?: string;
-  validation: any;
-  inputClass: string;
-}> = ({ initialUrls, onUploadChange, error, validation }) => (
-  <InputField
-    label="Fotos del Vehículo"
-    required
-    icon={<ImageIcon className="w-4 h-4 text-primary" />}
-    tooltip="Sube al menos una foto de buena calidad: exterior, interior, motor y detalles."
-    error={error}
-    success={validation.isValid}
-  >
-    <ImageUploader
-      onUploadChange={onUploadChange}
-      initialUrls={initialUrls}
-      maxSizeMB={5}
-    />
-  </InputField>
-);
-
-// --- Helpers (sin cambios) ---
-const getCategoryName = (category: VehicleCategory | undefined): string => {
-  if (!category) return "Vehículo";
-  const names: Record<VehicleCategory, string> = {
-    [VehicleCategory.CAR]: "Vehículo",
-    [VehicleCategory.MOTORCYCLE]: "Motocicleta",
-    [VehicleCategory.TRUCK]: "Camión",
-    [VehicleCategory.BUS]: "Autobús",
-    [VehicleCategory.SUV]: "SUV",
-    [VehicleCategory.VAN]: "Van",
+// ============================================
+// SUB-COMPONENTE: Consejos por Categoría
+// ============================================
+const CategoryTips: React.FC<{ category: VehicleCategory | undefined }> = ({ category }) => {
+  const categoryTips: Record<VehicleCategory, { photos: string; unique: string }> = {
+    [VehicleCategory.CAR]: {
+      photos: "Exterior, interior, motor y detalles únicos",
+      unique: "Destaca lo que hace especial tu vehículo",
+    },
+    [VehicleCategory.SUV]: {
+      photos: "Exterior, interior, maletero y tracción",
+      unique: "Menciona su versatilidad y capacidad",
+    },
+    [VehicleCategory.VAN]: {
+      photos: "Exterior, espacio de carga/pasajeros y cabina",
+      unique: "Ideal para trabajo o familia numerosa",
+    },
+    [VehicleCategory.MOTORCYCLE]: {
+      photos: "Lateral, motor, odómetro y detalles",
+      unique: "Destaca modificaciones o accesorios",
+    },
+    [VehicleCategory.TRUCK]: {
+      photos: "Exterior, cabina, carrocería y motor",
+      unique: "Menciona capacidad y tipo de uso",
+    },
+    [VehicleCategory.BUS]: {
+      photos: "Exterior, interior de pasajeros y cabina",
+      unique: "Menciona capacidad de pasajeros y comodidades",
+    },
   };
-  return names[category] || "Vehículo";
-};
 
-const categoryTips: Record<VehicleCategory, { photos: string; unique: string }> = {
-  [VehicleCategory.CAR]: {
-    photos: "Exterior, interior, motor y detalles únicos",
-    unique: "Destaca lo que hace especial tu vehículo",
-  },
-  [VehicleCategory.SUV]: {
-    photos: "Exterior, interior, maletero y tracción",
-    unique: "Menciona su versatilidad y capacidad",
-  },
-  [VehicleCategory.VAN]: {
-    photos: "Exterior, espacio de carga/pasajeros y cabina",
-    unique: "Ideal para trabajo o familia numerosa",
-  },
-  [VehicleCategory.MOTORCYCLE]: {
-    photos: "Lateral, motor, odómetro y detalles",
-    unique: "Destaca modificaciones o accesorios",
-  },
-  [VehicleCategory.TRUCK]: {
-    photos: "Exterior, cabina, carrocería y motor",
-    unique: "Menciona capacidad y tipo de uso",
-  },
-  [VehicleCategory.BUS]: {
-    photos: "Exterior, interior de pasajeros y cabina",
-    unique: "Menciona capacidad de pasajeros y comodidades",
-  },
-};
-
-const getCategoryTips = (category: VehicleCategory | undefined) => {
-  if (!category) return categoryTips[VehicleCategory.CAR];
-  return categoryTips[category] || categoryTips[VehicleCategory.CAR];
-};
-
-const CategoryTips: React.FC<{ category: VehicleCategory | undefined }> = ({
-  category,
-}) => {
-  const categoryName = getCategoryName(category);
-  const tips = getCategoryTips(category);
-
-  const TipItem: React.FC<{ icon: string; title: string; content: string }> = ({
-    icon,
-    title,
-    content,
-  }) => (
-    <div className="p-3 rounded-lg bg-muted/50">
-      <p className="text-sm text-muted-foreground">
-        {icon} <strong>{title}:</strong> {content}
-      </p>
-    </div>
-  );
+  const getCategoryName = (category: VehicleCategory): string => {
+    const names: Record<VehicleCategory, string> = {
+      [VehicleCategory.CAR]: "Vehículo",
+      [VehicleCategory.MOTORCYCLE]: "Motocicleta",
+      [VehicleCategory.TRUCK]: "Camión",
+      [VehicleCategory.BUS]: "Autobús",
+      [VehicleCategory.SUV]: "SUV",
+      [VehicleCategory.VAN]: "Van",
+    };
+    return names[category] || "Vehículo";
+  };
 
   if (!category) return null;
+  
+  const tips = categoryTips[category];
+  const categoryName = getCategoryName(category);
 
   return (
-    <div className="p-5 rounded-xl border-2 border-primary/20 bg-primary/5">
-      <div className="flex items-start gap-3">
-        <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
-          <Info className="w-5 h-5 text-primary" />
+    <Card className="card-glass border-border/50 overflow-hidden">
+      <CardContent className="p-0">
+        <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 border-b border-border/30">
+          <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            Tips para Destacar tu {categoryName}
+          </h4>
         </div>
-        <div>
-          <h3 className="font-semibold text-base text-foreground mb-3">
-            💡 Tips para Destacar tu {categoryName}
-          </h3>
-          <ul className="text-sm space-y-2 text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5 font-bold">•</span>
-              <span>
-                <strong>Fotos variadas:</strong> {tips.photos}
-              </span>
+        <div className="p-5">
+          <ul className="space-y-3">
+            <li className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                <span className="text-primary font-bold text-xs">1</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Fotos variadas</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{tips.photos}</p>
+              </div>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5 font-bold">•</span>
-              <span>
-                <strong>Descripción honesta:</strong> Menciona tanto lo bueno como lo que necesita atención.
-              </span>
+            <li className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                <span className="text-primary font-bold text-xs">2</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Descripción honesta</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Menciona tanto lo bueno como lo que necesita atención.</p>
+              </div>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5 font-bold">•</span>
-              <span>
-                <strong>Características únicas:</strong> {tips.unique}
-              </span>
+            <li className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                <span className="text-primary font-bold text-xs">3</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Características únicas</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{tips.unique}</p>
+              </div>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5 font-bold">•</span>
-              <span>
-                <strong>Documentos listos:</strong> Tener los papeles en orden acelera la venta.
-              </span>
+            <li className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                <span className="text-primary font-bold text-xs">4</span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Documentos listos</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Tener los papeles en orden acelera la venta.</p>
+              </div>
             </li>
           </ul>
         </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// ============================================
+// COMPONENTE PRINCIPAL
+// ============================================
+const Step5_FeaturesAndMedia: React.FC<StepProps> = ({
+  formData,
+  errors,
+  handleInputChange,
+  handleSwitchChange,
+  handleFeatureToggle,
+  handleDocumentationToggle,
+  isDocumentationSelected,
+  handleImagesChange,
+}) => {
+  // ========== Hooks de Validación ==========
+  const descriptionValidation = useFieldValidation(formData.description, errors.description);
+  const featuresValidation = useFieldValidation(formData.features, errors.features);
+  const documentationValidation = useFieldValidation(formData.documentation, errors.documentation);
+  const imagesValidation = useFieldValidation(formData.images, errors.images);
+
+  // ========== Cálculo de Progreso ==========
+  const { progressPercentage, isComplete } = useMemo(() => {
+    const fields = [
+      (formData.description?.length || 0) > 50,
+      (formData.images?.length || 0) > 0,
+    ];
+
+    if (formData.category) {
+      const categoryFeatures = getAvailableFeatures(formData.category);
+      const categoryHasFeatures = Object.keys(categoryFeatures).length > 0;
+      if (categoryHasFeatures) {
+        fields.push((formData.features?.length || 0) > 0);
+      }
+    }
+
+    const completedCount = fields.filter(Boolean).length;
+    const totalFields = fields.length;
+    const progress = totalFields > 0 ? (completedCount / totalFields) * 100 : 0;
+
+    return { progressPercentage: progress, isComplete: progress === 100 };
+  }, [
+    formData.description,
+    formData.images,
+    formData.category,
+    formData.features,
+  ]);
+
+  const availableFeatures = useMemo(() => {
+    if (!formData.category) {
+      return {};
+    }
+    return getAvailableFeatures(formData.category);
+  }, [formData.category]);
+
+  const hasFeatures = Object.keys(availableFeatures).length > 0;
+
+  if (!formData.category) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <Card className="card-glass border-border/50">
+          <CardContent className="p-8 text-center">
+            <div className="p-3 rounded-full bg-muted/50 w-fit mx-auto mb-4">
+              <AlertCircle className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              Categoría no seleccionada
+            </h3>
+            <p className="text-muted-foreground">
+              Por favor, regresa al paso 1 y selecciona una categoría para continuar.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
+      <FormHeader progress={progressPercentage} />
+
+      <div className="space-y-7">
+        {hasFeatures && (
+          <FeaturesSection
+            category={formData.category}
+            availableFeatures={availableFeatures}
+            selectedFeatures={formData.features || []}
+            onFeatureToggle={handleFeatureToggle}
+            error={errors.features}
+            validation={featuresValidation}
+          />
+        )}
+
+        <DocumentationSection
+          isDocumentationSelected={isDocumentationSelected}
+          onDocumentationToggle={handleDocumentationToggle}
+          error={errors.documentation}
+          validation={documentationValidation}
+        />
+
+        <DescriptionSection
+          description={formData.description || ""}
+          onDescriptionChange={(value) => handleInputChange("description", value)}
+          error={errors.description}
+          validation={descriptionValidation}
+        />
+
+        <MediaSection
+          initialUrls={formData.images || []}
+          onUploadChange={handleImagesChange}
+          error={errors.images}
+          validation={imagesValidation}
+        />
+
+        <PublicationOptionsSection
+          isFeatured={formData.isFeatured || false}
+          onFeaturedToggle={(value) => handleSwitchChange("isFeatured", value)}
+        />
+
+        <CategoryTips category={formData.category} />
+        
+        <CompletionSummary progress={progressPercentage} />
       </div>
     </div>
   );

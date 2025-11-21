@@ -13,8 +13,6 @@ import {
   ChevronsLeft, 
   ChevronsRight,
   List,
-  ArrowLeft,
-  ArrowRight
 } from "lucide-react";
 import type { PaginationState } from "@/hooks/use-admin-panel-enhanced";
 

@@ -31,19 +31,21 @@ export function FinancingModal({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        {/* ✅ BOTÓN DE DISPARO REDISEÑADO MÁS ATRACTIVO */}
+        {/* ✅ BOTÓN DE DISPARO MEJORADO */}
         <Button
-          className="w-full group relative overflow-hidden bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+          className="w-full group relative overflow-hidden shadow-lg"
+          style={{ background: 'var(--gradient-accent)' }}
           size="lg"
         >
-          <span className="relative z-10 flex items-center justify-center gap-2">
+          <span className="relative z-10 flex items-center justify-center gap-2 font-semibold" style={{ color: 'var(--accent-foreground)' }}>
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
             >
               <Calculator className="w-5 h-5" />
             </motion.div>
-            Calcular Crédito Directo
+            <span className="hidden sm:inline">Calcular Crédito Directo</span>
+            <span className="sm:hidden">Calcular Crédito</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </span>
           {/* Efecto de brillo en hover */}
@@ -51,53 +53,69 @@ export function FinancingModal({
         </Button>
       </DialogTrigger>
 
-      {/* ✅ CONTENIDO DEL MODAL CON ANIMACIÓN DE FRAMER MOTION */}
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-background border-border p-0">
+      {/* ✅ CONTENIDO DEL MODAL MEJORADO */}
+      <DialogContent className="max-w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto card-premium p-0">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 10 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
+          className="w-full"
         >
-          {/* ✅ CABECERA DEL MODAL MEJORADA CON GRADIENTE */}
-          <DialogHeader className="space-y-3 p-6 pb-4 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-border">
-            <DialogTitle className="text-2xl font-bold flex items-center justify-between text-foreground">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Calculator className="w-6 h-6 text-primary" />
+          {/* ✅ CABECERA DEL MODAL MEJORADA */}
+          <DialogHeader className="space-y-3 p-4 sm:p-6 pb-4 card-glass border-b">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-foreground">
+              <div className="flex items-start sm:items-center gap-3 flex-col sm:flex-row">
+                <div 
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0" 
+                  style={{ background: 'var(--gradient-primary)' }}
+                >
+                  <Calculator className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
                 </div>
-                <div>
-                  Calculadora de Crédito
-                  <div className="text-sm font-normal text-muted-foreground flex items-center gap-2 mt-1">
-                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                <div className="flex-1">
+                  <div className="text-foreground">Calculadora de Crédito</div>
+                  <div className="flex items-center gap-2 flex-wrap mt-2">
+                    <Badge 
+                      className="text-xs font-bold px-2 py-1"
+                      style={{ 
+                        background: 'var(--gradient-primary)',
+                        color: 'var(--primary-foreground)'
+                      }}
+                    >
                       Directo con Vendedor
                     </Badge>
-                    <span className="text-xs">Sin intermediarios</span>
+                    <span className="text-xs text-muted-foreground">Sin intermediarios</span>
                   </div>
                 </div>
               </div>
             </DialogTitle>
-            <DialogDescription className="text-base text-muted-foreground pl-[60px]">
+            <DialogDescription className="text-sm sm:text-base text-muted-foreground">
               Simula tu plan de pago y descubre las ventajas de financiar directamente.
             </DialogDescription>
           </DialogHeader>
 
-          {/* ✅ BANNER DE CONFIANZA */}
-          <div className="px-6 py-3 bg-gradient-to-r from-emerald-500/10 to-blue-500/10 border-b border-border">
-            <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-emerald-600" />
-              <p className="text-sm font-medium text-foreground">
-                Simulación 100% segura y sin compromiso.
+          {/* ✅ BANNER DE CONFIANZA MEJORADO */}
+          <div className="px-4 sm:px-6 py-3 card-glass border-b">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+              <Shield className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--success)' }} />
+              <p className="text-xs sm:text-sm font-medium text-foreground flex-1">
+                Simulación 100% segura y sin compromiso
               </p>
-              <Badge variant="outline" className="ml-auto text-xs border-emerald-600/30 text-emerald-700 dark:text-emerald-400">
-                <TrendingUp className="w-3 h-3 mr-1" />
+              <Badge 
+                className="text-xs font-semibold px-2 py-1 flex items-center gap-1"
+                style={{ 
+                  backgroundColor: 'var(--accent)',
+                  color: '#ffffff'
+                }}
+              >
+                <TrendingUp className="w-3 h-3" />
                 Ahorro garantizado
               </Badge>
             </div>
           </div>
 
           {/* ✅ CONTENIDO DE LA CALCULADORA */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <FinancingCalculator
               vehiclePrice={vehiclePrice}
               financingDetails={financingDetails}
@@ -105,19 +123,28 @@ export function FinancingModal({
             />
           </div>
 
-          {/* ✅ PIE DE MODAL CON LLAMADA A LA ACCIÓN */}
-          <div className="p-6 bg-muted/30 border-t border-border">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Percent className="w-4 h-4" />
-                <span>Tasa de interés: {financingDetails.interestRate}%</span>
-                <span>•</span>
-                <span>Plazo: hasta {financingDetails.loanTerm} meses</span>
+          {/* ✅ PIE DE MODAL MEJORADO */}
+          <div className="p-4 sm:p-6 card-glass border-t">
+            <div className="flex items-center justify-between gap-3 flex-col sm:flex-row">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap">
+                <Percent className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--accent)' }} />
+                <span className="text-foreground font-medium">
+                  Tasa: {financingDetails.interestRate}%
+                </span>
+                <span className="hidden sm:inline">•</span>
+                <span className="text-foreground font-medium">
+                  Plazo: hasta {financingDetails.loanTerm} meses
+                </span>
               </div>
               <Button
-                onClick={() => window.history.back()}
                 variant="outline"
                 size="sm"
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  // Cerrar el diálogo programáticamente
+                  const closeButton = document.querySelector('[data-radix-dialog-close]') as HTMLElement;
+                  if (closeButton) closeButton.click();
+                }}
               >
                 Cerrar
               </Button>

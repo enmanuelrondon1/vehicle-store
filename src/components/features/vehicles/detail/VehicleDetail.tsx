@@ -160,7 +160,11 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
     <div className="min-h-screen py-8 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
         {vehicle?._id && (
-          <div data-aos="fade-down" data-aos-duration="600" data-aos-delay="100">
+          <div
+            data-aos="fade-down"
+            data-aos-duration="600"
+            data-aos-delay="100"
+          >
             <VehicleActions
               vehicleId={vehicle._id}
               isFavorited={isFavorited}
@@ -174,26 +178,45 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-start">
           {/* Columna principal de contenido */}
           <div id="main-content-column" className="lg:col-span-2 space-y-8">
-            <div data-aos="fade-up" data-aos-duration="800" data-aos-delay="200">
+            <div
+              data-aos="fade-up"
+              data-aos-duration="800"
+              data-aos-delay="200"
+            >
               <VehicleSummary vehicle={vehicle} />
             </div>
-            <div data-aos="zoom-in" data-aos-duration="800" data-aos-delay="300">
+            
+            <div
+              data-aos="zoom-in"
+              data-aos-duration="800"
+              data-aos-delay="300"
+            >
               <ImageGallery
                 images={vehicle.images}
                 vehicleName={`${vehicle.brand} ${vehicle.model}`}
               />
             </div>
 
-            {/* ✅ Panel de contacto en MÓVIL - visible solo en pantallas pequeñas */}
-            <div className="lg:hidden" data-aos="fade-up" data-aos-duration="800" data-aos-delay="350">
+            {/* ✅ CONTACTO - Solo visible en MÓVIL, justo después de las fotos */}
+            <div
+              className="lg:hidden"
+              data-aos="fade-up"
+              data-aos-duration="800"
+              data-aos-delay="350"
+            >
               <ContactInfo
                 sellerContact={vehicle.sellerContact}
                 vehicleName={`${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
                 price={vehicle.price}
+                location={vehicle.location}
               />
             </div>
 
-            <div data-aos="fade-up" data-aos-duration="800" data-aos-delay="400">
+            <div
+              data-aos="fade-up"
+              data-aos-duration="800"
+              data-aos-delay="400"
+            >
               <TechnicalSpecifications
                 specs={[
                   { label: "Marca", value: vehicle.brand },
@@ -221,7 +244,11 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
               />
             </div>
 
-            <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="500">
+            <div
+              data-aos="fade-left"
+              data-aos-duration="800"
+              data-aos-delay="500"
+            >
               <VehicleDocumentation
                 documentation={(vehicle.documentation || []).map((doc) =>
                   Object.values(Documentation).includes(doc as Documentation)
@@ -230,35 +257,55 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
                 )}
               />
             </div>
-            <div data-aos="fade-right" data-aos-duration="800" data-aos-delay="600">
+            <div
+              data-aos="fade-right"
+              data-aos-duration="800"
+              data-aos-delay="600"
+            >
               <VehicleFeatures features={vehicle.features} />
             </div>
-            <div data-aos="fade-up" data-aos-duration="800" data-aos-delay="700">
+            <div
+              data-aos="fade-up"
+              data-aos-duration="800"
+              data-aos-delay="700"
+            >
               <VehicleDescription description={vehicle.description} />
             </div>
           </div>
-          
-          {/* ✅ Sidebar SIN sticky - permanece fijo en su posición */}
-          <div 
-            ref={sidebarRef} 
-            className="lg:col-span-1 space-y-6"
-          >
-            <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="800">
+
+          {/* ✅ Sidebar - Visible en desktop, incluye ContactInfo */}
+          <div ref={sidebarRef} className="hidden lg:block lg:col-span-1 space-y-6">
+            {/* ✅ CONTACTO - Solo visible en DESKTOP */}
+            <div
+              data-aos="fade-left"
+              data-aos-duration="800"
+              data-aos-delay="800"
+            >
               <ContactInfo
                 sellerContact={vehicle.sellerContact}
                 vehicleName={`${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
                 price={vehicle.price}
+                location={vehicle.location}
               />
             </div>
+            
             {vehicle.offersFinancing && vehicle.financingDetails && (
-              <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="900">
+              <div
+                data-aos="fade-left"
+                data-aos-duration="800"
+                data-aos-delay="900"
+              >
                 <FinancingModal
                   vehiclePrice={vehicle.price}
                   financingDetails={vehicle.financingDetails}
                 />
               </div>
             )}
-            <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="1000">
+            <div
+              data-aos="fade-left"
+              data-aos-duration="800"
+              data-aos-delay="1000"
+            >
               <VehicleAdditionalInfo
                 items={[
                   { label: "Categoría", value: vehicle.category },
@@ -275,7 +322,11 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
                 ]}
               />
             </div>
-            <div data-aos="fade-left" data-aos-duration="800" data-aos-delay="1100">
+            <div
+              data-aos="fade-left"
+              data-aos-duration="800"
+              data-aos-delay="1100"
+            >
               <VehicleWarranty
                 warranty={vehicle.warranty}
                 translatedWarranty={translatedWarranty || ""}

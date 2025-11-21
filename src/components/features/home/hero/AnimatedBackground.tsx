@@ -1,29 +1,44 @@
-// src/components/features/home/hero/AnimatedBackground.tsx
+// src/components/features/home/hero/AnimatedBackground.tsx (versión mejorada)
+"use client";
+import React from "react";
 import { motion } from "framer-motion";
 
 export const AnimatedBackground = () => (
-  <div className="absolute inset-0">
-    {/* Gradiente base que cambia con el tema usando variables CSS */}
-    <div className="absolute inset-0 bg-gradient-to-br 
-      from-background/80 via-secondary/60 to-accent/40" />
+  <div className="absolute inset-0 overflow-hidden">
+    {/* Gradiente base premium más sutil */}
+    <div 
+      className="absolute inset-0 opacity-30" 
+      style={{ background: 'var(--gradient-hero)' }} 
+    />
     
-    {/* Formas flotantes animadas con colores adaptativos al modo */}
+    {/* Capa de overlay sutil mejorada */}
+    <div 
+      className="absolute inset-0 opacity-40"
+      style={{
+        background: 'radial-gradient(circle at 50% 50%, transparent 0%, var(--background) 100%)'
+      }}
+    />
+    
+    {/* Forma flotante principal - Accent más sutil */}
     <motion.div
       animate={{
         y: [0, -20, 0],
-        x: [0, 10, 0],
+        x: [0, 15, 0],
         rotate: [0, 5, 0],
+        scale: [1, 1.05, 1],
       }}
       transition={{
-        duration: 8,
+        duration: 12,
         repeat: Infinity,
         ease: "easeInOut",
       }}
-      className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-br 
-        from-primary/20 via-primary/10 to-accent/10 
-        rounded-full blur-3xl"
+      className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl"
+      style={{
+        background: 'radial-gradient(circle, var(--accent-10) 0%, transparent 70%)'
+      }}
     />
     
+    {/* Forma flotante secundaria - Success más sutil */}
     <motion.div
       animate={{
         y: [0, 15, 0],
@@ -31,32 +46,71 @@ export const AnimatedBackground = () => (
         scale: [1, 1.1, 1],
       }}
       transition={{
-        duration: 6,
+        duration: 10,
         repeat: Infinity,
         ease: "easeInOut",
         delay: 2,
       }}
-      className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-br 
-        from-[var(--chart-3)]/20 via-[var(--chart-2)]/10 to-primary/10
-        rounded-full blur-3xl"
+      className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl"
+      style={{
+        background: 'radial-gradient(circle, var(--success-10) 0%, transparent 70%)'
+      }}
     />
 
-    {/* Elementos flotantes adicionales para modo light */}
+    {/* Elemento flotante terciario - Primary más sutil */}
     <motion.div
       animate={{
         y: [0, -25, 0],
-        x: [0, 15, 0],
-        scale: [1, 1.05, 1],
+        x: [0, 20, 0],
+        scale: [1, 1.08, 1],
       }}
       transition={{
-        duration: 7,
+        duration: 14,
         repeat: Infinity,
         ease: "easeInOut",
         delay: 1,
       }}
-      className="absolute top-1/3 right-1/3 w-64 h-64 bg-gradient-to-br 
-        from-[var(--chart-5)]/20 via-[var(--destructive)]/10 to-[var(--chart-4)]/10
-        rounded-full blur-2xl"
+      className="absolute top-1/3 right-1/3 w-64 h-64 rounded-full blur-2xl"
+      style={{
+        background: 'radial-gradient(circle, var(--primary-10) 0%, transparent 70%)'
+      }}
+    />
+
+    {/* Partículas flotantes más sutiles y menos numerosas */}
+    {[...Array(5)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute w-2 h-2 rounded-full"
+        style={{
+          backgroundColor: 'var(--accent)',
+          left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
+          opacity: 0.4,
+        }}
+        animate={{
+          y: [0, -80 - Math.random() * 40, 0],
+          opacity: [0, 0.6, 0],
+          scale: [0, 1, 0],
+        }}
+        transition={{
+          duration: 4 + Math.random() * 2,
+          repeat: Infinity,
+          delay: Math.random() * 2,
+          ease: "easeInOut",
+        }}
+      />
+    ))}
+
+    {/* Grid sutil de fondo más sutil */}
+    <div 
+      className="absolute inset-0 opacity-3"
+      style={{
+        backgroundImage: `
+          linear-gradient(var(--border) 1px, transparent 1px),
+          linear-gradient(90deg, var(--border) 1px, transparent 1px)
+        `,
+        backgroundSize: '60px 60px',
+      }}
     />
   </div>
 );

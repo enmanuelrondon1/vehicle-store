@@ -87,11 +87,10 @@ export function BasicInfoSection({
   }, [handleChange, handleChangeWithoutTouch, formData.model]);
 
   return (
-    // Contenedor con micro-interacción de hover
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-start p-6 -m-6 rounded-lg transition-all duration-300 hover:bg-muted/20">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
       
       {/* Campo de Categoría */}
-      <div className="sm:col-span-2">
+      <div className="md:col-span-2">
         <InputField
           label="Categoría"
           required
@@ -107,7 +106,7 @@ export function BasicInfoSection({
             placeholder="Selecciona una categoría"
             options={Object.entries(VEHICLE_CATEGORIES_LABELS).map(([key, label]) => ({ value: key, label }))}
             disabled={isSubmitting}
-            className={getInputClassName("category")}
+            className={`input-premium ${getInputClassName("category")}`}
           />
         </InputField>
       </div>
@@ -128,7 +127,7 @@ export function BasicInfoSection({
           placeholder={!formData.category ? "Primero selecciona categoría" : "Selecciona la marca"}
           options={brandOptions}
           disabled={!formData.category || isSubmitting}
-          className={getInputClassName("brand")}
+          className={`input-premium ${getInputClassName("brand")}`}
         />
       </InputField>
 
@@ -148,13 +147,13 @@ export function BasicInfoSection({
           placeholder={!formData.brand ? "Primero selecciona marca" : "Selecciona el modelo"}
           options={modelOptions}
           disabled={!formData.brand || isSubmitting}
-          className={getInputClassName("model")}
+          className={`input-premium ${getInputClassName("model")}`}
         />
       </InputField>
 
       {/* Campo Condicional: Especificar Marca */}
       {formData.brand === "Otra" && (
-        <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+        <div className="animate-fade-in md:col-span-2">
           <InputField
             label="Especificar Marca"
             required
@@ -169,7 +168,7 @@ export function BasicInfoSection({
               onChange={(e) => handleChange("brandOther", e.target.value)}
               onBlur={() => handleBlur("brandOther")}
               maxLength={50}
-              className={getInputClassName("brandOther")}
+              className={`input-premium ${getInputClassName("brandOther")}`}
               placeholder="Escribe la marca"
               disabled={isSubmitting}
             />
@@ -179,7 +178,7 @@ export function BasicInfoSection({
 
       {/* Campo Condicional: Especificar Modelo */}
       {formData.model === "Otro" && (
-        <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+        <div className="animate-fade-in md:col-span-2">
           <InputField
             label="Especificar Modelo"
             required
@@ -194,7 +193,7 @@ export function BasicInfoSection({
               onChange={(e) => handleChange("modelOther", e.target.value)}
               onBlur={() => handleBlur("modelOther")}
               maxLength={50}
-              className={getInputClassName("modelOther")}
+              className={`input-premium ${getInputClassName("modelOther")}`}
               placeholder="Escribe el modelo"
               disabled={isSubmitting}
             />
@@ -215,7 +214,7 @@ export function BasicInfoSection({
           onChange={(e) => handleChange("version", e.target.value)}
           onBlur={() => handleBlur("version")}
           maxLength={100}
-          className={getInputClassName("version")}
+          className={`input-premium ${getInputClassName("version")}`}
           placeholder="Ej: XEI, Limited, Sport"
           disabled={isSubmitting}
         />
@@ -237,7 +236,7 @@ export function BasicInfoSection({
           placeholder="Selecciona el año"
           options={yearOptions}
           disabled={isSubmitting}
-          className={getInputClassName("year")}
+          className={`input-premium ${getInputClassName("year")}`}
         />
       </InputField>
     </div>

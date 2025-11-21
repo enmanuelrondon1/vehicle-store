@@ -13,8 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   MoreHorizontal,
-  CheckCircle,
-  XCircle,
   MessageSquare,
   Trash2,
   History,
@@ -150,7 +148,8 @@ export const VehicleActions = ({
 
           <button
             onClick={() => handleAction(() => onShowRejectDialog(vehicle))}
-            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left hover:bg-accent"
+            disabled={vehicle.status === ApprovalStatus.REJECTED}
+            className="w-full px-4 py-2.5 flex items-center gap-3 transition-colors text-left hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Archive className="h-4 w-4 text-yellow-600 flex-shrink-0" />
             <span className="font-medium">Archivar</span>

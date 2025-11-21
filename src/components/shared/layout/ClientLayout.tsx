@@ -1,4 +1,4 @@
-// src/components/shared/layout
+// src/components/shared/layout/ClientLayout.tsx (SIMPLE Y DEFINITIVO)
 "use client";
 import React from "react";
 import { DarkModeProvider } from "@/context/DarkModeContext";
@@ -14,15 +14,21 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   return (
-    <DarkModeProvider>
-      <SessionProvider>
-        <LanguageProvider>
-          <GlobalNotificationHandler />
-          <Navbar />
-          {children}
-          <Footer />
-        </LanguageProvider>
-      </SessionProvider>
-    </DarkModeProvider>
+    <div className="min-h-screen flex flex-col">
+      <DarkModeProvider>
+        <SessionProvider>
+          <LanguageProvider>
+            <GlobalNotificationHandler />
+            <Navbar />
+            {/* Este spacer ahora funciona perfectamente porque el navbar tiene h-16 */}
+            <div className="h-16 w-full"></div>
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </LanguageProvider>
+        </SessionProvider>
+      </DarkModeProvider>
+    </div>
   );
 }

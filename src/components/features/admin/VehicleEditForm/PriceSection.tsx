@@ -63,8 +63,7 @@ export function PriceSection({
   );
 
   return (
-    // 2. CONTENEDOR CON GRID RESPONSIVO Y EFECTO HOVER (Consistente con BasicInfoSection)
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-start p-6 -m-6 rounded-lg transition-all duration-300 hover:bg-muted/20">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
       
       {/* Campos Principales */}
       <InputField
@@ -80,7 +79,7 @@ export function PriceSection({
           value={formData.price || ""}
           onChange={(e) => handlePriceChange(e.target.value)}
           onBlur={() => handleBlur("price")}
-          className={getInputClassName("price")}
+          className={`input-premium ${getInputClassName("price")}`}
           placeholder="Ej: 15000"
           min={1}
           max={10000000}
@@ -101,7 +100,7 @@ export function PriceSection({
           value={formData.mileage || ""}
           onChange={(e) => handleMileageChange(e.target.value)}
           onBlur={() => handleBlur("mileage")}
-          className={getInputClassName("mileage")}
+          className={`input-premium ${getInputClassName("mileage")}`}
           placeholder="Ej: 50000"
           min={0}
           max={1000000}
@@ -123,23 +122,25 @@ export function PriceSection({
           placeholder="Selecciona la garantía"
           options={Object.entries(WARRANTY_LABELS).map(([key, label]) => ({ value: key, label }))}
           disabled={isSubmitting}
-          className={getInputClassName("warranty")}
+          className={`input-premium ${getInputClassName("warranty")}`}
         />
       </InputField>
+
+      <div />
 
       <InputField
         label="¿Precio Negociable?"
         tooltip="Indica si estás abierto a ofertas"
         layout="switch"
       >
-        <div className="flex items-center space-x-2 h-10">
+        <div className="flex items-center space-x-3 h-10">
           <Switch
             id="isNegotiable"
             checked={formData.isNegotiable || false}
             onCheckedChange={(checked) => handleSwitchChange("isNegotiable", checked)}
             disabled={isSubmitting}
           />
-          <label htmlFor="isNegotiable" className="font-normal cursor-pointer text-sm">
+          <label htmlFor="isNegotiable" className="font-medium cursor-pointer text-sm text-foreground transition-colors">
             {formData.isNegotiable ? "Sí, es negociable" : "No, precio fijo"}
           </label>
         </div>
@@ -150,25 +151,25 @@ export function PriceSection({
         tooltip="Indica si proporcionas opciones de financiamiento"
         layout="switch"
       >
-        <div className="flex items-center space-x-2 h-10">
+        <div className="flex items-center space-x-3 h-10">
           <Switch
             id="offersFinancing"
             checked={formData.offersFinancing || false}
             onCheckedChange={(checked) => handleSwitchChange("offersFinancing", checked)}
             disabled={isSubmitting}
           />
-          <label htmlFor="offersFinancing" className="font-normal cursor-pointer text-sm">
+          <label htmlFor="offersFinancing" className="font-medium cursor-pointer text-sm text-foreground transition-colors">
             {formData.offersFinancing ? "Sí, se ofrece" : "No se ofrece"}
           </label>
         </div>
       </InputField>
 
-      {/* 3. CAMPOS CONDICIONALES CON ANIMACIÓN DE ENTRADA */}
+      {/* Campos Condicionales de Financiamiento */}
       {formData.offersFinancing && (
-        <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300 sm:col-span-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        <div className="animate-fade-in md:col-span-2 mt-4 p-6 bg-primary/5 rounded-lg border border-primary/10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
             <InputField
-              label="Tasa de Interés (%)"
+              label="Tasa de Interés Anual (%)"
               error={getFieldError("financingDetails.interestRate")}
               success={isFieldValid("financingDetails.interestRate")}
               icon={<Percent />}
@@ -178,7 +179,7 @@ export function PriceSection({
                 value={formData.financingDetails?.interestRate ?? ""}
                 onChange={(e) => handleInterestRateChange(e.target.value)}
                 onBlur={() => handleBlur("financingDetails.interestRate")}
-                className={getInputClassName("financingDetails.interestRate")}
+                className={`input-premium ${getInputClassName("financingDetails.interestRate")}`}
                 placeholder="Ej: 18"
                 min={0}
                 max={50}
@@ -188,7 +189,7 @@ export function PriceSection({
             </InputField>
 
             <InputField
-              label="Plazo (meses)"
+              label="Plazo del Préstamo (meses)"
               error={getFieldError("financingDetails.loanTerm")}
               success={isFieldValid("financingDetails.loanTerm")}
               icon={<Calendar />}
@@ -198,7 +199,7 @@ export function PriceSection({
                 value={formData.financingDetails?.loanTerm ?? ""}
                 onChange={(e) => handleLoanTermChange(e.target.value)}
                 onBlur={() => handleBlur("financingDetails.loanTerm")}
-                className={getInputClassName("financingDetails.loanTerm")}
+                className={`input-premium ${getInputClassName("financingDetails.loanTerm")}`}
                 placeholder="Ej: 36"
                 min={1}
                 max={120}

@@ -13,6 +13,12 @@ import {
   ArrowRight,
   Save,
   AlertTriangle,
+  Shield,
+  Zap,
+  Star,
+  Sparkles,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
 
 // UI
@@ -47,7 +53,6 @@ import { phoneCodes } from "@/constants/form-constants";
 
 // Components
 import { FormProgress } from "./form-progress";
-// import { PaymentConfirmation } from "../../payment/payment-confirmation href="../../payment/payment-confirmation";
 import { PaymentConfirmation } from "../../payment/payment-confirmation";
 import { SuccessScreen } from "./success-screen";
 import Step1_BasicInfo from "./Step1_BasicInfo";
@@ -139,6 +144,40 @@ const VehicleRegistrationForm: React.FC = () => {
     );
   }, [formData.images, formData.description]);
 
+  // Step information for enhanced UI
+  const stepInfo = [
+    {
+      id: 1,
+      title: "Información Básica",
+      icon: Car,
+      description: "Datos principales del vehículo",
+    },
+    {
+      id: 2,
+      title: "Precio y Condición",
+      icon: Star,
+      description: "Define el valor y estado",
+    },
+    {
+      id: 3,
+      title: "Especificaciones",
+      icon: Zap,
+      description: "Detalles técnicos",
+    },
+    {
+      id: 4,
+      title: "Contacto",
+      icon: Shield,
+      description: "Información de contacto",
+    },
+    {
+      id: 5,
+      title: "Fotos y Extras",
+      icon: Sparkles,
+      description: "Imágenes y características",
+    },
+  ];
+
   return (
     <ProtectedRoute>
       <Head>
@@ -152,18 +191,57 @@ const VehicleRegistrationForm: React.FC = () => {
         <title>Publicar Anuncio - 1AutoMarket</title>
       </Head>
 
-      <div className="min-h-screen bg-background text-foreground py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 py-8 px-4">
         <div className="max-w-6xl mx-auto">
+          {/* PREMIUM HEADER */}
+
+          <div className="relative mb-10">
+            {/* Fondo decorativo */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 rounded-3xl transform -skew-y-1"></div>
+
+            {/* Contenido del header */}
+            <div className="relative text-center py-8 px-6 animate-fade-in">
+              {/* Icono decorativo */}
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg mb-6">
+                <Car className="w-8 h-8 text-white" />
+              </div>
+
+              {/* Título principal con gradiente mejorado */}
+              <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4 tracking-tight">
+                <span className="text-foreground">Publica tu </span>
+                <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent drop-shadow-sm">
+                  Vehículo
+                </span>
+              </h1>
+
+              {/* Subtítulo con mejor espaciado */}
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+                Conecta con miles de compradores potenciales a través de nuestra
+                plataforma premium
+              </p>
+
+              {/* Línea decorativa */}
+              <div className="mt-6 flex justify-center">
+                <div className="h-1 w-24 bg-gradient-to-r from-primary to-accent rounded-full"></div>
+              </div>
+            </div>
+          </div>
+
           {/* MAIN CARD */}
-          <div data-aos="fade-up" data-aos-delay="100">
-            <Card className="shadow-xl border-border card-hover" ref={formRef}>
-              {/* HEADER */}
-              <div data-aos="fade-down" data-aos-delay="200">
-                <CardHeader className="text-center relative bg-muted/30 border-b">
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mx-auto mb-4 bg-primary/10 border-2 border-primary/20">
+          <div className="animate-slide-up">
+            <Card
+              className="card-premium shadow-xl overflow-hidden border-0"
+              ref={formRef}
+            >
+              {/* PREMIUM HEADER */}
+              <div className="relative bg-gradient-to-r from-primary/5 to-accent/5 p-8 border-b border-border/50">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl"></div>
+
+                <div className="relative z-10 text-center">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mx-auto mb-4 bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary/30 shadow-lg">
                     <Car className="w-10 h-10 text-primary" />
                   </div>
-                  <CardTitle className="text-3xl font-heading font-bold text-foreground">
+                  <CardTitle className="text-3xl font-heading font-bold text-foreground mb-2">
                     Registrar Vehículo
                   </CardTitle>
                   <p className="text-md text-muted-foreground max-w-lg mx-auto">
@@ -178,29 +256,48 @@ const VehicleRegistrationForm: React.FC = () => {
                       size="sm"
                       onClick={() => setShowClearConfirm(true)}
                       className="flex items-center gap-2 text-muted-foreground hover:text-destructive transition-all rounded-full px-3 py-1.5 shadow-sm hover:bg-destructive/10"
-                      data-aos="fade-left"
-                      data-aos-delay="300"
                     >
                       <Trash2 className="w-4 h-4" />
                       <span className="hidden sm:inline">Limpiar</span>
                     </Button>
                   </div>
-                </CardHeader>
+                </div>
               </div>
 
               <CardContent className="p-6 lg:p-8 space-y-6">
-                {/* PROGRESS BAR */}
-                <div data-aos="fade-up" data-aos-delay="300">
+                {/* ENHANCED PROGRESS BAR */}
+                <div className="mb-8">
                   <FormProgress
                     currentStep={currentStep}
                     highestCompletedStep={highestCompletedStep}
                     onStepClick={setCurrentStep}
                   />
+
+                  {/* Step info display */}
+                  <div className="mt-6 text-center animate-fade-in">
+                    {currentStep <= 5 && (
+                      <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-muted/30 border border-border/50">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                          {React.createElement(stepInfo[currentStep - 1].icon, {
+                            className: "w-4 h-4 text-primary",
+                          })}
+                        </div>
+                        <div className="text-left">
+                          <p className="text-sm font-medium">
+                            {stepInfo[currentStep - 1].title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {stepInfo[currentStep - 1].description}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* STEPS */}
                 {currentStep === 6 ? (
-                  <div data-aos="fade-up" data-aos-delay="400">
+                  <div className="animate-scale-in">
                     <PaymentConfirmation
                       selectedBank={selectedBank}
                       setSelectedBank={setSelectedBank}
@@ -215,7 +312,7 @@ const VehicleRegistrationForm: React.FC = () => {
                     />
                   </div>
                 ) : currentStep === 7 ? (
-                  <div data-aos="fade-up" data-aos-delay="400">
+                  <div className="animate-scale-in">
                     <SuccessScreen
                       onCreateNew={handleCreateNew}
                       onViewAds={handleViewAds}
@@ -224,7 +321,7 @@ const VehicleRegistrationForm: React.FC = () => {
                 ) : (
                   <div className="space-y-6">
                     {currentStep === 1 && (
-                      <div data-aos="fade-up" data-aos-delay="400">
+                      <div className="animate-fade-in">
                         <Step1_BasicInfo
                           formData={formDataTyped}
                           errors={errors}
@@ -234,7 +331,7 @@ const VehicleRegistrationForm: React.FC = () => {
                       </div>
                     )}
                     {currentStep === 2 && (
-                      <div data-aos="fade-up" data-aos-delay="400">
+                      <div className="animate-fade-in">
                         <Step2_PriceAndCondition
                           formData={formDataTyped}
                           errors={errors}
@@ -244,7 +341,7 @@ const VehicleRegistrationForm: React.FC = () => {
                       </div>
                     )}
                     {currentStep === 3 && (
-                      <div data-aos="fade-up" data-aos-delay="400">
+                      <div className="animate-fade-in">
                         <Step3_Specs
                           formData={formDataTyped}
                           errors={errors}
@@ -253,7 +350,7 @@ const VehicleRegistrationForm: React.FC = () => {
                       </div>
                     )}
                     {currentStep === 4 && (
-                      <div data-aos="fade-up" data-aos-delay="400">
+                      <div className="animate-fade-in">
                         <Step4_ContactInfo
                           formData={formDataTyped}
                           errors={errors}
@@ -264,7 +361,7 @@ const VehicleRegistrationForm: React.FC = () => {
                       </div>
                     )}
                     {currentStep === 5 && (
-                      <div data-aos="fade-up" data-aos-delay="400">
+                      <div className="animate-fade-in">
                         <Step5_FeaturesAndMedia
                           formData={formDataTyped}
                           errors={errors}
@@ -278,18 +375,16 @@ const VehicleRegistrationForm: React.FC = () => {
                       </div>
                     )}
 
-                    {/* FOOTER BUTTONS */}
-                    <div data-aos="fade-up" data-aos-delay="500">
-                      <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-6 border-t bg-muted/5 rounded-b-lg">
+                    {/* ENHANCED FOOTER BUTTONS */}
+                    <div className="mt-8 pt-6 border-t border-border/50 bg-muted/10 rounded-b-lg p-6">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div>
                           {currentStep > 1 && currentStep < 6 && (
                             <Button
                               variant="outline"
                               onClick={handlePrevStep}
                               disabled={isSubmitting}
-                              className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-4 py-2.5 shadow-sm border-border hover:border-primary/50 hover:bg-primary/5 transition-all"
-                              data-aos="fade-right"
-                              data-aos-delay="100"
+                              className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-6 py-2.5 shadow-sm border-border hover:border-primary/50 hover:bg-primary/5 transition-all hover:-translate-y-0.5"
                             >
                               <ArrowLeft className="w-4 h-4" />
                               Anterior
@@ -303,16 +398,24 @@ const VehicleRegistrationForm: React.FC = () => {
                               variant="outline"
                               onClick={manualSave}
                               disabled={isSubmitting}
-                              className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-4 py-2.5 shadow-sm bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 transition-all"
-                              data-aos="zoom-in"
-                              data-aos-delay="200"
+                              className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-6 py-2.5 shadow-sm bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 transition-all hover:-translate-y-0.5"
                             >
-                              <Save className="w-4 h-4" />
-                              {saveStatus === "saving"
-                                ? "Guardando..."
-                                : saveStatus === "saved"
-                                ? "Guardado"
-                                : "Guardar"}
+                              {saveStatus === "saving" ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  Guardando...
+                                </>
+                              ) : saveStatus === "saved" ? (
+                                <>
+                                  <CheckCircle2 className="w-4 h-4" />
+                                  Guardado
+                                </>
+                              ) : (
+                                <>
+                                  <Save className="w-4 h-4" />
+                                  Guardar
+                                </>
+                              )}
                             </Button>
                           )}
 
@@ -320,9 +423,7 @@ const VehicleRegistrationForm: React.FC = () => {
                             <Button
                               onClick={handleNextStep}
                               disabled={isSubmitting || !isCurrentStepValid}
-                              className="flex w-full sm:w-auto items-center justify-center gap-2 bg-primary hover:bg-primary/90 rounded-xl px-6 py-2.5 shadow-lg transition-all disabled:opacity-50"
-                              data-aos="fade-left"
-                              data-aos-delay="300"
+                              className="btn-primary flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-6 py-2.5 shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               Siguiente
                               <ArrowRight className="w-4 h-4" />
@@ -333,16 +434,14 @@ const VehicleRegistrationForm: React.FC = () => {
                             <Button
                               onClick={handleNextStep}
                               disabled={isSubmitting || !isStep5Complete}
-                              className="flex w-full sm:w-auto items-center justify-center gap-2 bg-accent hover:bg-accent/90 rounded-xl px-6 py-2.5 shadow-lg transition-all disabled:opacity-50"
-                              data-aos="zoom-in"
-                              data-aos-delay="400"
+                              className="btn-accent flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-6 py-2.5 shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed shimmer-effect"
                             >
                               Finalizar y Pagar
                               <ArrowRight className="w-4 h-4" />
                             </Button>
                           )}
                         </div>
-                      </CardFooter>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -350,26 +449,57 @@ const VehicleRegistrationForm: React.FC = () => {
             </Card>
           </div>
 
-          {/* SECURITY BADGE */}
-          <div
-            className="mt-12 text-center"
-            data-aos="fade-up"
-            data-aos-delay="600"
-          >
-            <div className="inline-flex items-center px-6 py-3 rounded-full border bg-card shadow-md text-muted-foreground transition-all hover:shadow-lg">
-              <div className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse" />
-              <p className="text-sm">Tus datos están seguros y protegidos</p>
+          {/* ENHANCED SECURITY BADGE */}
+          <div className="mt-12 text-center animate-fade-in">
+            <div className="inline-flex items-center px-6 py-3 rounded-full border border-border/50 bg-card shadow-md text-muted-foreground transition-all hover:shadow-lg hover:-translate-y-0.5 card-hover">
+              <div className="w-2 h-2 bg-success rounded-full mr-3 animate-pulse"></div>
+              <Shield className="w-4 h-4 mr-2 text-success" />
+              <p className="text-sm font-medium">
+                Tus datos están encriptados y protegidos
+              </p>
+            </div>
+          </div>
+
+          {/* PREMIUM FEATURES SECTION */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
+            <div className="card-glass p-6 card-hover text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
+                <Zap className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-2">Publicación Rápida</h3>
+              <p className="text-sm text-muted-foreground">
+                Tu vehículo estará visible en menos de 24 horas tras la
+                verificación
+              </p>
+            </div>
+
+            <div className="card-glass p-6 card-hover text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accent/10 mb-4">
+                <Star className="w-6 h-6 text-accent" />
+              </div>
+              <h3 className="font-semibold mb-2">Alcance Premium</h3>
+              <p className="text-sm text-muted-foreground">
+                Tu anuncio será destacado y visto por miles de compradores
+                potenciales
+              </p>
+            </div>
+
+            <div className="card-glass p-6 card-hover text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-success/10 mb-4">
+                <CheckCircle2 className="w-6 h-6 text-success" />
+              </div>
+              <h3 className="font-semibold mb-2">Resultados Garantizados</h3>
+              <p className="text-sm text-muted-foreground">
+                El 90% de nuestros usuarios venden su vehículo en menos de 30
+                días
+              </p>
             </div>
           </div>
         </div>
 
-        {/* ALERT DIALOG */}
+        {/* ENHANCED ALERT DIALOG */}
         <AlertDialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
-          <AlertDialogContent
-            className="sm:max-w-md"
-            data-aos="zoom-in"
-            data-aos-duration="300"
-          >
+          <AlertDialogContent className="sm:max-w-md card-premium border-0">
             <AlertDialogHeader>
               <div className="flex items-center space-x-3">
                 <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-destructive/10 sm:mx-0 sm:h-10 sm:w-10 border border-destructive/20">

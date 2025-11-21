@@ -87,15 +87,14 @@ export function SpecsSection({
   }, [loadCapacityDisplay, handleChange, handleBlur]);
 
   return (
-    // 6. CONTENEDOR UNIFICADO CON HOVER Y GRID RESPONSIVO
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-start p-6 -m-6 rounded-lg transition-all duration-300 hover:bg-muted/20">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
       
       <InputField
         label="Color"
         required
         error={getFieldError("color")}
         success={isFieldValid("color")}
-        icon={<Palette className="w-4 h-4" />}
+        icon={<Palette />}
         tooltip="Color principal del vehículo"
       >
         <SelectField
@@ -105,18 +104,20 @@ export function SpecsSection({
           onBlur={() => handleBlur("color")}
           placeholder="Selecciona el color"
           options={COMMON_COLORS.map(color => ({ value: color, label: color }))}
+          className={`input-premium ${getInputClassName("color")}`}
+          disabled={isSubmitting}
         />
       </InputField>
 
       {/* Campo Condicional: Especificar Color */}
       {formData.color === "Otro" && (
-        <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+        <div className="animate-fade-in">
           <InputField
             label="Especificar Color"
             required
             error={getFieldError("colorOther")}
             success={isFieldValid("colorOther")}
-            icon={<Palette className="w-4 h-4" />}
+            icon={<Palette />}
             counter={{ current: (formData as any).colorOther?.length || 0, max: 30 }}
           >
             <Input
@@ -126,7 +127,7 @@ export function SpecsSection({
               onChange={(e) => handleChange("colorOther", e.target.value)}
               onBlur={() => handleBlur("colorOther")}
               maxLength={30}
-              className={getInputClassName("colorOther")}
+              className={`input-premium ${getInputClassName("colorOther")}`}
               placeholder="Escribe el color"
               disabled={isSubmitting}
             />
@@ -138,7 +139,7 @@ export function SpecsSection({
         label="Motor / Descripción"
         error={getFieldError("engine")}
         success={isFieldValid("engine")}
-        icon={<Wrench className="w-4 h-4" />}
+        icon={<Wrench />}
         tooltip="Opcional. Ej: 1.6L 4 cilindros, V8 5.0L (mínimo 4 caracteres)"
         counter={{ current: formData.engine?.length || 0, max: 100 }}
       >
@@ -149,7 +150,7 @@ export function SpecsSection({
           onChange={(e) => handleEngineChange(e.target.value)}
           onBlur={() => handleBlur("engine")}
           maxLength={100}
-          className={getInputClassName("engine")}
+          className={`input-premium ${getInputClassName("engine")}`}
           placeholder="Ej: 1.6L 4 cilindros"
           disabled={isSubmitting}
         />
@@ -159,7 +160,7 @@ export function SpecsSection({
         label="Cilindraje"
         error={getFieldError("displacement")}
         success={isFieldValid("displacement")}
-        icon={<Gauge className="w-4 h-4" />}
+        icon={<Gauge />}
         tooltip="Opcional. Formato: 2.0L o 150cc"
       >
         <SelectField
@@ -169,6 +170,7 @@ export function SpecsSection({
           onBlur={() => handleBlur("displacement")}
           placeholder="Selecciona el cilindraje"
           options={displacementOptions}
+          className={`input-premium ${getInputClassName("displacement")}`}
           disabled={isSubmitting}
         />
       </InputField>
@@ -177,7 +179,7 @@ export function SpecsSection({
         label="Transmisión"
         error={getFieldError("transmission")}
         success={isFieldValid("transmission")}
-        icon={<GitBranch className="w-4 h-4" />}
+        icon={<GitBranch />}
         tooltip="Tipo de transmisión"
       >
         <SelectField
@@ -187,6 +189,8 @@ export function SpecsSection({
           onBlur={() => handleBlur("transmission")}
           placeholder="Selecciona la transmisión"
           options={Object.entries(TRANSMISSION_TYPES_LABELS).map(([key, label]) => ({ value: key, label }))}
+          className={`input-premium ${getInputClassName("transmission")}`}
+          disabled={isSubmitting}
         />
       </InputField>
 
@@ -194,7 +198,7 @@ export function SpecsSection({
         label="Combustible"
         error={getFieldError("fuelType")}
         success={isFieldValid("fuelType")}
-        icon={<Droplet className="w-4 h-4" />}
+        icon={<Droplet />}
         tooltip="Tipo de combustible"
       >
         <SelectField
@@ -204,6 +208,8 @@ export function SpecsSection({
           onBlur={() => handleBlur("fuelType")}
           placeholder="Selecciona el combustible"
           options={Object.entries(FUEL_TYPES_LABELS).map(([key, label]) => ({ value: key, label }))}
+          className={`input-premium ${getInputClassName("fuelType")}`}
+          disabled={isSubmitting}
         />
       </InputField>
 
@@ -211,7 +217,7 @@ export function SpecsSection({
         label="Tracción"
         error={getFieldError("driveType")}
         success={isFieldValid("driveType")}
-        icon={<Gauge className="w-4 h-4" />} // Icono más representativo
+        icon={<Gauge />}
         tooltip="Tipo de tracción"
       >
         <SelectField
@@ -221,29 +227,30 @@ export function SpecsSection({
           onBlur={() => handleBlur("driveType")}
           placeholder="Selecciona la tracción"
           options={Object.entries(DRIVE_TYPE_LABELS).map(([key, label]) => ({ value: key, label }))}
+          className={`input-premium ${getInputClassName("driveType")}`}
+          disabled={isSubmitting}
         />
       </InputField>
 
-      {/* Campos Condicionales con Animación y Solución de Input Número */}
       {requiresDoorsSeats && (
         <>
-          <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+          <div className="animate-fade-in">
             <InputField
               label="Número de Puertas"
               required
               error={getFieldError("doors")}
               success={isFieldValid("doors")}
-              icon={<DoorOpen className="w-4 h-4" />}
+              icon={<DoorOpen />}
               tooltip="Cantidad de puertas"
             >
               <Input
                 id="doors"
                 name="doors"
                 type="number"
-                value={doorsDisplay} // Estado local
-                onChange={(e) => setDoorsDisplay(e.target.value)} // Actualiza estado local
-                onBlur={handleDoorsBlur} // Manejador específico
-                className={getInputClassName("doors")}
+                value={doorsDisplay}
+                onChange={(e) => setDoorsDisplay(e.target.value)}
+                onBlur={handleDoorsBlur}
+                className={`input-premium ${getInputClassName("doors")}`}
                 placeholder="Ej: 4"
                 min={0}
                 max={10}
@@ -252,23 +259,23 @@ export function SpecsSection({
             </InputField>
           </div>
 
-          <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+          <div className="animate-fade-in">
             <InputField
               label="Número de Asientos"
               required
               error={getFieldError("seats")}
               success={isFieldValid("seats")}
-              icon={<Armchair className="w-4 h-4" />}
+              icon={<Armchair />}
               tooltip="Cantidad de asientos"
             >
               <Input
                 id="seats"
                 name="seats"
                 type="number"
-                value={seatsDisplay} // Estado local
-                onChange={(e) => setSeatsDisplay(e.target.value)} // Actualiza estado local
-                onBlur={handleSeatsBlur} // Manejador específico
-                className={getInputClassName("seats")}
+                value={seatsDisplay}
+                onChange={(e) => setSeatsDisplay(e.target.value)}
+                onBlur={handleSeatsBlur}
+                className={`input-premium ${getInputClassName("seats")}`}
                 placeholder="Ej: 5"
                 min={1}
                 max={50}
@@ -280,23 +287,23 @@ export function SpecsSection({
       )}
 
       {formData.category === VehicleCategory.TRUCK && (
-        <div className="animate-in fade-in-0 slide-in-from-top-2 duration-300">
+        <div className="animate-fade-in md:col-span-2">
           <InputField
             label="Capacidad de Carga (kg)"
             required
             error={getFieldError("loadCapacity")}
             success={isFieldValid("loadCapacity")}
-            icon={<Weight className="w-4 h-4" />}
+            icon={<Weight />}
             tooltip="Capacidad máxima de carga"
           >
             <Input
               id="loadCapacity"
               name="loadCapacity"
               type="number"
-              value={loadCapacityDisplay} // Estado local
-              onChange={(e) => setLoadCapacityDisplay(e.target.value)} // Actualiza estado local
-              onBlur={handleLoadCapacityBlur} // Manejador específico
-              className={getInputClassName("loadCapacity")}
+              value={loadCapacityDisplay}
+              onChange={(e) => setLoadCapacityDisplay(e.target.value)}
+              onBlur={handleLoadCapacityBlur}
+              className={`input-premium ${getInputClassName("loadCapacity")}`}
               placeholder="Ej: 1000"
               min={0}
               max={50000}

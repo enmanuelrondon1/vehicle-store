@@ -4,8 +4,15 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Loader2, RefreshCw, Bug, ChevronDown } from "lucide-react"; // Añadimos ChevronDown
+// 👆 Importamos los componentes de estado que acabamos de crear. Sus rutas deben ser correctas.
+import { PremiumLoadingState } from "@/components/features/admin/EditVehiclePage/PremiumLoadingState";
+import { PremiumErrorState } from "@/components/features/admin/EditVehiclePage/PremiumErrorState";
+import { DebugPanel } from "@/components/features/admin/EditVehiclePage/DebugPanel";
+
+// 👆 Importamos SOLO los iconos que se usan directamente en ESTE archivo.
+// Los otros como Bug, AlertCircle, etc., ahora viven dentro de sus propios componentes.
+import { ArrowLeft, Car, Sparkles, RefreshCw } from "lucide-react";
+
 import { Vehicle } from "@/types/types";
 import VehicleEditForm from "@/components/features/admin/VehicleEditForm/VehicleEditForm";
 
@@ -17,7 +24,7 @@ export default function EditVehiclePage() {
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [apiResponse, setApiResponse] = useState<any>(null); // 🐛 Para debug
+  const [apiResponse, setApiResponse] = useState<any>(null);
 
   const fetchVehicle = async () => {
     try {
@@ -49,56 +56,66 @@ export default function EditVehiclePage() {
   }, [id]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* CABECERA CON PANEL DE DEBUG INTEGRADO */}
-      <header className="border-b bg-card">
-        <div className="container-max section-padding">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            {/* Título y Controles Principales */}
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* 🌟 EFECTOS DE FONDO PREMIUM */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--primary-10),transparent_50%)]"></div>
+      </div>
+
+      {/* 🎯 CABECERA PREMIUM CON GLASSMORPHISM */}
+      <header className="sticky top-0 z-40 border-b border-border/50 backdrop-blur-xl bg-card/80 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-success/5 pointer-events-none"></div>
+        
+        <div className="container-wide py-6 relative">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            {/* 🎨 Título y Navegación */}
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                <ArrowLeft className="w-5 h-5" />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => router.back()}
+                className="hover:bg-primary/10 hover:text-primary transition-all relative group hover:scale-110"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all blur-md"></div>
+                <ArrowLeft className="w-5 h-5 relative z-10 transition-transform group-hover:-translate-x-1" />
               </Button>
-              <div>
-                <h1 className="text-2xl font-heading tracking-tight">Editar Vehículo</h1>
-                <p className="text-sm text-muted-foreground">Modifica los detalles del vehículo seleccionado.</p>
+              
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-3">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-xl blur-md opacity-60 group-hover:opacity-100 animate-pulse-glow"></div>
+                    <div className="relative p-2.5 bg-gradient-to-br from-primary to-accent rounded-xl shadow-xl">
+                      <Car className="w-6 h-6 text-primary-foreground" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-3xl lg:text-4xl font-black tracking-tight text-gradient">
+                      Editar Vehículo
+                    </h1>
+                    <Sparkles className="w-5 h-5 text-accent animate-pulse" />
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground ml-14 font-medium">
+                  Modifica y optimiza los detalles de tu publicación
+                </p>
               </div>
             </div>
 
-            {/* Sección de Herramientas (Debug y Reintentar) */}
-            <div className="flex items-center gap-4">
-              {/* PANEL DE DEBUG COLAPSABLE */}
-              {apiResponse && (
-                <details className="group relative">
-                  <summary className="flex items-center gap-2 cursor-pointer text-sm font-mono bg-muted/50 hover:bg-muted border border-border rounded-md px-3 py-2 transition-colors list-none">
-                    <Bug className="w-4 h-4" />
-                    <span>Debug API</span>
-                    <ChevronDown className="w-3 h-3 ml-1 transition-transform group-open:rotate-180" />
-                  </summary>
-                  {/* Contenido del Popover */}
-                  <div className="absolute z-20 mt-2 p-4 bg-popover border border-border rounded-md shadow-lg w-[90vw] sm:w-96 left-0 sm:left-auto sm:right-0">
-                    <div className="space-y-1 text-xs font-mono">
-                      <div><span className="text-muted-foreground">ID:</span> <span className="text-foreground">{apiResponse.data?._id}</span></div>
-                      <div><span className="text-muted-foreground">Vehículo:</span> <span className="text-foreground">{apiResponse.data?.brand} {apiResponse.data?.model} ({apiResponse.data?.year})</span></div>
-                      <div><span className="text-muted-foreground">Location:</span> <span className="text-foreground">"{apiResponse.data?.location}"</span></div>
-                      <div><span className="text-muted-foreground">Email:</span> <span className="text-foreground">{apiResponse.data?.sellerContact?.email}</span></div>
-                      <div><span className="text-muted-foreground">Phone:</span> <span className="text-foreground">{apiResponse.data?.sellerContact?.phone}</span></div>
-                      <div><span className="text-muted-foreground">Imágenes:</span> <span className="text-foreground">{apiResponse.data?.images?.length || 0}</span></div>
-                      <div><span className="text-muted-foreground">Features:</span> <span className="text-foreground">{apiResponse.data?.features?.length || 0}</span></div>
-                    </div>
-                    <details className="mt-3">
-                      <summary className="cursor-pointer text-primary hover:underline text-xs">Ver objeto completo</summary>
-                      <pre className="mt-2 text-xs bg-card border border-border rounded-md p-3 overflow-auto max-h-60">
-                        <code>{JSON.stringify(apiResponse.data, null, 2)}</code>
-                      </pre>
-                    </details>
-                  </div>
-                </details>
-              )}
+            {/* 🛠️ Herramientas y Debug */}
+            <div className="flex items-center gap-3 flex-wrap lg:flex-nowrap">
+              {/* 👆 CAMBIO CLAVE: El enorme bloque de JSX del panel de debug ahora es un componente simple y reutilizable. */}
+              <DebugPanel apiResponse={apiResponse} />
 
-              {/* Botón de reintentar */}
+              {/* 🔄 Botón de reintentar premium (solo se muestra si hay un error) */}
               {error && (
-                <Button onClick={fetchVehicle} variant="outline" size="sm">
+                <Button 
+                  onClick={fetchVehicle} 
+                  variant="outline" 
+                  size="sm"
+                  className="border-border/50 hover:border-primary hover:bg-primary/10 hover:text-primary transition-all hover:shadow-lg hover:-translate-y-0.5 font-semibold"
+                >
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Reintentar
                 </Button>
@@ -108,38 +125,20 @@ export default function EditVehiclePage() {
         </div>
       </header>
 
-      <main className="container-max section-padding">
+      <main className="container-wide section-spacing relative z-10">
         <div className="space-y-6">
-          {/* ESTADOS DE CARGA Y ERROR */}
-          {isLoading && (
-            <Card className="shadow-lg border-border">
-              <CardContent className="flex items-center justify-center h-96">
-                <div className="text-center space-y-4">
-                  <div className="p-4 rounded-full bg-primary/10">
-                    <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto" />
-                  </div>
-                  <p className="text-lg font-medium text-foreground">Cargando información del vehículo...</p>
-                  <p className="text-sm text-muted-foreground">Esto solo tomará un momento.</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* 🔄 ESTADO DE CARGA PREMIUM */}
+          {isLoading && <PremiumLoadingState />}
 
-          {error && (
-            <Card className="shadow-lg border-destructive/50 bg-destructive/5">
-              <CardContent className="flex flex-col items-center justify-center h-96 text-center">
-                <p className="text-lg font-medium text-destructive mb-2">Oops, algo salió mal.</p>
-                <p className="text-muted-foreground mb-6">{error}</p>
-                <Button onClick={fetchVehicle} variant="outline">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Reintentar Carga
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          {/* ❌ ESTADO DE ERROR PREMIUM */}
+          {error && <PremiumErrorState error={error} onRetry={fetchVehicle} />}
 
-          {/* FORMULARIO */}
-          {vehicle && !isLoading && !error && <VehicleEditForm vehicle={vehicle} />}
+          {/* ✅ FORMULARIO PREMIUM */}
+          {vehicle && !isLoading && !error && (
+            <div className="animate-slide-up">
+              <VehicleEditForm vehicle={vehicle} />
+            </div>
+          )}
         </div>
       </main>
     </div>

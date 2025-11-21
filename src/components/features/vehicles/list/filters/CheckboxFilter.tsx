@@ -4,8 +4,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { FC } from "react";
-import { memo } from "react"; // MEJORA: Memoizamos para rendimiento
-import { cn } from "@/lib/utils"; // MEJORA: Para unir clases de forma limpia
+import { memo } from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface CheckboxFilterProps {
   options: { value: string; label: string; count?: number }[];
@@ -14,60 +15,87 @@ interface CheckboxFilterProps {
   maxHeight?: string;
 }
 
-// MEJORA: Memoizamos el componente para evitar re-renders si las props no cambian
 const CheckboxFilter: FC<CheckboxFilterProps> = memo(({ options, selected, onChange, maxHeight = 'max-h-60' }) => {
-  // MEJORA: Manejamos el caso de que no haya opciones
   if (!options || options.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground text-center p-4">
-        No hay opciones disponibles.
-      </p>
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "var(--muted)" }}>
+          <span className="text-2xl">📋</span>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          No hay opciones disponibles
+        </p>
+      </div>
     );
   }
 
   return (
-    // MEJORA: Contenedor más limpio, sin borde duplicado y con scroll suave
     <div className={cn(maxHeight, "overflow-y-auto space-y-1 pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent")}>
-      {options.map((option) => {
+      {options.map((option, index) => {
         const isSelected = selected.includes(option.value);
         const hasCount = option.count !== undefined && option.count > 0;
 
         return (
-          // MEJORA: Usamos una etiqueta semántica y mejoramos el feedback visual
-          <label
+          <motion.div
             key={option.value}
-            htmlFor={`checkbox-${option.value}`}
-            className={cn(
-              "flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors duration-200",
-              "hover:bg-accent/80 focus-within:bg-accent/80",
-              isSelected && "bg-accent/50"
-            )}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, delay: index * 0.05 }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
           >
-            <div className="flex items-center space-x-3 flex-grow min-w-0">
-              <Checkbox
-                id={`checkbox-${option.value}`} // MEJORA: ID para la etiqueta
-                checked={isSelected}
-                onCheckedChange={() => onChange(option.value)}
-              />
-              {/* MEJORA: 'truncate' para evitar que textos largos desformen el diseño */}
-              <span className="text-sm font-medium text-foreground truncate" title={option.label}>
-                {option.label}
-              </span>
-            </div>
-            {hasCount && (
-              // MEJORA: La Badge ahora usa una variante secundaria para no competir con el checkbox
-              <Badge variant="secondary" className="text-xs font-semibold">
-                {option.count}
-              </Badge>
-            )}
-          </label>
+            <label
+              htmlFor={`checkbox-${option.value}`}
+              className={cn(
+                "flex items-center justify-between p-3 rounded-md cursor-pointer transition-all duration-200",
+                "hover:bg-accent/10 focus-within:bg-accent/10",
+                isSelected && "bg-accent/20 border border-accent/30"
+              )}
+            >
+              <div className="flex items-center space-x-3 flex-grow min-w-0">
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Checkbox
+                    id={`checkbox-${option.value}`}
+                    checked={isSelected}
+                    onCheckedChange={() => onChange(option.value)}
+                    className="data-[state=checked]:bg-accent data-[state=checked]:border-accent"
+                  />
+                </motion.div>
+                <span 
+                  className="text-sm font-medium text-foreground truncate" 
+                  title={option.label}
+                >
+                  {option.label}
+                </span>
+              </div>
+              {hasCount && (
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Badge 
+                    variant="secondary" 
+                    className="text-xs font-semibold"
+                    style={{
+                      backgroundColor: isSelected ? "var(--accent-20)" : "var(--muted)",
+                      color: isSelected ? "var(--accent-foreground)" : "var(--muted-foreground)"
+                    }}
+                  >
+                    {option.count}
+                  </Badge>
+                </motion.div>
+              )}
+            </label>
+          </motion.div>
         );
       })}
     </div>
   );
 });
 
-// MEJORA: Añadimos un displayName para las herramientas de desarrollo
 CheckboxFilter.displayName = "CheckboxFilter";
 
 export default CheckboxFilter;

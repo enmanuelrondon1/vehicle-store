@@ -1,5 +1,4 @@
 // src/components/features/vehicles/registration/Step4_ContactInfo.tsx
-
 "use client";
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
@@ -13,6 +12,8 @@ import {
   EyeOff,
   Info,
   MessageCircle,
+  Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import { VehicleDataBackend, FormErrors } from "@/types/types";
 import { VENEZUELAN_STATES } from "@/constants/form-constants";
@@ -21,13 +22,13 @@ import { SelectField } from "@/components/shared/forms/SelectField";
 import { useFieldValidation } from "@/hooks/useFieldValidation";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
 
 interface StepProps {
   formData: Partial<VehicleDataBackend>;
@@ -40,9 +41,8 @@ interface StepProps {
   };
 }
 
-
 // ============================================
-// CONFIGURACIÓN DE VALIDACIÓN (Sin cambios)
+// CONFIGURACIÓN DE VALIDACIÓN
 // ============================================
 const VALIDATION_CONFIG = {
   name: {
@@ -90,7 +90,7 @@ const VALIDATION_CONFIG = {
 };
 
 // ============================================
-// FUNCIONES DE VALIDACIÓN (Sin cambios)
+// FUNCIONES DE VALIDACIÓN
 // ============================================
 const validateName = (name?: string): { isValid: boolean; error?: string } => {
   if (!name) return { isValid: false };
@@ -109,7 +109,9 @@ const validateName = (name?: string): { isValid: boolean; error?: string } => {
   return { isValid: true };
 };
 
-const validateEmail = (email?: string): { isValid: boolean; error?: string } => {
+const validateEmail = (
+  email?: string
+): { isValid: boolean; error?: string } => {
   if (!email) return { isValid: false };
   if (email.length > VALIDATION_CONFIG.email.maxLength)
     return {
@@ -121,7 +123,9 @@ const validateEmail = (email?: string): { isValid: boolean; error?: string } => 
   return { isValid: true };
 };
 
-const validatePhone = (phone?: string): { isValid: boolean; error?: string } => {
+const validatePhone = (
+  phone?: string
+): { isValid: boolean; error?: string } => {
   if (!phone) return { isValid: false };
   const parts = phone.split(" ");
   if (parts.length < 2)
@@ -138,7 +142,9 @@ const validatePhone = (phone?: string): { isValid: boolean; error?: string } => 
   return { isValid: true };
 };
 
-const validateLocation = (location?: string): { isValid: boolean; error?: string } => {
+const validateLocation = (
+  location?: string
+): { isValid: boolean; error?: string } => {
   if (!location) return { isValid: false };
   const parts = location.split(", ");
   if (parts.length < 2)
@@ -163,11 +169,56 @@ const validateLocation = (location?: string): { isValid: boolean; error?: string
 };
 
 // ============================================
-// COMPONENTE: Vista Previa de Contacto (Sin cambios)
+// SUB-COMPONENTE: Encabezado y Progreso
+// ============================================
+const FormHeader: React.FC<{ progress: number }> = React.memo(
+  ({ progress }) => (
+    <div className="text-center space-y-6">
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-3xl blur-xl"></div>
+        <div className="relative flex items-center justify-center gap-4 p-6 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 border border-border/50 shadow-glass">
+          <div className="p-4 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10">
+            <User className="w-8 h-8 text-primary-foreground" />
+          </div>
+          <div className="text-left">
+            <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">
+              Información de Contacto
+            </h2>
+            <p className="text-base text-muted-foreground mt-1">
+              Datos para que los compradores te contacten
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full max-w-md mx-auto pt-2">
+        <div className="flex justify-between items-center mb-2.5">
+          <span className="text-sm font-medium text-muted-foreground">
+            Progreso
+          </span>
+          <span className="text-sm font-bold text-foreground tabular-nums">
+            {Math.round(progress)}%
+          </span>
+        </div>
+        <Progress value={progress} variant="glow" className="h-3 bg-muted" />
+        <div className="flex justify-between mt-1">
+          <span className="text-xs text-muted-foreground">
+            Completando información
+          </span>
+          <span className="text-xs text-muted-foreground">Paso 4 de 5</span>
+        </div>
+      </div>
+    </div>
+  )
+);
+FormHeader.displayName = "FormHeader";
+
+// ============================================
+// SUB-COMPONENTE: Vista Previa de Contacto
 // ============================================
 const ContactPreviewCard: React.FC<{
   formData: Partial<VehicleDataBackend>;
-}> = ({ formData }) => {
+}> = React.memo(({ formData }) => {
   const formatPhone = (phone?: string) => {
     if (!phone) return null;
     const parts = phone.split(" ");
@@ -178,74 +229,145 @@ const ContactPreviewCard: React.FC<{
   };
 
   return (
-    <div className="p-5 rounded-xl border-2 border-dashed border-border bg-gradient-to-br from-card via-card to-muted/20 shadow-sm">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 rounded-lg bg-primary/10">
-          <Eye className="w-4 h-4 text-primary" />
+    <Card className="card-glass border-border/50 overflow-hidden">
+      <CardContent className="p-0">
+        <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 border-b border-border/30">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-primary/20">
+              <Eye className="w-4 h-4 text-primary" />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground">
+              Vista Previa del Contacto
+            </h3>
+          </div>
         </div>
-        <h3 className="text-base font-semibold text-foreground">
-          Vista Previa del Contacto
-        </h3>
-      </div>
-
-      <div className="space-y-3">
-        {formData.sellerContact?.name && (
-          <div className="flex justify-between items-center py-2 border-b border-border/50">
-            <span className="text-sm text-muted-foreground flex items-center gap-2">
-              <User className="w-3.5 h-3.5" />
-              Vendedor
-            </span>
-            <span className="font-medium text-sm text-foreground">
-              {formData.sellerContact.name}
-            </span>
-          </div>
-        )}
-
-        {formData.sellerContact?.email && (
-          <div className="flex justify-between items-center py-2 border-b border-border/50">
-            <span className="text-sm text-muted-foreground flex items-center gap-2">
-              <Mail className="w-3.5 h-3.5" />
-              Email
-            </span>
-            <span className="font-medium text-sm text-foreground truncate max-w-[200px]">
-              {formData.sellerContact.email}
-            </span>
-          </div>
-        )}
-
-        {formData.sellerContact?.phone && (
-          <div className="flex justify-between items-center py-2 border-b border-border/50">
-            <span className="text-sm text-muted-foreground flex items-center gap-2">
-              <Phone className="w-3.5 h-3.5" />
-              Teléfono
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-sm text-foreground">
-                {formatPhone(formData.sellerContact.phone)}
+        <div className="p-5 space-y-4">
+          {formData.sellerContact?.name && (
+            <div className="flex justify-between items-center py-2 border-b border-border/50">
+              <span className="text-sm text-muted-foreground flex items-center gap-2">
+                <User className="w-3.5 h-3.5" />
+                Vendedor
               </span>
-              <Badge variant="secondary" className="text-xs">
-                <MessageCircle className="w-3 h-3 mr-1" />
-                WhatsApp
-              </Badge>
+              <span className="font-medium text-sm text-foreground">
+                {formData.sellerContact.name}
+              </span>
+            </div>
+          )}
+
+          {formData.sellerContact?.email && (
+            <div className="flex justify-between items-center py-2 border-b border-border/50">
+              <span className="text-sm text-muted-foreground flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5" />
+                Email
+              </span>
+              <span className="font-medium text-sm text-foreground truncate max-w-[200px]">
+                {formData.sellerContact.email}
+              </span>
+            </div>
+          )}
+
+          {formData.sellerContact?.phone && (
+            <div className="flex justify-between items-center py-2 border-b border-border/50">
+              <span className="text-sm text-muted-foreground flex items-center gap-2">
+                <Phone className="w-3.5 h-3.5" />
+                Teléfono
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-sm text-foreground">
+                  {formatPhone(formData.sellerContact.phone)}
+                </span>
+                <Badge variant="secondary" className="text-xs">
+                  <MessageCircle className="w-3 h-3 mr-1" />
+                  WhatsApp
+                </Badge>
+              </div>
+            </div>
+          )}
+
+          {formData.location && (
+            <div className="flex justify-between items-start py-2">
+              <span className="text-sm text-muted-foreground flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5 mt-0.5" />
+                Ubicación
+              </span>
+              <span className="font-medium text-sm text-foreground text-right max-w-[200px]">
+                {formData.location}
+              </span>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+});
+ContactPreviewCard.displayName = "ContactPreviewCard";
+
+// ============================================
+// SUB-COMPONENTE: Resumen de Completitud
+// ============================================
+const CompletionSummary: React.FC<{ progress: number }> = React.memo(
+  ({ progress }) => {
+    const isComplete = progress >= 100;
+    const borderColor = isComplete
+      ? "border-success/40"
+      : "border-amber-500/40";
+    const bgColor = isComplete
+      ? "bg-success/5 dark:bg-success/5"
+      : "bg-amber-500/5 dark:bg-amber-950/20";
+    const iconBgColor = isComplete ? "bg-success/20" : "bg-amber-500/20";
+    const textColor = isComplete
+      ? "text-success"
+      : "text-amber-600 dark:text-amber-400";
+
+    return (
+      <div
+        className={`p-5 rounded-xl border-2 shadow-sm transition-all duration-300 ${borderColor} ${bgColor} card-hover`}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${iconBgColor}`}>
+              {isComplete ? (
+                <CheckCircle2 className={`w-5 h-5 ${textColor}`} />
+              ) : (
+                <AlertCircle className={`w-5 h-5 ${textColor}`} />
+              )}
+            </div>
+            <div>
+              <p className="font-semibold text-foreground text-base">
+                {isComplete
+                  ? "¡Información de contacto completa!"
+                  : "Faltan algunos campos"}
+              </p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {isComplete
+                  ? "Puedes continuar al siguiente paso"
+                  : `${Math.round(progress)}% completado`}
+              </p>
+            </div>
+          </div>
+          <Badge
+            variant={isComplete ? "default" : "secondary"}
+            className="text-sm font-bold px-3 py-1"
+          >
+            {Math.round(progress)}%
+          </Badge>
+        </div>
+
+        {!isComplete && (
+          <div className="mt-3">
+            <div className="w-full bg-muted rounded-full h-2">
+              <div
+                className="bg-gradient-to-r from-primary to-accent h-2 rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              ></div>
             </div>
           </div>
         )}
-
-        {formData.location && (
-          <div className="flex justify-between items-start py-2">
-            <span className="text-sm text-muted-foreground flex items-center gap-2">
-              <MapPin className="w-3.5 h-3.5 mt-0.5" />
-              Ubicación
-            </span>
-            <span className="font-medium text-sm text-foreground text-right max-w-[200px]">
-              {formData.location}
-            </span>
-          </div>
-        )}
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
+CompletionSummary.displayName = "CompletionSummary";
 
 // ============================================
 // COMPONENTE PRINCIPAL
@@ -269,11 +391,13 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
         handleInputChange("sellerContact.name", userSession.name ?? undefined);
       }
       if (!formData.sellerContact?.email && userSession.email) {
-        handleInputChange("sellerContact.email", userSession.email ?? undefined);
+        handleInputChange(
+          "sellerContact.email",
+          userSession.email ?? undefined
+        );
       }
     }
   }, [userSession, formData.sellerContact, handleInputChange]);
-
 
   const inputClass =
     "w-full px-4 py-3.5 rounded-xl border-2 border-border bg-background text-foreground " +
@@ -292,46 +416,38 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
       setSelectedState(currentState);
     }
   }, [formData.location]);
- 
- 
-   // Ya no necesitamos esta función auxiliar
-   /*
-   const formatStateForDisplay = ( state : string) => {
-     return state
-       .split("-")
-       .map(( word ) => word.charAt(0).toUpperCase() + word.slice(1))
-       .join(" ");
-   };
-   */
-   
-   // Opciones para el SelectField de estados (MODIFICADO)
-   // Ahora, tanto `value` como `label` están formateados
-   const stateOptions = useMemo(() =>
-     VENEZUELAN_STATES.map((state) => {
-       const formatted = state
-         .split("-")
-         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-         .join(" ");
-       return { value: formatted, label: formatted };
-     }),
-     []
-   );
- 
- 
-   // Manejadores de cambio que actualizan los estados locales y el formData combinado (MODIFICADO)
-   // `handleStateChange` ya no necesita formatear el valor
-   const handleStateChange = useCallback((newState: string) => {
-     setSelectedState(newState);
-     handleInputChange("location", `${city}, ${newState}`);
-   }, [city, handleInputChange]);
- 
- 
-   const handleCityChange = useCallback(( e : React.ChangeEvent<HTMLInputElement>) => {
-    const newCity = e.target.value;
-    setCity(newCity);
-    handleInputChange("location", `${newCity}, ${selectedState}`);
-  }, [selectedState, handleInputChange]);
-  
+
+  // Opciones para el SelectField de estados
+  const stateOptions = useMemo(
+    () =>
+      VENEZUELAN_STATES.map((state) => {
+        const formatted = state
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+        return { value: formatted, label: formatted };
+      }),
+    []
+  );
+
+  // Manejadores de cambio que actualizan los estados locales y el formData combinado
+  const handleStateChange = useCallback(
+    (newState: string) => {
+      setSelectedState(newState);
+      handleInputChange("location", `${city}, ${newState}`);
+    },
+    [city, handleInputChange]
+  );
+
+  const handleCityChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newCity = e.target.value;
+      setCity(newCity);
+      handleInputChange("location", `${newCity}, ${selectedState}`);
+    },
+    [selectedState, handleInputChange]
+  );
+
   const handleCityBlur = useCallback(() => {
     const formattedCity = city
       .toLowerCase()
@@ -344,17 +460,40 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
     }
   }, [city, selectedState, handleInputChange]);
 
+  // Validaciones
+  const nameValidation = useMemo(
+    () => validateName(formData.sellerContact?.name),
+    [formData.sellerContact?.name]
+  );
+  const emailValidation = useMemo(
+    () => validateEmail(formData.sellerContact?.email),
+    [formData.sellerContact?.email]
+  );
+  const phoneValidation = useMemo(
+    () => validatePhone(formData.sellerContact?.phone),
+    [formData.sellerContact?.phone]
+  );
+  const locationValidation = useMemo(
+    () => validateLocation(formData.location),
+    [formData.location]
+  );
 
-  // Validaciones (sin cambios)
-  const nameValidation = useMemo(() => validateName(formData.sellerContact?.name), [formData.sellerContact?.name]);
-  const emailValidation = useMemo(() => validateEmail(formData.sellerContact?.email), [formData.sellerContact?.email]);
-  const phoneValidation = useMemo(() => validatePhone(formData.sellerContact?.phone), [formData.sellerContact?.phone]);
-  const locationValidation = useMemo(() => validateLocation(formData.location), [formData.location]);
-
-  const nameFieldValidation = useFieldValidation(formData.sellerContact?.name, errors["sellerContact.name"]);
-  const emailFieldValidation = useFieldValidation(formData.sellerContact?.email, errors["sellerContact.email"]);
-  const phoneFieldValidation = useFieldValidation(formData.sellerContact?.phone, errors["sellerContact.phone"]);
-  const locationFieldValidation = useFieldValidation(formData.location, errors.location);
+  const nameFieldValidation = useFieldValidation(
+    formData.sellerContact?.name,
+    errors["sellerContact.name"]
+  );
+  const emailFieldValidation = useFieldValidation(
+    formData.sellerContact?.email,
+    errors["sellerContact.email"]
+  );
+  const phoneFieldValidation = useFieldValidation(
+    formData.sellerContact?.phone,
+    errors["sellerContact.phone"]
+  );
+  const locationFieldValidation = useFieldValidation(
+    formData.location,
+    errors.location
+  );
 
   const phoneFormatted = useMemo(() => {
     if (formData.sellerContact?.phone) {
@@ -369,7 +508,8 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
 
   const handlePhoneChange = useCallback(
     (value: string) => {
-      const code = formData.sellerContact?.phone?.split(" ")[0] || phoneCodes[0];
+      const code =
+        formData.sellerContact?.phone?.split(" ")[0] || phoneCodes[0];
       const cleanNumber = value.replace(/\D/g, "").slice(0, 7);
       handleInputChange("sellerContact.phone", `${code} ${cleanNumber}`);
     },
@@ -383,6 +523,7 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
     },
     [formData.sellerContact?.phone, handleInputChange]
   );
+
   const { progressPercentage, isComplete } = useMemo(() => {
     const fields = [
       nameValidation.isValid,
@@ -396,123 +537,119 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
   }, [nameValidation, emailValidation, phoneValidation, locationValidation]);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in-0 duration-500">
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-3">
-          <div className="p-3.5 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10">
-            <User className="w-7 h-7 text-primary-foreground" />
-          </div>
-          <div className="text-left">
-            <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">
-              Información de Contacto
-            </h2>
-            <p className="text-base text-muted-foreground mt-0.5">
-              Datos para que los compradores te contacten
-            </p>
-          </div>
-        </div>
-
-        <div className="w-full max-w-md mx-auto pt-2">
-          <div className="flex justify-between items-center mb-2.5">
-            <span className="text-sm font-medium text-muted-foreground">
-              Progreso
-            </span>
-            <span className="text-sm font-bold text-foreground tabular-nums">
-              {Math.round(progressPercentage)}%
-            </span>
-          </div>
-          <Progress value={progressPercentage} className="h-2.5 bg-muted" />
-        </div>
-      </div>
+    <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
+      <FormHeader progress={progressPercentage} />
 
       <div className="space-y-7">
-        {/* NOMBRE Y EMAIL (Sin cambios) */}
-        <InputField
-          label="Nombre Completo"
-          required
-          error={errors["sellerContact.name"]}
-          success={nameValidation.isValid}
-          icon={<User className="w-4 h-4 text-primary" />}
-          tooltip="Usa tu nombre real para generar confianza con los compradores"
-          tips={VALIDATION_CONFIG.name.tips}
-          counter={{ current: formData.sellerContact?.name?.length || 0, max: 100 }}
-        >
-          <input
-            type="text"
-            value={formData.sellerContact?.name || ""}
-            onChange={(e) => handleInputChange("sellerContact.name", e.target.value || undefined)}
-            className={`${inputClass} ${nameFieldValidation.getBorderClassName()}`}
-            placeholder="Ej: Juan Carlos Pérez"
-            maxLength={100}
-          />
-          {nameValidation.error && (
-            <div className="flex items-start gap-2 mt-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
-              <AlertCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-destructive font-medium">{nameValidation.error}</p>
-            </div>
-          )}
-        </InputField>
-
-        <InputField
-          label="Correo Electrónico"
-          required
-          error={errors["sellerContact.email"]}
-          success={emailValidation.isValid}
-          icon={<Mail className="w-4 h-4 text-primary" />}
-          tooltip="Recibirás notificaciones de interesados en este correo"
-          tips={VALIDATION_CONFIG.email.tips}
-        >
-          <div className="relative">
+        {/* NOMBRE Y EMAIL */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InputField
+            label="Nombre Completo"
+            required
+            error={errors["sellerContact.name"]}
+            success={nameValidation.isValid}
+            icon={<User className="w-4 h-4 text-primary" />}
+            tooltip="Usa tu nombre real para generar confianza con los compradores"
+            tips={VALIDATION_CONFIG.name.tips}
+            counter={{
+              current: formData.sellerContact?.name?.length || 0,
+              max: 100,
+            }}
+          >
             <input
-              type="email"
-              value={formData.sellerContact?.email || ""}
-              onChange={(e) => handleInputChange("sellerContact.email", e.target.value || undefined)}
-              className={`${inputClass} ${formData.sellerContact?.email ? "pr-12" : ""} ${emailFieldValidation.getBorderClassName()}`}
-              placeholder="Ej: juan.perez@email.com"
-              maxLength={255}
+              type="text"
+              value={formData.sellerContact?.name || ""}
+              onChange={(e) =>
+                handleInputChange(
+                  "sellerContact.name",
+                  e.target.value || undefined
+                )
+              }
+              className={`${inputClass} ${nameFieldValidation.getBorderClassName()}`}
+              placeholder="Ej: Juan Carlos Pérez"
+              maxLength={100}
             />
-            {formData.sellerContact?.email && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => setShowEmailPreview(!showEmailPreview)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
-                    >
-                      {showEmailPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{showEmailPreview ? "Ocultar" : "Mostrar"} vista previa</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
-          {emailValidation.error && (
-            <div className="flex items-start gap-2 mt-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
-              <AlertCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-destructive font-medium">{emailValidation.error}</p>
-            </div>
-          )}
-          {showEmailPreview && formData.sellerContact?.email && !emailValidation.error && (
-            <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 mt-2">
-              <div className="flex items-start gap-2">
-                <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-xs font-medium text-foreground mb-1">Vista previa del anuncio:</p>
-                  <p className="text-sm text-muted-foreground">
-                    Los compradores verán{" "}
-                    <span className="font-semibold text-primary">{formData.sellerContact.email}</span> para contactarte
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </InputField>
+          </InputField>
 
-        {/* TELÉFONO (Sin cambios) */}
+          <InputField
+            label="Correo Electrónico"
+            required
+            error={errors["sellerContact.email"]}
+            success={emailValidation.isValid}
+            icon={<Mail className="w-4 h-4 text-primary" />}
+            tooltip="Recibirás notificaciones de interesados en este correo"
+            tips={VALIDATION_CONFIG.email.tips}
+          >
+            <div className="relative">
+              <input
+                type="email"
+                value={formData.sellerContact?.email || ""}
+                onChange={(e) =>
+                  handleInputChange(
+                    "sellerContact.email",
+                    e.target.value || undefined
+                  )
+                }
+                className={`${inputClass} ${
+                  formData.sellerContact?.email ? "pr-12" : ""
+                } ${emailFieldValidation.getBorderClassName()}`}
+                placeholder="Ej: juan.perez@email.com"
+                maxLength={255}
+              />
+              {formData.sellerContact?.email && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => setShowEmailPreview(!showEmailPreview)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
+                      >
+                        {showEmailPreview ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        {showEmailPreview ? "Ocultar" : "Mostrar"} vista previa
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+          </InputField>
+        </div>
+
+        {/* VISTA PREVIA DEL EMAIL */}
+        {showEmailPreview &&
+          formData.sellerContact?.email &&
+          !emailValidation.error && (
+            <Card className="card-glass border-border/50">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-2">
+                  <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-medium text-foreground mb-1">
+                      Vista previa del anuncio:
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Los compradores verán{" "}
+                      <span className="font-semibold text-primary">
+                        {formData.sellerContact.email}
+                      </span>{" "}
+                      para contactarte
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+        {/* TELÉFONO */}
         <InputField
           label="Teléfono"
           required
@@ -523,11 +660,14 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
         >
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <SelectField
-              value={formData.sellerContact?.phone?.split(" ")[0] || phoneCodes[0]}
+              value={
+                formData.sellerContact?.phone?.split(" ")[0] || phoneCodes[0]
+              }
               onValueChange={handlePhoneCodeChange}
               options={phoneCodes.map((code) => ({ value: code, label: code }))}
               className={`${inputClass} ${phoneFieldValidation.getBorderClassName()}`}
               placeholder="Código"
+              icon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
             />
             <div className="sm:col-span-2 relative">
               <input
@@ -536,7 +676,9 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
                 maxLength={7}
                 value={formData.sellerContact?.phone?.split(" ")[1] || ""}
                 onChange={(e) => handlePhoneChange(e.target.value)}
-                className={`${inputClass} ${phoneFieldValidation.getBorderClassName()} ${phoneValidation.isValid ? "pr-12" : ""}`}
+                className={`${inputClass} ${phoneFieldValidation.getBorderClassName()} ${
+                  phoneValidation.isValid ? "pr-12" : ""
+                }`}
                 placeholder="1234567"
                 inputMode="numeric"
               />
@@ -547,29 +689,29 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
               )}
             </div>
           </div>
-          {phoneValidation.error && (
-            <div className="flex items-start gap-2 mt-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
-              <AlertCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-destructive font-medium">{phoneValidation.error}</p>
-            </div>
-          )}
-          {phoneFormatted && !phoneValidation.error && (
-            <div className="p-3 rounded-lg border border-border bg-muted/30 mt-2">
+        </InputField>
+
+        {/* FORMATO DE TELÉFONO */}
+        {phoneFormatted && !phoneValidation.error && (
+          <Card className="card-glass border-border/50">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Formato:</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground">{phoneFormatted}</span>
+                  <span className="text-sm font-semibold text-foreground">
+                    {phoneFormatted}
+                  </span>
                   <Badge variant="secondary" className="text-xs">
                     <MessageCircle className="w-3 h-3 mr-1" />
                     WhatsApp
                   </Badge>
                 </div>
               </div>
-            </div>
-          )}
-        </InputField>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* ========== UBICACIÓN (MODIFICADO) ========== */}
+        {/* UBICACIÓN */}
         <InputField
           label="Ubicación"
           required
@@ -578,19 +720,17 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
           tooltip="Selecciona tu estado y especifica la ciudad"
           tips={VALIDATION_CONFIG.location.tips}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Selector de Estado usando SelectField */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <SelectField
               value={selectedState}
-              onValueChange={handleStateChange} 
+              onValueChange={handleStateChange}
               options={stateOptions}
               className={`${inputClass} ${locationFieldValidation.getBorderClassName()}`}
               placeholder="Seleccionar estado"
+              icon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
             />
-            
-            {/* Input de Ciudad */}
             <input
-              type="text"   
+              type="text"
               value={city}
               onChange={handleCityChange}
               onBlur={handleCityBlur}
@@ -599,91 +739,80 @@ const Step4_ContactInfo: React.FC<StepProps> = ({
               maxLength={100}
             />
           </div>
-          
-          {locationValidation.error && (
-            <div className="flex items-start gap-2 mt-2 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
-              <AlertCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-destructive font-medium">{locationValidation.error}</p>
-            </div>
-          )}
+        </InputField>
 
-          {(city || selectedState) && !locationValidation.error && (
-            <div className="p-3 rounded-lg border border-border bg-muted/30 mt-2">
+        {/* VISTA PREVIA DE UBICACIÓN */}
+        {(city || selectedState) && !locationValidation.error && (
+          <Card className="card-glass border-border/50">
+            <CardContent className="p-4">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs font-medium text-foreground mb-1">Ubicación que verán los compradores:</p>
-                  <p className="text-sm font-semibold text-primary">
-                    {city && selectedState ? `${city}, ${selectedState}` : city ? `${city} (selecciona un estado)` : `(escribe tu ciudad) ${selectedState}`}
+                  <p className="text-xs font-medium text-foreground mb-1">
+                    Ubicación que verán los compradores:
+                  </p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {city && selectedState
+                      ? `${city}, ${selectedState}`
+                      : city
+                      ? `${city} (selecciona un estado)`
+                      : `(escribe tu ciudad) ${selectedState}`}
                   </p>
                 </div>
               </div>
-            </div>
-          )}
-        </InputField>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* RESTO DEL COMPONENTE (Sin cambios) */}
-        <ContactPreviewCard formData={formData} />
-
-        <div className="p-5 rounded-xl border-2 border-primary/20 bg-primary/5">
-          <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
-              <Info className="w-5 h-5 text-primary" />
+        {/* CONSEJOS PARA MEJOR CONTACTO */}
+        <Card className="card-glass border-border/50 overflow-hidden">
+          <CardContent className="p-0">
+            <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 border-b border-border/30">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                Consejos para un mejor contacto
+              </h4>
             </div>
-            <div>
-              <h3 className="font-semibold text-base text-foreground mb-3">💡 Consejos para un mejor contacto</h3>
-              <ul className="text-sm space-y-2 text-muted-foreground">
-                <li className="flex items-start gap-2">
+            <div className="p-4">
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2 text-sm text-muted-foreground">
                   <span className="text-primary mt-0.5 font-bold">•</span>
-                  <span>Mantén tu teléfono disponible para WhatsApp y activa las notificaciones</span>
+                  <span className="leading-relaxed">
+                    Mantén tu teléfono disponible para WhatsApp y activa las
+                    notificaciones
+                  </span>
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2 text-sm text-muted-foreground">
                   <span className="text-primary mt-0.5 font-bold">•</span>
-                  <span>Responde rápido a los mensajes para generar confianza y cerrar ventas</span>
+                  <span className="leading-relaxed">
+                    Responde rápido a los mensajes para generar confianza y
+                    cerrar ventas
+                  </span>
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2 text-sm text-muted-foreground">
                   <span className="text-primary mt-0.5 font-bold">•</span>
-                  <span>Sé específico con tu ubicación para facilitar visitas presenciales</span>
+                  <span className="leading-relaxed">
+                    Sé específico con tu ubicación para facilitar visitas
+                    presenciales
+                  </span>
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2 text-sm text-muted-foreground">
                   <span className="text-primary mt-0.5 font-bold">•</span>
-                  <span>Usa un email que revises frecuentemente para no perder oportunidades</span>
+                  <span className="leading-relaxed">
+                    Usa un email que revises frecuentemente para no perder
+                    oportunidades
+                  </span>
                 </li>
               </ul>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div
-          className={`p-5 rounded-xl border-2 shadow-sm transition-all duration-300 ${
-            isComplete
-              ? "border-green-500/40 bg-green-50/50 dark:bg-green-950/20"
-              : "border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/20"
-          }`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${isComplete ? "bg-green-500/20" : "bg-amber-500/20"}`}>
-                {isComplete ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-                ) : (
-                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                )}
-              </div>
-              <div>
-                <p className="font-semibold text-foreground text-base">
-                  {isComplete ? "¡Información de contacto completa!" : "Faltan algunos campos obligatorios"}
-                </p>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {isComplete ? "Puedes continuar al siguiente paso" : `${Math.round(progressPercentage)}% completado`}
-                </p>
-              </div>
-            </div>
-            <Badge variant={isComplete ? "default" : "secondary"} className="text-sm font-bold px-3 py-1">
-              {Math.round(progressPercentage)}%
-            </Badge>
-          </div>
-        </div>
+        {/* VISTA PREVIA */}
+        <ContactPreviewCard formData={formData} />
+
+        {/* RESUMEN DE COMPLETITUD */}
+        <CompletionSummary progress={progressPercentage} />
       </div>
     </div>
   );

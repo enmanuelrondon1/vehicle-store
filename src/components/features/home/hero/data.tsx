@@ -3,7 +3,6 @@ import { Zap, Users, Shield, TrendingUp } from "lucide-react";
 
 export const features = [
   {
-    // CAMBIO CLAVE: Pasamos el componente, no el elemento.
     icon: Zap, 
     title: "Publicación Rápida",
     description:
@@ -28,7 +27,6 @@ export const features = [
   },
 ];
 
-// El resto del archivo no necesita cambios.
 export const stats = [
   { number: "50K+", label: "Vehículos Vendidos" },
   { number: "25K+", label: "Usuarios Activos" },

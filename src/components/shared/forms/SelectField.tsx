@@ -16,6 +16,7 @@ interface SelectFieldProps {
   error?: string;
   isLoading?: boolean;
   className?: string;
+  icon?: React.ReactNode;
 }
 
 export const SelectField: React.FC<SelectFieldProps> = ({
@@ -27,6 +28,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
   options,
   isLoading = false,
   className = "",
+  icon,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -114,9 +116,12 @@ export const SelectField: React.FC<SelectFieldProps> = ({
         onKeyDown={handleKeyDown}
         tabIndex={disabled ? -1 : 0}
       >
-        <span className={selectedOption ? 'text-foreground' : 'text-muted-foreground'}>
-          {selectedOption?.label || placeholder}
-        </span>
+        <div className="flex items-center flex-grow">
+          {icon && <div className="mr-2 flex-shrink-0">{icon}</div>}
+          <span className={`flex-grow ${selectedOption ? 'text-foreground' : 'text-muted-foreground'}`}>
+            {selectedOption?.label || placeholder}
+          </span>
+        </div>
         <div className="flex items-center">
           {isLoading && <Loader2 className="w-4 h-4 animate-spin text-primary mr-2" />}
           <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />

@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Shield, CheckCircle, AlertCircle, Clock, FileText, Info, ChevronDown, ChevronUp, Award } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,7 @@ interface VehicleWarrantyProps {
   translatedWarranty?: string;
 }
 
-// ✅ FUNCIÓN MEJORADA CON MÁS DETALLES VISUALES
+// ✅ FUNCIÓN MEJORADA CON ICONOS DEL TEMA
 const getWarrantyInfo = (warranty: WarrantyType) => {
   switch (warranty) {
     case WarrantyType.MANUFACTURER_WARRANTY:
@@ -23,21 +24,21 @@ const getWarrantyInfo = (warranty: WarrantyType) => {
         description: "Garantía oficial proporcionada directamente por el fabricante.",
         features: ["Cobertura nacional", "Servicio en concesionarios autorizados", "Repuestos originales"],
         duration: "Típicamente 3-5 años",
-        variant: "default" as const,
-        iconColor: "text-chart-2",
-        iconBgColor: "bg-chart-2/10",
-        headerBg: "bg-gradient-to-r from-chart-2/5 to-chart-2/10"
+        variant: "default",
+        icon: <Shield className="w-5 h-5" />,
+        iconBg: "bg-primary/10",
+        headerBg: "var(--gradient-primary)"
       };
     case WarrantyType.DEALER_WARRANTY:
       return {
         title: "Garantía de Concesionario",
-        description: "Garantía proporcionada por el concesionario vendedor.",
+        description: "Garantía proporcionada por el concesionario del vehículo.",
         features: ["Cobertura limitada a sucursales", "Términos y condiciones variables", "Posible costo adicional"],
         duration: "Generalmente 1-2 años",
-        variant: "secondary" as const,
-        iconColor: "text-primary",
-        iconBgColor: "bg-primary/10",
-        headerBg: "bg-gradient-to-r from-primary/5 to-primary/10"
+        variant: "secondary",
+        icon: <Shield className="w-5 h-5" />,
+        iconBg: "bg-accent/10",
+        headerBg: "var(--gradient-accent)"
       };
     case WarrantyType.EXTENDED_WARRANTY:
       return {
@@ -45,10 +46,10 @@ const getWarrantyInfo = (warranty: WarrantyType) => {
         description: "Garantía adicional que extiende la cobertura estándar.",
         features: ["Extensión de la garantía original", "Cobertura de componentes adicionales", "Asistencia en carretera"],
         duration: "Hasta 7 años adicionales",
-        variant: "outline" as const,
-        iconColor: "text-chart-4",
-        iconBgColor: "bg-chart-4/10",
-        headerBg: "bg-gradient-to-r from-chart-4/5 to-chart-4/10"
+        variant: "outline",
+        icon: <Shield className="w-5 h-5" />,
+        iconBg: "bg-success/10",
+        headerBg: "var(--gradient-success)"
       };
     case WarrantyType.SELLER_WARRANTY:
       return {
@@ -56,36 +57,37 @@ const getWarrantyInfo = (warranty: WarrantyType) => {
         description: "Garantía proporcionada por el vendedor del vehículo.",
         features: ["Cobertura en talleres afiliados", "Planes personalizados", "Reclamaciones directas"],
         duration: "Variable según el plan",
-        variant: "outline" as const,
-        iconColor: "text-accent",
-        iconBgColor: "bg-accent/10",
-        headerBg: "bg-gradient-to-r from-accent/5 to-accent/10"
+        variant: "outline",
+        icon: <Shield className="w-5 h-5" />,
+        iconBg: "bg-accent/10",
+        headerBg: "var(--gradient-accent)"
       };
     default:
       return {
         title: "Sin Garantía",
-        description: "Este vehículo se vende en su estado actual, sin garantía incluida.",
+        description: "Este vehículo se vende sin garantía o no se ha especificado una.",
         features: [],
         duration: "N/A",
-        variant: "destructive" as const,
-        iconColor: "text-muted-foreground",
-        iconBgColor: "bg-muted",
-        headerBg: "bg-gradient-to-r from-muted/50 to-muted/20"
+        variant: "destructive",
+        icon: <AlertCircle className="w-5 h-5" />,
+        iconBg: "bg-destructive/10",
+        headerBg: "linear-gradient(135deg, var(--destructive), var(--destructive)/90%)"
       };
   }
 };
 
 // ✅ COMPONENTE PARA CADA BENEFICIO
 const BenefitItem: React.FC<{ benefit: string; index: number }> = ({ benefit, index }) => (
-  <div
-    className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:shadow-sm transition-all duration-300"
-    data-aos="fade-up"
-    data-aos-duration="500"
-    data-aos-delay={index * 100}
+  <motion.div
+    className="flex items-start gap-3 p-3 rounded-xl card-glass"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay: index * 0.1 }}
+    whileHover={{ scale: 1.02 }}
   >
-    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+    <CheckCircle className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
     <span className="text-sm text-foreground">{benefit}</span>
-  </div>
+  </motion.div>
 );
 
 const VehicleWarrantyComponent: React.FC<VehicleWarrantyProps> = ({
@@ -96,157 +98,195 @@ const VehicleWarrantyComponent: React.FC<VehicleWarrantyProps> = ({
 
   if (!warranty || warranty === WarrantyType.NO_WARRANTY) {
     return (
-      <Card 
-        className="overflow-hidden shadow-lg border-border/50"
-        data-aos="fade-up"
-        data-aos-duration="700"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
       >
-        <CardContent className="p-6">
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <AlertCircle className="w-8 h-8 text-muted-foreground" />
+        <Card className="card-premium shadow-xl overflow-hidden">
+          <CardContent className="p-8">
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <motion.div 
+                className="w-20 h-20 rounded-full flex items-center justify-center mb-6 animate-float"
+                style={{ backgroundColor: 'var(--muted)' }}
+              >
+                <AlertCircle className="w-10 h-10 text-destructive" />
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-3 text-gradient-primary">
+                Sin Garantía Disponible
+              </h3>
+              <p className="text-muted-foreground max-w-md">
+                Este vehículo se vende sin garantía o no se ha especificado una.
+              </p>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Sin Garantía Especificada</h3>
-            <p className="text-muted-foreground max-w-md">
-              Este vehículo se vende sin garantía o no se ha especificado una. Consulta con el vendedor para más detalles.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
     );
   }
 
   const warrantyInfo = getWarrantyInfo(warranty);
 
   return (
-    <Card 
-      className="overflow-hidden shadow-lg border-border/50"
-      data-aos="fade-up"
-      data-aos-duration="700"
-      data-aos-delay="800"
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
     >
-      <CardHeader className={cn("pb-4", warrantyInfo.headerBg)}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", warrantyInfo.iconBgColor)}>
-              <Shield className={cn("w-5 h-5", warrantyInfo.iconColor)} />
-            </div>
-            <div>
-              <CardTitle className="text-xl">
-                Garantía del Vehículo
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">
-                Protección para tu inversión
-              </p>
-            </div>
-          </div>
-          <Badge variant={warrantyInfo.variant} className="text-xs">
-            {warrantyInfo.title}
-          </Badge>
-        </div>
-      </CardHeader>
-      
-      {isExpanded && (
-        <CardContent className="pt-0">
-          <div className="space-y-6">
-            {/* Descripción principal */}
-            <div 
-              className="p-4 bg-muted/30 rounded-lg border"
-              data-aos="fade-up"
-              data-aos-duration="600"
-              data-aos-delay="100"
-            >
-              <p className="text-sm text-foreground">
-                Este vehículo incluye <span className="font-semibold">{translatedWarranty?.toLowerCase()}</span>.
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                {warrantyInfo.description}
-              </p>
-            </div>
-            
-            {/* Beneficios incluidos */}
-            {warrantyInfo.features.length > 0 && (
-              <div 
-                className="space-y-3"
-                data-aos="fade-up"
-                data-aos-duration="600"
-                data-aos-delay="200"
+      <Card className="card-premium shadow-xl overflow-hidden">
+        <CardHeader className={cn("pb-4", warrantyInfo.variant === "default" ? "border-b" : "")}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <motion.div 
+                className="w-12 h-12 rounded-full flex items-center justify-center glow-effect"
+                style={{ background: warrantyInfo.headerBg }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <h4 className="text-sm font-medium flex items-center gap-2">
-                  <Award className="w-4 h-4 text-primary" />
-                  Beneficios Incluidos
-                </h4>
-                <div className="grid grid-cols-1 gap-2">
-                  {warrantyInfo.features.map((feature, index) => (
-                    <BenefitItem key={index} benefit={feature} index={index} />
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Duración */}
-            <div 
-              className="flex items-center justify-between p-3 bg-muted/20 rounded-lg border"
-              data-aos="fade-up"
-              data-aos-duration="600"
-              data-aos-delay="300"
-            >
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Duración Típica</span>
-              </div>
-              <Badge variant="outline" className="text-xs">
-                {warrantyInfo.duration}
-              </Badge>
-            </div>
-            
-            {/* Aviso importante */}
-            <div 
-              className="p-4 bg-gradient-to-r from-amber-100/50 to-amber-50/30 dark:from-amber-900/20 dark:to-amber-900/10 border border-amber-300/50 dark:border-amber-800/50 rounded-lg"
-              data-aos="fade-up"
-              data-aos-duration="600"
-              data-aos-delay="400"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                  <Info className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                </div>
-                <div>
-                  <h5 className="font-semibold text-sm text-amber-800 dark:text-amber-300 mb-1">
-                    Aviso importante
-                  </h5>
-                  <p className="text-xs text-amber-700 dark:text-amber-400">
-                    La información de la garantía es proporcionada por el vendedor. Te recomendamos verificar todos los detalles y condiciones directamente con el vendedor antes de realizar la compra.
-                  </p>
-                </div>
+                {warrantyInfo.icon}
+              </motion.div>
+              <div>
+                <CardTitle className="text-2xl font-bold">
+                  Garantía del Vehículo
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Protección para tu inversión
+                </p>
               </div>
             </div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="gap-1"
+              >
+                {isExpanded ? (
+                  <>
+                    Ocultar
+                    <ChevronUp className="w-4 h-4" />
+                  </>
+                ) : (
+                  <>
+                    Ver detalles
+                    <ChevronDown className="w-4 h-4" />
+                  </>
+                )}
+              </Button>
+            </motion.div>
           </div>
-        </CardContent>
-      )}
-      
-      {/* Botón expandir/contraer */}
-      <div className="px-6 pb-4 pt-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full gap-1"
-        >
-          {isExpanded ? (
-            <>
-              Ocultar detalles
-              <ChevronUp className="w-4 h-4" />
-            </>
-          ) : (
-            <>
-              Ver detalles de la garantía
-              <ChevronDown className="w-4 h-4" />
-            </>
+        </CardHeader>
+        
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <CardContent className="pt-0">
+                {/* Descripción principal */}
+                <motion.div 
+                  className="p-4 rounded-xl card-glass"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  <p className="text-sm text-foreground">
+                    Este vehículo incluye <span className="font-semibold text-gradient-primary">{translatedWarranty?.toLowerCase()}</span>.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {warrantyInfo.description}
+                  </p>
+                </motion.div>
+                
+                {/* Beneficios incluidos */}
+                {warrantyInfo.features.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="space-y-3"
+                  >
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <Award className="w-4 h-4 text-primary" />
+                      Beneficios Incluidos
+                    </h4>
+                    <div className="grid grid-cols-1 gap-3">
+                      {warrantyInfo.features.map((feature, index) => (
+                        <BenefitItem key={index} benefit={feature} index={index} />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+                
+                {/* Duración */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="flex items-center justify-between p-3 rounded-xl card-glass"
+                >
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Duración Típica</span>
+                  </div>
+                  <Badge className="badge-accent">
+                    {warrantyInfo.duration}
+                  </Badge>
+                </motion.div>
+                
+                {/* Aviso importante */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="p-4 rounded-xl"
+                  style={{ backgroundColor: 'var(--primary-10)' }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Info className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm mb-1">
+                        Información Importante
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        La información de la garantía es proporcionada por el vendedor. Te recomendamos verificar todos los detalles y condiciones directamente con el vendedor antes de realizar la compra.
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              </CardContent>
+            </motion.div>
           )}
-        </Button>
-      </div>
-    </Card>
+        </AnimatePresence>
+        
+        {/* Botón expandir/contraer */}
+        <div className="px-6 pb-4 pt-2">
+          <Button
+            variant="outline"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="w-full btn-accent"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp className="w-4 h-4 mr-2" />
+                Ocultar detalles
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-4 h-4 mr-2" />
+                Ver detalles de la garantía
+              </>
+            )}
+          </Button>
+        </div>
+      </Card>
+    </motion.div>
   );
 };
 
