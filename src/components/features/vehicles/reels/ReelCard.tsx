@@ -12,6 +12,9 @@ import { Vehicle } from "@/types/types";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import ReelInfo from "./ReelInfo";
+import { useReelAnalytics } from "@/hooks/useReelAnalytics";
+import { useReelsConfig } from "@/hooks/useReelsConfig";
+import ParticlesEffect from "./ParticlesEffect";
 
 interface ReelCardProps {
   vehicle: Vehicle;
@@ -32,11 +35,21 @@ export const ReelCard: React.FC<ReelCardProps> = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
-  const [showInfo, setShowInfo] = useState(true);
+
+  // Obtener configuración del hook - se actualiza en tiempo real
+  const { config } = useReelsConfig();
+
+  // Analytics hook
+  const { trackInteraction } = useReelAnalytics(vehicle._id, isActive);
 
   const images = vehicle.images && vehicle.images.length > 0 
     ? vehicle.images 
     : ["/placeholder.svg?height=800&width=600"];
+
+  // Determinar qué información mostrar según el modo
+  const shouldShowActionButtons = config.viewMode !== "minimal";
+  const shouldShowFullInfo = config.viewMode === "detailed";
+  const shouldShowBasicInfo = config.viewMode !== "minimal";
 
   // Check if vehicle is favorited
   useEffect(() => {
@@ -63,11 +76,11 @@ export const ReelCard: React.FC<ReelCardProps> = ({
     if (isActive && images.length > 1) {
       const interval = setInterval(() => {
         setCurrentImageIndex((prev) => (prev + 1) % images.length);
-      }, 3000);
+      }, config.autoplaySpeed);
       
       return () => clearInterval(interval);
     }
-  }, [isActive, images.length]);
+  }, [isActive, images.length, config.autoplaySpeed]);
 
   // Record view
   useEffect(() => {
@@ -110,6 +123,10 @@ export const ReelCard: React.FC<ReelCardProps> = ({
         const isNowFavorited = data.action === "added";
         setIsFavorited(isNowFavorited);
         
+        if (isNowFavorited) {
+          trackInteraction("favorite");
+        }
+        
         toast.success(
           isNowFavorited ? "❤️ Añadido a favoritos" : "Eliminado de favoritos"
         );
@@ -134,6 +151,8 @@ export const ReelCard: React.FC<ReelCardProps> = ({
       url: vehicleUrl,
     };
     
+    trackInteraction("share");
+    
     if (navigator.share) {
       try {
         await navigator.share(shareData);
@@ -151,6 +170,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
   };
 
   const handleViewDetails = () => {
+    trackInteraction("view_details");
     window.open(siteConfig.paths.vehicleDetail(vehicle._id), "_blank");
   };
 
@@ -175,7 +195,6 @@ export const ReelCard: React.FC<ReelCardProps> = ({
   return (
     <div 
       className="relative w-full h-full bg-black"
-      onClick={() => setShowInfo(!showInfo)}
     >
       {/* Background Image with Blur */}
       <div className="absolute inset-0 overflow-hidden">
@@ -188,6 +207,13 @@ export const ReelCard: React.FC<ReelCardProps> = ({
         />
       </div>
 
+      {/* Particles Effect - Solo en modo detallado */}
+      <AnimatePresence>
+        {config.showParticles && shouldShowFullInfo && (
+          <ParticlesEffect />
+        )}
+      </AnimatePresence>
+
       {/* Main Content Container */}
       <div className="relative w-full h-full flex items-center justify-center">
         {/* Main Image */}
@@ -198,7 +224,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: config.transitionSpeed / 1000 }}
               className="relative w-full aspect-[9/16] max-h-[85vh] rounded-2xl overflow-hidden shadow-2xl"
             >
               {isImageLoading && (
@@ -219,7 +245,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
 
-              {/* Image Navigation Arrows (if multiple images) */}
+              {/* Image Navigation Arrows */}
               {images.length > 1 && (
                 <>
                   <motion.button
@@ -262,7 +288,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
 
         {/* Action Buttons - Right Side */}
         <AnimatePresence>
-          {showInfo && (
+          {shouldShowActionButtons && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -308,7 +334,7 @@ export const ReelCard: React.FC<ReelCardProps> = ({
                 </Button>
               </motion.div>
 
-              {vehicle.views !== undefined && (
+              {vehicle.views !== undefined && shouldShowFullInfo && (
                 <div className="flex flex-col items-center gap-1 text-white">
                   <Eye className="w-6 h-6" />
                   <span className="text-xs font-medium">
@@ -322,8 +348,11 @@ export const ReelCard: React.FC<ReelCardProps> = ({
 
         {/* Vehicle Info - Bottom */}
         <AnimatePresence>
-          {showInfo && (
-            <ReelInfo vehicle={vehicle} />
+          {shouldShowBasicInfo && (
+            <ReelInfo 
+              vehicle={vehicle} 
+              mode={config.viewMode}
+            />
           )}
         </AnimatePresence>
       </div>

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import {
   VehicleCategory,
   VehicleCondition,
+  VEHICLE_CATEGORIES_LABELS,
   VEHICLE_CONDITIONS_LABELS,
 } from "@/types/shared";
 
@@ -37,18 +38,19 @@ export const ReelsFilters: React.FC<ReelsFiltersProps> = ({
 
   const categories = [
     { value: "all", label: "Todos", icon: "🎯" },
-    { value: VehicleCategory.MOTORCYCLE, label: "Motos", icon: "🏍️" },
-    { value: VehicleCategory.CAR, label: "Carros", icon: "🚗" },
-    { value: VehicleCategory.TRUCK, label: "Camiones", icon: "🚚" },
-    { value: VehicleCategory.VAN, label: "Vans", icon: "🚐" },
-    { value: VehicleCategory.BUS, label: "Buses", icon: "🚌" },
+    { value: VehicleCategory.MOTORCYCLE, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.MOTORCYCLE], icon: "🏍️" },
+    { value: VehicleCategory.CAR, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.CAR], icon: "🚗" },
+    { value: VehicleCategory.SUV, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.SUV], icon: "🚙" },
+    { value: VehicleCategory.TRUCK, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.TRUCK], icon: "🚚" },
+    { value: VehicleCategory.VAN, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.VAN], icon: "🚐" },
+    { value: VehicleCategory.BUS, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.BUS], icon: "🚌" },
   ];
 
   const conditions = [
     { value: "all", label: "Todas las condiciones" },
-    { value: VehicleCondition.NEW, label: VEHICLE_CONDITIONS_LABELS[VehicleCondition.NEW] || "Nuevo" },
-    { value: VehicleCondition.EXCELLENT, label: VEHICLE_CONDITIONS_LABELS[VehicleCondition.EXCELLENT] || "Excelente" },
-    { value: VehicleCondition.GOOD, label: VEHICLE_CONDITIONS_LABELS[VehicleCondition.GOOD] || "Bueno" },
+    { value: VehicleCondition.NEW, label: VEHICLE_CONDITIONS_LABELS[VehicleCondition.NEW] },
+    { value: VehicleCondition.EXCELLENT, label: VEHICLE_CONDITIONS_LABELS[VehicleCondition.EXCELLENT] },
+    { value: VehicleCondition.GOOD, label: VEHICLE_CONDITIONS_LABELS[VehicleCondition.GOOD] },
   ];
 
   const priceRanges = [

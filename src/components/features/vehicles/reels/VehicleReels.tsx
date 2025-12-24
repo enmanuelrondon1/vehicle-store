@@ -3,13 +3,14 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Loader2, SlidersHorizontal } from "lucide-react";
+import { X, Loader2, SlidersHorizontal, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import ReelCard from "./ReelCard";
 import ReelControls from "./ReelControls";
 import ReelsFilters, { ReelsFiltersState } from "./ReelsFilters";
+import ReelsSettings from "./ReelsSettings";
 import { Vehicle } from "@/types/types";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,7 @@ export const VehicleReels: React.FC<VehicleReelsProps> = ({
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [filters, setFilters] = useState<ReelsFiltersState>({
     category: "all",
     condition: "all",
@@ -284,6 +286,16 @@ export const VehicleReels: React.FC<VehicleReelsProps> = ({
             )}
           </Button>
 
+          {/* Settings Button */}
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={() => setShowSettings(true)}
+            className="rounded-full shadow-lg bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm"
+          >
+            <Settings className="w-5 h-5" />
+          </Button>
+
           <Button
             variant="secondary"
             size="icon"
@@ -383,6 +395,24 @@ export const VehicleReels: React.FC<VehicleReelsProps> = ({
               onFiltersChange={handleFiltersChange}
               onClose={() => setShowFilters(false)}
             />
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Settings Panel */}
+      <AnimatePresence>
+        {showSettings && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40"
+              onClick={() => setShowSettings(false)}
+            />
+            {/* Settings */}
+            <ReelsSettings onClose={() => setShowSettings(false)} />
           </>
         )}
       </AnimatePresence>
