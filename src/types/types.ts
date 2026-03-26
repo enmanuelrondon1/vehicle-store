@@ -1,6 +1,5 @@
 // src/types/types.ts - Solo para el cliente
 
-
 import {
   ApprovalStatus,
   VehicleCategory,
@@ -12,7 +11,6 @@ import {
   FuelType,
   DriveType,
 } from "./shared";
-
 
 export {
   VehicleCategory,
@@ -30,10 +28,9 @@ export {
   VEHICLE_CONDITIONS_LABELS,
   FUEL_TYPES_LABELS,
   SALE_TYPE_LABELS,
-  WARRANTY_LABELS, // ✅ CORRECCIÓN: Añadir la exportación que faltaba
+  WARRANTY_LABELS,
 } from "./shared";
 
-// ✅ MEJORA: Mover la interfaz AdvancedFilters aquí para que sea reutilizable
 export interface AdvancedFilters {
   search: string;
   category: string;
@@ -52,17 +49,15 @@ export interface AdvancedFilters {
   saleType: string[];
   hasWarranty: boolean;
   isFeatured: boolean;
-  postedWithin?: string; // ✅ CORRECCIÓN: Añadir la propiedad que faltaba
+  postedWithin?: string;
 }
 
-// ✅ SOLUCIÓN: Añadir y exportar la interfaz FilterOption para resolver el error de TS.
 export interface FilterOption {
   value: string;
   label: string;
   count?: number;
 }
 
-// ✅ CORRECCIÓN: Añadir y exportar la interfaz FilterOptions
 export interface FilterOptions {
   categories: FilterOption[];
   subcategories: string[];
@@ -84,14 +79,12 @@ export interface SellerContactBackend {
   userId?: string;
 }
 
-export type OwnershipType = 'propio' | 'tercero' | 'concesionario';
-
+export type OwnershipType = "propio" | "tercero" | "concesionario";
 
 export interface FinancingDetails {
   interestRate: number;
   loanTerm: number;
 }
-
 
 export interface VehicleDataBackend {
   _id?: string;
@@ -101,29 +94,35 @@ export interface VehicleDataBackend {
   brandOther?: string;
   model: string;
   modelOther?: string;
-  version?: string; // ✅ NUEVO CAMPO
+  version?: string;
   year: number;
   price: number;
   currency?: Currency;
   isNegotiable?: boolean;
-  showFinancingTips?: boolean; // ✅ NUEVO CAMPO UI
-  offersFinancing?: boolean; // ✅ NUEVO CAMPO
+  showFinancingTips?: boolean;
+  offersFinancing?: boolean;
   financingDetails?: {
-    interestRate: number; // Tasa de interés anual
-    loanTerm: number; // Plazo del préstamo en meses
+    interestRate: number;
+    loanTerm: number;
   };
   mileage: number;
   color: string;
-  engine: string;
+  // ✅ Campos "Otro" para Step3
+  colorOther?: string;
+  engine?: string;
   displacement?: string;
+  displacementOther?: string;
   driveType?: DriveType;
   transmission: TransmissionType;
+  transmissionOther?: string;
   condition: VehicleCondition;
   location: string;
   features: string[];
   fuelType: FuelType;
-  doors: number;
-  seats: number;
+  fuelTypeOther?: string;
+  // ✅ Puertas y asientos ahora opcionales
+  doors?: number;
+  seats?: number;
   weight?: number;
   loadCapacity?: number;
   sellerContact: SellerContactBackend;
@@ -136,8 +135,8 @@ export interface VehicleDataBackend {
   paymentBank?: string;
   paymentProofPublicId?: string;
   paymentProof?: string;
-  telegramUserId?: string; // Para integración con bot de Telegram
-  ownerTelegramId?: string; // Para integración con bot de Telegram
+  telegramUserId?: string;
+  ownerTelegramId?: string;
   status: ApprovalStatus;
   createdAt?: Date;
   updatedAt?: Date;
@@ -145,7 +144,7 @@ export interface VehicleDataBackend {
   saleType?: SaleType;
   videoUrl?: string;
   views?: number;
-  documentation?: string[]; // Cambiado a string[] para mayor flexibilidad
+  documentation?: string[];
   armorLevel?: string;
   tiresCondition?: string;
   serialsIntact?: boolean;
@@ -178,11 +177,10 @@ export interface ApiResponseFrontend<T = VehicleDataFrontend> {
   validationErrors?: Record<string, string[]>;
 }
 
-export interface VehicleDataFrontend
-  extends Omit<
-    VehicleDataBackend,
-    "_id" | "postedDate" | "createdAt" | "updatedAt"
-  > {
+export interface VehicleDataFrontend extends Omit<
+  VehicleDataBackend,
+  "_id" | "postedDate" | "createdAt" | "updatedAt"
+> {
   _id?: string;
   postedDate: string;
   createdAt?: string;
@@ -190,7 +188,7 @@ export interface VehicleDataFrontend
   status: ApprovalStatus;
   approvalStatus?: ApprovalStatus;
   referenceNumber?: string;
-  views?: number; // Añadido para el frontend
+  views?: number;
   isFeatured?: boolean;
   isFavorited?: boolean;
   offersFinancing?: boolean;
@@ -202,60 +200,18 @@ export interface VehicleDataFrontend
   ratingCount?: number;
 }
 
-export interface VehicleDataGeneric {
-  _id?: string;
-  category: VehicleCategory;
-  subcategory?: string;
-  brand: string;
-  brandOther?: string;
-  model: string;
-  modelOther?: string;
-  version?: string; // ✅ NUEVO CAMPO
-  year: number;
-  price: number;
-  currency: Currency;
-  isNegotiable?: boolean;
-  offersFinancing?: boolean;
-  financingDetails?: {
-    interestRate: number;
-    loanTerm: number;
-  };
-  mileage: number;
-  color: string;
-  engine: string;
-  displacement?: string; // Nuevo: Cilindraje
-  driveType?: DriveType; // Nuevo: Tracción
-  transmission: TransmissionType;
-  condition: VehicleCondition;
-  location: string;
-  features: string[];
-  fuelType: FuelType;
-  doors: number;
-  seats: number;
-  weight?: number;
-  loadCapacity?: number;
-  sellerContact: SellerContactBackend;
+// ✅ FIX #9: tipo derivado de VehicleDataBackend
+export type VehicleDataGeneric = Omit<
+  VehicleDataBackend,
+  "postedDate" | "createdAt" | "updatedAt"
+> & {
   postedDate: string | Date;
-  warranty: WarrantyType;
-  description: string;
-  images: string[];
-  vin?: string;
-  referenceNumber?: string;
-  paymentProof?: string;
-  status: ApprovalStatus;
   createdAt?: string | Date;
   updatedAt?: string | Date;
-  ownership?: OwnershipType;
-  saleType?: SaleType;
-  videoUrl?: string;
-  views?: number; // Añadido para el frontend
-  documentation?: string[];
-  isFeatured?: boolean;
-  rejectionReason?: string;
-}
+};
 
 export const convertToBackend = (
-  frontendData: VehicleDataGeneric
+  frontendData: VehicleDataGeneric,
 ): VehicleDataBackend => {
   return {
     ...frontendData,
@@ -274,7 +230,7 @@ export const convertToBackend = (
 };
 
 export const convertToFrontend = (
-  backendData: VehicleDataBackend
+  backendData: VehicleDataBackend,
 ): VehicleDataFrontend => {
   if (!backendData) {
     throw new Error("Backend data is required");
@@ -306,14 +262,13 @@ export interface User {
   role: "user" | "admin";
 }
 
-// Reemplaza la interfaz Vehicle actual (líneas finales del archivo) con esta versión actualizada:
-
 export interface Vehicle {
   _id: string;
   brand: string;
+  brandOther?: string;
   model: string;
   modelOther?: string;
-  version?: string; // ✅ NUEVO CAMPO
+  version?: string;
   year: number;
   price: number;
   currency: Currency;
@@ -326,33 +281,36 @@ export interface Vehicle {
   status: ApprovalStatus;
   mileage: number;
   color: string;
-  engine: string;
-  displacement?: string; // Nuevo: Cilindraje
-  driveType?: string; // Nuevo: Tracción
+  colorOther?: string;
+  engine?: string;
+  displacement?: string;
+  displacementOther?: string;
+  driveType?: string;
   transmission: TransmissionType;
+  transmissionOther?: string;
   condition: VehicleCondition;
   location: string;
   features: string[];
   fuelType: FuelType;
-  doors: number;
-  seats: number;
+  fuelTypeOther?: string;
+  doors?: number;
+  seats?: number;
   description: string;
   images: string[];
   category: VehicleCategory;
-  subcategory?: string; // ← Propiedad agregada
+  subcategory?: string;
   warranty: WarrantyType;
   sellerContact: SellerContactBackend;
   postedDate: string;
   createdAt?: string;
   updatedAt?: string;
-
-  // Propiedades adicionales:
-  isFeatured?: boolean; // Indica si el vehículo es destacado
-  views?: number; // Número de vistas del vehículo
-  saleType?: SaleType; // Esta línea ya existe, pero el error es por la importación faltante
+  isFeatured?: boolean;
+  views?: number;
+  saleType?: SaleType;
+  documentation?: string[];
+  vin?: string;
 }
 
-// ✅ MEJORA: Mover SORT_OPTIONS aquí para que sea reutilizable
 export const SORT_OPTIONS = [
   {
     value: "relevance",
@@ -418,6 +376,6 @@ export interface VehicleHistoryEntry {
   action: string;
   details?: string;
   author: string;
-  authorId?: string; // <-- AÑADIR ESTA LÍNEA
+  authorId?: string;
   timestamp: string;
 }

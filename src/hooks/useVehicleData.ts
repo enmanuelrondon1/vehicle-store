@@ -1,23 +1,20 @@
-//src/hooks/useVehicleData.ts
+// src/hooks/useVehicleData.ts
+// ✅ FIX RENDIMIENTO: vistas como fire-and-forget (no bloquean el render)
+// ✅ FIX RENDIMIENTO: similares se cargan en paralelo con el vehículo principal
 "use client";
 
 import { useState, useCallback, useEffect, useMemo } from "react";
+import { VehicleDataFrontend } from "@/types/types";
 import {
-  VehicleDataFrontend,
-} from "@/types/types";
-import {
-  formatPrice,
-  translateValue,
-  STATUS_MAP,
-  VEHICLE_CONDITIONS_LABELS,
-  FUEL_TYPES_LABELS,
-  TRANSMISSION_TYPES_LABELS,
-  WARRANTY_LABELS,
+  formatPrice, translateValue, STATUS_MAP,
+  VEHICLE_CONDITIONS_LABELS, FUEL_TYPES_LABELS,
+  TRANSMISSION_TYPES_LABELS, WARRANTY_LABELS,
 } from "@/lib/utils";
 import { toast } from "sonner";
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+
 export function useVehicleData(vehicleId: string) {
-  // const { data: session } = useSession();
   const [vehicle, setVehicle] = useState<VehicleDataFrontend | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,14 +23,12 @@ export function useVehicleData(vehicleId: string) {
   const [isLoadingSimilar, setIsLoadingSimilar] = useState(true);
 
   const fetchVehicle = useCallback(async () => {
-    // Reset states for refetch
     setError(null);
     setIsLoading(true);
     setVehicle(null);
 
     try {
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/vehicles/${vehicleId}`;
-      const response = await fetch(apiUrl, {
+      const response = await fetch(`${BASE_URL}/api/vehicles/${vehicleId}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
@@ -52,22 +47,34 @@ export function useVehicleData(vehicleId: string) {
       setVehicle(vehicleData);
       setIsFavorited(vehicleData.isFavorited || false);
 
-      try {
-        const viewApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/vehicles/${vehicleId}/views`;
-        const viewResponse = await fetch(viewApiUrl, { method: 'POST' });
-        if (viewResponse.ok) {
-          const updatedData = await viewResponse.json();
-          if (updatedData.success && typeof updatedData.data?.views === 'number') {
-            setVehicle(prev => prev ? { ...prev, views: updatedData.data.views } : null);
+      // ✅ FIX: vistas como fire-and-forget — no bloquea el render del vehículo
+      // ANTES: await fetch(...views) bloqueaba hasta recibir respuesta
+      // AHORA: se lanza sin await, el componente ya renderiza mientras esto ocurre
+      fetch(`${BASE_URL}/api/vehicles/${vehicleId}/views`, { method: "POST" })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && typeof data.data?.views === "number") {
+            setVehicle((prev) => prev ? { ...prev, views: data.data.views } : null);
           }
-        }
-      } catch (viewError) {
-        console.warn("No se pudo incrementar la vista, pero la página se muestra:", viewError);
-      }
+        })
+        .catch((err) => console.warn("No se pudo incrementar la vista:", err));
+
+      // ✅ FIX: similares se cargan en paralelo — no esperan al await del vehículo
+      // ANTES: fetchSimilar se disparaba en un useEffect separado que esperaba
+      //        a que vehicle?._id existiera (dos renders después)
+      // AHORA: se lanza inmediatamente con el id que ya tenemos
+      setIsLoadingSimilar(true);
+      fetch(`${BASE_URL}/api/vehicles/${vehicleData._id}/similar`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) setSimilarVehicles(data.data);
+        })
+        .catch((err) => console.error("Error fetching similar vehicles:", err))
+        .finally(() => setIsLoadingSimilar(false));
+
     } catch (error) {
       console.error("❌ Error obteniendo vehículo:", error);
-      const errorMessage = error instanceof Error ? error.message : "Error desconocido";
-      setError(errorMessage);
+      setError(error instanceof Error ? error.message : "Error desconocido");
     } finally {
       setIsLoading(false);
     }
@@ -77,28 +84,6 @@ export function useVehicleData(vehicleId: string) {
     fetchVehicle();
   }, [fetchVehicle]);
 
-  useEffect(() => {
-    if (vehicle?._id) {
-      const fetchSimilar = async () => {
-        setIsLoadingSimilar(true);
-        try {
-          const similarApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/vehicles/${vehicle._id}/similar`;
-          const response = await fetch(similarApiUrl);
-          const result = await response.json();
-          if (result.success) {
-            setSimilarVehicles(result.data);
-          }
-        } catch (err) {
-          console.error("Error fetching similar vehicles:", err);
-          setSimilarVehicles([]);
-        } finally {
-          setIsLoadingSimilar(false);
-        }
-      };
-      fetchSimilar();
-    }
-  }, [vehicle]);
-
   const handleShare = async () => {
     if (!vehicle) return;
     const shareData = {
@@ -106,25 +91,21 @@ export function useVehicleData(vehicleId: string) {
       text: `Mira este ${vehicle.brand} ${vehicle.model} por ${formatPrice(vehicle.price)}`,
       url: window.location.href,
     };
-
     if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (error) {
-        console.log("Error sharing:", error);
-      }
+      try { await navigator.share(shareData); }
+      catch (error) { console.log("Error sharing:", error); }
     } else {
       await navigator.clipboard.writeText(window.location.href);
       toast.success("Enlace copiado", {
         description: "La URL del vehículo se ha copiado al portapapeles.",
-      })
+      });
     }
   };
 
   const handleReport = () => {
     toast.info("Función en desarrollo", {
       description: "La opción para reportar publicaciones estará disponible pronto.",
-    })
+    });
   };
 
   const translatedData = useMemo(() => {
@@ -139,16 +120,9 @@ export function useVehicleData(vehicleId: string) {
   }, [vehicle]);
 
   return {
-    vehicle,
-    isLoading,
-    error,
-    isFavorited,
-    setIsFavorited,
-    similarVehicles,
-    isLoadingSimilar,
-    fetchVehicle,
-    handleShare,
-    handleReport,
+    vehicle, isLoading, error, isFavorited, setIsFavorited,
+    similarVehicles, isLoadingSimilar, fetchVehicle,
+    handleShare, handleReport,
     ...translatedData,
   };
 }

@@ -3,7 +3,7 @@
 
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Car, Fuel, Calendar, MapPin, Gauge, Star } from "lucide-react";
+import { Car, Fuel, MapPin, Gauge, Star } from "lucide-react";
 import { Vehicle } from "@/types/types";
 import { Badge } from "@/components/ui/badge";
 import { ViewMode, useReelsConfig, PRICE_GRADIENTS } from "@/hooks/useReelsConfig";
@@ -23,7 +23,6 @@ export const ReelInfo: React.FC<ReelInfoProps> = ({
   vehicle, 
   mode
 }) => {
-  // Obtener la configuración para usar priceGradient
   const { config } = useReelsConfig();
 
   const formatPrice = (price: number) =>
@@ -39,9 +38,7 @@ export const ReelInfo: React.FC<ReelInfoProps> = ({
 
   const translatedTransmission = TRANSMISSION_TYPES_LABELS[vehicle.transmission] || vehicle.transmission;
   const translatedFuelType = FUEL_TYPES_LABELS[vehicle.fuelType] || vehicle.fuelType;
-  const translatedCondition = VEHICLE_CONDITIONS_LABELS[vehicle.condition] || vehicle.condition;
 
-  // Obtener la clase del gradiente del precio
   const priceGradientClass = useMemo(() => {
     return PRICE_GRADIENTS[config.priceGradient];
   }, [config.priceGradient]);
@@ -52,18 +49,15 @@ export const ReelInfo: React.FC<ReelInfoProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
       transition={{ duration: 0.3 }}
-      className="absolute bottom-0 left-0 right-0 z-20 p-6 pb-8"
+      className="absolute bottom-0 left-0 right-0 z-30 p-4 pt-12 pb-6"
       style={{
-        background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 70%, transparent 100%)",
+        background: "linear-gradient(to top, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.7) 40%, transparent 100%)",
       }}
     >
       <div className="max-w-2xl mx-auto">
-        {/* ===== MINIMAL: Solo imagen y precio ===== */}
+        {/* ===== MINIMAL: Solo precio ===== */}
         {mode === "minimal" && (
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-              {vehicle.brand} {vehicle.model}
-            </h2>
             <div className={cn(
               "text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r",
               priceGradientClass
@@ -73,45 +67,9 @@ export const ReelInfo: React.FC<ReelInfoProps> = ({
           </div>
         )}
 
-        {/* ===== BALANCED: Info esencial visible ===== */}
+        {/* ===== BALANCED: Info esencial sin badges (ya están arriba) ===== */}
         {mode === "balanced" && (
           <>
-            {/* Badges */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              {vehicle.isFeatured && (
-                <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-none">
-                  <Star className="w-3 h-3 mr-1" />
-                  Destacado
-                </Badge>
-              )}
-              
-              <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20">
-                {translatedCondition}
-              </Badge>
-              
-              {vehicle.isNegotiable && (
-                <Badge className="bg-green-500/20 backdrop-blur-sm text-green-300 border-green-500/30">
-                  Negociable
-                </Badge>
-              )}
-            </div>
-
-            {/* Title */}
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-              {vehicle.brand} {vehicle.model}
-            </h2>
-
-            {/* Year and Version */}
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-lg text-white/80">{vehicle.year}</span>
-              {vehicle.version && (
-                <>
-                  <span className="text-white/50">•</span>
-                  <span className="text-lg text-white/80">{vehicle.version}</span>
-                </>
-              )}
-            </div>
-
             {/* Price */}
             <div className={cn(
               "text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r mb-4",
@@ -120,7 +78,7 @@ export const ReelInfo: React.FC<ReelInfoProps> = ({
               {formatPrice(vehicle.price)}
             </div>
 
-            {/* Quick Stats Grid - Reducido */}
+            {/* Quick Stats Grid */}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center gap-2 text-white/90">
                 <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
@@ -151,130 +109,96 @@ export const ReelInfo: React.FC<ReelInfoProps> = ({
           </>
         )}
 
-        {/* ===== DETAILED: Toda la información ===== */}
+        {/* ===== DETAILED: Toda la información mejorada y compacta ===== */}
         {mode === "detailed" && (
-          <>
-            {/* Badges */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              {vehicle.isFeatured && (
-                <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-none">
-                  <Star className="w-3 h-3 mr-1" />
-                  Destacado
-                </Badge>
-              )}
-              
-              <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20">
-                {translatedCondition}
-              </Badge>
-              
-              {vehicle.isNegotiable && (
-                <Badge className="bg-green-500/20 backdrop-blur-sm text-green-300 border-green-500/30">
-                  Negociable
-                </Badge>
-              )}
-            </div>
-
-            {/* Title */}
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-              {vehicle.brand} {vehicle.model}
-            </h2>
-
-            {/* Year and Version */}
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-lg text-white/80">{vehicle.year}</span>
-              {vehicle.version && (
-                <>
-                  <span className="text-white/50">•</span>
-                  <span className="text-lg text-white/80">{vehicle.version}</span>
-                </>
-              )}
-            </div>
-
-            {/* Price */}
-            <div className={cn(
-              "text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r mb-4",
-              priceGradientClass
-            )}>
-              {formatPrice(vehicle.price)}
-            </div>
-
-            {/* Full Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-              <div className="flex items-center gap-2 text-white/90">
-                <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                  <Calendar className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-white/60">Año</p>
-                  <p className="text-sm font-semibold">{vehicle.year}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-white/90">
-                <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                  <Gauge className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-white/60">Kilometraje</p>
-                  <p className="text-sm font-semibold">{formatMileage(vehicle.mileage)} km</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-white/90">
-                <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                  <Car className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-white/60">Transmisión</p>
-                  <p className="text-sm font-semibold">{translatedTransmission}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-white/90">
-                <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                  <Fuel className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-white/60">Combustible</p>
-                  <p className="text-sm font-semibold">{translatedFuelType}</p>
-                </div>
+          <div className="space-y-2.5 max-h-96 overflow-y-auto scrollbar-hide">
+            {/* --- Price Section --- */}
+            <div>
+              <p className="text-xs uppercase tracking-widest text-white/60 mb-0.5 font-medium">Precio</p>
+              <div className={cn(
+                "text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r",
+                priceGradientClass
+              )}>
+                {formatPrice(vehicle.price)}
               </div>
             </div>
 
-            {/* Location */}
-            <div className="flex items-center gap-2 text-white/80 mb-3">
-              <MapPin className="w-4 h-4" />
-              <span className="text-sm">{vehicle.location}</span>
+            {/* --- Main Stats Grid (3 columnas) --- */}
+            <div className="grid grid-cols-3 gap-2 py-2 border-y border-white/10">
+              <div className="text-center">
+                <div className="flex justify-center mb-1">
+                  <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <Gauge className="w-4 h-4 text-blue-400" />
+                  </div>
+                </div>
+                <p className="text-xs text-white/60 uppercase tracking-wider mb-0.5">Km</p>
+                <p className="text-xs font-bold text-white">{formatMileage(vehicle.mileage)}</p>
+              </div>
+
+              <div className="text-center">
+                <div className="flex justify-center mb-1">
+                  <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <Car className="w-4 h-4 text-purple-400" />
+                  </div>
+                </div>
+                <p className="text-xs text-white/60 uppercase tracking-wider mb-0.5">Trans</p>
+                <p className="text-xs font-bold text-white">{translatedTransmission}</p>
+              </div>
+
+              <div className="text-center">
+                <div className="flex justify-center mb-1">
+                  <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                    <Fuel className="w-4 h-4 text-amber-400" />
+                  </div>
+                </div>
+                <p className="text-xs text-white/60 uppercase tracking-wider mb-0.5">Combustible</p>
+                <p className="text-xs font-bold text-white">{translatedFuelType}</p>
+              </div>
             </div>
 
-            {/* Description Preview (if exists) */}
+            {/* --- Location --- */}
+            <div className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded px-2.5 py-1.5 border border-white/10">
+              <MapPin className="w-4 h-4 text-red-400 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-white/60 uppercase tracking-wider">Ubicación</p>
+                <p className="text-xs font-medium text-white truncate">{vehicle.location}</p>
+              </div>
+            </div>
+
+            {/* --- Description --- */}
             {vehicle.description && (
-              <div className="mt-3 pt-3 border-t border-white/10">
-                <p className="text-sm text-white/70 line-clamp-2">
+              <div className="bg-white/5 backdrop-blur-sm rounded px-2.5 py-1.5 border border-white/10">
+                <p className="text-xs text-white/60 uppercase tracking-wider mb-0.5">Descripción</p>
+                <p className="text-xs text-white/80 line-clamp-2">
                   {vehicle.description}
                 </p>
               </div>
             )}
 
-            {/* Features Preview (show first 3) */}
+            {/* --- Features --- */}
             {vehicle.features && vehicle.features.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {vehicle.features.slice(0, 3).map((feature, idx) => (
-                  <span
-                    key={idx}
-                    className="text-xs px-2 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white/80"
-                  >
-                    {feature}
-                  </span>
-                ))}
-                {vehicle.features.length > 3 && (
-                  <span className="text-xs px-2 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white/80">
-                    +{vehicle.features.length - 3} más
-                  </span>
-                )}
+              <div>
+                <p className="text-xs text-white/60 uppercase tracking-wider mb-1.5 font-medium">Características</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {vehicle.features.slice(0, 4).map((feature, idx) => (
+                    <Badge 
+                      key={idx} 
+                      className="bg-gradient-to-r from-white/15 to-white/5 text-white border-white/20 backdrop-blur-sm text-xs font-medium hover:from-white/25 hover:to-white/10 transition-all"
+                    >
+                      ✓ {feature}
+                    </Badge>
+                  ))}
+                  {vehicle.features.length > 4 && (
+                    <Badge 
+                      className="bg-gradient-to-r from-blue-500/30 to-blue-600/20 text-blue-300 border-blue-500/30 backdrop-blur-sm text-xs font-medium"
+                    >
+                      +{vehicle.features.length - 4} más
+                    </Badge>
+                  )}
+                </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </motion.div>

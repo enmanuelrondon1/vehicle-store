@@ -18,7 +18,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = memo(({
   return (
     <motion.div
       whileHover={{ y: -8, transition: { duration: 300 } }}
-      className="card-premium card-hover group relative h-full p-6 glow-effect"
+      className="card-premium card-hover group relative h-full p-6 glow-effect" style={{ border: "1px solid var(--border)", boxShadow: "0 4px 24px var(--primary-10)" }}
     >
       {/* Efecto de brillo en hover mejorado */}
       <motion.div 

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import dynamic from "next/dynamic";
 import { useVehicleFiltering } from "@/hooks/useVehicleFiltering";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { Vehicle } from "@/types/types";
@@ -11,66 +11,52 @@ import VehicleListHeader from "./VehicleListHeader";
 import VehicleStats from "../common/VehicleStats";
 import SearchBar from "./SearchBar";
 import ActiveFiltersDisplay from "./ActiveFiltersDisplay";
-import AdvancedFiltersPanel from "./AdvancedFiltersPanel";
 import CompareBar from "../common/CompareBar";
 import VehicleGrid from "../common/VehicleGrid";
 import PaginationControls from "./PaginationControls";
 import NoResults from "../../../shared/feedback/NoResults";
 
-const VehicleList: React.FC<{ initialVehicles: Vehicle[] }> = ({
-  initialVehicles,
-}) => {
+// ✅ Lazy — solo carga cuando el usuario abre los filtros avanzados
+const AdvancedFiltersPanel = dynamic(() => import("./AdvancedFiltersPanel"), {
+  loading: () => (
+    <div className="p-6 space-y-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="h-10 bg-muted rounded-xl animate-pulse" />
+      ))}
+    </div>
+  ),
+});
+
+const VehicleList: React.FC<{
+  initialVehicles: Vehicle[];
+  totalVehiclesCount?: number; // ✅ nuevo: total real en BD
+}> = ({ initialVehicles, totalVehiclesCount = 0 }) => {
   const [viewMode] = useState<"grid" | "list">("grid");
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [compareList, setCompareList] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  
-  // Efecto de scroll para elementos parallax
-  const { scrollYProgress } = useScroll();
-  const headerY = useTransform(scrollYProgress, [0, 0.1], [0, -20]);
-  const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0.95]);
 
   const {
-    filters,
-    setFilters,
-    sortBy,
-    setSortBy,
-    filteredVehicles,
-    filterOptions,
-    clearAllFilters,
-    showOnlyPublishedBrands,
-    setShowOnlyPublishedBrands,
-    showOnlyPublishedColors,
-    setShowOnlyPublishedColors,
-    showOnlyPublishedLocations,
-    setShowOnlyPublishedLocations,
+    filters, setFilters, sortBy, setSortBy, filteredVehicles, filterOptions,
+    clearAllFilters, showOnlyPublishedBrands, setShowOnlyPublishedBrands,
+    showOnlyPublishedColors, setShowOnlyPublishedColors,
+    showOnlyPublishedLocations, setShowOnlyPublishedLocations,
   } = useVehicleFiltering(initialVehicles);
 
   const debouncedSearchTerm = useDebounce(filters.search, 300);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [
-    debouncedSearchTerm,
-    filters.category,
-    filters.brands,
-    filters.priceRange,
-    filters.yearRange,
-    sortBy,
-  ]);
+  }, [debouncedSearchTerm, filters.category, filters.brands, filters.priceRange, filters.yearRange, sortBy]);
 
-  const handleRetry = useCallback(() => {
-    window.location.reload();
-  }, []);
+  const handleRetry = useCallback(() => { window.location.reload(); }, []);
 
   const toggleCompare = useCallback((vehicleId: string) => {
     setCompareList((prev) =>
       prev.includes(vehicleId)
         ? prev.filter((id) => id !== vehicleId)
-        : prev.length < 3
-        ? [...prev, vehicleId]
-        : prev
+        : prev.length < 3 ? [...prev, vehicleId] : prev
     );
   }, []);
 
@@ -87,234 +73,134 @@ const VehicleList: React.FC<{ initialVehicles: Vehicle[] }> = ({
 
   const handleSearch = useCallback((term: string) => {
     setFilters((prev) => ({ ...prev, search: term }));
-  }, []);
+  }, [setFilters]);
 
-  // Variantes de animación premium para un movimiento más fluido
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-        ease: [0.04, 0.62, 0.23, 0.98],
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 10,
-      },
-    },
-  };
-
-  const filterPanelVariants = {
-    open: {
-      height: "auto",
-      opacity: 1,
-      transition: {
-        duration: 0.4,
-        ease: [0.04, 0.62, 0.23, 0.98],
-      },
-    },
-    closed: {
-      height: 0,
-      opacity: 0,
-      transition: {
-        duration: 0.3,
-        ease: [0.04, 0.62, 0.23, 0.98],
-      },
-    },
-  };
+  // ✅ Muestra banner solo si hay más vehículos en BD que los cargados
+  const hasMoreInDB = totalVehiclesCount > initialVehicles.length;
 
   return (
     <div className="bg-background text-foreground min-h-screen section-spacing relative">
-      {/* Fondo decorativo con gradiente */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/5 pointer-events-none" />
-      
-      {/* Elemento decorativo flotante */}
-      <motion.div
-        className="absolute top-20 right-10 w-64 h-64 rounded-full bg-accent/10 blur-3xl"
-        animate={{
-          x: [0, 30, 0],
-          y: [0, -30, 0],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          repeatType: "reverse",
-        }}
-      />
-      
-      <div className="container-wide relative z-10">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-8"
-        >
-          {/* Header con efecto glassmorphism y parallax */}
-          <motion.div 
-            variants={itemVariants} 
-            className="card-glass p-6 rounded-xl shadow-hard"
-            style={{ y: headerY, opacity: headerOpacity }}
-          >
-            <VehicleListHeader vehicleCount={filteredVehicles.length} />
-          </motion.div>
 
-          {/* Estadísticas con animación de entrada y efecto de brillo */}
-          <motion.div 
-            variants={itemVariants}
-            className="relative"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent shimmer-effect rounded-xl" />
-            <VehicleStats filteredVehicles={filteredVehicles} />
-          </motion.div>
+      <div className="container-wide relative z-10 space-y-8">
 
-          {/* CAMBIO CLAVE: Contenedor separado para la barra de búsqueda con overflow-visible y z-index alto */}
-          <div className="relative z-[100]">
-            <motion.div 
-              variants={itemVariants}
-              className="glow-effect"
-              whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <SearchBar
-                onSearch={handleSearch}
-                onToggleFilters={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                isFiltersOpen={showAdvancedFilters}
-                sortBy={sortBy}
-                onSortChange={setSortBy}
-              />
-            </motion.div>
+        {/* Header */}
+        <div className="card-glass p-6 rounded-xl shadow-hard animate-in fade-in slide-in-from-top-4 duration-500">
+          <VehicleListHeader vehicleCount={filteredVehicles.length} />
+        </div>
+
+        {/* ✅ Banner informativo si hay más vehículos en BD */}
+        {hasMoreInDB && (
+          <div
+            className="text-center text-sm py-2 px-4 rounded-lg"
+            style={{
+              backgroundColor: "var(--accent-10)",
+              color: "var(--accent)",
+              border: "1px solid var(--accent-20)",
+            }}
+          >
+            Mostrando los {initialVehicles.length} vehículos más recientes de{" "}
+            <strong>{totalVehiclesCount}</strong> disponibles. Usa los filtros
+            para encontrar el tuyo.
           </div>
+        )}
 
-          {/* Filtros activos con animación suave */}
-          <motion.div variants={itemVariants}>
-            <ActiveFiltersDisplay
-              filterOptions={filterOptions}
-              filters={filters}
-              onFiltersChange={setFilters}
-              onClearFilters={clearAllFilters}
-            />
-          </motion.div>
+        {/* Stats */}
+        <div className="animate-in fade-in duration-500 delay-100">
+          <VehicleStats filteredVehicles={filteredVehicles} />
+        </div>
 
-          {/* Panel de filtros avanzados con animación mejorada */}
-          <AnimatePresence mode="wait">
-            {showAdvancedFilters && (
-              <motion.div
-                variants={filterPanelVariants}
-                initial="closed"
-                animate="open"
-                exit="closed"
-                style={{ overflow: "hidden" }}
-                className="card-glass rounded-xl shadow-hard"
-              >
-                <div className="p-6">
-                  <AdvancedFiltersPanel
-                    filters={filters}
-                    filterOptions={filterOptions}
-                    onFiltersChange={setFilters}
-                    onClearFilters={clearAllFilters}
-                    isOpen={showAdvancedFilters}
-                    onToggle={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    showOnlyPublishedBrands={showOnlyPublishedBrands}
-                    setShowOnlyPublishedBrands={setShowOnlyPublishedBrands}
-                    showOnlyPublishedColors={showOnlyPublishedColors}
-                    setShowOnlyPublishedColors={setShowOnlyPublishedColors}
-                    showOnlyPublishedLocations={showOnlyPublishedLocations}
-                    setShowOnlyPublishedLocations={setShowOnlyPublishedLocations}
-                    totalVehicles={initialVehicles.length}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* Search bar */}
+        <div className="relative z-[100] animate-in fade-in duration-500 delay-150">
+          <SearchBar
+            onSearch={handleSearch}
+            onToggleFilters={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            isFiltersOpen={showAdvancedFilters}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+          />
+        </div>
 
-          {/* Barra de comparación con efecto de entrada mejorado - REDUCIDO z-index */}
-          <AnimatePresence mode="wait">
-            {compareList.length > 0 && (
-              <motion.div
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 50, opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="card-glass rounded-xl shadow-hard sticky top-20 z-30 backdrop-blur-lg"
-              >
-                <div className="p-4">
-                  <CompareBar
-                    compareList={compareList}
-                    setCompareList={setCompareList}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* Filtros activos */}
+        <ActiveFiltersDisplay
+          filterOptions={filterOptions}
+          filters={filters}
+          onFiltersChange={setFilters}
+          onClearFilters={clearAllFilters}
+        />
 
-          {/* Grid de vehículos o mensaje de no resultados */}
-          {filteredVehicles.length === 0 ? (
-            <motion.div 
-              variants={itemVariants}
-              className="flex justify-center py-12"
-            >
-              <NoResults
-                vehicles={initialVehicles.length}
-                clearAllFilters={clearAllFilters}
-                handleRetry={handleRetry}
+        {/* Panel de filtros avanzados — lazy */}
+        <div
+          className={`card-glass rounded-xl shadow-hard overflow-hidden transition-all duration-300 ease-in-out ${
+            showAdvancedFilters ? "opacity-100 max-h-[2000px]" : "opacity-0 max-h-0"
+          }`}
+        >
+          {showAdvancedFilters && (
+            <div className="p-6">
+              <AdvancedFiltersPanel
+                filters={filters}
+                filterOptions={filterOptions}
+                onFiltersChange={setFilters}
+                onClearFilters={clearAllFilters}
+                isOpen={showAdvancedFilters}
+                onToggle={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                showOnlyPublishedBrands={showOnlyPublishedBrands}
+                setShowOnlyPublishedBrands={setShowOnlyPublishedBrands}
+                showOnlyPublishedColors={showOnlyPublishedColors}
+                setShowOnlyPublishedColors={setShowOnlyPublishedColors}
+                showOnlyPublishedLocations={showOnlyPublishedLocations}
+                setShowOnlyPublishedLocations={setShowOnlyPublishedLocations}
+                totalVehicles={initialVehicles.length}
               />
-            </motion.div>
-          ) : (
-            <motion.div variants={itemVariants} className="space-y-8">
-              {/* Contenedor con efecto de vidrio para el grid */}
-              <div className="card-glass rounded-xl p-6 shadow-hard">
-                <VehicleGrid
-                  vehicles={paginatedVehicles}
-                  viewMode={viewMode}
-                  compareList={compareList}
-                  toggleCompare={toggleCompare}
+            </div>
+          )}
+        </div>
+
+        {/* Barra de comparación */}
+        {compareList.length > 0 && (
+          <div className="card-glass rounded-xl shadow-hard sticky top-20 z-30 backdrop-blur-lg animate-in slide-in-from-bottom-4 duration-300">
+            <div className="p-4">
+              <CompareBar compareList={compareList} setCompareList={setCompareList} />
+            </div>
+          </div>
+        )}
+
+        {/* Grid de vehículos */}
+        {filteredVehicles.length === 0 ? (
+          <div className="flex justify-center py-12">
+            <NoResults
+              vehicles={initialVehicles.length}
+              clearAllFilters={clearAllFilters}
+              handleRetry={handleRetry}
+            />
+          </div>
+        ) : (
+          <div className="space-y-8">
+            <div className="card-glass rounded-xl p-6 shadow-hard">
+              <VehicleGrid
+                vehicles={paginatedVehicles}
+                viewMode={viewMode}
+                compareList={compareList}
+                toggleCompare={toggleCompare}
+              />
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex justify-center">
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  itemsPerPage={itemsPerPage}
+                  totalVehicles={filteredVehicles.length}
+                  goToPage={goToPage}
+                  setItemsPerPage={setItemsPerPage}
                 />
               </div>
-              
-              {totalPages > 1 && (
-                <motion.div 
-                  variants={itemVariants}
-                  className="flex justify-center"
-                >
-                  <PaginationControls
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    itemsPerPage={itemsPerPage}
-                    totalVehicles={filteredVehicles.length}
-                    goToPage={goToPage}
-                    setItemsPerPage={setItemsPerPage}
-                  />
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-        </motion.div>
+            )}
+          </div>
+        )}
+
       </div>
-      
-      {/* Elemento decorativo inferior */}
-      <motion.div
-        className="absolute bottom-20 left-10 w-64 h-64 rounded-full bg-primary/10 blur-3xl"
-        animate={{
-          x: [0, -30, 0],
-          y: [0, 30, 0],
-        }}
-        transition={{
-          duration: 25,
-          repeat: Infinity,
-          repeatType: "reverse",
-        }}
-      />
     </div>
   );
 };

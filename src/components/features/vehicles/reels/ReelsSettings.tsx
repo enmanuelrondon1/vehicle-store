@@ -5,8 +5,6 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Settings, X, Check, Zap, Sparkles, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { 
@@ -101,102 +99,7 @@ export const ReelsSettings: React.FC<ReelsSettingsProps> = ({ onClose }) => {
           </div>
         </div>
 
-        {/* Price Gradient */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-muted-foreground" />
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Estilo del Precio
-            </h3>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {(Object.keys(PRICE_GRADIENTS) as PriceGradient[]).map((gradient) => {
-              const isSelected = config.priceGradient === gradient;
-              
-              return (
-                <motion.button
-                  key={gradient}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => updateConfig({ priceGradient: gradient })}
-                  className={cn(
-                    "p-4 rounded-lg border-2 transition-all relative overflow-hidden",
-                    isSelected
-                      ? "border-primary"
-                      : "border-border hover:border-primary/50"
-                  )}
-                >
-                  <div className={cn(
-                    "absolute inset-0 bg-gradient-to-r opacity-30",
-                    PRICE_GRADIENTS[gradient]
-                  )} />
-                  <div className="relative flex items-center justify-between">
-                    <span className="text-sm font-medium capitalize">
-                      {gradient.replace("-", " ")}
-                    </span>
-                    {isSelected && (
-                      <Check className="w-4 h-4 text-primary" />
-                    )}
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Autoplay Speed */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Velocidad de Autoplay
-              </h3>
-            </div>
-            <Badge variant="secondary">
-              {formatSpeed(config.autoplaySpeed)}
-            </Badge>
-          </div>
-          <Slider
-            value={[config.autoplaySpeed]}
-            onValueChange={([value]) => updateConfig({ autoplaySpeed: value })}
-            min={1000}
-            max={10000}
-            step={500}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Rápido (1s)</span>
-            <span>Lento (10s)</span>
-          </div>
-        </div>
-
-        {/* Transition Speed */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Velocidad de Transición
-              </h3>
-            </div>
-            <Badge variant="secondary">
-              {config.transitionSpeed}ms
-            </Badge>
-          </div>
-          <Slider
-            value={[config.transitionSpeed]}
-            onValueChange={([value]) => updateConfig({ transitionSpeed: value })}
-            min={100}
-            max={1000}
-            step={50}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Rápida (100ms)</span>
-            <span>Suave (1000ms)</span>
-          </div>
-        </div>
+     
 
         {/* Effects */}
         <div className="space-y-3">

@@ -12,22 +12,20 @@ import { Vehicle } from "@/types/types";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import ReelInfo from "./ReelInfo";
+import ReelHeaderInfo from "./ReelHeaderInfo";
 import { useReelAnalytics } from "@/hooks/useReelAnalytics";
 import { useReelsConfig } from "@/hooks/useReelsConfig";
 import ParticlesEffect from "./ParticlesEffect";
+import { HeartAnimation } from "./HeartAnimation";
 
 interface ReelCardProps {
   vehicle: Vehicle;
   isActive: boolean;
-  onNext: () => void;
-  onPrevious: () => void;
 }
 
 export const ReelCard: React.FC<ReelCardProps> = ({ 
   vehicle, 
   isActive,
-  onNext,
-  onPrevious 
 }) => {
   const { data: session } = useSession();
   const [isFavorited, setIsFavorited] = useState(false);
@@ -36,22 +34,18 @@ export const ReelCard: React.FC<ReelCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(true);
 
-  // Obtener configuración del hook - se actualiza en tiempo real
   const { config } = useReelsConfig();
-
-  // Analytics hook
   const { trackInteraction } = useReelAnalytics(vehicle._id, isActive);
 
   const images = vehicle.images && vehicle.images.length > 0 
     ? vehicle.images 
     : ["/placeholder.svg?height=800&width=600"];
 
-  // Determinar qué información mostrar según el modo
+  // IMPORTANTE: Los botones de acción se ocultan SOLO en modo minimal
   const shouldShowActionButtons = config.viewMode !== "minimal";
   const shouldShowFullInfo = config.viewMode === "detailed";
-  const shouldShowBasicInfo = config.viewMode !== "minimal";
 
-  // Check if vehicle is favorited
+  // Check favorite status
   useEffect(() => {
     const checkFavoriteStatus = async () => {
       if (session) {
@@ -193,21 +187,29 @@ export const ReelCard: React.FC<ReelCardProps> = ({
     }).format(price);
 
   return (
-    <div 
-      className="relative w-full h-full bg-black"
-    >
+    <div className="relative w-full h-full bg-black overflow-hidden" style={{ touchAction: "none" }}>
       {/* Background Image with Blur */}
       <div className="absolute inset-0 overflow-hidden">
-        <Image
-          src={images[currentImageIndex]}
-          alt="Background"
-          fill
-          className="object-cover blur-2xl opacity-50 scale-110"
-          onError={() => setImageError(true)}
-        />
+        <motion.div
+          initial={{ scale: 1 }}
+          animate={{ scale: isActive ? 1.05 : 1 }}
+          transition={{ duration: 0.6 }}
+          className="absolute inset-0"
+        >
+          <Image
+            src={images[currentImageIndex]}
+            alt="Background"
+            fill
+            className="object-cover blur-3xl opacity-40 scale-110"
+            onError={() => setImageError(true)}
+          />
+        </motion.div>
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
       </div>
 
-      {/* Particles Effect - Solo en modo detallado */}
+      {/* Particles Effect */}
       <AnimatePresence>
         {config.showParticles && shouldShowFullInfo && (
           <ParticlesEffect />
@@ -221,14 +223,33 @@ export const ReelCard: React.FC<ReelCardProps> = ({
           <AnimatePresence mode="wait">
             <motion.div
               key={currentImageIndex}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: config.transitionSpeed / 1000 }}
+              initial={{ 
+                opacity: 0, 
+                scale: 0.95,
+                rotateY: 90,
+                filter: "blur(10px)"
+              }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1,
+                rotateY: 0,
+                filter: "blur(0px)"
+              }}
+              exit={{ 
+                opacity: 0, 
+                scale: 0.95,
+                rotateY: -90,
+                filter: "blur(10px)"
+              }}
+              transition={{ 
+                duration: 0.4,
+                ease: [0.34, 1.56, 0.64, 1]
+              }}
+              style={{ perspective: "1000px" }}
               className="relative w-full aspect-[9/16] max-h-[85vh] rounded-2xl overflow-hidden shadow-2xl"
             >
               {isImageLoading && (
-                <div className="absolute inset-0 bg-muted animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 animate-pulse" />
               )}
               
               <Image
@@ -245,6 +266,14 @@ export const ReelCard: React.FC<ReelCardProps> = ({
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
 
+              {/* ===== Header Info - SIEMPRE VISIBLE EN TODAS LAS VISTAS ===== */}
+              <AnimatePresence>
+                <ReelHeaderInfo 
+                  vehicle={vehicle}
+                  mode={config.viewMode}
+                />
+              </AnimatePresence>
+
               {/* Image Navigation Arrows */}
               {images.length > 1 && (
                 <>
@@ -252,108 +281,107 @@ export const ReelCard: React.FC<ReelCardProps> = ({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={previousImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full backdrop-blur-sm z-20"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </motion.button>
-                  
+
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={nextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full backdrop-blur-sm z-20"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
                   >
                     <ChevronRight className="w-6 h-6" />
                   </motion.button>
-
-                  {/* Image Indicators */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
-                    {images.map((_, idx) => (
-                      <div
-                        key={idx}
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                          idx === currentImageIndex 
-                            ? "bg-white w-6" 
-                            : "bg-white/50"
-                        )}
-                      />
-                    ))}
-                  </div>
                 </>
+              )}
+
+              {/* Image Indicators */}
+              {images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                  {images.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={cn(
+                        "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                        idx === currentImageIndex 
+                          ? "bg-white w-6" 
+                          : "bg-white/40"
+                      )}
+                    />
+                  ))}
+                </div>
               )}
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Action Buttons - Right Side */}
+        {/* Action Buttons - Right Side - OCULTOS EN MINIMAL */}
         <AnimatePresence>
           {shouldShowActionButtons && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="absolute right-4 bottom-32 flex flex-col gap-4 z-30"
+              transition={{ duration: 0.4 }}
+              className="absolute right-4 bottom-32 flex flex-col gap-6 z-30"
             >
-              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="w-14 h-14 rounded-full shadow-lg bg-black/50 hover:bg-black/70 backdrop-blur-sm"
-                  onClick={handleFavorite}
-                  disabled={isLoadingFavorite}
-                >
-                  <Heart
-                    className={cn(
-                      "w-6 h-6 transition-colors",
-                      isFavorited ? "fill-red-500 text-red-500" : "text-white"
-                    )}
-                  />
-                </Button>
-              </motion.div>
+              {/* Heart Button */}
+              <div className="flex justify-center">
+                <HeartAnimation
+                  isFavorited={isFavorited}
+                  onToggle={() => handleFavorite({ stopPropagation: () => {} } as any)}
+                />
+              </div>
 
+              {/* Share Button */}
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <Button
                   variant="secondary"
                   size="icon"
-                  className="w-14 h-14 rounded-full shadow-lg bg-black/50 hover:bg-black/70 backdrop-blur-sm"
+                  className="w-14 h-14 rounded-full shadow-lg bg-black/50 hover:bg-black/70 backdrop-blur-md transition-colors"
                   onClick={handleShare}
                 >
                   <Share2 className="w-6 h-6 text-white" />
                 </Button>
               </motion.div>
 
+              {/* Details Button */}
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                 <Button
                   variant="secondary"
                   size="icon"
-                  className="w-14 h-14 rounded-full shadow-lg bg-black/50 hover:bg-black/70 backdrop-blur-sm"
+                  className="w-14 h-14 rounded-full shadow-lg bg-black/50 hover:bg-black/70 backdrop-blur-md transition-colors"
                   onClick={handleViewDetails}
                 >
                   <ExternalLink className="w-6 h-6 text-white" />
                 </Button>
               </motion.div>
 
+              {/* Views Counter - Solo en modo detallado */}
               {vehicle.views !== undefined && shouldShowFullInfo && (
-                <div className="flex flex-col items-center gap-1 text-white">
-                  <Eye className="w-6 h-6" />
-                  <span className="text-xs font-medium">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center gap-2 text-white bg-black/50 backdrop-blur-md px-3 py-2 rounded-full"
+                >
+                  <Eye className="w-5 h-5" />
+                  <span className="text-xs font-semibold">
                     {new Intl.NumberFormat("es-ES").format(vehicle.views)}
                   </span>
-                </div>
+                </motion.div>
               )}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Vehicle Info - Bottom */}
+        {/* Vehicle Info - Bottom - Se adapta según el modo */}
         <AnimatePresence>
-          {shouldShowBasicInfo && (
-            <ReelInfo 
-              vehicle={vehicle} 
-              mode={config.viewMode}
-            />
-          )}
+          <ReelInfo 
+            vehicle={vehicle} 
+            mode={config.viewMode}
+          />
         </AnimatePresence>
       </div>
     </div>

@@ -1,9 +1,12 @@
 // src/components/features/admin/AdminPanelHeader.tsx
+// ✅ OPTIMIZADO: eliminado framer-motion completamente.
+//    Tenía motion.div con animate={{ scale:[1,1.2,1] }} repeat:Infinity en 2 lugares
+//    y whileHover en 6 botones/badges — todos registrando JS listeners.
+//    Reemplazado por CSS transitions + animate-fade-in + group-hover.
 
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +24,7 @@ import {
 } from "lucide-react";
 import { NotificationBell } from "../../shared/notifications/NotificationBell";
 import type { VehicleDataFrontend } from "@/types/types";
- 
+
 interface AdminPanelHeaderProps {
   isLoading: boolean;
   exportData: () => void;
@@ -38,42 +41,26 @@ export const AdminPanelHeader = ({
   className = "",
 }: AdminPanelHeaderProps) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative z-10"
-    >
+    <div className="relative z-10 animate-fade-in">
       <Card className={`shadow-xl border-0 card-glass ${className}`}>
         {/* Efectos de brillo superior */}
-        <div className="h-2 bg-gradient-to-r from-primary via-accent to-primary"></div>
-        <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary animate-pulse opacity-50"></div>
-        
+        <div className="h-2 bg-gradient-to-r from-primary via-accent to-primary" />
+        <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary animate-pulse opacity-50" />
+
         <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div className="flex flex-col gap-4 sm:gap-6">
-            {/* ========== FILA 1: TÍTULO Y NOTIFICACIONES ========== */}
+
+            {/* FILA 1: TÍTULO Y NOTIFICACIONES */}
             <div className="flex items-start justify-between gap-3 sm:gap-4">
-              {/* Título y descripción */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0"
-              >
-                <motion.div
-                  whileHover={{ rotate: 15, scale: 1.1 }}
-                  transition={{ duration: 0.3 }}
-                  className="relative"
-                >
-                  <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 ring-4 ring-primary/10 shimmer-effect flex-shrink-0">
+              <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                {/* ✅ whileHover + animate repeat:Infinity → group-hover CSS */}
+                <div className="relative group">
+                  <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 ring-4 ring-primary/10 flex-shrink-0 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
                     <Shield className="w-5 sm:w-6 h-5 sm:h-6 text-primary" />
                   </div>
-                  <motion.div
-                    className="absolute inset-0 rounded-2xl bg-primary/20"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  ></motion.div>
-                </motion.div>
+                  {/* ✅ animate-ping CSS en lugar de motion.div animate scale repeat:Infinity */}
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary/30 rounded-full animate-ping" />
+                </div>
                 <div className="flex-1 min-w-0">
                   <h1 className="text-xl sm:text-2xl md:text-3xl font-heading font-bold text-gradient-primary">
                     Gestión Central
@@ -82,198 +69,123 @@ export const AdminPanelHeader = ({
                     Controla vehículos, usuarios y analíticas en tiempo real
                   </p>
                 </div>
-              </motion.div>
+              </div>
 
-              {/* Campana de notificaciones - SIEMPRE VISIBLE */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex-shrink-0"
-              >
+              <div className="flex-shrink-0">
                 <NotificationBell
                   onNotificationClick={setVehicleFromNotification}
                 />
-              </motion.div>
+              </div>
             </div>
 
-            {/* ========== FILA 2: BOTONES DE ACCIÓN ========== */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-3"
-            >
-              {/* Botón de Actualizar */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 sm:flex-none"
+            {/* FILA 2: BOTONES DE ACCIÓN */}
+            {/* ✅ motion.div whileHover/whileTap → hover:scale-[1.02] active:scale-[0.98] CSS */}
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={fetchVehicles}
+                variant="outline"
+                size="sm"
+                disabled={isLoading}
+                className="flex-1 sm:flex-none gap-2 border-primary/30 hover:border-primary hover:bg-primary/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <Button
-                  onClick={fetchVehicles}
-                  variant="outline"
-                  size="sm"
-                  disabled={isLoading}
-                  className="w-full sm:w-auto gap-2 border-primary/30 hover:border-primary hover:bg-primary/10 transition-all"
-                >
-                  <motion.div
-                    animate={{ rotate: isLoading ? 360 : 0 }}
-                    transition={{ duration: 1, repeat: isLoading ? Infinity : 0, ease: "linear" }}
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </motion.div>
-                  <span>Actualizar</span>
-                </Button>
-              </motion.div>
+                <RefreshCw
+                  className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+                />
+                <span>Actualizar</span>
+              </Button>
 
-              {/* Botón de Exportar */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 sm:flex-none"
+              <Button
+                onClick={exportData}
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none gap-2 border-accent/30 hover:border-accent hover:bg-accent/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <Button
-                  onClick={exportData}
-                  variant="outline"
-                  size="sm"
-                  className="w-full sm:w-auto gap-2 border-accent/30 hover:border-accent hover:bg-accent/10 transition-all"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Exportar</span>
-                </Button>
-              </motion.div>
+                <Download className="w-4 h-4" />
+                <span>Exportar</span>
+              </Button>
 
-              {/* Botón de Dashboard */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 sm:flex-none"
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none gap-2 border-success/30 hover:border-success hover:bg-success/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="w-full sm:w-auto gap-2 border-success/30 hover:border-success hover:bg-success/10 transition-all"
+                <Link
+                  href="/adminPanel/dashboard"
+                  className="flex items-center justify-center"
                 >
-                  <Link 
-                    href="/adminPanel/dashboard"
-                    className="flex items-center justify-center"
-                  >
-                    <BarChart2 className="w-4 h-4" />
-                    <span>Dashboard</span>
-                    <ArrowUpRight className="w-3 h-3" />
-                  </Link>
-                </Button>
-              </motion.div>
+                  <BarChart2 className="w-4 h-4" />
+                  <span>Dashboard</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </Link>
+              </Button>
 
-              {/* Botón de Configuración (nuevo) */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 sm:flex-none"
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none gap-2 border-muted-foreground/30 hover:border-muted-foreground hover:bg-muted-foreground/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full sm:w-auto gap-2 border-muted-foreground/30 hover:border-muted-foreground hover:bg-muted-foreground/10 transition-all"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="hidden sm:inline">Configuración</span>
-                </Button>
-              </motion.div>
-            </motion.div>
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Configuración</span>
+              </Button>
+            </div>
           </div>
 
-          {/* ========== BARRA DE ESTADO MEJORADA ========== */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="pt-4 sm:pt-6 border-t border-border/30"
-          >
+          {/* BARRA DE ESTADO */}
+          <div className="pt-4 sm:pt-6 border-t border-border/30">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              {/* Badges de estado mejorados */}
+              {/* ✅ motion.div whileHover → hover:scale-[1.05] CSS */}
               <div className="flex flex-wrap items-center gap-2">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
+                <Badge
+                  variant="secondary"
+                  className="gap-2 text-xs bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 hover:scale-[1.05] transition-all duration-200 whitespace-nowrap px-3 py-1.5"
                 >
-                  <Badge 
-                    variant="secondary" 
-                    className="gap-2 text-xs bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 transition-colors whitespace-nowrap px-3 py-1.5"
-                  >
-                    <Car className="w-3 h-3" />
-                    <span className="hidden xs:inline">Vehículos Activos</span>
-                    <span className="xs:hidden">Vehículos</span>
-                  </Badge>
-                </motion.div>
-                
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Badge 
-                    variant="secondary" 
-                    className="gap-2 text-xs bg-muted/50 text-muted-foreground border-border hover:bg-muted/70 transition-colors whitespace-nowrap px-3 py-1.5"
-                  >
-                    <Users className="w-3 h-3" />
-                    <span className="hidden xs:inline">Gestión de Usuarios</span>
-                    <span className="xs:hidden">Usuarios</span>
-                  </Badge>
-                </motion.div>
-                
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Badge 
-                    variant="secondary" 
-                    className="gap-2 text-xs bg-accent/10 text-accent border-accent/20 hover:bg-accent/20 transition-colors whitespace-nowrap px-3 py-1.5"
-                  >
-                    <BarChart2 className="w-3 h-3" />
-                    <span className="hidden xs:inline">Analíticas en Tiempo Real</span>
-                    <span className="xs:hidden">Analíticas</span>
-                  </Badge>
-                </motion.div>
+                  <Car className="w-3 h-3" />
+                  <span className="hidden xs:inline">Vehículos Activos</span>
+                  <span className="xs:hidden">Vehículos</span>
+                </Badge>
 
-                {/* Nuevo badge de Base de Datos */}
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
+                <Badge
+                  variant="secondary"
+                  className="gap-2 text-xs bg-muted/50 text-muted-foreground border-border hover:bg-muted/70 hover:scale-[1.05] transition-all duration-200 whitespace-nowrap px-3 py-1.5"
                 >
-                  <Badge 
-                    variant="secondary" 
-                    className="gap-2 text-xs bg-success/10 text-success border-success/20 hover:bg-success/20 transition-colors whitespace-nowrap px-3 py-1.5"
-                  >
-                    <Database className="w-3 h-3" />
-                    <span className="hidden xs:inline">Base de Datos</span>
-                    <span className="xs:hidden">BD</span>
-                  </Badge>
-                </motion.div>
+                  <Users className="w-3 h-3" />
+                  <span className="hidden xs:inline">Gestión de Usuarios</span>
+                  <span className="xs:hidden">Usuarios</span>
+                </Badge>
+
+                <Badge
+                  variant="secondary"
+                  className="gap-2 text-xs bg-accent/10 text-accent border-accent/20 hover:bg-accent/20 hover:scale-[1.05] transition-all duration-200 whitespace-nowrap px-3 py-1.5"
+                >
+                  <BarChart2 className="w-3 h-3" />
+                  <span className="hidden xs:inline">Analíticas en Tiempo Real</span>
+                  <span className="xs:hidden">Analíticas</span>
+                </Badge>
+
+                <Badge
+                  variant="secondary"
+                  className="gap-2 text-xs bg-success/10 text-success border-success/20 hover:bg-success/20 hover:scale-[1.05] transition-all duration-200 whitespace-nowrap px-3 py-1.5"
+                >
+                  <Database className="w-3 h-3" />
+                  <span className="hidden xs:inline">Base de Datos</span>
+                  <span className="xs:hidden">BD</span>
+                </Badge>
               </div>
-              
-              {/* Estado del sistema mejorado */}
+
+              {/* Estado del sistema */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
                 {isLoading ? (
                   <div className="flex items-center gap-2">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                    </motion.div>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
                     <span className="whitespace-nowrap">Actualizando...</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <div className="relative">
-                      <div className="w-3 h-3 bg-primary rounded-full"></div>
-                      <motion.div
-                        className="absolute inset-0 w-3 h-3 bg-primary rounded-full"
-                        animate={{ scale: [1, 1.5, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      ></motion.div>
+                      <div className="w-3 h-3 bg-primary rounded-full" />
+                      {/* ✅ animate-ping CSS en lugar de motion.div animate scale repeat:Infinity */}
+                      <span className="absolute inset-0 w-3 h-3 bg-primary rounded-full animate-ping opacity-75" />
                     </div>
                     <span className="whitespace-nowrap">Sistema en línea</span>
                     <Badge variant="outline" className="ml-1 badge-premium text-xs">
@@ -284,9 +196,9 @@ export const AdminPanelHeader = ({
                 )}
               </div>
             </div>
-          </motion.div>
+          </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 };

@@ -1,108 +1,78 @@
-// src/components/shared/Navbar/Logo.tsx (versión mejorada)
+// src/components/shared/Navbar/Logo.tsx
 import React from "react";
-import { motion } from "framer-motion";
 import { Car } from "lucide-react";
 
 const Logo = () => {
   return (
-    <a href="/" className="group relative flex items-center" aria-label="Ir a la página principal">
-      <motion.div
-        className="relative flex items-center gap-3"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 400, damping: 20 }}
-      >
-        {/* Contenedor del icono con tu sistema de diseño */}
-        <motion.div
-          className="relative p-3 rounded-xl overflow-hidden glow-effect"
+    <a
+      href="/"
+      className="group relative flex items-center"
+      aria-label="Ir a la página principal"
+    >
+      <div className="relative flex items-center gap-3 transition-transform duration-200 group-hover:scale-[1.02] active:scale-[0.98]">
+
+        {/* Icono */}
+        <div
+          className="relative p-3 rounded-xl overflow-hidden glow-effect transition-transform duration-300 group-hover:-translate-y-0.5"
           style={{
-            background: 'var(--gradient-accent)',
-            boxShadow: '0 8px 24px var(--accent-20)'
+            background: "var(--gradient-accent)",
+            boxShadow: "0 8px 24px var(--accent-20)",
           }}
-          whileHover={{ y: -2 }}
-          transition={{ duration: 0.3 }}
         >
-          {/* Reflejo superior mejorado */}
-          <div 
+          <div
             className="absolute top-0 left-0 right-0 h-1/2 rounded-t-xl opacity-30"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 60%)'
+              background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 60%)",
             }}
           />
-          
-          {/* Destello animado más sutil */}
-          <motion.div
-            className="absolute inset-0 skew-x-12 opacity-20"
+          <div
+            className="absolute inset-0 skew-x-12 opacity-0 group-hover:opacity-20 transition-opacity duration-300"
             style={{
-              background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent)'
-            }}
-            animate={{
-              x: ["-200%", "200%"]
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              repeatDelay: 3,
-              ease: "easeInOut"
+              background: "linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent)",
             }}
           />
-          
-          {/* Icono del carro */}
-          <Car 
-            className="w-6 h-6 relative z-10 drop-shadow-lg" 
-            style={{ color: 'var(--accent-foreground)' }}
-            strokeWidth={2.5} 
+          <Car
+            className="w-6 h-6 relative z-10 drop-shadow-lg"
+            style={{ color: "var(--accent-foreground)" }}
+            strokeWidth={2.5}
           />
-        </motion.div>
-        
-        {/* Texto del logo con tus variables */}
+        </div>
+
+        {/* Texto */}
         <div className="flex items-baseline gap-0">
-          {/* Número "1" destacado */}
-          <motion.span 
-            className="font-heading font-black text-4xl bg-clip-text text-transparent"
+          <span
+            className="font-heading font-black text-4xl"
             style={{
-              background: 'var(--gradient-accent)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              background: "var(--gradient-accent)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
             }}
-            whileHover={{ 
-              scale: 1.1,
-              textShadow: '0 0 10px var(--accent-20)'
-            }}
-            transition={{ type: "spring", stiffness: 500 }}
           >
             1
-          </motion.span>
-          
-          {/* "Auto" en bold */}
-          <span 
+          </span>
+          <span
             className="font-heading font-bold text-3xl tracking-tight"
-            style={{ color: 'var(--foreground)' }}
+            style={{ color: "var(--foreground)" }}
           >
             Auto
           </span>
-          
-          {/* ".market" más sutil */}
-          <span 
+          <span
             className="font-heading font-medium text-3xl tracking-tight"
-            style={{ color: 'var(--muted-foreground)' }}
+            style={{ color: "var(--muted-foreground)" }}
           >
             .market
           </span>
         </div>
-        
-        {/* Línea decorativa inferior con tus variables */}
-        <motion.div
-          className="absolute -bottom-1 left-0 h-0.5 rounded-full"
+
+        {/* Línea decorativa */}
+        <div
+          className="absolute -bottom-1 left-0 h-0.5 rounded-full w-0 group-hover:w-full opacity-0 group-hover:opacity-100 transition-all duration-300"
           style={{
-            background: 'linear-gradient(to right, transparent, var(--accent), transparent)'
+            background: "linear-gradient(to right, transparent, var(--accent), transparent)",
           }}
-          initial={{ width: 0, opacity: 0 }}
-          whileHover={{ width: "100%", opacity: 1 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
         />
-      </motion.div>
+      </div>
     </a>
   );
 };

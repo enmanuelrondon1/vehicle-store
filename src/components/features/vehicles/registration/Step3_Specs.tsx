@@ -1,45 +1,38 @@
 // src/components/features/vehicles/registration/Step3_Specs.tsx
-// VERSIÓN PROFESIONAL MEJORADA
 "use client";
 import React, { useMemo, useCallback } from "react";
 import {
   Settings,
   Fuel,
   Wrench,
-  Calendar,
   Gauge,
   Cog,
   AlertCircle,
-  CheckCircle2,
-  Info,
   Eye,
-  Zap,
-  Sparkles,
+  Info,
   ChevronDown,
+  PenLine,
 } from "lucide-react";
 import { InputField } from "@/components/shared/forms/InputField";
 import { SelectField } from "@/components/shared/forms/SelectField";
+import CompletionSummary from "@/components/shared/forms/CompletionSummary";
 import { COMMON_COLORS } from "@/constants/form-constants";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFieldValidation } from "@/hooks/useFieldValidation";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
-// IMPORTAR TIPOS DESDE TU SISTEMA CENTRALIZADO
 import type { VehicleDataBackend, FormErrors } from "@/types/types";
 import {
   VehicleCategory,
   DRIVE_TYPE_LABELS,
   TRANSMISSION_TYPES_LABELS,
   FUEL_TYPES_LABELS,
+  TransmissionType,
+  FuelType,
 } from "@/types/types";
 
+// ===========================================
+// TIPOS
+// ===========================================
 type FormFieldValue = string | number | undefined;
 
 interface StepProps {
@@ -48,9 +41,38 @@ interface StepProps {
   handleInputChange: (field: string, value: FormFieldValue) => void;
 }
 
-// ============================================
-// CONFIGURACIÓN DE VALIDACIÓN
-// ============================================
+// ===========================================
+// CONSTANTES
+// ===========================================
+const INPUT_CLASS =
+  "w-full px-4 py-3.5 rounded-xl border-2 border-border bg-background text-foreground " +
+  "placeholder:text-muted-foreground/60 " +
+  "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 " +
+  "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/30 " +
+  "transition-all duration-200 ease-out hover:border-border/80";
+
+const INPUT_CLASS_OTHER =
+  "w-full px-4 py-3 rounded-xl border-2 border-primary/40 bg-primary/5 text-foreground " +
+  "placeholder:text-muted-foreground/60 " +
+  "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 " +
+  "transition-all duration-200 ease-out text-sm";
+
+const CATEGORIES_WITH_DOORS = [
+  VehicleCategory.CAR,
+  VehicleCategory.SUV,
+  VehicleCategory.VAN,
+  VehicleCategory.BUS,
+];
+
+const MAX_SEATS: Partial<Record<VehicleCategory, number>> = {
+  [VehicleCategory.BUS]: 50,
+  [VehicleCategory.VAN]: 15,
+  [VehicleCategory.SUV]: 8,
+};
+
+// ✅ Colores con "Otro" al final
+const COLORS_WITH_OTHER = [...COMMON_COLORS, "Otro"];
+
 const VALIDATION_CONFIG = {
   color: {
     tips: [
@@ -64,18 +86,6 @@ const VALIDATION_CONFIG = {
       "🔍 El VIN es como el DNI de un vehículo",
       "📜 Permite verificar el historial de accidentes, robos y mantenimientos",
       "🔒 Proporcionarlo aumenta la confianza del comprador",
-    ],
-  },
-  displacement: {
-    car: [
-      "🚗 1.6L ofrece el mejor equilibrio potencia/consumo",
-      "⛽ Mayor cilindraje = mayor consumo de combustible",
-      "🏔️ Para zonas montañosas, considera más cilindraje",
-    ],
-    motorcycle: [
-      "🏍️ 125cc-150cc son las más económicas en consumo",
-      "⚡ Mayor cilindraje = más potencia pero más consumo",
-      "🛣️ Para uso urbano, menor cilindraje es más práctico",
     ],
   },
   engine: {
@@ -95,8 +105,8 @@ const VALIDATION_CONFIG = {
   fuelType: {
     tips: [
       "⛽ Gasolina = mayor disponibilidad de estaciones",
+      "🔵 Gas/GNV = muy económico en Venezuela",
       "🚛 Diesel = mayor eficiencia en distancias largas",
-      "🔋 Eléctrico/Híbrido = menor costo operativo a largo plazo",
     ],
   },
   driveType: {
@@ -127,54 +137,108 @@ const VALIDATION_CONFIG = {
       "🚛 Considera el uso específico del comprador",
     ],
   },
+  displacement: {
+    car: [
+      "🚗 1.6L ofrece el mejor equilibrio potencia/consumo",
+      "⛽ Mayor cilindraje = mayor consumo de combustible",
+      "🏔️ Para zonas montañosas, considera más cilindraje",
+    ],
+    motorcycle: [
+      "🏍️ 125cc-150cc son las más económicas en consumo",
+      "⚡ Mayor cilindraje = más potencia pero más consumo",
+      "🛣️ Para uso urbano, menor cilindraje es más práctico",
+    ],
+  },
 };
 
-// ============================================
-// SUB-COMPONENTE: Encabezado y Progreso
-// ============================================
-const FormHeader: React.FC<{ progress: number }> = React.memo(({ progress }) => (
-  <div className="text-center space-y-6">
-    <div className="relative">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 rounded-3xl blur-xl"></div>
-      <div className="relative flex items-center justify-center gap-4 p-6 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 border border-border/50 shadow-glass">
-        <div className="p-4 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10">
-          <Settings className="w-8 h-8 text-primary-foreground" />
-        </div>
-        <div className="text-left">
-          <h2 className="text-3xl font-heading font-bold text-foreground tracking-tight">
-            Especificaciones Técnicas
-          </h2>
-          <p className="text-base text-muted-foreground mt-1">
-            Detalles técnicos del vehículo
-          </p>
-        </div>
-      </div>
-    </div>
-    
-    <div className="w-full max-w-md mx-auto pt-2">
-      <div className="flex justify-between items-center mb-2.5">
-        <span className="text-sm font-medium text-muted-foreground">Progreso</span>
-        <span className="text-sm font-bold text-foreground tabular-nums">
-          {Math.round(progress)}%
-        </span>
-      </div>
-      <Progress value={progress} variant="glow" className="h-3 bg-muted" />
-      <div className="flex justify-between mt-1">
-        <span className="text-xs text-muted-foreground">Completando información</span>
-        <span className="text-xs text-muted-foreground">Paso 3 de 5</span>
-      </div>
-    </div>
-  </div>
-));
-FormHeader.displayName = "FormHeader";
+interface PreviewRow {
+  key: keyof VehicleDataBackend;
+  label: string;
+  badge: boolean;
+  mono?: boolean;
+  skipMoto?: boolean;
+  labelMap?: Record<string, string>;
+  otherKey?: keyof VehicleDataBackend; // campo alternativo si valor = "Otro" / "other"
+}
 
-// ============================================
-// SUB-COMPONENTE: Vista Previa de Especificaciones
-// ============================================
+const PREVIEW_ROWS: PreviewRow[] = [
+  { key: "color", label: "Color", badge: false, otherKey: "colorOther" },
+  { key: "vin", label: "VIN", badge: false, mono: true },
+  {
+    key: "displacement",
+    label: "Cilindraje",
+    badge: false,
+    otherKey: "displacementOther",
+  },
+  {
+    key: "transmission",
+    label: "Transmisión",
+    badge: true,
+    labelMap: TRANSMISSION_TYPES_LABELS,
+    otherKey: "transmissionOther",
+  },
+  {
+    key: "fuelType",
+    label: "Combustible",
+    badge: true,
+    labelMap: FUEL_TYPES_LABELS,
+    otherKey: "fuelTypeOther",
+  },
+  {
+    key: "driveType",
+    label: "Tracción",
+    badge: false,
+    labelMap: DRIVE_TYPE_LABELS,
+    skipMoto: true,
+  },
+  { key: "doors", label: "Puertas", badge: false },
+  { key: "seats", label: "Asientos", badge: false },
+];
+
+// ===========================================
+// SUB-COMPONENTE: Campo "Otro" condicional
+// Aparece con animación cuando se selecciona "Otro"
+// ===========================================
+const OtherField: React.FC<{
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  error?: string;
+  maxLength?: number;
+}> = ({ value, onChange, placeholder, error, maxLength = 50 }) => (
+  <div className="mt-2 animate-fade-in">
+    <div className="flex items-center gap-2 mb-1.5">
+      <PenLine className="w-3.5 h-3.5 text-primary" />
+      <span className="text-xs text-primary font-medium">Especifica cuál:</span>
+    </div>
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={`${INPUT_CLASS_OTHER} ${error ? "border-destructive" : ""}`}
+      placeholder={placeholder}
+      maxLength={maxLength}
+      autoFocus
+    />
+    {error && <p className="text-xs text-destructive mt-1">{error}</p>}
+  </div>
+);
+
+// ===========================================
+// SUB-COMPONENTE: Vista Previa
+// ===========================================
 const SpecsPreviewCard: React.FC<{
   formData: Partial<VehicleDataBackend>;
   currentCategory: VehicleCategory;
 }> = React.memo(({ formData, currentCategory }) => {
+  const rows = PREVIEW_ROWS.filter(({ key, skipMoto }) => {
+    if (skipMoto && currentCategory === VehicleCategory.MOTORCYCLE)
+      return false;
+    return !!formData[key as keyof VehicleDataBackend];
+  });
+
+  if (rows.length === 0) return null;
+
   return (
     <Card className="card-glass border-border/50 overflow-hidden">
       <CardContent className="p-0">
@@ -189,80 +253,42 @@ const SpecsPreviewCard: React.FC<{
           </div>
         </div>
         <div className="p-5 space-y-4">
-          {formData.color && (
-            <div className="flex justify-between items-center py-2 border-b border-border/50">
-              <span className="text-sm text-muted-foreground">Color</span>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500"></div>
-                <span className="font-medium text-sm text-foreground">
-                  {formData.color}
-                </span>
+          {rows.map(({ key, label, badge, mono, labelMap, otherKey }, i) => {
+            const raw = formData[key as keyof VehicleDataBackend] as string;
+            // Si el valor es "Otro"/"other", mostrar el campo personalizado
+            const isOther = raw === "Otro" || raw === "other";
+            const otherValue = otherKey
+              ? (formData[otherKey] as string)
+              : undefined;
+            const displayValue =
+              isOther && otherValue
+                ? otherValue
+                : labelMap
+                  ? ((labelMap as Record<string, string>)[raw] ?? raw)
+                  : raw;
+
+            if (!displayValue) return null;
+
+            return (
+              <div
+                key={key}
+                className={`flex justify-between items-center py-2 ${i < rows.length - 1 ? "border-b border-border/50" : ""}`}
+              >
+                <span className="text-sm text-muted-foreground">{label}</span>
+                {badge ? (
+                  <Badge variant="outline" className="font-medium">
+                    {displayValue}
+                  </Badge>
+                ) : (
+                  <span
+                    className={`font-medium text-sm text-foreground ${mono ? "font-mono tracking-wider" : ""}`}
+                  >
+                    {displayValue}
+                  </span>
+                )}
               </div>
-            </div>
-          )}
-
-          {formData.vin && (
-            <div className="flex justify-between items-center py-2 border-b border-border/50">
-              <span className="text-sm text-muted-foreground">VIN</span>
-              <span className="font-medium text-sm text-foreground font-mono tracking-wider">
-                {formData.vin}
-              </span>
-            </div>
-          )}
-
-          {formData.displacement && (
-            <div className="flex justify-between items-center py-2 border-b border-border/50">
-              <span className="text-sm text-muted-foreground">Cilindraje</span>
-              <span className="font-medium text-sm text-foreground">
-                {formData.displacement}
-              </span>
-            </div>
-          )}
-
-          {formData.transmission && (
-            <div className="flex justify-between items-center py-2 border-b border-border/50">
-              <span className="text-sm text-muted-foreground">Transmisión</span>
-              <Badge variant="outline" className="font-medium">
-                {TRANSMISSION_TYPES_LABELS[formData.transmission]}
-              </Badge>
-            </div>
-          )}
-
-          {formData.fuelType && (
-            <div className="flex justify-between items-center py-2 border-b border-border/50">
-              <span className="text-sm text-muted-foreground">Combustible</span>
-              <Badge variant="outline" className="font-medium">
-                {FUEL_TYPES_LABELS[formData.fuelType]}
-              </Badge>
-            </div>
-          )}
-
-          {formData.driveType && currentCategory !== VehicleCategory.MOTORCYCLE && (
-            <div className="flex justify-between items-center py-2 border-b border-border/50">
-              <span className="text-sm text-muted-foreground">Tracción</span>
-              <span className="font-medium text-sm text-foreground">
-                {DRIVE_TYPE_LABELS[formData.driveType]}
-              </span>
-            </div>
-          )}
-
-          {formData.doors && (
-            <div className="flex justify-between items-center py-2 border-b border-border/50">
-              <span className="text-sm text-muted-foreground">Puertas</span>
-              <span className="font-medium text-sm text-foreground">
-                {formData.doors}
-              </span>
-            </div>
-          )}
-
-          {formData.seats && (
-            <div className="flex justify-between items-center py-2">
-              <span className="text-sm text-muted-foreground">Asientos</span>
-              <span className="font-medium text-sm text-foreground">
-                {formData.seats}
-              </span>
-            </div>
-          )}
+            );
+          })}
         </div>
       </CardContent>
     </Card>
@@ -270,59 +296,9 @@ const SpecsPreviewCard: React.FC<{
 });
 SpecsPreviewCard.displayName = "SpecsPreviewCard";
 
-// ============================================
-// SUB-COMPONENTE: Resumen de Completitud
-// ============================================
-const CompletionSummary: React.FC<{ progress: number }> = React.memo(({ progress }) => {
-  const isComplete = progress >= 100;
-  const borderColor = isComplete ? "border-success/40" : "border-amber-500/40";
-  const bgColor = isComplete ? "bg-success/5 dark:bg-success/5" : "bg-amber-500/5 dark:bg-amber-950/20";
-  const iconBgColor = isComplete ? "bg-success/20" : "bg-amber-500/20";
-  const textColor = isComplete ? "text-success" : "text-amber-600 dark:text-amber-400";
-
-  return (
-    <div className={`p-5 rounded-xl border-2 shadow-sm transition-all duration-300 ${borderColor} ${bgColor} card-hover`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${iconBgColor}`}>
-            {isComplete ? (
-              <CheckCircle2 className={`w-5 h-5 ${textColor}`} />
-            ) : (
-              <AlertCircle className={`w-5 h-5 ${textColor}`} />
-            )}
-          </div>
-          <div>
-            <p className="font-semibold text-foreground text-base">
-              {isComplete ? "¡Especificaciones completas!" : "Faltan algunos campos"}
-            </p>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {isComplete ? "Puedes continuar al siguiente paso" : `${Math.round(progress)}% completado`}
-            </p>
-          </div>
-        </div>
-        <Badge variant={isComplete ? "default" : "secondary"} className="text-sm font-bold px-3 py-1">
-          {Math.round(progress)}%
-        </Badge>
-      </div>
-      
-      {!isComplete && (
-        <div className="mt-3">
-          <div className="w-full bg-muted rounded-full h-2">
-            <div 
-              className="bg-gradient-to-r from-primary to-accent h-2 rounded-full transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-});
-CompletionSummary.displayName = "CompletionSummary";
-
-// ============================================
+// ===========================================
 // COMPONENTE PRINCIPAL
-// ============================================
+// ===========================================
 const Step3_Specs: React.FC<StepProps> = ({
   formData,
   errors,
@@ -330,69 +306,117 @@ const Step3_Specs: React.FC<StepProps> = ({
 }) => {
   const currentCategory = formData.category as VehicleCategory | undefined;
 
-  // ========== Clases de Input Mejoradas ==========
-  const inputClass =
-    "w-full px-4 py-3.5 rounded-xl border-2 border-border bg-background text-foreground " +
-    "placeholder:text-muted-foreground/60 " +
-    "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 " +
-    "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/30 " +
-    "transition-all duration-200 ease-out hover:border-border/80";
-
-  // ========== Hooks de Validación ==========
   const colorValidation = useFieldValidation(formData.color, errors.color);
+  const colorOtherValidation = useFieldValidation(
+    formData.colorOther,
+    errors.colorOther,
+  );
   const vinValidation = useFieldValidation(formData.vin, errors.vin);
   const displacementValidation = useFieldValidation(
     formData.displacement,
-    errors.displacement
+    errors.displacement,
+  );
+  const displacementOtherValidation = useFieldValidation(
+    formData.displacementOther,
+    errors.displacementOther,
   );
   const engineValidation = useFieldValidation(formData.engine, errors.engine);
   const transmissionValidation = useFieldValidation(
     formData.transmission,
-    errors.transmission
+    errors.transmission,
+  );
+  const transmissionOtherValidation = useFieldValidation(
+    formData.transmissionOther,
+    errors.transmissionOther,
   );
   const fuelTypeValidation = useFieldValidation(
     formData.fuelType,
-    errors.fuelType
+    errors.fuelType,
+  );
+  const fuelTypeOtherValidation = useFieldValidation(
+    formData.fuelTypeOther,
+    errors.fuelTypeOther,
   );
   const driveTypeValidation = useFieldValidation(
     formData.driveType,
-    errors.driveType
+    errors.driveType,
   );
   const doorsValidation = useFieldValidation(formData.doors, errors.doors);
   const seatsValidation = useFieldValidation(formData.seats, errors.seats);
   const loadCapacityValidation = useFieldValidation(
     formData.loadCapacity,
-    errors.loadCapacity
+    errors.loadCapacity,
   );
 
-  // ========== Manejadores de Input Numérico ==========
+  // ✅ Cilindraje con "Otro" al final
+  const displacementOptions = useMemo(() => {
+    const base =
+      currentCategory === VehicleCategory.MOTORCYCLE
+        ? [
+            "110cc",
+            "125cc",
+            "150cc",
+            "200cc",
+            "250cc",
+            "300cc",
+            "400cc",
+            "500cc",
+            "600cc",
+            "750cc",
+            "1000cc",
+          ]
+        : [
+            "1.0",
+            "1.2",
+            "1.3",
+            "1.4",
+            "1.5",
+            "1.6",
+            "1.8",
+            "2.0",
+            "2.2",
+            "2.4",
+            "2.5",
+            "2.7",
+            "3.0",
+            "3.5",
+            "4.0",
+            "4.6",
+            "5.0",
+          ].map((d) => `${d}L`);
+    return [...base, "Otro"];
+  }, [currentCategory]);
+
+  const { progressPercentage } = useMemo(() => {
+    // ✅ Puertas y asientos ya no son requeridos para el progreso
+    const requiredFields = ["color", "transmission", "fuelType"];
+    const completed = requiredFields.filter((f) => {
+      const v = formData[f as keyof VehicleDataBackend];
+      return v !== undefined && v !== "" && v !== null;
+    }).length;
+    return { progressPercentage: (completed / requiredFields.length) * 100 };
+  }, [formData]);
+
   const createNumericInputHandler = useCallback(
     (
       field: keyof VehicleDataBackend,
-      options: { maxLength?: number; isFloat?: boolean } = {}
-    ) => {
-      return (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        let numericValue: string | number = value.replace(
+      options: { maxLength?: number; isFloat?: boolean } = {},
+    ) =>
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const numericValue = e.target.value.replace(
           options.isFloat ? /[^0-9.]/g : /[^0-9]/g,
-          ""
+          "",
         );
-
-        if (options.maxLength && numericValue.length > options.maxLength) {
-          numericValue = numericValue.slice(0, options.maxLength);
-        }
-
-        if (numericValue === "") {
-          handleInputChange(field, undefined);
-        } else {
-          const parsedValue = options.isFloat
-            ? parseFloat(numericValue as string)
-            : parseInt(numericValue as string, 10);
-          handleInputChange(field, isNaN(parsedValue) ? undefined : parsedValue);
-        }
-      };
-    },
-    [handleInputChange]
+        const trimmed = options.maxLength
+          ? numericValue.slice(0, options.maxLength)
+          : numericValue;
+        if (trimmed === "") return handleInputChange(field, undefined);
+        const parsed = options.isFloat
+          ? parseFloat(trimmed)
+          : parseInt(trimmed, 10);
+        handleInputChange(field, isNaN(parsed) ? undefined : parsed);
+      },
+    [handleInputChange],
   );
 
   const handleDoorsChange = createNumericInputHandler("doors");
@@ -401,54 +425,12 @@ const Step3_Specs: React.FC<StepProps> = ({
     isFloat: true,
   });
 
-  // ========== Generar Opciones de Cilindraje ==========
-  const generateDisplacementOptions = () => {
-    const displacements = [
-      "1.0", "1.2", "1.3", "1.4", "1.5", "1.6", "1.8", "2.0", "2.2",
-      "2.4", "2.5", "2.7", "3.0", "3.5", "4.0", "4.6", "5.0",
-    ];
+  // Flags "Otro" seleccionado
+  const isColorOther = formData.color === "Otro";
+  const isDisplacementOther = formData.displacement === "Otro";
+  const isTransmissionOther = formData.transmission === TransmissionType.OTHER;
+  const isFuelTypeOther = formData.fuelType === FuelType.OTHER;
 
-    if (currentCategory === VehicleCategory.MOTORCYCLE) {
-      return [
-        "110cc", "125cc", "150cc", "200cc", "250cc", "300cc", "400cc",
-        "500cc", "600cc", "750cc", "1000cc",
-      ];
-    }
-
-    return displacements.map((d) => `${d}L`);
-  };
-
-  // ========== Cálculo de Progreso ==========
-  const { progressPercentage, isComplete } = useMemo(() => {
-    const requiredFields = ["color", "transmission", "fuelType"];
-    const conditionalFields: string[] = [];
-
-    if (
-      currentCategory &&
-      [
-        VehicleCategory.CAR,
-        VehicleCategory.SUV,
-        VehicleCategory.VAN,
-        VehicleCategory.BUS,
-      ].includes(currentCategory)
-    ) {
-      conditionalFields.push("doors", "seats");
-    }
-
-    const allRequiredFields = [...requiredFields, ...conditionalFields];
-    const completedFields = allRequiredFields.filter((field) => {
-      const value = formData[field as keyof VehicleDataBackend];
-      return value !== undefined && value !== "" && value !== null;
-    }).length;
-
-    const progress =
-      allRequiredFields.length > 0
-        ? (completedFields / allRequiredFields.length) * 100
-        : 0;
-    return { progressPercentage: progress, isComplete: progress === 100 };
-  }, [formData, currentCategory]);
-
-  // ========== Validación de Categoría ==========
   if (!currentCategory) {
     return (
       <div className="max-w-2xl mx-auto">
@@ -461,7 +443,8 @@ const Step3_Specs: React.FC<StepProps> = ({
               Categoría no seleccionada
             </h3>
             <p className="text-muted-foreground">
-              Por favor, regresa al paso 1 y selecciona una categoría para continuar.
+              Por favor, regresa al paso 1 y selecciona una categoría para
+              continuar.
             </p>
           </CardContent>
         </Card>
@@ -469,10 +452,10 @@ const Step3_Specs: React.FC<StepProps> = ({
     );
   }
 
+  const hasDoors = CATEGORIES_WITH_DOORS.includes(currentCategory);
+
   return (
     <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
-      <FormHeader progress={progressPercentage} />
-
       <div className="space-y-7">
         {/* COLOR Y CILINDRAJE */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -489,12 +472,24 @@ const Step3_Specs: React.FC<StepProps> = ({
           >
             <SelectField
               value={formData.color || ""}
-              onValueChange={(value) => handleInputChange("color", value)}
+              onValueChange={(value) => {
+                handleInputChange("color", value);
+                if (value !== "Otro") handleInputChange("colorOther", "");
+              }}
               placeholder="Selecciona un color"
-              options={COMMON_COLORS.map((c) => ({ value: c, label: c }))}
-              className={`${inputClass} ${colorValidation.getBorderClassName()}`}
+              options={COLORS_WITH_OTHER.map((c) => ({ value: c, label: c }))}
+              className={`${INPUT_CLASS} ${colorValidation.getBorderClassName()}`}
               icon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
             />
+            {isColorOther && (
+              <OtherField
+                value={formData.colorOther || ""}
+                onChange={(v) => handleInputChange("colorOther", v)}
+                placeholder="Ej: Dorado, Vino Tinto Perlado, Azul Marino..."
+                error={errors.colorOther}
+                maxLength={30}
+              />
+            )}
           </InputField>
 
           <InputField
@@ -504,13 +499,13 @@ const Step3_Specs: React.FC<StepProps> = ({
                 : "Cilindraje del Motor"
             }
             error={errors.displacement}
+            success={displacementValidation.isValid}
             icon={<Gauge className="w-4 h-4 text-primary" />}
             tooltip={
               currentCategory === VehicleCategory.MOTORCYCLE
                 ? "125cc-150cc son los más populares en Venezuela"
                 : "El cilindraje afecta el consumo y potencia"
             }
-            success={displacementValidation.isValid}
             tips={
               currentCategory === VehicleCategory.MOTORCYCLE
                 ? VALIDATION_CONFIG.displacement.motorcycle
@@ -519,15 +514,29 @@ const Step3_Specs: React.FC<StepProps> = ({
           >
             <SelectField
               value={formData.displacement || ""}
-              onValueChange={(value) => handleInputChange("displacement", value)}
+              onValueChange={(value) => {
+                handleInputChange("displacement", value);
+                if (value !== "Otro")
+                  handleInputChange("displacementOther", "");
+              }}
               placeholder="Selecciona cilindraje"
-              options={generateDisplacementOptions().map((d) => ({
-                value: d,
-                label: d,
-              }))}
-              className={`${inputClass} ${displacementValidation.getBorderClassName()}`}
+              options={displacementOptions.map((d) => ({ value: d, label: d }))}
+              className={`${INPUT_CLASS} ${displacementValidation.getBorderClassName()}`}
               icon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
             />
+            {isDisplacementOther && (
+              <OtherField
+                value={formData.displacementOther || ""}
+                onChange={(v) => handleInputChange("displacementOther", v)}
+                placeholder={
+                  currentCategory === VehicleCategory.MOTORCYCLE
+                    ? "Ej: 180cc, 650cc..."
+                    : "Ej: 2.8L, 6.2L..."
+                }
+                error={errors.displacementOther}
+                maxLength={20}
+              />
+            )}
           </InputField>
         </div>
 
@@ -536,9 +545,9 @@ const Step3_Specs: React.FC<StepProps> = ({
           <InputField
             label="Motor (Opcional)"
             error={errors.engine}
+            success={engineValidation.isValid}
             icon={<Wrench className="w-4 h-4 text-primary" />}
             tooltip="Incluye detalles como V6, Turbo, DOHC para mayor atractivo"
-            success={engineValidation.isValid}
             counter={{ current: formData.engine?.length || 0, max: 100 }}
             tips={VALIDATION_CONFIG.engine.tips}
           >
@@ -546,7 +555,7 @@ const Step3_Specs: React.FC<StepProps> = ({
               type="text"
               value={formData.engine || ""}
               onChange={(e) => handleInputChange("engine", e.target.value)}
-              className={`${inputClass} ${engineValidation.getBorderClassName()}`}
+              className={`${INPUT_CLASS} ${engineValidation.getBorderClassName()}`}
               placeholder="Ej: V6, Turbo, DOHC, Inyección Directa"
               maxLength={100}
             />
@@ -555,9 +564,9 @@ const Step3_Specs: React.FC<StepProps> = ({
           <InputField
             label="VIN (Opcional)"
             error={errors.vin}
+            success={vinValidation.isValid}
             icon={<Info className="w-4 h-4 text-primary" />}
             tooltip="Número de Identificación Vehicular. 17 caracteres únicos."
-            success={vinValidation.isValid}
             counter={{ current: formData.vin?.length || 0, max: 17 }}
             tips={VALIDATION_CONFIG.vin.tips}
           >
@@ -567,7 +576,7 @@ const Step3_Specs: React.FC<StepProps> = ({
               onChange={(e) =>
                 handleInputChange("vin", e.target.value.toUpperCase())
               }
-              className={`${inputClass} ${vinValidation.getBorderClassName()} uppercase`}
+              className={`${INPUT_CLASS} ${vinValidation.getBorderClassName()} uppercase`}
               placeholder="Ej: 1G4AND4F6DF1XXXXX"
               maxLength={17}
             />
@@ -580,53 +589,77 @@ const Step3_Specs: React.FC<StepProps> = ({
             label="Transmisión"
             required
             error={errors.transmission}
+            success={transmissionValidation.isValid}
             icon={<Settings className="w-4 h-4 text-primary" />}
             tooltip="La transmisión manual suele ser más económica de mantener"
-            success={transmissionValidation.isValid}
             tips={VALIDATION_CONFIG.transmission.tips}
           >
             <SelectField
               value={formData.transmission || ""}
-              onValueChange={(value) => handleInputChange("transmission", value)}
+              onValueChange={(value) => {
+                handleInputChange("transmission", value);
+                if (value !== TransmissionType.OTHER)
+                  handleInputChange("transmissionOther", "");
+              }}
               placeholder="Selecciona transmisión"
               options={Object.entries(TRANSMISSION_TYPES_LABELS).map(
-                ([value, label]) => ({ value, label })
+                ([value, label]) => ({ value, label }),
               )}
-              className={`${inputClass} ${transmissionValidation.getBorderClassName()}`}
+              className={`${INPUT_CLASS} ${transmissionValidation.getBorderClassName()}`}
               icon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
             />
+            {isTransmissionOther && (
+              <OtherField
+                value={formData.transmissionOther || ""}
+                onChange={(v) => handleInputChange("transmissionOther", v)}
+                placeholder="Ej: Semi-automática, Secuencial..."
+                error={errors.transmissionOther}
+              />
+            )}
           </InputField>
 
           <InputField
             label="Tipo de Combustible"
             required
             error={errors.fuelType}
-            icon={<Fuel className="w-4 h-4 text-primary" />}
-            tooltip="La gasolina es más común, pero el diesel puede ser más económico"
             success={fuelTypeValidation.isValid}
+            icon={<Fuel className="w-4 h-4 text-primary" />}
+            tooltip="Gas/GNV es muy común y económico en Venezuela"
             tips={VALIDATION_CONFIG.fuelType.tips}
           >
             <SelectField
               value={formData.fuelType || ""}
-              onValueChange={(value) => handleInputChange("fuelType", value)}
+              onValueChange={(value) => {
+                handleInputChange("fuelType", value);
+                if (value !== FuelType.OTHER)
+                  handleInputChange("fuelTypeOther", "");
+              }}
               placeholder="Selecciona combustible"
               options={Object.entries(FUEL_TYPES_LABELS).map(
-                ([value, label]) => ({ value, label })
+                ([value, label]) => ({ value, label }),
               )}
-              className={`${inputClass} ${fuelTypeValidation.getBorderClassName()}`}
+              className={`${INPUT_CLASS} ${fuelTypeValidation.getBorderClassName()}`}
               icon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
             />
+            {isFuelTypeOther && (
+              <OtherField
+                value={formData.fuelTypeOther || ""}
+                onChange={(v) => handleInputChange("fuelTypeOther", v)}
+                placeholder="Ej: Hidrógeno, Metanol..."
+                error={errors.fuelTypeOther}
+              />
+            )}
           </InputField>
         </div>
 
-        {/* TRACCIÓN (Solo para no-motos) */}
+        {/* TRACCIÓN */}
         {currentCategory !== VehicleCategory.MOTORCYCLE && (
           <InputField
-            label="Tracción"
+            label="Tracción (Opcional)"
             error={errors.driveType}
+            success={driveTypeValidation.isValid}
             icon={<Cog className="w-4 h-4 text-primary" />}
             tooltip="4x4 es ideal para terrenos difíciles, FWD para ciudad"
-            success={driveTypeValidation.isValid}
             tips={VALIDATION_CONFIG.driveType.tips}
           >
             <SelectField
@@ -634,100 +667,85 @@ const Step3_Specs: React.FC<StepProps> = ({
               onValueChange={(value) => handleInputChange("driveType", value)}
               placeholder="Selecciona tracción"
               options={Object.entries(DRIVE_TYPE_LABELS).map(
-                ([value, label]) => ({ value, label })
+                ([value, label]) => ({ value, label }),
               )}
-              className={`${inputClass} ${driveTypeValidation.getBorderClassName()}`}
+              className={`${INPUT_CLASS} ${driveTypeValidation.getBorderClassName()}`}
               icon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
             />
           </InputField>
         )}
 
-        {/* PUERTAS Y ASIENTOS */}
-        {currentCategory &&
-          [
-            VehicleCategory.CAR,
-            VehicleCategory.SUV,
-            VehicleCategory.VAN,
-            VehicleCategory.BUS,
-          ].includes(currentCategory) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <InputField
-                label="Puertas"
-                required
-                error={errors.doors}
-                tooltip="Más puertas = mayor comodidad familiar"
-                success={doorsValidation.isValid}
-                tips={VALIDATION_CONFIG.doors.tips}
-              >
-                <input
-                  type="number"
-                  value={formData.doors || ""}
-                  onChange={handleDoorsChange}
-                  className={`${inputClass} ${doorsValidation.getBorderClassName()}`}
-                  placeholder="4"
-                  min="2"
-                  max="5"
-                />
-              </InputField>
+        {/* PUERTAS Y ASIENTOS — ✅ Ahora opcionales */}
+        {hasDoors && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <InputField
+              label="Puertas (Opcional)"
+              error={errors.doors}
+              success={doorsValidation.isValid}
+              tooltip="Más puertas = mayor comodidad familiar"
+              tips={VALIDATION_CONFIG.doors.tips}
+            >
+              <input
+                type="number"
+                value={formData.doors ?? ""}
+                onChange={handleDoorsChange}
+                className={`${INPUT_CLASS} ${doorsValidation.getBorderClassName()}`}
+                placeholder="Ej: 4"
+                min="1"
+                max="10"
+              />
+            </InputField>
 
-              <InputField
-                label="Asientos"
-                required
-                error={errors.seats}
-                tooltip="Considera el uso: familiar, comercial, transporte"
-                success={seatsValidation.isValid}
-                tips={VALIDATION_CONFIG.seats.tips}
-              >
-                <input
-                  type="number"
-                  value={formData.seats || ""}
-                  onChange={handleSeatsChange}
-                  className={`${inputClass} ${seatsValidation.getBorderClassName()}`}
-                  placeholder="5"
-                  min="2"
-                  max={
-                    currentCategory === VehicleCategory.BUS
-                      ? "50"
-                      : currentCategory === VehicleCategory.VAN
-                      ? "15"
-                      : currentCategory === VehicleCategory.SUV
-                      ? "8"
-                      : "9"
-                  }
-                />
-              </InputField>
-            </div>
-          )}
+            <InputField
+              label="Asientos (Opcional)"
+              error={errors.seats}
+              success={seatsValidation.isValid}
+              tooltip="Considera el uso: familiar, comercial, transporte"
+              tips={VALIDATION_CONFIG.seats.tips}
+            >
+              <input
+                type="number"
+                value={formData.seats ?? ""}
+                onChange={handleSeatsChange}
+                className={`${INPUT_CLASS} ${seatsValidation.getBorderClassName()}`}
+                placeholder="Ej: 5"
+                min="1"
+                max={MAX_SEATS[currentCategory] ?? 9}
+              />
+            </InputField>
+          </div>
+        )}
 
-        {/* CAPACIDAD DE CARGA (Solo para camiones) */}
+        {/* CAPACIDAD DE CARGA */}
         {currentCategory === VehicleCategory.TRUCK && (
           <InputField
             label="Capacidad de Carga (kg)"
             error={errors.loadCapacity}
+            success={loadCapacityValidation.isValid}
             icon={<Wrench className="w-4 h-4 text-primary" />}
             tooltip="Especifica la capacidad real para atraer compradores comerciales"
-            success={loadCapacityValidation.isValid}
             tips={VALIDATION_CONFIG.loadCapacity.tips}
           >
             <input
               type="number"
               value={formData.loadCapacity || ""}
               onChange={handleLoadCapacityChange}
-              className={`${inputClass} ${loadCapacityValidation.getBorderClassName()}`}
+              className={`${INPUT_CLASS} ${loadCapacityValidation.getBorderClassName()}`}
               placeholder="1000"
               min="0"
             />
           </InputField>
         )}
 
-        {/* VISTA PREVIA */}
         <SpecsPreviewCard
           formData={formData}
           currentCategory={currentCategory}
         />
-        
-        {/* RESUMEN DE COMPLETITUD */}
-        <CompletionSummary progress={progressPercentage} />
+
+        <CompletionSummary
+          progress={progressPercentage}
+          completeLabel="¡Especificaciones completas!"
+        />
       </div>
     </div>
   );

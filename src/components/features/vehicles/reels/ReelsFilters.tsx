@@ -1,22 +1,15 @@
+
 // src/components/features/vehicles/reels/ReelsFilters.tsx
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { SlidersHorizontal, X, Check, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
+import { X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  VehicleCategory,
-  VehicleCondition,
-  VEHICLE_CATEGORIES_LABELS,
-  VEHICLE_CONDITIONS_LABELS,
-} from "@/types/shared";
 
 export interface ReelsFiltersState {
-  category: VehicleCategory | "all";
-  condition: VehicleCondition | "all";
+  category: string;
+  condition: string;
   priceRange: [number, number];
   yearRange: [number, number];
   featured: boolean;
@@ -26,7 +19,7 @@ export interface ReelsFiltersState {
 interface ReelsFiltersProps {
   filters: ReelsFiltersState;
   onFiltersChange: (filters: ReelsFiltersState) => void;
-  onClose?: () => void;
+  onClose: () => void;
 }
 
 export const ReelsFilters: React.FC<ReelsFiltersProps> = ({
@@ -36,44 +29,9 @@ export const ReelsFilters: React.FC<ReelsFiltersProps> = ({
 }) => {
   const [localFilters, setLocalFilters] = useState<ReelsFiltersState>(filters);
 
-  const categories = [
-    { value: "all", label: "Todos", icon: "🎯" },
-    { value: VehicleCategory.MOTORCYCLE, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.MOTORCYCLE], icon: "🏍️" },
-    { value: VehicleCategory.CAR, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.CAR], icon: "🚗" },
-    { value: VehicleCategory.SUV, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.SUV], icon: "🚙" },
-    { value: VehicleCategory.TRUCK, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.TRUCK], icon: "🚚" },
-    { value: VehicleCategory.VAN, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.VAN], icon: "🚐" },
-    { value: VehicleCategory.BUS, label: VEHICLE_CATEGORIES_LABELS[VehicleCategory.BUS], icon: "🚌" },
-  ];
-
-  const conditions = [
-    { value: "all", label: "Todas las condiciones" },
-    { value: VehicleCondition.NEW, label: VEHICLE_CONDITIONS_LABELS[VehicleCondition.NEW] },
-    { value: VehicleCondition.EXCELLENT, label: VEHICLE_CONDITIONS_LABELS[VehicleCondition.EXCELLENT] },
-    { value: VehicleCondition.GOOD, label: VEHICLE_CONDITIONS_LABELS[VehicleCondition.GOOD] },
-  ];
-
-  const priceRanges = [
-    { label: "Todos los precios", min: 0, max: 1000000 },
-    { label: "Hasta $5,000", min: 0, max: 5000 },
-    { label: "$5,000 - $10,000", min: 5000, max: 10000 },
-    { label: "$10,000 - $20,000", min: 10000, max: 20000 },
-    { label: "$20,000 - $50,000", min: 20000, max: 50000 },
-    { label: "Más de $50,000", min: 50000, max: 1000000 },
-  ];
-
-  const yearRanges = [
-    { label: "Todos los años", min: 1900, max: 2025 },
-    { label: "2020 - 2025", min: 2020, max: 2025 },
-    { label: "2015 - 2019", min: 2015, max: 2019 },
-    { label: "2010 - 2014", min: 2010, max: 2014 },
-    { label: "2000 - 2009", min: 2000, max: 2009 },
-    { label: "Antes de 2000", min: 1900, max: 1999 },
-  ];
-
   const handleApply = () => {
     onFiltersChange(localFilters);
-    onClose?.();
+    onClose();
   };
 
   const handleReset = () => {
@@ -86,213 +44,184 @@ export const ReelsFilters: React.FC<ReelsFiltersProps> = ({
       random: true,
     };
     setLocalFilters(defaultFilters);
-    onFiltersChange(defaultFilters);
   };
 
-  const activeFiltersCount = [
-    localFilters.category !== "all",
-    localFilters.condition !== "all",
-    localFilters.priceRange[0] !== 0 || localFilters.priceRange[1] !== 1000000,
-    localFilters.yearRange[0] !== 1900 || localFilters.yearRange[1] !== 2025,
-    localFilters.featured,
-  ].filter(Boolean).length;
-
   return (
-    <motion.div
-      initial={{ x: "100%" }}
-      animate={{ x: 0 }}
-      exit={{ x: "100%" }}
-      transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="fixed right-0 top-0 h-full w-full md:w-96 bg-background border-l border-border shadow-2xl z-50 overflow-y-auto"
-    >
-      {/* Header */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border p-4 z-10">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold">Filtros</h2>
-            {activeFiltersCount > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {activeFiltersCount}
-              </Badge>
-            )}
-          </div>
-          {onClose && (
-            <Button variant="ghost" size="icon" onClick={onClose}>
+    <>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+        className="fixed bottom-0 left-0 right-0 bg-background rounded-t-3xl z-50 max-h-[75vh] overflow-y-auto"
+      >
+        <div className="p-6">
+          {/* Drag Handle */}
+          <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6" />
+          
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-2xl font-bold">Filtros Rápidos</h3>
+            <button
+              onClick={onClose}
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
+            >
               <X className="w-5 h-5" />
-            </Button>
-          )}
-        </div>
-      </div>
+            </button>
+          </div>
+          
+          <div className="space-y-6">
+            {/* Category */}
+            <FilterSection 
+              title="Categoría" 
+              options={[
+                { value: "all", label: "Todos", icon: "🚗" },
+                { value: "Automóvil", label: "Automóvil", icon: "🚙" },
+                { value: "SUV", label: "SUV", icon: "🚐" },
+                { value: "Motocicleta", label: "Motocicleta", icon: "🏍️" },
+                { value: "Camión", label: "Camión", icon: "🚚" },
+              ]}
+              value={localFilters.category}
+              onChange={(value) => setLocalFilters({ ...localFilters, category: value })}
+            />
+            
+            {/* Condition */}
+            <FilterSection 
+              title="Condición" 
+              options={[
+                { value: "all", label: "Todas", icon: "✨" },
+                { value: "Nuevo", label: "Nuevo", icon: "🆕" },
+                { value: "Excelente", label: "Excelente", icon: "⭐" },
+                { value: "Bueno", label: "Bueno", icon: "👍" },
+              ]}
+              value={localFilters.condition}
+              onChange={(value) => setLocalFilters({ ...localFilters, condition: value })}
+            />
+            
+            {/* Price Range */}
+            <FilterSection 
+              title="Precio" 
+              options={[
+                { value: "all", label: "Todos", icon: "💰" },
+                { value: "0-20000", label: "Hasta $20k", icon: "💵" },
+                { value: "20000-40000", label: "$20k - $40k", icon: "💸" },
+                { value: "40000-1000000", label: "$40k+", icon: "💎" },
+              ]}
+              value={
+                localFilters.priceRange[0] === 0 && localFilters.priceRange[1] === 1000000
+                  ? "all"
+                  : localFilters.priceRange[1] <= 20000
+                  ? "0-20000"
+                  : localFilters.priceRange[1] <= 40000
+                  ? "20000-40000"
+                  : "40000-1000000"
+              }
+              onChange={(value) => {
+                if (value === "all") {
+                  setLocalFilters({ ...localFilters, priceRange: [0, 1000000] });
+                } else if (value === "0-20000") {
+                  setLocalFilters({ ...localFilters, priceRange: [0, 20000] });
+                } else if (value === "20000-40000") {
+                  setLocalFilters({ ...localFilters, priceRange: [20000, 40000] });
+                } else {
+                  setLocalFilters({ ...localFilters, priceRange: [40000, 1000000] });
+                }
+              }}
+            />
 
-      <div className="p-4 space-y-6">
-        {/* Orden Aleatorio Toggle */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Modo de Visualización
-          </h3>
-          <div className="flex gap-2">
-            <Button
-              variant={localFilters.random ? "default" : "outline"}
-              className="flex-1"
-              onClick={() => setLocalFilters(prev => ({ ...prev, random: true }))}
+            {/* Featured Toggle */}
+            <div className="pt-2">
+              <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary/50 transition-all cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={localFilters.featured}
+                  onChange={(e) => setLocalFilters({ ...localFilters, featured: e.target.checked })}
+                  className="w-5 h-5 rounded accent-primary"
+                />
+                <span className="flex-1 font-semibold">Solo Destacados</span>
+                <Sparkles className="w-5 h-5 text-yellow-500" />
+              </label>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 mt-8">
+            <button
+              onClick={handleReset}
+              className="flex-1 py-3.5 border-2 border-border rounded-full font-bold hover:bg-muted transition-colors"
             >
-              🎲 Aleatorio
-            </Button>
-            <Button
-              variant={!localFilters.random ? "default" : "outline"}
-              className="flex-1"
-              onClick={() => setLocalFilters(prev => ({ ...prev, random: false }))}
+              Limpiar
+            </button>
+            <button
+              onClick={handleApply}
+              className="flex-1 py-3.5 bg-primary text-primary-foreground rounded-full font-bold hover:opacity-90 transition-opacity"
             >
-              📅 Recientes
-            </Button>
+              Aplicar
+            </button>
           </div>
         </div>
+      </motion.div>
+    </>
+  );
+};
 
-        {/* Solo Destacados */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Especiales
-          </h3>
-          <Button
-            variant={localFilters.featured ? "default" : "outline"}
-            className="w-full justify-start"
-            onClick={() => setLocalFilters(prev => ({ ...prev, featured: !prev.featured }))}
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {localFilters.featured ? (
-              <>
-                <Check className="w-4 h-4 mr-2" />
-                Solo Destacados
-              </>
-            ) : (
-              "Mostrar Solo Destacados"
-            )}
-          </Button>
-        </div>
+// Filter Section Component
+interface FilterOption {
+  value: string;
+  label: string;
+  icon: string;
+}
 
-        {/* Categoría */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Categoría
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            {categories.map((cat) => (
-              <Button
-                key={cat.value}
-                variant={localFilters.category === cat.value ? "default" : "outline"}
-                className="justify-start"
-                onClick={() => setLocalFilters(prev => ({ ...prev, category: cat.value as any }))}
-              >
-                <span className="mr-2">{cat.icon}</span>
-                {cat.label}
-              </Button>
-            ))}
-          </div>
-        </div>
+interface FilterSectionProps {
+  title: string;
+  options: FilterOption[];
+  value: string;
+  onChange: (value: string) => void;
+}
 
-        {/* Condición */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Condición
-          </h3>
-          <div className="space-y-2">
-            {conditions.map((cond) => (
-              <Button
-                key={cond.value}
-                variant={localFilters.condition === cond.value ? "default" : "outline"}
-                className="w-full justify-start"
-                onClick={() => setLocalFilters(prev => ({ ...prev, condition: cond.value as any }))}
-              >
-                {localFilters.condition === cond.value && (
-                  <Check className="w-4 h-4 mr-2" />
-                )}
-                {cond.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Rango de Precio */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Rango de Precio
-          </h3>
-          <div className="space-y-2">
-            {priceRanges.map((range) => {
-              const isSelected = 
-                localFilters.priceRange[0] === range.min && 
-                localFilters.priceRange[1] === range.max;
-              
-              return (
-                <Button
-                  key={range.label}
-                  variant={isSelected ? "default" : "outline"}
-                  className="w-full justify-start"
-                  onClick={() => setLocalFilters(prev => ({ 
-                    ...prev, 
-                    priceRange: [range.min, range.max] 
-                  }))}
-                >
-                  {isSelected && <Check className="w-4 h-4 mr-2" />}
-                  {range.label}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Rango de Año */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Año del Vehículo
-          </h3>
-          <div className="space-y-2">
-            {yearRanges.map((range) => {
-              const isSelected = 
-                localFilters.yearRange[0] === range.min && 
-                localFilters.yearRange[1] === range.max;
-              
-              return (
-                <Button
-                  key={range.label}
-                  variant={isSelected ? "default" : "outline"}
-                  className="w-full justify-start"
-                  onClick={() => setLocalFilters(prev => ({ 
-                    ...prev, 
-                    yearRange: [range.min, range.max] 
-                  }))}
-                >
-                  {isSelected && <Check className="w-4 h-4 mr-2" />}
-                  {range.label}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
+const FilterSection: React.FC<FilterSectionProps> = ({
+  title,
+  options,
+  value,
+  onChange,
+}) => {
+  return (
+    <div>
+      <h4 className="font-semibold mb-3 text-muted-foreground">{title}</h4>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => {
+          const isSelected = value === option.value;
+          
+          return (
+            <motion.button
+              key={option.value}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onChange(option.value)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 rounded-full font-medium transition-all border-2",
+                isSelected
+                  ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25"
+                  : "bg-background border-border hover:border-primary/50"
+              )}
+            >
+              <span className="text-lg">{option.icon}</span>
+              <span>{option.label}</span>
+            </motion.button>
+          );
+        })}
       </div>
-
-      {/* Footer Actions */}
-      <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border p-4 space-y-2">
-        <Button
-          className="w-full"
-          size="lg"
-          onClick={handleApply}
-        >
-          Aplicar Filtros
-          {activeFiltersCount > 0 && ` (${activeFiltersCount})`}
-        </Button>
-        {activeFiltersCount > 0 && (
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleReset}
-          >
-            Limpiar Filtros
-          </Button>
-        )}
-      </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -23,7 +23,7 @@ export interface VehicleDataMongo {
   price: number;
   mileage: number;
   color: string;
-  engine: string;
+  engine?: string;
   transmission: VehicleData["transmission"];
   currency: VehicleData["currency"];
   isNegotiable?: boolean;
@@ -32,8 +32,8 @@ export interface VehicleDataMongo {
   location: string;
   features: string[];
   fuelType: VehicleData["fuelType"];
-  doors: number;
-  seats: number;
+  doors?: number;
+  seats?: number;
   weight?: number;
   driveType?: string;
   loadCapacity?: number;

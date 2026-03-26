@@ -1,37 +1,52 @@
+// src/components/features/admin/AdminPanel.tsx
+
+// ✅ OPTIMIZADO v2:
+//    1. Eliminado el resize listener manual — reemplazado por useMediaQuery
+//       que ya usas en otros lugares y usa el API nativo de MediaQuery (sin polling).
+//    2. UsersPanel cargado con dynamic() — su bundle NO se descarga
+//       hasta que el usuario hace clic en la pestaña "Usuarios".
+//    3. window.scrollTo con smooth reemplazado por "instant" para no bloquear
+//       el hilo principal durante la paginación.
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminPanelEnhanced } from "@/hooks/use-admin-panel-enhanced";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { Shield, Users, Car } from "lucide-react";
+import LoadingSkeleton from "@/components/shared/feedback/LoadingSkeleton";
 
-// Local components
+// Local components — carga estática (siempre se necesitan)
 import { AdminPanelLoading } from "./AdminPanelLoading";
 import { AdminPanelAccessDenied } from "./AdminPanelAccessDenied";
 import { AdminPanelError } from "./AdminPanelError";
 import { AdminStats } from "./AdminStats";
-import { UsersPanel } from "./UsersPanel";
 import { AdminDialogs } from "./AdminDialogs";
 import { VehiclesPanel } from "./VehiclesPanel";
+
+// ✅ UsersPanel: carga lazy — solo se descarga al hacer clic en "Usuarios"
+//    Antes se cargaba junto con todo el panel aunque estuviera oculto.
+const UsersPanel = dynamic(
+  () => import("./UsersPanel").then((mod) => mod.UsersPanel),
+  {
+    loading: () => <LoadingSkeleton />,
+    ssr: false,
+  }
+);
 
 type AdminTab = "vehicles" | "users";
 
 export const AdminPanel = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<AdminTab>("vehicles");
-  const [isMobileView, setIsMobileView] = useState(false);
+
+  // ✅ useMediaQuery en lugar del resize listener manual.
+  //    Usa window.matchMedia internamente — sin polling, sin re-renders por pixel.
+  const isMobileView = useMediaQuery("(max-width: 767px)");
 
   const hook = useAdminPanelEnhanced();
-
-  useEffect(() => {
-    const checkMobileView = () => {
-      setIsMobileView(window.innerWidth < 768);
-    };
-    checkMobileView();
-    window.addEventListener("resize", checkMobileView);
-    return () => window.removeEventListener("resize", checkMobileView);
-  }, []);
 
   if (hook.status === "loading" || hook.isLoading) {
     return <AdminPanelLoading />;
@@ -49,17 +64,18 @@ export const AdminPanel = () => {
 
   const handlePageChange = (page: number) => {
     hook.goToPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // ✅ "instant" en lugar de "smooth" — smooth bloquea el hilo durante la animación
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   };
 
   const handleNextPage = () => {
     hook.nextPage();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   };
 
   const handlePrevPage = () => {
     hook.prevPage();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   };
 
   return (
@@ -142,7 +158,8 @@ export const AdminPanel = () => {
           </TabsContent>
 
           <TabsContent value="users" className="mt-6">
-            <UsersPanel />
+            {/* ✅ UsersPanel solo se renderiza (y descarga) cuando activeTab === "users" */}
+            {activeTab === "users" && <UsersPanel />}
           </TabsContent>
         </Tabs>
 

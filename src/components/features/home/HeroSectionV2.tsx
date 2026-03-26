@@ -1,8 +1,8 @@
-// src/components/features/home/HeroSectionV2.tsx - HERO CON BÚSQUEDA
+// src/components/features/home/HeroSectionV2.tsx
+// ✅ OPTIMIZADO: memo, useCallback, role=search, label accesible, HTML semántico
 "use client";
-import React, { memo, useState } from "react";
-import { motion } from "framer-motion";
-import { Car, Search, Shield, Sparkles, ArrowRight } from "lucide-react";
+import React, { memo, useState, useCallback, useId } from "react";
+import { Car, Search, Shield, Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AnimatedBackground } from "./hero/AnimatedBackground";
@@ -13,134 +13,146 @@ interface HeroSectionV2Props {
   onBrowseVehicles: () => void;
 }
 
-const HeroSectionV2: React.FC<HeroSectionV2Props> = ({ onSellClick, onBrowseVehicles }) => {
+const TRUST_INDICATORS = [
+  "50K+ Vehículos vendidos",
+  "25K+ Usuarios activos",
+  "4.8★ Valoración",
+] as const;
+
+const HeroSectionV2 = memo<HeroSectionV2Props>(({ onSellClick, onBrowseVehicles }) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const searchInputId = useId();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/vehicleList?search=${encodeURIComponent(searchQuery)}`);
-    } else {
-      onBrowseVehicles();
-    }
-  };
+  const handleSearch = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (searchQuery.trim()) {
+        router.push(`/vehicleList?search=${encodeURIComponent(searchQuery.trim())}`);
+      } else {
+        onBrowseVehicles();
+      }
+    },
+    [searchQuery, router, onBrowseVehicles]
+  );
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value),
+    []
+  );
 
   return (
-    <section className="relative w-full min-h-[90vh] flex items-center" style={{ background: 'var(--gradient-hero)' }}>
-      <AnimatedBackground />
-      
-      <div className="relative z-10 container-wide py-20">
-        <div className="max-w-4xl mx-auto text-center">
-          
-          {/* 🏆 BADGE PREMIUM */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-8"
-          >
-            <div className="inline-flex items-center px-6 py-3 rounded-full text-sm font-bold border backdrop-blur-sm card-glass group cursor-default">
-              <motion.div
-                className="w-2 h-2 rounded-full mr-2"
-                style={{ backgroundColor: 'var(--success)' }}
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <Shield className="w-4 h-4 mr-2" style={{ color: 'var(--accent)' }} />
-              <span className="text-gradient">El marketplace más seguro de Latinoamérica</span>
-              <Sparkles className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </motion.div>
+    <section
+      className="relative w-full min-h-[70vh] flex items-center"
+      style={{ background: "var(--gradient-hero)" }}
+      aria-labelledby="hero-heading"
+    >
+      <AnimatedBackground aria-hidden="true" />
 
-          {/* 📝 TÍTULO PRINCIPAL */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl sm:text-6xl lg:text-7xl font-heading font-extrabold leading-tight mb-6"
+      <div className="relative z-10 container-wide py-12 sm:py-16 lg:py-20">
+        <div className="max-w-4xl mx-auto text-center">
+
+          {/* Badge */}
+          <div className="mb-6 sm:mb-8 animate-in fade-in slide-in-from-bottom-4 duration-600">
+            <div
+              className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold border backdrop-blur-sm card-glass group cursor-default"
+              role="status"
+            >
+              <div
+                className="w-2 h-2 rounded-full mr-2 animate-pulse"
+                style={{ backgroundColor: "var(--success)" }}
+                aria-hidden="true"
+              />
+              <Shield className="w-4 h-4 mr-2" style={{ color: "var(--accent)" }} aria-hidden="true" />
+              <span className="text-gradient">El marketplace más seguro de Latinoamérica</span>
+              <Sparkles className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
+            </div>
+          </div>
+
+          {/* H1 — LCP crítico */}
+          <h1
+            id="hero-heading"
+            className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-heading font-extrabold leading-tight mb-4 sm:mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150"
           >
-            <span style={{ color: 'var(--foreground)' }}>Compra y Vende</span>
+            <span style={{ color: "var(--foreground)" }}>Compra y Vende</span>
             <br />
-            <motion.span 
-              className="block"
-              style={{ 
-                background: 'var(--gradient-accent)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                textShadow: '0 0 40px var(--accent-20)'
+            <span
+              className="block mt-1"
+              style={{
+                background: "var(--gradient-accent)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
               }}
             >
               Vehículos de Confianza
-            </motion.span>
-          </motion.h1>
+            </span>
+          </h1>
 
-          {/* 💬 SUBTÍTULO */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-xl mb-12 max-w-2xl mx-auto leading-relaxed"
-            style={{ color: 'var(--muted-foreground)' }}
+          {/* Subtítulo */}
+          <p
+            className="text-base sm:text-lg lg:text-xl mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300"
+            style={{ color: "var(--muted-foreground)" }}
           >
-            <span className="font-semibold" style={{ color: 'var(--foreground)' }}>Verificación 100% digital</span>
-            {" "}• Sin comisiones ocultas • Soporte 24/7
-          </motion.p>
+            <strong className="font-semibold" style={{ color: "var(--foreground)" }}>
+              Verificación 100% digital
+            </strong>
+            {" • "}Sin comisiones ocultas{" • "}Soporte 24/7
+          </p>
 
-          {/* 🔍 BARRA DE BÚSQUEDA PREMIUM */}
-          <motion.form
+          {/* Búsqueda — role=search */}
+          <form
             onSubmit={handleSearch}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="mb-8"
+            role="search"
+            aria-label="Buscar vehículos"
+            className="mb-6 sm:mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500"
           >
-            <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto card-glass p-2 rounded-2xl shadow-hard">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-2xl mx-auto card-glass p-2 rounded-2xl shadow-hard">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                <label htmlFor={searchInputId} className="sr-only">
+                  Busca por marca, modelo o año
+                </label>
+                <Search
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none"
+                  aria-hidden="true"
+                />
                 <Input
-                  type="text"
+                  id={searchInputId}
+                  type="search"
                   placeholder="Busca por marca, modelo o año..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="input-premium pl-12 h-14 text-lg border-0 focus:ring-2"
-                  style={{ backgroundColor: 'var(--background)' }}
+                  onChange={handleSearchChange}
+                  className="input-premium pl-12 h-12 sm:h-14 text-base sm:text-lg border-0 focus:ring-2"
+                  style={{ backgroundColor: "var(--background)" }}
+                  autoComplete="off"
                 />
               </div>
               <Button
                 type="submit"
                 size="lg"
-                className="btn-accent h-14 px-8 text-lg font-bold group"
+                className="btn-accent h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg font-bold group"
               >
-                <Search className="w-5 h-5 mr-2" />
+                <Search className="w-5 h-5 mr-2" aria-hidden="true" />
                 Buscar
-                <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" aria-hidden="true" />
               </Button>
             </div>
-          </motion.form>
+          </form>
 
-          {/* 🎯 CTAs PRINCIPALES */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          {/* CTAs */}
+          <div
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700"
+            role="group"
+            aria-label="Acciones principales"
           >
             <Button
               onClick={onSellClick}
               size="lg"
-              className="btn-primary text-lg py-7 px-10 font-bold group relative overflow-hidden"
+              className="btn-primary w-full sm:w-auto text-base sm:text-lg py-6 sm:py-7 px-8 sm:px-10 font-bold group relative overflow-hidden hover:scale-105 transition-transform duration-200"
+              aria-label="Publicar mi vehículo en venta"
             >
-              <motion.div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{
-                  background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent)'
-                }}
-                animate={{ x: ["-100%", "100%"] }}
-                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
-              />
-              <Car className="w-6 h-6 mr-3" />
+              <span className="absolute inset-0 -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" aria-hidden="true" />
+              <Car className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" aria-hidden="true" />
               Vender mi Vehículo
             </Button>
 
@@ -148,43 +160,34 @@ const HeroSectionV2: React.FC<HeroSectionV2Props> = ({ onSellClick, onBrowseVehi
               onClick={onBrowseVehicles}
               variant="outline"
               size="lg"
-              className="text-lg py-7 px-10 font-bold border-2 group"
-              style={{
-                borderColor: 'var(--border)',
-                color: 'var(--foreground)'
-              }}
+              className="w-full sm:w-auto text-base sm:text-lg py-6 sm:py-7 px-8 sm:px-10 font-bold border-2 group hover:scale-105 transition-transform duration-200"
+              style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+              aria-label="Ver catálogo completo de vehículos"
             >
               Ver Catálogo Completo
-              <ArrowRight className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="w-5 h-5 ml-2 sm:ml-3 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Button>
-          </motion.div>
+          </div>
 
-          {/* 📊 TRUST INDICATORS */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1 }}
-            className="mt-12 flex flex-wrap justify-center gap-8 text-sm"
-            style={{ color: 'var(--muted-foreground)' }}
+          {/* Trust indicators — lista semántica */}
+          <ul
+            className="mt-10 sm:mt-12 flex flex-wrap justify-center gap-4 sm:gap-8 text-sm animate-in fade-in duration-1000 delay-1000 list-none p-0"
+            style={{ color: "var(--muted-foreground)" }}
+            aria-label="Estadísticas de confianza"
           >
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--success)' }} />
-              <span>50K+ Vehículos vendidos</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--success)' }} />
-              <span>25K+ Usuarios activos</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--success)' }} />
-              <span>4.8★ Valoración</span>
-            </div>
-          </motion.div>
+            {TRUST_INDICATORS.map((text) => (
+              <li key={text} className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: "var(--success)" }} aria-hidden="true" />
+                <span>{text}</span>
+              </li>
+            ))}
+          </ul>
 
         </div>
       </div>
     </section>
   );
-};
+});
 
-export default memo(HeroSectionV2);
+HeroSectionV2.displayName = "HeroSectionV2";
+export default HeroSectionV2;

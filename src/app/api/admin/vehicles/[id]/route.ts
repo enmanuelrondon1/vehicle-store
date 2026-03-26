@@ -15,6 +15,8 @@ import {
   sendVehicleApprovalEmail,
   sendVehicleRejectionEmailGmail,
 } from "@/lib/mailer";
+// ✅ FIX: importar revalidatePath para invalidar caché ISR al aprobar/rechazar
+import { revalidatePath } from "next/cache";
 
 interface Comment {
   _id: ObjectId;
@@ -104,10 +106,7 @@ export async function GET(
       };
 
       return NextResponse.json(
-        createSuccessResponse(
-          formattedVehicle,
-          "Vehículo obtenido exitosamente"
-        ),
+        createSuccessResponse(formattedVehicle, "Vehículo obtenido exitosamente"),
         { status: 200 }
       );
     } catch (serviceError) {
@@ -119,8 +118,7 @@ export async function GET(
     }
   } catch (error) {
     console.error("Error general en GET /api/admin/vehicles/[id]:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Error desconocido";
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
     return NextResponse.json(
       createErrorResponse(`Error interno del servidor: ${errorMessage}`),
       { status: 500 }
@@ -136,44 +134,29 @@ export async function PATCH(
     console.log("PATCH /api/admin/vehicles/[id] - Iniciando...");
 
     const session = await getServerSession(authOptions);
-    console.log("Sesión en API:", session);
 
     if (!session || !session.user) {
-      console.log("Acceso denegado - No hay sesión");
-      return NextResponse.json(createErrorResponse("Acceso no autorizado"), {
-        status: 403,
-      });
+      return NextResponse.json(createErrorResponse("Acceso no autorizado"), { status: 403 });
     }
 
     if (session.user.role !== "admin") {
-      console.log(
-        "Acceso denegado - No es administrador, rol:",
-        session.user.role
-      );
-      return NextResponse.json(createErrorResponse("Acceso no autorizado"), {
-        status: 403,
-      });
+      return NextResponse.json(createErrorResponse("Acceso no autorizado"), { status: 403 });
     }
 
     const body = await request.json();
     const { status, rejectionReason } = body;
 
     if (!Object.values(ApprovalStatus).includes(status)) {
-      return NextResponse.json(createErrorResponse("Estado inválido"), {
-        status: 400,
-      });
+      return NextResponse.json(createErrorResponse("Estado inválido"), { status: 400 });
     }
 
     if (!ObjectId.isValid(params.id)) {
-      return NextResponse.json(createErrorResponse("ID de vehículo inválido"), {
-        status: 400,
-      });
+      return NextResponse.json(createErrorResponse("ID de vehículo inválido"), { status: 400 });
     }
 
     let client;
     try {
       client = await clientPromise;
-      console.log("Conexión a MongoDB exitosa");
     } catch (dbError) {
       console.error("Error de conexión a MongoDB:", dbError);
       return NextResponse.json(
@@ -184,7 +167,6 @@ export async function PATCH(
 
     try {
       const db = client.db("vehicle_store");
-      console.log("Actualizando estado del vehículo...");
 
       const updateData: {
         status: ApprovalStatus;
@@ -232,16 +214,10 @@ export async function PATCH(
         $set: Partial<typeof updateData>;
         $unset?: Partial<typeof unsetData>;
         $push?: Partial<typeof pushData>;
-      } = {
-        $set: updateData,
-      };
+      } = { $set: updateData };
 
-      if (Object.keys(unsetData).length > 0) {
-        updateOperation.$unset = unsetData;
-      }
-      if (Object.keys(pushData).length > 0) {
-        updateOperation.$push = pushData;
-      }
+      if (Object.keys(unsetData).length > 0) updateOperation.$unset = unsetData;
+      if (Object.keys(pushData).length > 0) updateOperation.$push = pushData;
 
       const result = await db
         .collection<{ comments?: Comment[] }>("vehicles")
@@ -252,16 +228,20 @@ export async function PATCH(
         );
 
       if (!result) {
-        return NextResponse.json(
-          createErrorResponse("Vehículo no encontrado"),
-          { status: 404 }
-        );
+        return NextResponse.json(createErrorResponse("Vehículo no encontrado"), { status: 404 });
       }
 
       const updatedVehicle = {
         ...result,
         _id: result._id.toString(),
       } as VehicleDataFrontend;
+
+      // ✅ FIX: Invalidar caché ISR al aprobar o rechazar un vehículo
+      // Sin esto, la lista pública no se actualiza hasta que el ISR expire (60s)
+      revalidatePath("/vehicleList");
+      revalidatePath("/");
+      revalidatePath(`/vehicles/${params.id}`);
+      console.log("✅ Caché ISR invalidado para /vehicleList, / y /vehicles/" + params.id);
 
       if (status === ApprovalStatus.REJECTED && rejectionReason) {
         console.log("Enviando email de rechazo...");
@@ -274,10 +254,7 @@ export async function PATCH(
       console.log("Estado del vehículo actualizado exitosamente");
 
       return NextResponse.json(
-        createSuccessResponse(
-          updatedVehicle,
-          "Estado del vehículo actualizado exitosamente"
-        ),
+        createSuccessResponse(updatedVehicle, "Estado del vehículo actualizado exitosamente"),
         { status: 200 }
       );
     } catch (serviceError) {
@@ -289,8 +266,7 @@ export async function PATCH(
     }
   } catch (error) {
     console.error("Error general en PATCH /api/admin/vehicles/[id]:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Error desconocido";
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
     return NextResponse.json(
       createErrorResponse(`Error interno del servidor: ${errorMessage}`),
       { status: 500 }
@@ -304,179 +280,81 @@ export async function PUT(
 ): Promise<NextResponse> {
   try {
     console.log("🚀 PUT /api/admin/vehicles/[id] - Iniciando...");
-    console.log("📋 Vehicle ID:", params.id);
 
     const session = await getServerSession(authOptions);
     if (!session || session.user.role !== "admin") {
-      console.log("❌ Acceso denegado - No autorizado");
-      return NextResponse.json(createErrorResponse("Acceso no autorizado"), {
-        status: 403,
-      });
+      return NextResponse.json(createErrorResponse("Acceso no autorizado"), { status: 403 });
     }
 
-    console.log("✅ Usuario autorizado:", session.user.email);
-
     if (!ObjectId.isValid(params.id)) {
-      console.log("❌ ID inválido:", params.id);
-      return NextResponse.json(createErrorResponse("ID de vehículo inválido"), {
-        status: 400,
-      });
+      return NextResponse.json(createErrorResponse("ID de vehículo inválido"), { status: 400 });
     }
 
     const client = await clientPromise;
     const db = client.db("vehicle_store");
     const vehicleId = new ObjectId(params.id);
 
-    console.log("🔍 Buscando vehículo en BD...");
-    const vehicleToUpdate = await db
-      .collection("vehicles")
-      .findOne({ _id: vehicleId });
-
+    const vehicleToUpdate = await db.collection("vehicles").findOne({ _id: vehicleId });
     if (!vehicleToUpdate) {
-      console.log("❌ Vehículo no encontrado en BD");
-      return NextResponse.json(createErrorResponse("Vehículo no encontrado"), {
-        status: 404,
-      });
+      return NextResponse.json(createErrorResponse("Vehículo no encontrado"), { status: 404 });
     }
-
-    console.log("✅ Vehículo encontrado:", vehicleToUpdate.brand, vehicleToUpdate.model);
 
     const body: any = await request.json();
-    console.log("📦 Datos recibidos del frontend:");
-    console.log("  - Brand:", body.brand);
-    console.log("  - Model:", body.model);
-    console.log("  - Images:", body.images?.length || 0, "imágenes");
 
-    // 🔥 FIX: Excluir solo los campos que NO deben actualizarse
-    // IMPORTANTE: NO excluir 'images' aquí
-    const { 
-      _id, 
-      createdAt, 
-      updatedAt, 
-      postedDate,
-      comments,
-      history,
-      status,
-      rejectionReason,
-      userId,
-      userEmail,
-      // images, ❌ ELIMINADO - ahora sí se guardarán las imágenes
-      ...updateData 
+    const {
+      _id, createdAt, updatedAt, postedDate,
+      comments, history, status, rejectionReason,
+      userId, userEmail,
+      ...updateData
     } = body;
 
-    // Convertir campos numéricos explícitamente
-    if (updateData.year !== undefined) {
-      updateData.year = Number(updateData.year);
-      console.log("🔢 Year convertido:", updateData.year);
-    }
-    if (updateData.price !== undefined) {
-      updateData.price = Number(updateData.price);
-      console.log("💰 Price convertido:", updateData.price);
-    }
-    if (updateData.mileage !== undefined) {
-      updateData.mileage = Number(updateData.mileage);
-      console.log("🛣️ Mileage convertido:", updateData.mileage);
-    }
-    if (updateData.doors !== undefined) {
-      updateData.doors = Number(updateData.doors);
-      console.log("🚪 Doors convertido:", updateData.doors);
-    }
-    if (updateData.seats !== undefined) {
-      updateData.seats = Number(updateData.seats);
-      console.log("💺 Seats convertido:", updateData.seats);
-    }
+    if (updateData.year !== undefined)     updateData.year     = Number(updateData.year);
+    if (updateData.price !== undefined)    updateData.price    = Number(updateData.price);
+    if (updateData.mileage !== undefined)  updateData.mileage  = Number(updateData.mileage);
+    if (updateData.doors !== undefined)    updateData.doors    = Number(updateData.doors);
+    if (updateData.seats !== undefined)    updateData.seats    = Number(updateData.seats);
 
-    // 🔥 Validar y asegurar que images sea un array
-    if (updateData.images && Array.isArray(updateData.images)) {
-      console.log("✅ Images válidas:", updateData.images.length, "imágenes");
-    } else if (updateData.images) {
-      console.log("⚠️ Images no es array, convirtiendo...");
+    if (updateData.images && !Array.isArray(updateData.images)) {
       updateData.images = [];
     }
 
-    console.log("📝 Datos procesados para actualización:");
-    console.log("  - Images a guardar:", updateData.images?.length || 0);
-
-    console.log("💾 Actualizando en MongoDB...");
     const result = await db.collection("vehicles").updateOne(
       { _id: vehicleId },
-      {
-        $set: {
-          ...updateData,
-          updatedAt: new Date(),
-        },
-      }
+      { $set: { ...updateData, updatedAt: new Date() } }
     );
 
-    console.log("📊 Resultado de MongoDB:");
-    console.log("  - Matched:", result.matchedCount);
-    console.log("  - Modified:", result.modifiedCount);
-    console.log("  - Acknowledged:", result.acknowledged);
-
     if (result.matchedCount === 0) {
-      console.log("❌ No se encontró el vehículo para actualizar");
-      return NextResponse.json(
-        createErrorResponse("Vehículo no encontrado"),
-        { status: 404 }
-      );
+      return NextResponse.json(createErrorResponse("Vehículo no encontrado"), { status: 404 });
     }
 
-    if (result.modifiedCount === 0) {
-      console.log("⚠️ No se realizaron cambios (datos idénticos)");
-    } else {
-      console.log("✅ Vehículo modificado exitosamente");
-    }
+    // ✅ FIX: Invalidar caché ISR al editar un vehículo desde el admin
+    revalidatePath("/vehicleList");
+    revalidatePath("/");
+    revalidatePath(`/vehicles/${params.id}`);
 
-    console.log("🔄 Obteniendo vehículo actualizado...");
-    const updatedVehicle = await db
-      .collection("vehicles")
-      .findOne({ _id: vehicleId });
-
+    const updatedVehicle = await db.collection("vehicles").findOne({ _id: vehicleId });
     if (!updatedVehicle) {
-      console.log("❌ Error: Vehículo no encontrado después de actualizar");
       return NextResponse.json(
         createErrorResponse("Vehículo no encontrado después de la actualización"),
         { status: 404 }
       );
     }
 
-    console.log("✅ Vehículo recuperado de BD después de actualizar");
-    console.log("🖼️ Images en BD:", updatedVehicle.images?.length || 0);
-
     const formattedVehicle = {
       ...updatedVehicle,
       _id: updatedVehicle._id.toString(),
-      postedDate:
-        updatedVehicle.postedDate instanceof Date
-          ? updatedVehicle.postedDate.toISOString()
-          : updatedVehicle.postedDate,
-      createdAt:
-        updatedVehicle.createdAt instanceof Date
-          ? updatedVehicle.createdAt.toISOString()
-          : updatedVehicle.createdAt,
-      updatedAt:
-        updatedVehicle.updatedAt instanceof Date
-          ? updatedVehicle.updatedAt.toISOString()
-          : updatedVehicle.updatedAt,
+      postedDate: updatedVehicle.postedDate instanceof Date ? updatedVehicle.postedDate.toISOString() : updatedVehicle.postedDate,
+      createdAt:  updatedVehicle.createdAt  instanceof Date ? updatedVehicle.createdAt.toISOString()  : updatedVehicle.createdAt,
+      updatedAt:  updatedVehicle.updatedAt  instanceof Date ? updatedVehicle.updatedAt.toISOString()  : updatedVehicle.updatedAt,
     };
 
-    console.log("🎉 Vehículo formateado correctamente para frontend");
-    console.log("📤 Enviando respuesta exitosa...");
-
     return NextResponse.json(
-      createSuccessResponse(
-        formattedVehicle,
-        "Vehículo actualizado exitosamente"
-      ),
+      createSuccessResponse(formattedVehicle, "Vehículo actualizado exitosamente"),
       { status: 200 }
     );
   } catch (error) {
-    console.error("💥 ERROR CRÍTICO en PUT /api/admin/vehicles/[id]:");
-    console.error(error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Error desconocido";
-    console.error("📋 Mensaje de error:", errorMessage);
-    
+    console.error("💥 ERROR CRÍTICO en PUT /api/admin/vehicles/[id]:", error);
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
     return NextResponse.json(
       createErrorResponse(`Error interno del servidor: ${errorMessage}`),
       { status: 500 }
@@ -489,26 +367,18 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
-    console.log("DELETE /api/admin/vehicles/[id] - Iniciando...");
-
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
-      return NextResponse.json(createErrorResponse("Acceso no autorizado"), {
-        status: 403,
-      });
+      return NextResponse.json(createErrorResponse("Acceso no autorizado"), { status: 403 });
     }
 
     if (session.user.role !== "admin") {
-      return NextResponse.json(createErrorResponse("Acceso no autorizado"), {
-        status: 403,
-      });
+      return NextResponse.json(createErrorResponse("Acceso no autorizado"), { status: 403 });
     }
 
     if (!ObjectId.isValid(params.id)) {
-      return NextResponse.json(createErrorResponse("ID de vehículo inválido"), {
-        status: 400,
-      });
+      return NextResponse.json(createErrorResponse("ID de vehículo inválido"), { status: 400 });
     }
 
     let client;
@@ -522,69 +392,40 @@ export async function DELETE(
       );
     }
 
-    try {
-      const db = client.db("vehicle_store");
-      const vehicleObjectId = new ObjectId(params.id);
+    const db = client.db("vehicle_store");
+    const vehicleObjectId = new ObjectId(params.id);
 
-      const vehicle = await db
-        .collection("vehicles")
-        .findOne({ _id: vehicleObjectId });
-
-      if (!vehicle) {
-        return NextResponse.json(
-          createErrorResponse("Vehículo no encontrado"),
-          { status: 404 }
-        );
-      }
-
-      console.log("Eliminando ratings relacionados...");
-      const ratingsDeleted = await db
-        .collection("ratings")
-        .deleteMany({ vehicleId: vehicleObjectId });
-      console.log(`✅ ${ratingsDeleted.deletedCount} ratings eliminados`);
-
-      console.log("Eliminando favoritos relacionados...");
-      const favoritesDeleted = await db
-        .collection("favorites")
-        .deleteMany({ vehicleId: vehicleObjectId });
-      console.log(`✅ ${favoritesDeleted.deletedCount} favoritos eliminados`);
-
-      console.log("Eliminando vehículo...");
-      const vehicleResult = await db
-        .collection("vehicles")
-        .deleteOne({ _id: vehicleObjectId });
-
-      if (vehicleResult.deletedCount === 0) {
-        return NextResponse.json(
-          createErrorResponse("Error al eliminar el vehículo"),
-          { status: 500 }
-        );
-      }
-
-      console.log("✅ Vehículo y datos relacionados eliminados exitosamente");
-
-      return NextResponse.json(
-        createSuccessResponse(
-          {
-            id: params.id,
-            deletedRatings: ratingsDeleted.deletedCount,
-            deletedFavorites: favoritesDeleted.deletedCount,
-          },
-          "Vehículo y datos relacionados eliminados exitosamente"
-        ),
-        { status: 200 }
-      );
-    } catch (serviceError) {
-      console.error("Error al eliminar vehículo:", serviceError);
-      return NextResponse.json(
-        createErrorResponse("Error al procesar la eliminación"),
-        { status: 500 }
-      );
+    const vehicle = await db.collection("vehicles").findOne({ _id: vehicleObjectId });
+    if (!vehicle) {
+      return NextResponse.json(createErrorResponse("Vehículo no encontrado"), { status: 404 });
     }
+
+    const ratingsDeleted  = await db.collection("ratings").deleteMany({ vehicleId: vehicleObjectId });
+    const favoritesDeleted = await db.collection("favorites").deleteMany({ vehicleId: vehicleObjectId });
+    const vehicleResult   = await db.collection("vehicles").deleteOne({ _id: vehicleObjectId });
+
+    if (vehicleResult.deletedCount === 0) {
+      return NextResponse.json(createErrorResponse("Error al eliminar el vehículo"), { status: 500 });
+    }
+
+    // ✅ FIX: Invalidar caché ISR al eliminar un vehículo
+    revalidatePath("/vehicleList");
+    revalidatePath("/");
+
+    return NextResponse.json(
+      createSuccessResponse(
+        {
+          id: params.id,
+          deletedRatings: ratingsDeleted.deletedCount,
+          deletedFavorites: favoritesDeleted.deletedCount,
+        },
+        "Vehículo y datos relacionados eliminados exitosamente"
+      ),
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error general en DELETE /api/admin/vehicles/[id]:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Error desconocido";
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
     return NextResponse.json(
       createErrorResponse(`Error interno del servidor: ${errorMessage}`),
       { status: 500 }

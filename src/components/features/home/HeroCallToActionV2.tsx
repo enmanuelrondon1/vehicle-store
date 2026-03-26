@@ -43,7 +43,7 @@ export const HeroCallToActionV2: React.FC<HeroCallToActionV2Props> = ({
         }}
       />
 
-      <div className="container-wide relative z-10 mx-auto text-center py-20">
+      <div className="container-wide relative z-10 mx-auto text-center py-12 px-4">
         
         {/* 🏆 BADGE PREMIUM */}
         <motion.div
@@ -69,12 +69,12 @@ export const HeroCallToActionV2: React.FC<HeroCallToActionV2Props> = ({
           transition={{ duration: 0.8 }}
         >
           <SparklesText
-            className="text-5xl sm:text-6xl font-heading font-bold tracking-tight mb-6"
+            className="text-4xl sm:text-5xl font-heading font-bold tracking-tight mb-6 px-4"
             colors={{ 
               first: 'var(--accent)', 
               second: 'var(--primary)' 
             }}
-            sparkleCount={20}
+            sparkleCount={8}
           >
             ¿Listo para empezar?
           </SparklesText>

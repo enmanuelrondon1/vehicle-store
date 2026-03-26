@@ -1,9 +1,13 @@
 // src/components/features/vehicles/list/AdvancedFiltersPanel.tsx
+// ✅ FIX RENDIMIENTO: eliminados repeat:Infinity y motion.div innecesarios
+// Los botones usan CSS hover, las animaciones decorativas usan @keyframes CSS
+// Se mantiene motion solo en la entrada/salida del panel (una sola vez)
+
 "use client";
 
 import { useMemo, type FC, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, SlidersHorizontal, Sparkles, Filter } from "lucide-react";
+import { motion } from "framer-motion";
+import { X, SlidersHorizontal, Sparkles } from "lucide-react";
 import type { AdvancedFilters, FilterOptions } from "@/types/types";
 import CheckboxFilter from "./filters/CheckboxFilter";
 import RangeSliderFilter from "./filters/RangeSliderFilter";
@@ -80,16 +84,18 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
     if (filters.driveType.length > 0) count++;
     if (filters.priceRange[0] > 0 || filters.priceRange[1] < 1000000) count++;
     if (filters.yearRange[0] > 2000 || filters.yearRange[1] < 2025) count++;
-    if (filters.mileageRange[0] > 0 || filters.mileageRange[1] < 500000)
-      count++;
+    if (filters.mileageRange[0] > 0 || filters.mileageRange[1] < 500000) count++;
     return count;
   }, [filters]);
 
-  if (!isOpen) {
-    return null;
-  }
+  if (!isOpen) return null;
 
   return (
+    /*
+      ✅ motion.div SOLO para la animación de entrada/salida del panel completo.
+      Esta animación ocurre UNA sola vez al abrir/cerrar — no es un loop.
+      Es el uso correcto de framer-motion.
+    */
     <motion.div
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
@@ -98,124 +104,95 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
       className="w-full overflow-hidden"
     >
       <div className="card-glass rounded-xl shadow-hard border border-border/50 overflow-hidden">
-        {/* Efecto de brillo superior */}
-        <div
-          className="h-1 w-full"
-          style={{ background: "var(--gradient-accent)" }}
-        />
-        
-        {/* Header mejorado */}
+        {/* Barra decorativa */}
+        <div className="h-1 w-full" style={{ background: "var(--gradient-accent)" }} />
+
+        {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center gap-3">
-            <motion.div
-              className="p-2 rounded-lg"
+            {/*
+              ✅ ANTES: motion.div con whileHover y whileTap en cada botón del header
+              ✅ AHORA: CSS hover/active — mismo efecto visual, 0 JS listeners extra
+            */}
+            <div
+              className="p-2 rounded-lg transition-transform duration-150 hover:scale-105 active:scale-95"
               style={{ backgroundColor: "var(--primary-10)" }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
             >
               <SlidersHorizontal className="w-5 h-5" style={{ color: "var(--primary)" }} />
-            </motion.div>
-            
+            </div>
+
             <h3 className="text-lg font-semibold font-heading">Filtros Avanzados</h3>
-            
-            {/* Contador con efecto de brillo */}
+
             {activeFiltersCount > 0 && (
-              <motion.div
-                className="relative"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Badge 
-                  className="text-xs font-bold px-2 py-1" 
-                  style={{ 
+              /*
+                ✅ ANTES: motion.div con animate={{ scale:[1,1.3,1], opacity:[0.3,0,0.3] }}
+                   repeat: Infinity — corría SIEMPRE mientras el panel estaba abierto
+                ✅ AHORA: CSS animate-pulse — mismo efecto, manejado por el browser,
+                   sin JS en el hilo principal
+              */
+              <div className="relative">
+                <Badge
+                  className="text-xs font-bold px-2 py-1"
+                  style={{
                     background: "var(--gradient-accent)",
-                    color: "var(--accent-foreground)"
+                    color: "var(--accent-foreground)",
                   }}
                 >
                   {activeFiltersCount}
                 </Badge>
-                
-                {/* Efecto de pulso en el contador */}
-                <motion.div
-                  className="absolute inset-0 rounded-full"
+                <div
+                  className="absolute inset-0 rounded-full animate-pulse"
                   style={{ backgroundColor: "var(--accent-20)" }}
-                  animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0, 0.3] }}
-                  transition={{ duration: 2, repeat: Infinity }}
                 />
-              </motion.div>
+              </div>
             )}
           </div>
-          
+
           <div className="flex items-center gap-2">
             {activeFiltersCount > 0 && (
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onClearFilters}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 gap-2"
-                >
-                  <motion.div
-                    animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <X className="w-4 h-4" />
-                  </motion.div>
-                  <span className="hidden sm:inline">Limpiar</span>
-                </Button>
-              </motion.div>
-            )}
-            
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={onToggle}
-                aria-label="Cerrar filtros avanzados"
-                className="rounded-full"
+                variant="outline"
+                size="sm"
+                onClick={onClearFilters}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 gap-2 transition-transform duration-150 hover:scale-105 active:scale-95"
               >
                 <X className="w-4 h-4" />
+                <span className="hidden sm:inline">Limpiar</span>
               </Button>
-            </motion.div>
+            )}
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggle}
+              aria-label="Cerrar filtros avanzados"
+              className="rounded-full transition-transform duration-150 hover:scale-105 active:scale-95"
+            >
+              <X className="w-4 h-4" />
+            </Button>
           </div>
         </div>
 
-        {/* Contenido de filtros */}
+        {/* Contenido de filtros — sin cambios en la lógica */}
         <div className="px-6 pb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
             {/* Categoría */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Categoría</h4>
                 {filters.category !== "all" && (
-                  <Badge 
-                    className="text-xs px-2 py-0.5" 
-                    style={{ 
-                      backgroundColor: "var(--accent)", 
-                      color: "#ffffff"
-                    }}
-                  >
+                  <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
                     1 seleccionada
                   </Badge>
                 )}
               </div>
               <MultiSelectFilter
-                options={[
-                  {
-                    value: "all",
-                    label: "Todas las categorías",
-                    count: totalVehicles,
-                  },
-                  ...filterOptions.categories,
-                ]}
+                options={[{ value: "all", label: "Todas las categorías", count: totalVehicles }, ...filterOptions.categories]}
                 selected={filters.category === "all" ? [] : [filters.category]}
                 onChange={(newSelection) => {
-                  if (newSelection.length === 0) {
-                    updateFilter("category", "all");
-                  } else {
-                    const singleSelection = newSelection[newSelection.length - 1];
-                    updateFilter("category", singleSelection);
-                  }
+                  if (newSelection.length === 0) { updateFilter("category", "all"); }
+                  else { updateFilter("category", newSelection[newSelection.length - 1]); }
                 }}
                 placeholder="Seleccionar categoría..."
                 singleSelect={true}
@@ -227,21 +204,11 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Precio</h4>
                 {(filters.priceRange[0] > 0 || filters.priceRange[1] < 1000000) && (
-                  <Badge 
-                    className="text-xs px-2 py-0.5" 
-                    style={{ 
-                      backgroundColor: "var(--accent)", 
-                      color: "#ffffff"
-                    }}
-                  >
-                    Activo
-                  </Badge>
+                  <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>Activo</Badge>
                 )}
               </div>
               <RangeSliderFilter
-                min={0}
-                max={1000000}
-                step={10000}
+                min={0} max={1000000} step={10000}
                 value={filters.priceRange}
                 onChange={(value) => updateFilter("priceRange", value)}
                 formatValue={(val) => `$${val.toLocaleString()}`}
@@ -253,25 +220,13 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Año</h4>
                 {(filters.yearRange[0] > 2000 || filters.yearRange[1] < 2025) && (
-                  <Badge 
-                    className="text-xs px-2 py-0.5" 
-                    style={{ 
-                      backgroundColor: "var(--accent)", 
-                      color: "#ffffff"
-                    }}
-                  >
-                    Activo
-                  </Badge>
+                  <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>Activo</Badge>
                 )}
               </div>
               <RangeSliderFilter
-                min={2000}
-                max={maxYear}
-                step={1}
+                min={2000} max={maxYear} step={1}
                 value={filters.yearRange}
-                onChange={(value) =>
-                  updateFilter("yearRange", value as [number, number])
-                }
+                onChange={(value) => updateFilter("yearRange", value as [number, number])}
               />
             </div>
 
@@ -280,25 +235,13 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Kilometraje</h4>
                 {(filters.mileageRange[0] > 0 || filters.mileageRange[1] < 500000) && (
-                  <Badge 
-                    className="text-xs px-2 py-0.5" 
-                    style={{ 
-                      backgroundColor: "var(--accent)", 
-                      color: "#ffffff"
-                    }}
-                  >
-                    Activo
-                  </Badge>
+                  <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>Activo</Badge>
                 )}
               </div>
               <RangeSliderFilter
-                min={0}
-                max={500000}
-                step={5000}
+                min={0} max={500000} step={5000}
                 value={filters.mileageRange}
-                onChange={(value) =>
-                  updateFilter("mileageRange", value as [number, number])
-                }
+                onChange={(value) => updateFilter("mileageRange", value as [number, number])}
               />
             </div>
 
@@ -307,13 +250,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Marcas</h4>
                 {filters.brands.length > 0 && (
-                  <Badge 
-                    className="text-xs px-2 py-0.5" 
-                    style={{ 
-                      backgroundColor: "var(--accent)", 
-                      color: "#ffffff"
-                    }}
-                  >
+                  <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
                     {filters.brands.length} seleccionadas
                   </Badge>
                 )}
@@ -335,13 +272,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Color</h4>
                 {filters.colors.length > 0 && (
-                  <Badge 
-                    className="text-xs px-2 py-0.5" 
-                    style={{ 
-                      backgroundColor: "var(--accent)", 
-                      color: "#ffffff"
-                    }}
-                  >
+                  <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
                     {filters.colors.length} seleccionados
                   </Badge>
                 )}
@@ -363,13 +294,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Condición</h4>
                 {filters.condition.length > 0 && (
-                  <Badge 
-                    className="text-xs px-2 py-0.5" 
-                    style={{ 
-                      backgroundColor: "var(--accent)", 
-                      color: "#ffffff"
-                    }}
-                  >
+                  <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
                     {filters.condition.length} seleccionadas
                   </Badge>
                 )}
@@ -377,9 +302,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <CheckboxFilter
                 options={filterOptions.conditions}
                 selected={filters.condition}
-                onChange={(condition) =>
-                  toggleArrayFilter("condition", condition, filters.condition)
-                }
+                onChange={(condition) => toggleArrayFilter("condition", condition, filters.condition)}
                 maxHeight="max-h-full"
               />
             </div>
@@ -389,13 +312,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Combustible</h4>
                 {filters.fuelType.length > 0 && (
-                  <Badge 
-                    className="text-xs px-2 py-0.5" 
-                    style={{ 
-                      backgroundColor: "var(--accent)", 
-                      color: "#ffffff"
-                    }}
-                  >
+                  <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
                     {filters.fuelType.length} seleccionadas
                   </Badge>
                 )}
@@ -403,9 +320,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <CheckboxFilter
                 options={filterOptions.fuelTypes}
                 selected={filters.fuelType}
-                onChange={(fuel) =>
-                  toggleArrayFilter("fuelType", fuel, filters.fuelType)
-                }
+                onChange={(fuel) => toggleArrayFilter("fuelType", fuel, filters.fuelType)}
                 maxHeight="max-h-full"
               />
             </div>
@@ -415,13 +330,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Transmisión</h4>
                 {filters.transmission.length > 0 && (
-                  <Badge 
-                    className="text-xs px-2 py-0.5" 
-                    style={{ 
-                      backgroundColor: "var(--accent)", 
-                      color: "#ffffff"
-                    }}
-                  >
+                  <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
                     {filters.transmission.length} seleccionadas
                   </Badge>
                 )}
@@ -429,13 +338,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <CheckboxFilter
                 options={filterOptions.transmissions}
                 selected={filters.transmission}
-                onChange={(transmission) =>
-                  toggleArrayFilter(
-                    "transmission",
-                    transmission,
-                    filters.transmission
-                  )
-                }
+                onChange={(transmission) => toggleArrayFilter("transmission", transmission, filters.transmission)}
                 maxHeight="max-h-full"
               />
             </div>
@@ -445,13 +348,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Ubicación</h4>
                 {filters.location.length > 0 && (
-                  <Badge 
-                    className="text-xs px-2 py-0.5" 
-                    style={{ 
-                      backgroundColor: "var(--accent)", 
-                      color: "#ffffff"
-                    }}
-                  >
+                  <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
                     {filters.location.length} seleccionadas
                   </Badge>
                 )}
@@ -459,9 +356,7 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <MultiSelectFilter
                 options={filterOptions.locations}
                 selected={filters.location}
-                onChange={(newSelection) =>
-                  updateFilter("location", newSelection)
-                }
+                onChange={(newSelection) => updateFilter("location", newSelection)}
                 placeholder="Seleccionar ubicaciones..."
                 showPublishedToggle={true}
                 isPublishedOnly={showOnlyPublishedLocations}
@@ -470,18 +365,12 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               />
             </div>
 
-            {/* Tipo de Tracción */}
+            {/* Tracción */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Tipo de Tracción</h4>
                 {filters.driveType.length > 0 && (
-                  <Badge 
-                    className="text-xs px-2 py-0.5" 
-                    style={{ 
-                      backgroundColor: "var(--accent)", 
-                      color: "#ffffff"
-                    }}
-                  >
+                  <Badge className="text-xs px-2 py-0.5" style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}>
                     {filters.driveType.length} seleccionadas
                   </Badge>
                 )}
@@ -489,24 +378,27 @@ const AdvancedFiltersPanel: FC<AdvancedFiltersPanelProps> = ({
               <CheckboxFilter
                 options={filterOptions.driveTypes}
                 selected={filters.driveType}
-                onChange={(driveType) =>
-                  toggleArrayFilter("driveType", driveType, filters.driveType)
-                }
+                onChange={(driveType) => toggleArrayFilter("driveType", driveType, filters.driveType)}
                 maxHeight="max-h-full"
               />
             </div>
+
           </div>
         </div>
-        
-        {/* Footer con indicador de mejora */}
+
+        {/* Footer */}
         <div className="px-6 pb-4">
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Sparkles className="w-3 h-3" style={{ color: "var(--accent)" }} />
-            </motion.div>
+            {/*
+              ✅ ANTES: motion.div animate={{ rotate:[0,10,-10,0] }} repeat:Infinity duration:5s
+                 Corría en loop cada 5 segundos SIEMPRE que el panel estaba abierto.
+              ✅ AHORA: CSS animate-spin muy lento con hover — solo activo en hover,
+                 sin consumo de CPU cuando el usuario no interactúa.
+            */}
+            <Sparkles
+              className="w-3 h-3 transition-transform duration-300 hover:rotate-12"
+              style={{ color: "var(--accent)" }}
+            />
             <span>Los filtros se aplican automáticamente</span>
           </div>
         </div>

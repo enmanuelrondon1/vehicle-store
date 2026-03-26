@@ -77,7 +77,7 @@
     --destructive-10: oklch(0.6 0.25 20 / 0.1);
     --destructive-20: oklch(0.6 0.25 20 / 0.2);
     
-    /* ✅ NUEVA: Variable para input background con opacidad */
+    /* ✅ Variable para input background con opacidad */
     --input-bg: oklch(0.98 0.01 240 / 0.5);
 
     /* 🌟 Premium Effects */
@@ -140,10 +140,10 @@
     --input: oklch(0.25 0.02 240);
     --ring: oklch(0.7 0.3 250);
 
-    /* ✨ Glassmorphism en Dark */
-    --glass-bg: oklch(0.12 0.02 240 / 0.6);
-    --glass-border: oklch(0.95 0.01 240 / 0.1);
-    --glass-shadow: 0 8px 32px oklch(0 0 0 / 0.4);
+    /* ✨ Glassmorphism en Dark — más opaco para mejor legibilidad */
+    --glass-bg: oklch(0.14 0.02 240 / 0.85);
+    --glass-border: oklch(0.95 0.01 240 / 0.12);
+    --glass-shadow: 0 8px 32px oklch(0 0 0 / 0.5);
 
     /* 🎨 Scrollbar en Dark */
     --scrollbar-track: var(--muted);
@@ -160,14 +160,14 @@
     --destructive-10: oklch(0.65 0.3 20 / 0.1);
     --destructive-20: oklch(0.65 0.3 20 / 0.2);
     
-    /* ✅ NUEVA: Variable para input background con opacidad en dark */
+    /* ✅ Variable para input background con opacidad en dark */
     --input-bg: oklch(0.09 0.01 240 / 0.5);
 
-    /* 🌟 Premium Effects en Dark */
+    /* 🌟 Premium Effects en Dark — FIX: gradient-primary ahora genera texto VISIBLE */
     --gradient-primary: linear-gradient(
       135deg,
-      oklch(0.6 0.15 240) 0%,
-      oklch(0.5 0.12 240) 100%
+      oklch(0.85 0.15 240) 0%,
+      oklch(0.75 0.2 250) 100%
     );
     --gradient-accent: linear-gradient(
       135deg,
@@ -257,7 +257,10 @@
 
   /* --- Cards --- */
   .card-glass {
-    @apply bg-glass-bg backdrop-blur-md border border-glass-border shadow-glass rounded-xl;
+    @apply backdrop-blur-md rounded-xl;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
   }
 
   .card-hover {
@@ -409,6 +412,23 @@
   .animate-scale-in {
     @apply animate-in zoom-in-95 duration-300 ease-out;
   }
+
+  /* --- 🔧 FIX: Sección skeleton para evitar espacios vacíos en lazy load --- */
+  .section-skeleton {
+    @apply section-spacing;
+  }
+  
+  .section-skeleton-grid-4 {
+    @apply container-wide grid grid-cols-2 md:grid-cols-4 gap-6;
+  }
+  
+  .section-skeleton-grid-3 {
+    @apply container-wide grid grid-cols-1 md:grid-cols-3 gap-6;
+  }
+  
+  .skeleton-card {
+    @apply bg-muted rounded-xl animate-pulse;
+  }
 }
 
 /* ========================================
@@ -496,4 +516,17 @@
       animation: none !important;
     }
   }
+}
+
+/* 🔧 FIX: card-premium visible en dark mode */
+.dark .card-premium {
+  background: oklch(0.15 0.02 240) !important;
+  border-color: oklch(0.3 0.02 240) !important;
+  box-shadow: 0 4px 24px oklch(0 0 0 / 0.3) !important;
+}
+
+/* 🔧 FIX: benefit chips visibles en dark mode */
+.dark .card-glass {
+  background: oklch(0.16 0.02 240 / 0.9) !important;
+  border-color: oklch(0.32 0.02 240 / 0.8) !important;
 }

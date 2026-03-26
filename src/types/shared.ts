@@ -9,9 +9,9 @@ export enum VehicleCategory {
 }
 
 export enum VehicleCondition {
-  NEW = 'new',                 // Nuevo
-  EXCELLENT = 'excellent',     // Excelente
-  GOOD = 'good',               // Bueno
+  NEW = 'new',
+  EXCELLENT = 'excellent',
+  GOOD = 'good',
 }
 
 export enum DriveType {
@@ -25,13 +25,17 @@ export enum TransmissionType {
   MANUAL = 'manual',
   AUTOMATIC = 'automatic',
   CVT = 'cvt',
-  DUAL_CLUTCH = 'dual-clutch'
+  DUAL_CLUTCH = 'dual-clutch',
+  OTHER = 'other',        // ✅ NUEVO
 }
 
 export enum FuelType {
-  GASOLINE = 'gasoline',       // Gasolina
-  DIESEL = 'diesel',           // Gasoil
-  HYBRID = 'hybrid'            // Híbrido
+  GASOLINE = 'gasoline',
+  DIESEL = 'diesel',
+  HYBRID = 'hybrid',
+  GAS = 'gas',            // ✅ NUEVO: Gas/GNV (muy común en Venezuela)
+  ELECTRIC = 'electric',  // ✅ NUEVO: Eléctrico
+  OTHER = 'other',        // ✅ NUEVO: Otro
 }
 
 export enum ApprovalStatus {
@@ -42,12 +46,10 @@ export enum ApprovalStatus {
   SOLD = "sold",
 }
 
+// ✅ Reducido a 2 opciones relevantes para Venezuela
 export enum WarrantyType {
   NO_WARRANTY = 'no-warranty',
   SELLER_WARRANTY = 'seller-warranty',
-  DEALER_WARRANTY = 'dealer-warranty',
-  MANUFACTURER_WARRANTY = 'manufacturer-warranty',
-  EXTENDED_WARRANTY = 'extended-warranty'
 }
 
 export enum SaleType {
@@ -55,19 +57,17 @@ export enum SaleType {
   DEALER = "concesionario",
 }
 
-// Nuevo: Moneda para el precio
 export enum Currency {
   USD = 'USD',
   VES = 'VES',
-  BOTH = 'BOTH' // Ambas
+  BOTH = 'BOTH'
 }
 
-// Nuevo: Documentación del vehículo
 export enum Documentation {
-  TITLE = 'title', // Título de Propiedad
-  ORIGIN_CERTIFICATE = 'origin_certificate', // Certificado de Origen
-  TRANSIT_REVIEW = 'transit_review', // Revisión de Tránsito (INTT)
-  BOLIVARIAN_PLATES = 'bolivarian_plates' // Placas Bolivarianas
+  TITLE = 'title',
+  ORIGIN_CERTIFICATE = 'origin_certificate',
+  TRANSIT_REVIEW = 'transit_review',
+  BOLIVARIAN_PLATES = 'bolivarian_plates'
 }
 
 export const VEHICLE_CATEGORIES_LABELS = {
@@ -82,7 +82,7 @@ export const VEHICLE_CATEGORIES_LABELS = {
 export const VEHICLE_CONDITIONS_LABELS = {
   [VehicleCondition.NEW]: 'Nuevo',
   [VehicleCondition.EXCELLENT]: 'Excelente',
-  [VehicleCondition.GOOD]: 'Bueno', 
+  [VehicleCondition.GOOD]: 'Bueno',
 } as const;
 
 export const DRIVE_TYPE_LABELS: Record<DriveType, string> = {
@@ -96,21 +96,23 @@ export const TRANSMISSION_TYPES_LABELS = {
   [TransmissionType.MANUAL]: 'Manual',
   [TransmissionType.AUTOMATIC]: 'Automático',
   [TransmissionType.CVT]: 'CVT',
-  [TransmissionType.DUAL_CLUTCH]: 'Doble Embrague'
+  [TransmissionType.DUAL_CLUTCH]: 'Doble Embrague',
+  [TransmissionType.OTHER]: 'Otro',  // ✅ NUEVO
 } as const;
 
 export const FUEL_TYPES_LABELS = {
   [FuelType.GASOLINE]: 'Gasolina',
   [FuelType.DIESEL]: 'Gasoil / Diésel',
   [FuelType.HYBRID]: 'Híbrido',
+  [FuelType.GAS]: 'Gas / GNV',       // ✅ NUEVO
+  [FuelType.ELECTRIC]: 'Eléctrico',  // ✅ NUEVO
+  [FuelType.OTHER]: 'Otro',          // ✅ NUEVO
 } as const;
 
+// ✅ Reducido a 2 opciones
 export const WARRANTY_LABELS: Record<WarrantyType, string> = {
   [WarrantyType.NO_WARRANTY]: "Sin Garantía",
   [WarrantyType.SELLER_WARRANTY]: "Garantía del Vendedor",
-  [WarrantyType.DEALER_WARRANTY]: "Garantía del Concesionario",
-  [WarrantyType.MANUFACTURER_WARRANTY]: "Garantía de Fábrica",
-  [WarrantyType.EXTENDED_WARRANTY]: "Garantía Extendida"
 } as const;
 
 export const SALE_TYPE_LABELS: Record<SaleType, string> = {
@@ -118,9 +120,7 @@ export const SALE_TYPE_LABELS: Record<SaleType, string> = {
   [SaleType.DEALER]: "Concesionario",
 };
 
-// ✅ CORRECCIÓN: Añadir y exportar el mapa de etiquetas para las ubicaciones.
 export const LOCATION_LABELS: Record<string, string> = {
-  // Estados venezolanos (originales)
   amazonas: "Amazonas",
   anzoategui: "Anzoátegui",
   apure: "Apure",
@@ -145,8 +145,6 @@ export const LOCATION_LABELS: Record<string, string> = {
   vargas: "Vargas",
   yaracuy: "Yaracuy",
   zulia: "Zulia",
-  
-  // Ciudades/estados mexicanos (basados en los datos reales de vehicles.json)
   "leon": "León",
   "ciudad-de-mexico": "Ciudad de México",
   "monterrey": "Monterrey",

@@ -1,54 +1,56 @@
-// src/components/features/admin/states/AdminPanelLoading.tsx
+// src/components/features/admin/AdminPanelLoading.tsx
+// ✅ OPTIMIZADO: eliminado framer-motion completamente.
+//    Tenía motion.div con repeat:Infinity en el spinner, whileHover en 4 tarjetas
+//    y motion.div en cada fila del skeleton — todo innecesario en un estado de carga.
 
 import React from "react";
-import { Loader2, Shield, Zap, Activity, BarChart3, Users, Car, Settings } from "lucide-react";
+import {
+  Loader2,
+  Shield,
+  Zap,
+  Activity,
+  BarChart3,
+  Users,
+  Car,
+  Settings,
+} from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
 
 export const AdminPanelLoading = () => {
   const loadingSteps = [
-    { id: 1, label: "Verificando permisos", icon: Shield, status: "loading" },
-    { id: 2, label: "Cargando vehículos", icon: Car, status: "pending" },
-    { id: 3, label: "Analizando datos", icon: BarChart3, status: "pending" },
-    { id: 4, label: "Preparando interfaz", icon: Settings, status: "pending" },
+    { id: 1, label: "Verificando permisos", icon: Shield },
+    { id: 2, label: "Cargando vehículos", icon: Car },
+    { id: 3, label: "Analizando datos", icon: BarChart3 },
+    { id: 4, label: "Preparando interfaz", icon: Settings },
   ];
 
   const [currentStep, setCurrentStep] = React.useState(0);
 
   React.useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentStep((prev) => (prev < loadingSteps.length - 1 ? prev + 1 : prev));
+      setCurrentStep((prev) =>
+        prev < loadingSteps.length - 1 ? prev + 1 : prev
+      );
     }, 800);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95 pt-4 pb-8 px-4">
-      <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in-0 duration-500">
-        {/* ========== ENCABEZADO MEJORADO ========== */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center space-y-4"
-        >
+      <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
+
+        {/* ENCABEZADO */}
+        <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3">
-            <motion.div
-              whileHover={{ rotate: 15, scale: 1.1 }}
-              transition={{ duration: 0.3 }}
-              className="relative"
-            >
-              <div className="p-3.5 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-accent ring-4 ring-primary/10 shimmer-effect">
+            <div className="relative group">
+              <div className="p-3.5 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-accent ring-4 ring-primary/10 shimmer-effect transition-transform duration-300 group-hover:scale-110">
                 <Shield className="w-7 h-7 text-primary-foreground" />
               </div>
-              <motion.div
-                className="absolute inset-0 rounded-2xl bg-primary/20"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              ></motion.div>
-            </motion.div>
+              {/* ✅ animate-ping CSS en lugar de motion.div repeat:Infinity */}
+              <span className="absolute inset-0 rounded-2xl bg-primary/20 animate-ping opacity-75" />
+            </div>
             <div className="text-left">
               <h1 className="text-3xl md:text-4xl font-heading font-bold text-gradient-primary">
                 Panel de Administración
@@ -58,27 +60,26 @@ export const AdminPanelLoading = () => {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
 
-        {/* ========== TARJETA DE CARGA MEJORADA ========== */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+        {/* TARJETA DE CARGA */}
+        <div
+          className="animate-fade-in"
+          style={{ animationDelay: "80ms", animationFillMode: "both" }}
         >
           <Card className="shadow-xl border-0 overflow-hidden card-glass">
-            {/* Efectos de brillo superior */}
-            <div className="h-2 bg-gradient-to-r from-primary via-accent to-primary"></div>
-            <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary animate-pulse opacity-50"></div>
-            
+            <div className="h-2 bg-gradient-to-r from-primary via-accent to-primary" />
+            <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary animate-pulse opacity-50" />
+
             <CardHeader className="text-center pb-4">
               <div className="flex flex-col items-center space-y-4">
+                {/* ✅ Spinner CSS puro — sin motion.div */}
                 <div className="relative">
                   <Loader2 className="w-12 h-12 text-primary animate-spin" />
-                  <motion.div
+                  <div
                     className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin"
-                    style={{ animationDuration: '1.5s' }}
-                  ></motion.div>
+                    style={{ animationDuration: "1.5s" }}
+                  />
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold font-heading text-gradient-primary">
@@ -90,62 +91,51 @@ export const AdminPanelLoading = () => {
                 </div>
               </div>
             </CardHeader>
+
             <CardContent className="pt-0">
               <div className="space-y-4">
-                {/* Barra de progreso animada */}
+                {/* Barra de progreso */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Progreso general</span>
-                    <span className="font-medium">{Math.round(((currentStep + 1) / loadingSteps.length) * 100)}%</span>
+                    <span className="font-medium">
+                      {Math.round(((currentStep + 1) / loadingSteps.length) * 100)}%
+                    </span>
                   </div>
-                  <Progress 
-                    value={((currentStep + 1) / loadingSteps.length) * 100} 
+                  <Progress
+                    value={((currentStep + 1) / loadingSteps.length) * 100}
                     className="h-2"
                   />
                 </div>
-                
-                {/* Estados de carga mejorados */}
+
+                {/* Pasos de carga — animate-fade-in CSS con delay */}
                 <div className="space-y-3">
                   {loadingSteps.map((step, index) => {
                     const Icon = step.icon;
                     const isActive = index <= currentStep;
                     const isCurrent = index === currentStep;
-                    
                     return (
-                      <motion.div
+                      <div
                         key={step.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                        className={`flex items-center justify-between p-3 rounded-lg border transition-all duration-300 ${
-                          isActive 
-                            ? "bg-primary/5 border-primary/20" 
+                        className={`flex items-center justify-between p-3 rounded-lg border transition-all duration-300 animate-fade-in ${
+                          isActive
+                            ? "bg-primary/5 border-primary/20"
                             : "bg-muted/20 border-border/50"
                         }`}
+                        style={{
+                          animationDelay: `${index * 80}ms`,
+                          animationFillMode: "both",
+                        }}
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${
-                            isActive 
-                              ? "bg-primary/10" 
-                              : "bg-muted/50"
-                          }`}>
-                            <Icon className={`w-4 h-4 ${
-                              isActive 
-                                ? "text-primary" 
-                                : "text-muted-foreground"
-                            }`} />
+                          <div className={`p-2 rounded-lg ${isActive ? "bg-primary/10" : "bg-muted/50"}`}>
+                            <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
                           </div>
-                          <span className={`text-sm font-medium ${
-                            isActive 
-                              ? "text-foreground" 
-                              : "text-muted-foreground"
-                          }`}>
+                          <span className={`text-sm font-medium ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
                             {step.label}
                           </span>
                         </div>
-                        {isCurrent && (
-                          <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                        )}
+                        {isCurrent && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
                         {isActive && !isCurrent && (
                           <div className="w-4 h-4 rounded-full bg-success flex items-center justify-center">
                             <svg className="w-2 h-2 text-success-foreground" fill="currentColor" viewBox="0 0 20 20">
@@ -153,125 +143,103 @@ export const AdminPanelLoading = () => {
                             </svg>
                           </div>
                         )}
-                      </motion.div>
+                      </div>
                     );
                   })}
                 </div>
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
-        {/* ========== TARJETAS DE ESTADÍSTICAS ========== */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+        {/* TARJETAS DE ESTADÍSTICAS SKELETON */}
+        <div
+          className="animate-fade-in"
+          style={{ animationDelay: "160ms", animationFillMode: "both" }}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { icon: Car, label: "Vehículos", color: "primary" },
-              { icon: Users, label: "Usuarios", color: "accent" },
-              { icon: Activity, label: "Actividad", color: "success" },
-              { icon: BarChart3, label: "Análisis", color: "destructive" },
+              { icon: Car, color: "primary" },
+              { icon: Users, color: "accent" },
+              { icon: Activity, color: "success" },
+              { icon: BarChart3, color: "destructive" },
             ].map((item, index) => {
               const Icon = item.icon;
               return (
-                <motion.div
+                <div
                   key={index}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
-                  whileHover={{ y: -5 }}
+                  className="animate-fade-in hover:-translate-y-1 transition-transform duration-200"
+                  style={{
+                    animationDelay: `${200 + index * 60}ms`,
+                    animationFillMode: "both",
+                  }}
                 >
                   <Card className="shadow-lg border-0 overflow-hidden card-glass h-full">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="space-y-2">
-                          <div className="h-4 bg-muted rounded w-16 animate-pulse"></div>
-                          <div className="h-6 bg-muted rounded w-12 animate-pulse"></div>
+                          <div className="h-4 bg-muted rounded w-16 animate-pulse" />
+                          <div className="h-6 bg-muted rounded w-12 animate-pulse" />
                         </div>
-                        <motion.div
-                          whileHover={{ rotate: 15, scale: 1.1 }}
-                          transition={{ duration: 0.3 }}
-                          className={`p-2.5 rounded-lg bg-${item.color}/10 shimmer-effect`}
-                        >
+                        <div className={`p-2.5 rounded-lg bg-${item.color}/10 shimmer-effect`}>
                           <Icon className={`w-5 h-5 text-${item.color}`} />
-                        </motion.div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
               );
             })}
           </div>
-        </motion.div>
+        </div>
 
-        {/* ========== TARJETA DE CONTENIDO PRINCIPAL ========== */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+        {/* SKELETON PRINCIPAL */}
+        <div
+          className="animate-fade-in"
+          style={{ animationDelay: "320ms", animationFillMode: "both" }}
         >
           <Card className="shadow-xl border-0 overflow-hidden card-glass">
-            {/* Efectos de brillo superior */}
-            <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary"></div>
-            <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary animate-pulse opacity-50"></div>
-            
+            <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary" />
+            <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary animate-pulse opacity-50" />
             <CardContent className="p-6">
               <div className="space-y-4">
-                {/* Esqueleto de filtros mejorado */}
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="relative flex-1">
-                    <div className="h-10 bg-muted/50 rounded-lg animate-pulse"></div>
-                  </div>
+                  <div className="h-10 bg-muted/50 rounded-lg animate-pulse flex-1" />
                   <div className="flex gap-2">
-                    <div className="h-10 w-20 bg-muted/50 rounded-lg animate-pulse"></div>
-                    <div className="h-10 w-20 bg-muted/50 rounded-lg animate-pulse"></div>
+                    <div className="h-10 w-20 bg-muted/50 rounded-lg animate-pulse" />
+                    <div className="h-10 w-20 bg-muted/50 rounded-lg animate-pulse" />
                   </div>
                 </div>
-                
-                {/* Esqueleto de tabla mejorado */}
                 <div className="space-y-2">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <motion.div
+                    <div
                       key={i}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.5 + i * 0.1 }}
                       className="flex items-center space-x-4 p-4 rounded-lg border border-border/30 hover:bg-muted/20 transition-colors duration-300"
                     >
-                      <div className="w-5 h-5 bg-muted/50 rounded animate-pulse"></div>
+                      <div className="w-5 h-5 bg-muted/50 rounded animate-pulse" />
                       <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-muted/50 rounded w-3/4 animate-pulse"></div>
-                        <div className="h-3 bg-muted/50 rounded w-1/2 animate-pulse"></div>
+                        <div className="h-4 bg-muted/50 rounded w-3/4 animate-pulse" />
+                        <div className="h-3 bg-muted/50 rounded w-1/2 animate-pulse" />
                       </div>
                       <div className="flex space-x-2">
-                        <div className="w-8 h-8 bg-muted/50 rounded-lg animate-pulse"></div>
-                        <div className="w-8 h-8 bg-muted/50 rounded-lg animate-pulse"></div>
+                        <div className="w-8 h-8 bg-muted/50 rounded-lg animate-pulse" />
+                        <div className="w-8 h-8 bg-muted/50 rounded-lg animate-pulse" />
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
-                
-                {/* Esqueleto de paginación */}
                 <div className="flex justify-center items-center gap-2 mt-6">
-                  <div className="h-8 w-8 bg-muted/50 rounded-lg animate-pulse"></div>
-                  <div className="h-8 w-8 bg-muted/50 rounded-lg animate-pulse"></div>
-                  <div className="h-8 w-8 bg-muted/50 rounded-lg animate-pulse"></div>
+                  <div className="h-8 w-8 bg-muted/50 rounded-lg animate-pulse" />
+                  <div className="h-8 w-8 bg-muted/50 rounded-lg animate-pulse" />
+                  <div className="h-8 w-8 bg-muted/50 rounded-lg animate-pulse" />
                 </div>
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
-        {/* ========== INDICADOR DE ACTIVIDAD ========== */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="flex justify-center"
-        >
+        {/* INDICADOR */}
+        <div className="flex justify-center">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Zap className="w-4 h-4 text-primary animate-pulse" />
             <span>Sistema operativo al 100%</span>
@@ -279,7 +247,7 @@ export const AdminPanelLoading = () => {
               Premium
             </Badge>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

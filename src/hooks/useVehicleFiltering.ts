@@ -48,7 +48,7 @@ const INITIAL_FILTERS: AdvancedFilters = {
   subcategory: "all",
   brands: [],
   priceRange: [0, 1000000],
-  yearRange: [2000, 2025],
+  yearRange: [1970, new Date().getFullYear() + 1],
   mileageRange: [0, 500000],
   condition: [],
   colors: [],

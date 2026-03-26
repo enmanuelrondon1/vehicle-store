@@ -4,8 +4,7 @@
 import type React from "react";
 import { RefreshCw, SearchX, FilterX } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // MEJORA: Para consistencia
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface NoResultsProps {
   vehicles: number;
@@ -27,48 +26,24 @@ const NoResults: React.FC<NoResultsProps> = ({
     : "Parece que no hay vehículos disponibles todavía. ¡Vuelve a comprobarlo más tarde!";
 
   return (
-    // MEJORA: Usamos el componente Card para consistencia total
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="flex justify-center"
-    >
+    <div className="flex justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
       <Card className="max-w-md w-full shadow-lg border-border card-hover">
         <CardHeader className="text-center">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.3 }}
-            className="flex justify-center"
-          >
+          <div className="flex justify-center animate-in zoom-in duration-300 delay-100">
             <SearchX className="w-16 h-16 text-muted-foreground" />
-          </motion.div>
+          </div>
           <CardTitle className="text-2xl font-heading">{title}</CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.3 }}
-            className="text-muted-foreground"
-          >
+          <p className="text-muted-foreground animate-in fade-in duration-300 delay-200">
             {description}
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.3 }}
-            className="flex flex-col sm:flex-row justify-center gap-3"
-            id="no-results-actions" // MEJORA: ID para accesibilidad
+          </p>
+          <div
+            className="flex flex-col sm:flex-row justify-center gap-3 animate-in fade-in duration-300 delay-300"
+            id="no-results-actions"
           >
             {hasVehiclesInDB && (
-              <Button
-                onClick={clearAllFilters}
-                className="gap-2"
-                aria-describedby="no-results-actions"
-              >
+              <Button onClick={clearAllFilters} className="gap-2" aria-describedby="no-results-actions">
                 <FilterX className="w-4 h-4" />
                 Limpiar Filtros
               </Button>
@@ -82,7 +57,6 @@ const NoResults: React.FC<NoResultsProps> = ({
               <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
               Actualizar
             </Button>
-
             {process.env.NODE_ENV === "development" && (
               <Button
                 variant="outline"
@@ -94,10 +68,10 @@ const NoResults: React.FC<NoResultsProps> = ({
                 🔍 Debug
               </Button>
             )}
-          </motion.div>
+          </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   );
 };
 
