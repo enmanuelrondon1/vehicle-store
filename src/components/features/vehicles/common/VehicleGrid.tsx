@@ -1,15 +1,16 @@
 // src/components/features/vehicles/common/VehicleGrid.tsx
-// ✅ OPTIMIZACIONES:
-// 1. staggerChildren 0.1 → 0.04 y eliminado delayChildren (con 12 items = 1.2s delay innecesario)
-// 2. itemVariants: eliminado spring con y:20 → solo opacity (0 layout recalculations)
-// 3. Doble animación eliminada: motion.div padre + motion.div hijo animaban lo mismo
-// 4. index pasado a VehicleCard para priority en primeras 3 imágenes
+// ✅ OPTIMIZADO: eliminado AnimatePresence y layout prop.
+//    - AnimatePresence + layout en cada tarjeta causaba layout recalculations
+//      en cada cambio de filtro (hasta 48 recalculations simultáneos).
+//    - Reemplazado por CSS animate-fade-in con delay escalonado.
+//    - containerVariants/itemVariants con motion.div → div con CSS.
+//    - La única animación que queda es fade-in de entrada, que ocurre UNA vez.
+
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Vehicle } from "@/types/types";
 import VehicleCard from "./VehicleCard";
 
@@ -48,68 +49,46 @@ const VehicleGrid: React.FC<VehicleGridProps> = ({
     fetchFavorites();
   }, [session]);
 
-  const handleFavoriteToggle = (vehicleId: string, isNowFavorited: boolean) => {
+  const handleFavoriteToggle = useCallback((vehicleId: string, isNowFavorited: boolean) => {
     setFavoritedVehicles((prev) => {
-      const newFavorites = new Set(prev);
-      if (isNowFavorited) newFavorites.add(vehicleId);
-      else newFavorites.delete(vehicleId);
-      return newFavorites;
+      const next = new Set(prev);
+      if (isNowFavorited) next.add(vehicleId);
+      else next.delete(vehicleId);
+      return next;
     });
-  };
-
-  // ✅ Animación simplificada: solo opacity, stagger mínimo, sin delayChildren
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.04,
-        ease: "easeOut",
-      },
-    },
-  };
-
-  // ✅ Solo opacity — elimina layout recalculations que causaba y:20 → y:0
-  const itemVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { duration: 0.25, ease: "easeOut" },
-    },
-  };
+  }, []);
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+    // ✅ Sin motion.div — el grid aparece con animate-fade-in CSS simple
+    <div
       className={
         viewMode === "grid"
           ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
           : "space-y-6"
       }
     >
-      <AnimatePresence mode="popLayout">
-        {vehicles.map((vehicle, index) => (
-          // ✅ Un solo motion.div por item — antes había doble (padre + hijo animaban igual)
-          <motion.div
-            key={vehicle._id}
-            variants={itemVariants}
-            layout
-            exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
-          >
-            <VehicleCard
-              vehicle={vehicle}
-              onToggleCompare={toggleCompare}
-              isInCompareList={compareList.includes(vehicle._id)}
-              isFavorited={favoritedVehicles.has(vehicle._id)}
-              onFavoriteToggle={handleFavoriteToggle}
-              index={index} // ✅ Para priority en primeras 3 imágenes
-            />
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </motion.div>
+      {vehicles.map((vehicle, index) => (
+        // ✅ Sin motion.div ni layout prop — animate-fade-in con delay escalonado CSS
+        // El delay está limitado a 400ms para que no haya esperas largas con muchas tarjetas
+        <div
+          key={vehicle._id}
+          className="animate-fade-in"
+          style={{
+            animationDelay: `${Math.min(index * 40, 400)}ms`,
+            animationFillMode: "both",
+          }}
+        >
+          <VehicleCard
+            vehicle={vehicle}
+            onToggleCompare={toggleCompare}
+            isInCompareList={compareList.includes(vehicle._id)}
+            isFavorited={favoritedVehicles.has(vehicle._id)}
+            onFavoriteToggle={handleFavoriteToggle}
+            index={index}
+          />
+        </div>
+      ))}
+    </div>
   );
 };
 

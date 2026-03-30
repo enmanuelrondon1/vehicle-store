@@ -1,9 +1,14 @@
-// src/components/sections/VehicleList/PaginationControls.tsx
+// src/components/features/vehicles/list/PaginationControls.tsx
+// ✅ OPTIMIZADO: eliminado framer-motion completamente.
+//    Tenía motion.div con whileHover/whileTap en CADA botón de paginación
+//    (hasta ~7 botones visibles × listeners de framer-motion).
+//    También tenía motion.div animate rotate repeat:Infinity en Sparkles.
+//    Reemplazado por CSS hover:scale active:scale — mismo efecto, 0 JS.
+
 "use client";
 
 import type React from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -34,141 +39,75 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
 }) => {
   const ITEMS_PER_PAGE_OPTIONS = [6, 12, 24, 48];
 
-  // Lógica de renderizado de botones más clara y robusta
+  const pageButtonClass = (isActive: boolean) =>
+    cn(
+      "transition-all duration-200 hover:scale-[1.05] active:scale-[0.95]",
+      isActive && "ring-2 ring-ring ring-offset-2"
+    );
+
+  const pageButtonStyle = (isActive: boolean) => ({
+    backgroundColor: isActive ? "var(--accent)" : "transparent",
+    color: isActive ? "var(--accent-foreground)" : "var(--foreground)",
+    border: isActive ? "1px solid var(--accent)" : "1px solid var(--border)",
+  });
+
   const renderPageButtons = () => {
     const buttons = [];
     const maxVisiblePages = 5;
 
-    // Si hay pocas páginas, muéstralas todas
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         buttons.push(
-          <motion.div
+          <Button
             key={i}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            variant={i === currentPage ? "default" : "ghost"}
+            size="sm"
+            onClick={() => goToPage(i)}
+            className={pageButtonClass(i === currentPage)}
+            style={pageButtonStyle(i === currentPage)}
           >
-            <Button
-              variant={i === currentPage ? "default" : "ghost"}
-              size="sm"
-              onClick={() => goToPage(i)}
-              className={cn(
-                "transition-all duration-200",
-                i === currentPage && "ring-2 ring-ring ring-offset-2"
-              )}
-              style={{
-                backgroundColor: i === currentPage ? "var(--accent)" : "transparent",
-                color: i === currentPage ? "var(--accent-foreground)" : "var(--foreground)",
-                border: i === currentPage ? "1px solid var(--accent)" : "1px solid var(--border)"
-              }}
-            >
-              {i}
-            </Button>
-          </motion.div>
+            {i}
+          </Button>
         );
       }
     } else {
-      // Lógica para páginas con "..." (puntos suspensivos)
       const startPage = Math.max(1, currentPage - 2);
       const endPage = Math.min(totalPages, currentPage + 2);
 
-      // Siempre mostrar la primera página
       if (startPage > 1) {
         buttons.push(
-          <motion.div
-            key={1}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => goToPage(1)}
-              style={{
-                backgroundColor: "transparent",
-                color: "var(--foreground)",
-                border: "1px solid var(--border)"
-              }}
-            >
-              1
-            </Button>
-          </motion.div>
+          <Button key={1} variant="ghost" size="sm" onClick={() => goToPage(1)} className="hover:scale-[1.05] active:scale-[0.95] transition-transform duration-200" style={pageButtonStyle(false)}>
+            1
+          </Button>
         );
         if (startPage > 2) {
-          buttons.push(
-            <motion.div
-              key="start-ellipsis"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              <MoreHorizontal className="w-8 h-8 p-0 text-muted-foreground" />
-            </motion.div>
-          );
+          buttons.push(<MoreHorizontal key="start-ellipsis" className="w-8 h-8 p-0 text-muted-foreground" />);
         }
       }
 
-      // Mostrar páginas alrededor de la actual
       for (let i = startPage; i <= endPage; i++) {
         buttons.push(
-          <motion.div
+          <Button
             key={i}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            variant={i === currentPage ? "default" : "ghost"}
+            size="sm"
+            onClick={() => goToPage(i)}
+            className={pageButtonClass(i === currentPage)}
+            style={pageButtonStyle(i === currentPage)}
           >
-            <Button
-              variant={i === currentPage ? "default" : "ghost"}
-              size="sm"
-              onClick={() => goToPage(i)}
-              className={cn(
-                "transition-all duration-200",
-                i === currentPage && "ring-2 ring-ring ring-offset-2"
-              )}
-              style={{
-                backgroundColor: i === currentPage ? "var(--accent)" : "transparent",
-                color: i === currentPage ? "var(--accent-foreground)" : "var(--foreground)",
-                border: i === currentPage ? "1px solid var(--accent)" : "1px solid var(--border)"
-              }}
-            >
-              {i}
-            </Button>
-          </motion.div>
+            {i}
+          </Button>
         );
       }
 
-      // Siempre mostrar la última página
       if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
-          buttons.push(
-            <motion.div
-              key="end-ellipsis"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              <MoreHorizontal className="w-8 h-8 p-0 text-muted-foreground" />
-            </motion.div>
-          );
+          buttons.push(<MoreHorizontal key="end-ellipsis" className="w-8 h-8 p-0 text-muted-foreground" />);
         }
         buttons.push(
-          <motion.div
-            key={totalPages}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => goToPage(totalPages)}
-              style={{
-                backgroundColor: "transparent",
-                color: "var(--foreground)",
-                border: "1px solid var(--border)"
-              }}
-            >
-              {totalPages}
-            </Button>
-          </motion.div>
+          <Button key={totalPages} variant="ghost" size="sm" onClick={() => goToPage(totalPages)} className="hover:scale-[1.05] active:scale-[0.95] transition-transform duration-200" style={pageButtonStyle(false)}>
+            {totalPages}
+          </Button>
         );
       }
     }
@@ -180,127 +119,85 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   const endItem = Math.min(currentPage * itemsPerPage, totalVehicles);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full"
-    >
+    // ✅ animate-fade-in CSS en lugar de motion.div initial/animate
+    <div className="w-full animate-fade-in">
       <div className="card-glass rounded-xl shadow-hard border border-border/50 overflow-hidden">
-        {/* Efecto de brillo superior */}
-        <div
-          className="h-1 w-full"
-          style={{ background: "var(--gradient-accent)" }}
-        />
-        
+        <div className="h-1 w-full" style={{ background: "var(--gradient-accent)" }} />
+
         <div className="p-4 md:p-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Selector de items por página */}
+
+            {/* Selector items por página */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>Mostrar</span>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <div className="hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200">
                 <Select
                   value={itemsPerPage.toString()}
                   onValueChange={(value) => {
                     setItemsPerPage(Number(value));
-                    goToPage(1); // Resetear a la primera página al cambiar el tamaño
+                    goToPage(1);
                   }}
                 >
-                  <SelectTrigger 
-                    className="w-[100px]"
-                    style={{
-                      backgroundColor: "var(--card)",
-                      border: "1px solid var(--border)"
-                    }}
-                  >
+                  <SelectTrigger className="w-[100px]" style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {ITEMS_PER_PAGE_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={String(option)}>
-                        {option}
-                      </SelectItem>
+                      <SelectItem key={option} value={String(option)}>{option}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </motion.div>
+              </div>
               <span>por página</span>
             </div>
 
-            {/* Controles de navegación */}
+            {/* Navegación */}
             <div className="flex items-center gap-1">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => goToPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  aria-label="Página anterior"
-                  style={{
-                    backgroundColor: "var(--card)",
-                    border: "1px solid var(--border)",
-                    color: currentPage === 1 ? "var(--muted-foreground)" : "var(--foreground)"
-                  }}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-              </motion.div>
-              
-              <div className="flex items-center gap-1">
-                {renderPageButtons()}
-              </div>
-              
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => goToPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  aria-label="Página siguiente"
-                  style={{
-                    backgroundColor: "var(--card)",
-                    border: "1px solid var(--border)",
-                    color: currentPage === totalPages ? "var(--muted-foreground)" : "var(--foreground)"
-                  }}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </motion.div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                aria-label="Página anterior"
+                className="hover:scale-[1.05] active:scale-[0.95] transition-transform duration-200"
+                style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", color: currentPage === 1 ? "var(--muted-foreground)" : "var(--foreground)" }}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+
+              <div className="flex items-center gap-1">{renderPageButtons()}</div>
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                aria-label="Página siguiente"
+                className="hover:scale-[1.05] active:scale-[0.95] transition-transform duration-200"
+                style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)", color: currentPage === totalPages ? "var(--muted-foreground)" : "var(--foreground)" }}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
             </div>
 
-            {/* Contador de resultados como Badge para mayor visibilidad */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            {/* Badge contador */}
+            <Badge
+              className="text-xs font-bold px-3 py-1 hover:scale-[1.05] transition-transform duration-200"
+              style={{ background: "var(--gradient-accent)", color: "var(--accent-foreground)" }}
             >
-              <Badge 
-                className="text-xs font-bold px-3 py-1" 
-                style={{ 
-                  background: "var(--gradient-accent)",
-                  color: "var(--accent-foreground)"
-                }}
-              >
-                {startItem}-{endItem} de {totalVehicles}
-              </Badge>
-            </motion.div>
+              {startItem}-{endItem} de {totalVehicles}
+            </Badge>
           </div>
-          
-          {/* Indicador de mejora con efecto de brillo */}
+
+          {/* Footer */}
           <div className="flex items-center justify-center mt-4 text-xs text-muted-foreground">
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Sparkles className="w-3 h-3 mr-1" style={{ color: "var(--accent)" }} />
-            </motion.div>
+            {/* ✅ Sparkles → CSS hover en lugar de motion rotate repeat:Infinity */}
+            <Sparkles className="w-3 h-3 mr-1 transition-transform duration-300 hover:rotate-12" style={{ color: "var(--accent)" }} />
             <span>Página {currentPage} de {totalPages}</span>
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

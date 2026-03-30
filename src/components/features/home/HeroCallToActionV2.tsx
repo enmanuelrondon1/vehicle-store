@@ -1,4 +1,11 @@
-// src/components/features/home/HeroCallToActionV2.tsx - CTA FINAL OPTIMIZADO
+// src/components/features/home/HeroCallToActionV2.tsx
+// ✅ OPTIMIZADO: eliminado motion.div animate rotate repeat:Infinity del ícono Zap.
+//    Ese loop corría constantemente mientras el componente estaba montado,
+//    contribuyendo al TBT de 16,140ms junto con el MarqueeRow.
+//    Reemplazado por CSS animation hover — solo anima cuando el usuario
+//    pasa el cursor, no permanentemente.
+//    Los motion.div de entrada (whileInView once:true) se mantienen — son seguros.
+
 "use client";
 
 import React, { useRef, useState } from "react";
@@ -11,18 +18,14 @@ interface HeroCallToActionV2Props {
   onSellClick: () => void;
 }
 
-export const HeroCallToActionV2: React.FC<HeroCallToActionV2Props> = ({
-  onSellClick,
-}) => {
+export const HeroCallToActionV2: React.FC<HeroCallToActionV2Props> = ({ onSellClick }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: "-100%", y: "-100%" });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      setMousePosition({ x: `${x}px`, y: `${y}px` });
+      setMousePosition({ x: `${e.clientX - rect.left}px`, y: `${e.clientY - rect.top}px` });
     }
   };
 
@@ -31,11 +34,8 @@ export const HeroCallToActionV2: React.FC<HeroCallToActionV2Props> = ({
       ref={containerRef}
       onMouseMove={handleMouseMove}
       className="relative w-full overflow-hidden"
-      style={{
-        background: 'radial-gradient(circle at 50% 50%, var(--primary-5) 0%, transparent 70%)'
-      }}
+      style={{ background: "radial-gradient(circle at 50% 50%, var(--primary-5) 0%, transparent 70%)" }}
     >
-      {/* EFECTO GRADIENTE INTERACTIVO */}
       <div
         className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-500 hover:opacity-100"
         style={{
@@ -44,8 +44,8 @@ export const HeroCallToActionV2: React.FC<HeroCallToActionV2Props> = ({
       />
 
       <div className="container-wide relative z-10 mx-auto text-center py-12 px-4">
-        
-        {/* 🏆 BADGE PREMIUM */}
+
+        {/* BADGE */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -54,14 +54,14 @@ export const HeroCallToActionV2: React.FC<HeroCallToActionV2Props> = ({
           className="mb-8"
         >
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full card-glass border">
-            <Shield className="w-4 h-4" style={{ color: 'var(--success)' }} />
-            <span className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>
+            <Shield className="w-4 h-4" style={{ color: "var(--success)" }} />
+            <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>
               Plataforma verificada y segura
             </span>
           </div>
         </motion.div>
 
-        {/* 📝 TÍTULO CON SPARKLES */}
+        {/* TÍTULO */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -70,35 +70,30 @@ export const HeroCallToActionV2: React.FC<HeroCallToActionV2Props> = ({
         >
           <SparklesText
             className="text-4xl sm:text-5xl font-heading font-bold tracking-tight mb-6 px-4"
-            colors={{ 
-              first: 'var(--accent)', 
-              second: 'var(--primary)' 
-            }}
+            colors={{ first: "var(--accent)", second: "var(--primary)" }}
             sparkleCount={8}
           >
             ¿Listo para empezar?
           </SparklesText>
         </motion.div>
 
-        {/* 💬 DESCRIPCIÓN */}
+        {/* DESCRIPCIÓN */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mx-auto mt-6 max-w-2xl text-xl leading-relaxed font-medium mb-10"
-          style={{ color: 'var(--muted-foreground)' }}
+          style={{ color: "var(--muted-foreground)" }}
         >
           Únete a{" "}
-          <span className="font-bold" style={{ color: 'var(--foreground)' }}>
-            25,000+ vendedores
-          </span>
+          <span className="font-bold" style={{ color: "var(--foreground)" }}>25,000+ vendedores</span>
           {" "}que confían en nuestra plataforma.
           <br />
           Publica tu anuncio en minutos y llega a compradores serios.
         </motion.p>
 
-        {/* 🎯 BOTÓN CTA PRINCIPAL */}
+        {/* BOTÓN CTA */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -111,29 +106,25 @@ export const HeroCallToActionV2: React.FC<HeroCallToActionV2Props> = ({
             size="lg"
             className="btn-accent relative inline-flex h-16 items-center justify-center overflow-hidden rounded-2xl px-12 text-xl font-bold transition-all duration-300 group shadow-hard"
           >
-            {/* Efecto shimmer */}
-            <div 
+            <div
               className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
               style={{
-                background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent)',
-                animation: 'shimmer 2s infinite'
+                background: "linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent)",
+                animation: "shimmer 2s infinite",
               }}
             />
-            
-            <span className="relative flex items-center">
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-              >
-                <Zap className="w-6 h-6 mr-3" />
-              </motion.div>
+            <span className="relative flex items-center gap-3">
+              {/* ✅ CSS hover animation en lugar de motion.div rotate repeat:Infinity */}
+              <Zap
+                className="w-6 h-6 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110"
+              />
               Publicar Anuncio Ahora
-              <ArrowRight className="ml-3 h-6 w-6 transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight className="h-6 w-6 transition-transform duration-300 group-hover:translate-x-1" />
             </span>
           </Button>
         </motion.div>
 
-        {/* ✅ TRUST INDICATORS */}
+        {/* TRUST INDICATORS */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -144,52 +135,28 @@ export const HeroCallToActionV2: React.FC<HeroCallToActionV2Props> = ({
           <div className="flex items-center gap-2">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i}
-                  className="w-5 h-5" 
-                  style={{ color: 'var(--accent)' }}
-                  fill="currentColor"
-                />
+                <Star key={i} className="w-5 h-5" style={{ color: "var(--accent)" }} fill="currentColor" />
               ))}
             </div>
-            <span 
-              className="text-sm font-semibold"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
+            <span className="text-sm font-semibold" style={{ color: "var(--muted-foreground)" }}>
               4.8/5 Valoración
-            </span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <div 
-              className="w-5 h-5 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'var(--success)' }}
-            >
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <span 
-              className="text-sm font-semibold"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              100% Seguro
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <div 
-              className="w-5 h-5 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'var(--accent)' }}
-            >
+            <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--success)" }}>
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <span className="text-sm font-semibold" style={{ color: "var(--muted-foreground)" }}>100% Seguro</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--accent)" }}>
               <Zap className="w-3 h-3 text-white" />
             </div>
-            <span 
-              className="text-sm font-semibold"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              Publicación en 5 min
-            </span>
+            <span className="text-sm font-semibold" style={{ color: "var(--muted-foreground)" }}>Publicación en 5 min</span>
           </div>
         </motion.div>
       </div>
