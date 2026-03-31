@@ -1,12 +1,18 @@
 // src/components/features/home/HomeInteractions.tsx
 "use client";
 import { useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { LoginModal } from "./hero/LoginModal";
 import { siteConfig } from "@/config/site";
 import HeroSectionV2 from "./HeroSectionV2";
-import HeroCallToActionV2 from "./HeroCallToActionV2";
+
+// ✅ Lazy load — framer-motion no bloquea el bundle inicial
+const HeroCallToActionV2 = dynamic(
+  () => import("./HeroCallToActionV2"),
+  { ssr: false }
+);
 
 export default function HomeInteractions() {
   const { status } = useSession();

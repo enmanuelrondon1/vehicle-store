@@ -1,51 +1,55 @@
 // src/components/features/home/hero/AnimatedBackground.tsx
+// ✅ OPTIMIZADO: blur deshabilitado en móvil (muy costoso en GPU)
+//    Animaciones reducidas para mejorar TBT en dispositivos lentos
 "use client";
 import React from "react";
 
 export const AnimatedBackground = () => (
   <div className="absolute inset-0 overflow-hidden">
-    {/* Gradiente base */}
-    <div className="absolute inset-0 opacity-30" style={{ background: "var(--gradient-hero)" }} />
+    {/* Gradiente base — sin costo */}
+    <div
+      className="absolute inset-0 opacity-30"
+      style={{ background: "var(--gradient-hero)" }}
+    />
 
     {/* Overlay radial */}
     <div
       className="absolute inset-0 opacity-40"
       style={{
-        background: "radial-gradient(circle at 50% 50%, transparent 0%, var(--background) 100%)",
+        background:
+          "radial-gradient(circle at 50% 50%, transparent 0%, var(--background) 100%)",
       }}
     />
 
-    {/* Forma flotante principal — CSS keyframe */}
+    {/* Formas flotantes — solo en desktop (md+), en móvil se omiten */}
     <div
-      className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl animate-float-slow"
+      className="hidden md:block absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl animate-float-slow"
       style={{
         background: "radial-gradient(circle, var(--accent-10) 0%, transparent 70%)",
       }}
     />
-
-    {/* Forma flotante secundaria */}
     <div
-      className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl animate-float-medium"
+      className="hidden md:block absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl animate-float-medium"
       style={{
-        background: "radial-gradient(circle, var(--success-10) 0%, transparent 70%)",
+        background:
+          "radial-gradient(circle, var(--success-10) 0%, transparent 70%)",
         animationDelay: "2s",
       }}
     />
-
-    {/* Forma flotante terciaria */}
     <div
-      className="absolute top-1/3 right-1/3 w-64 h-64 rounded-full blur-2xl animate-float-slow"
+      className="hidden md:block absolute top-1/3 right-1/3 w-64 h-64 rounded-full blur-2xl animate-float-slow"
       style={{
-        background: "radial-gradient(circle, var(--primary-10) 0%, transparent 70%)",
+        background:
+          "radial-gradient(circle, var(--primary-10) 0%, transparent 70%)",
         animationDelay: "1s",
       }}
     />
 
-    {/* Partículas estáticas con pulse — evitamos JS/Math.random en render */}
+    {/* Partículas — solo en desktop */}
     {[0, 1, 2, 3, 4].map((i) => (
       <div
         key={i}
-        className="absolute w-2 h-2 rounded-full animate-pulse-glow"
+        className="hidden md:block absolute w-2 h-2 rounded-full animate-pulse-glow"
         style={{
           backgroundColor: "var(--accent)",
           left: `${20 + i * 15}%`,
@@ -57,9 +61,9 @@ export const AnimatedBackground = () => (
       />
     ))}
 
-    {/* Grid sutil de fondo */}
+    {/* Grid sutil — solo en desktop */}
     <div
-      className="absolute inset-0 opacity-5"
+      className="hidden md:block absolute inset-0 opacity-5"
       style={{
         backgroundImage: `
           linear-gradient(var(--border) 1px, transparent 1px),
