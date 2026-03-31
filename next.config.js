@@ -60,43 +60,96 @@ const nextConfig = {
     ],
   },
 
-  async headers() {
-    return [
-      // Tu CORS original — sin tocar
-      {
-        source: "/api/:path*",
-        headers: [
-          { key: "Access-Control-Allow-Origin", value: "*" },
-          { key: "Access-Control-Allow-Methods", value: "GET,POST,PUT,DELETE,OPTIONS" },
-          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
-        ],
-      },
-      // ✅ Cache para assets estáticos
-      {
-        source: "/_next/static/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
-      {
-        source: "/logo/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
-      // ✅ Security headers
-      {
-        source: "/(.*)",
-        headers: [
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          { key: "X-XSS-Protection", value: "1; mode=block" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-        ],
-      },
-    ];
-  },
+async headers() {
+  return [
+    // ✅ CORS — solo tu dominio puede llamar las APIs
+    {
+      source: "/api/:path*",
+      headers: [
+        {
+          key: "Access-Control-Allow-Origin",
+          value: "https://1auto.market",
+        },
+        {
+          key: "Access-Control-Allow-Methods",
+          value: "GET,POST,PUT,DELETE,OPTIONS",
+        },
+        {
+          key: "Access-Control-Allow-Headers",
+          value: "Content-Type, Authorization",
+        },
+      ],
+    },
+
+    // ✅ Cache para assets estáticos
+    {
+      source: "/_next/static/:path*",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=31536000, immutable",
+        },
+      ],
+    },
+    {
+      source: "/logo/:path*",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=31536000, immutable",
+        },
+      ],
+    },
+
+    // ✅ Headers de seguridad para todas las rutas
+    {
+      source: "/(.*)",
+      headers: [
+        // Evita que el browser adivine el tipo de archivo (MIME sniffing)
+        { key: "X-Content-Type-Options", value: "nosniff" },
+
+        // Tu página no puede mostrarse en iframes de otros sitios (anti-clickjacking)
+        { key: "X-Frame-Options", value: "SAMEORIGIN" },
+
+        // Protección XSS legacy (navegadores viejos)
+        { key: "X-XSS-Protection", value: "1; mode=block" },
+
+        // No envía la URL completa al hacer click en links externos
+        { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+
+        // Bloquea acceso a cámara, micrófono y GPS
+        {
+          key: "Permissions-Policy",
+          value: "camera=(), microphone=(), geolocation=()",
+        },
+
+        // 🔴 NUEVO — HSTS: fuerza HTTPS por 1 año, protege contra ataques man-in-the-middle
+        {
+          key: "Strict-Transport-Security",
+          value: "max-age=31536000; includeSubDomains",
+        },
+
+        // 🔴 NUEVO — CSP: solo permite cargar recursos de tus dominios de confianza
+        {
+          key: "Content-Security-Policy",
+          value: [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com",
+            "img-src 'self' data: blob: https://res.cloudinary.com https://*.cloudinary.com https://images.unsplash.com https://lh3.googleusercontent.com",
+            "connect-src 'self' https://api.cloudinary.com https://soketi.app wss: ws:",
+            "media-src 'self' blob: https://res.cloudinary.com",
+            "frame-src 'none'",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+          ].join("; "),
+        },
+      ],
+    },
+  ];
+},
 
   // ✅ Webpack — tus fixes originales completos + tree-shaking
   webpack: (config, { isServer, dev }) => {
