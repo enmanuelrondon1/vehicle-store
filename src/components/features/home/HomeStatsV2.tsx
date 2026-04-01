@@ -1,8 +1,7 @@
 // src/components/features/home/HomeStatsV2.tsx
-// ✅ FIX TBT: staggerChildren en contenedor — de 6 observers a 2
+// ✅ OPTIMIZADO: sin framer-motion en bundle inicial, CSS animations en lugar de JS
 "use client";
 import React from "react";
-import { motion } from "framer-motion";
 import { StatCard } from "./hero/StatCard";
 import { BenefitCard } from "./hero/BenefitCard";
 
@@ -20,21 +19,6 @@ const benefits = [
   "Verificación de usuarios",
 ];
 
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
-
-const benefitVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } },
-};
-
 const HomeStatsV2 = () => {
   return (
     <div className="container-wide relative">
@@ -50,13 +34,7 @@ const HomeStatsV2 = () => {
       <div className="grid lg:grid-cols-2 gap-16 items-center">
 
         {/* Columna izquierda */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="space-y-8"
-        >
+        <div className="space-y-8 animate-in fade-in slide-in-from-left-8 duration-700">
           <h2 className="text-4xl sm:text-5xl font-heading font-extrabold">
             <span className="text-gradient">
               Resultados que hablan
@@ -71,36 +49,31 @@ const HomeStatsV2 = () => {
             {" "}a vender sus vehículos de forma rápida, segura y rentable.
           </p>
 
-          {/* ✅ Un observer para los 4 benefits */}
-          <motion.div
-            className="flex flex-wrap gap-3"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
+          <div className="flex flex-wrap gap-3">
             {benefits.map((benefit, index) => (
-              <motion.div key={index} variants={benefitVariants}>
+              <div
+                key={index}
+                className="animate-in fade-in duration-500"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
                 <BenefitCard benefit={benefit} />
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
-        {/* ✅ Un observer para las 4 stat cards */}
-        <motion.div
-          className="grid grid-cols-2 gap-4"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-        >
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 gap-4">
           {stats.map((stat, index) => (
-            <motion.div key={index} variants={itemVariants}>
+            <div
+              key={index}
+              className="animate-in fade-in slide-in-from-bottom-4 duration-500"
+              style={{ animationDelay: `${index * 120}ms` }}
+            >
               <StatCard number={stat.number} label={stat.label} />
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
       </div>
     </div>

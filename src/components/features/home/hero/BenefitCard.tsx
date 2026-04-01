@@ -1,62 +1,45 @@
 // src/components/features/home/hero/BenefitCard.tsx
+// ✅ OPTIMIZADO: eliminado framer-motion — reemplazado por CSS hover puro
+//    Sin whileHover, sin motion.div — misma apariencia, cero JS extra
 "use client";
 import React, { memo } from "react";
-import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
 
 export const BenefitCard: React.FC<{ benefit: string }> = memo(({ benefit }) => {
   return (
-    <motion.div
-      whileHover={{ scale: 1.05, transition: { duration: 200 } }}
-      className="relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium cursor-pointer overflow-hidden group"
+    <div
+      className="relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium cursor-pointer overflow-hidden group transition-transform duration-200 hover:scale-105"
       style={{
-        backgroundColor: 'var(--muted)',
-        border: '1px solid var(--border)',
-        color: 'var(--foreground)'
+        backgroundColor: "var(--muted)",
+        border: "1px solid var(--border)",
+        color: "var(--foreground)",
       }}
     >
-      {/* Efecto de fondo en hover */}
-      <div 
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full"
-        style={{
-          backgroundColor: 'var(--primary-10)',
-          borderColor: 'var(--primary-20)'
-        }}
+      {/* Fondo en hover — CSS puro */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full pointer-events-none"
+        style={{ backgroundColor: "var(--primary-10)" }}
+        aria-hidden="true"
       />
-      
-      {/* Icono con efectos */}
-      <motion.div
-        className="relative z-10"
-        whileHover={{ rotate: [0, -10, 10, 0] }}
-        transition={{ duration: 0.5 }}
-      >
-        <CheckCircle 
-          className="w-4 h-4 flex-shrink-0" 
-          style={{ color: 'var(--accent)' }} 
-        />
-      </motion.div>
-      
-      {/* Texto con mejor contraste */}
-      <span className="relative z-10 font-medium group-hover:font-semibold transition-all duration-300">
+
+      {/* Línea inferior decorativa */}
+      <div
+        className="absolute bottom-0 left-0 h-0.5 rounded-full w-0 group-hover:w-full transition-all duration-300 pointer-events-none"
+        style={{ backgroundColor: "var(--accent)" }}
+        aria-hidden="true"
+      />
+
+      <CheckCircle
+        className="relative z-10 w-4 h-4 flex-shrink-0 transition-transform duration-300 group-hover:rotate-12"
+        style={{ color: "var(--accent)" }}
+        aria-hidden="true"
+      />
+
+      <span className="relative z-10 font-medium group-hover:font-semibold transition-all duration-200">
         {benefit}
       </span>
-      
-      {/* Efecto shimmer */}
-      <div 
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-full"
-        style={{
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
-          animation: 'shimmer 2s infinite'
-        }}
-      />
-      
-      {/* Línea decorativa */}
-      <motion.div
-        className="absolute bottom-0 left-0 h-0.5 rounded-full w-0 group-hover:w-full transition-all duration-300"
-        style={{ backgroundColor: 'var(--accent)' }}
-      />
-    </motion.div>
+    </div>
   );
-}
-)
+});
+
 BenefitCard.displayName = "BenefitCard";

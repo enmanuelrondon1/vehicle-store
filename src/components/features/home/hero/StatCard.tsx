@@ -1,7 +1,9 @@
 // src/components/features/home/hero/StatCard.tsx
+// ✅ OPTIMIZADO: eliminado animate repeat:Infinity que bloqueaba el hilo principal
+//    AnimatedCounter solo corre una vez al montar — no es loop infinito
+//    Hover effects con CSS en lugar de framer-motion
 "use client";
-import React, { memo, useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { memo, useState, useEffect, useRef } from "react";
 
 interface StatCardProps {
   number: string;
@@ -10,22 +12,30 @@ interface StatCardProps {
 
 const AnimatedCounter = ({ value }: { value: string }) => {
   const [displayValue, setDisplayValue] = useState("0");
+  const hasRun = useRef(false);
 
   useEffect(() => {
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const numericValue = parseFloat(value.replace(/[^0-9.]/g, ""));
     const suffix = value.replace(/[0-9.]/g, "");
     const decimals = (value.split(".")[1] || "").length;
 
-    if (isNaN(numericValue)) return;
+    if (isNaN(numericValue)) {
+      setDisplayValue(value);
+      return;
+    }
 
-    const duration = 1500;
+    const duration = 1200;
     const startTime = Date.now();
 
     const frame = () => {
-      const now = Date.now();
-      const elapsed = now - startTime;
+      const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const currentValue = progress * numericValue;
+      // easeOut
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const currentValue = eased * numericValue;
 
       const formattedValue =
         decimals > 0
@@ -34,99 +44,66 @@ const AnimatedCounter = ({ value }: { value: string }) => {
 
       setDisplayValue(formattedValue + suffix);
 
-      if (progress < 1) {
-        requestAnimationFrame(frame);
-      }
+      if (progress < 1) requestAnimationFrame(frame);
     };
 
     requestAnimationFrame(frame);
   }, [value]);
 
   return (
-    <span 
-      className="font-bold relative text-4xl sm:text-5xl"
-      style={{ 
-        color: 'var(--accent)',
-        textShadow: '0 0 20px var(--accent-20), 0 0 40px var(--accent-10)',
-        filter: 'brightness(1.3)'
+    <span
+      className="font-bold text-4xl sm:text-5xl"
+      style={{
+        color: "var(--accent)",
+        textShadow: "0 0 20px var(--accent-20)",
       }}
     >
       {displayValue}
-      {/* Efecto shimmer para mayor visibilidad */}
-      <span 
-        className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          animation: 'shimmer 3s infinite'
-        }}
-      >
-        {displayValue}
-      </span>
     </span>
   );
 };
 
 export const StatCard: React.FC<StatCardProps> = memo(({ number, label }) => {
   return (
-    <motion.div
-      data-aos="zoom-in"
-      data-aos-duration="600"
-      whileHover={{ scale: 1.05, y: -2, transition: { duration: 200 } }}
-      className="relative card-premium card-hover group h-full p-6 text-center"
-    >
-      {/* Efecto de brillo en hover */}
-      <div 
+    <div className="relative card-premium group h-full p-6 text-center transition-transform duration-200 hover:scale-105 hover:-translate-y-1 cursor-default">
+      {/* Brillo en hover — CSS puro */}
+      <div
         className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at center, var(--accent-10) 0%, transparent 70%)'
+          background: "radial-gradient(circle at center, var(--accent-10) 0%, transparent 70%)",
         }}
+        aria-hidden="true"
       />
-      
-      {/* Número con efectos mejorados */}
+
+      {/* Línea superior decorativa en hover */}
+      <div
+        className="absolute top-0 left-0 w-0 group-hover:w-full h-0.5 rounded-t-xl transition-all duration-300 pointer-events-none"
+        style={{
+          background: "linear-gradient(to right, var(--accent), var(--primary), transparent)",
+        }}
+        aria-hidden="true"
+      />
+
       <p className="mb-2">
         <AnimatedCounter value={number} />
       </p>
-      
-      {/* Etiqueta con mejor contraste */}
-      <p 
+
+      <p
         className="text-sm font-semibold leading-relaxed"
-        style={{ 
-          color: 'var(--foreground)',
-          textShadow: '0 1px 2px rgba(0,0,0,0.1)'
-        }}
+        style={{ color: "var(--foreground)" }}
       >
         {label}
       </p>
 
-      {/* Efecto decorativo */}
-      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-        <div 
-          className="absolute inset-0 rounded-xl"
-          style={{
-            background: 'linear-gradient(135deg, var(--accent-5) 0%, transparent 50%)'
-          }}
-        />
-        <div 
-          className="absolute top-0 left-0 w-full h-1 rounded-t-xl"
-          style={{
-            background: 'linear-gradient(to right, var(--accent), var(--primary), transparent)'
-          }}
-        />
-      </div>
-
-      {/* Indicador animado */}
-      <motion.div
-        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-2 h-2 rounded-full"
-        style={{ backgroundColor: 'var(--accent)' }}
-        animate={{ scale: [1, 1.5, 1] }}
-        transition={{ duration: 2, repeat: Infinity }}
+      {/* ✅ ELIMINADO: motion.div animate scale repeat:Infinity — bloqueaba hilo principal */}
+      {/* Reemplazado por punto estático con pulse CSS */}
+      <div
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full animate-pulse"
+        style={{ backgroundColor: "var(--accent)" }}
+        aria-hidden="true"
       />
-    </motion.div>
+    </div>
   );
-}
-)
+});
 
 StatCard.displayName = "StatCard";
