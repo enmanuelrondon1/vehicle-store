@@ -7,6 +7,7 @@
 // 5. Alt descriptivo con año incluido
 // 6. Imports de framer-motion reducidos al mínimo
 // ✅ FIX v3: position relative en wrapper de Image fill → elimina warning de consola
+// ✅ FIX v4: eliminado framer-motion completamente, quality 80→65
 
 "use client";
 
@@ -16,7 +17,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import {
   Heart,
   Share2,
@@ -32,7 +32,6 @@ import {
 } from "lucide-react";
 import { Vehicle, VehicleCondition } from "@/types/types";
 import {
-  VEHICLE_CONDITIONS_LABELS,
   FUEL_TYPES_LABELS,
   TRANSMISSION_TYPES_LABELS,
 } from "@/types/shared";
@@ -63,14 +62,6 @@ const VehicleImage: React.FC<{
         )}
         aria-hidden="true"
       />
-
-      {/*
-        ✅ FIX: añadido "relative" a este div.
-        next/image con fill requiere que su padre INMEDIATO tenga
-        position: relative (o absolute/fixed/sticky).
-        Sin él Next.js lanza el warning en consola y la imagen
-        puede no posicionarse correctamente.
-      */}
       <div className="relative h-56 transition-transform duration-300 group-hover:scale-105">
         <Image
           src={imageError ? "/placeholder.svg?height=200&width=300" : src}
@@ -82,7 +73,7 @@ const VehicleImage: React.FC<{
             isLoaded ? "opacity-100" : "opacity-0"
           )}
           priority={priority}
-          quality={80}
+          quality={65}
           onError={() => setImageError(true)}
           onLoad={() => setIsLoaded(true)}
         />
@@ -348,17 +339,14 @@ const VehicleCard: React.FC<{
       )}
       aria-label={`Vehículo: ${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
     >
+      {/* ✅ FIX v4: motion.div → div con CSS animation */}
       {isSelected && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="absolute top-2 left-2 z-20"
-        >
+        <div className="absolute top-2 left-2 z-20 animate-in zoom-in duration-200">
           <div className="flex items-center gap-1 bg-accent text-accent-foreground px-2 py-1 rounded-full text-xs font-medium shadow-lg">
             <Check className="w-3 h-3" aria-hidden="true" />
             Seleccionado
           </div>
-        </motion.div>
+        </div>
       )}
 
       <div
