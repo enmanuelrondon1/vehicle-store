@@ -29,7 +29,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://1auto.market"
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://1auto.market",
   ),
   title: {
     default: "1Auto.market | Vende tu vehículo de forma rápida y segura",

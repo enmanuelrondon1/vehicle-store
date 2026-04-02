@@ -10,13 +10,27 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, PanInfo, useAnimation } from "framer-motion";
 import {
-  Car, ChevronLeft, ChevronRight, X, Maximize2, Download,
-  ZoomIn, ZoomOut, RotateCw, Info, Loader2, Play, Pause,
+  Car,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Maximize2,
+  Download,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  Info,
+  Loader2,
+  Play,
+  Pause,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -26,10 +40,15 @@ interface ImageGalleryProps {
   vehicleName: string;
 }
 
-export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName }) => {
+export const ImageGallery: React.FC<ImageGalleryProps> = ({
+  images,
+  vehicleName,
+}) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [imageErrors, setImageErrors] = useState<boolean[]>(new Array(images.length).fill(false));
+  const [imageErrors, setImageErrors] = useState<boolean[]>(
+    new Array(images.length).fill(false),
+  );
   const [zoomLevel, setZoomLevel] = useState(1);
   const [imageRotation, setImageRotation] = useState(0);
   const [showImageInfo, setShowImageInfo] = useState(false);
@@ -53,28 +72,43 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
   const nextImage = useCallback(() => {
     if (images.length <= 1) return;
     setImageLoaded(false);
-    controls.start({ opacity: 0, x: 100, transition: { duration: 0.3 } }).then(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
-      setZoomLevel(1);
-      setImageRotation(0);
-      controls.start({ opacity: 1, x: 0, transition: { duration: 0.3 } });
-    });
+    controls
+      .start({ opacity: 0, x: 100, transition: { duration: 0.3 } })
+      .then(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+        setZoomLevel(1);
+        setImageRotation(0);
+        controls.start({ opacity: 1, x: 0, transition: { duration: 0.3 } });
+      });
   }, [images.length, controls]);
 
   const prevImage = useCallback(() => {
     if (images.length <= 1) return;
     setImageLoaded(false);
-    controls.start({ opacity: 0, x: -100, transition: { duration: 0.3 } }).then(() => {
-      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-      setZoomLevel(1);
-      setImageRotation(0);
-      controls.start({ opacity: 1, x: 0, transition: { duration: 0.3 } });
-    });
+    controls
+      .start({ opacity: 0, x: -100, transition: { duration: 0.3 } })
+      .then(() => {
+        setCurrentImageIndex(
+          (prev) => (prev - 1 + images.length) % images.length,
+        );
+        setZoomLevel(1);
+        setImageRotation(0);
+        controls.start({ opacity: 1, x: 0, transition: { duration: 0.3 } });
+      });
   }, [images.length, controls]);
 
-  const handleZoomIn = useCallback(() => setZoomLevel((prev) => Math.min(prev + 0.25, 3)), []);
-  const handleZoomOut = useCallback(() => setZoomLevel((prev) => Math.max(prev - 0.25, 1)), []);
-  const handleRotate = useCallback(() => setImageRotation((prev) => (prev + 90) % 360), []);
+  const handleZoomIn = useCallback(
+    () => setZoomLevel((prev) => Math.min(prev + 0.25, 3)),
+    [],
+  );
+  const handleZoomOut = useCallback(
+    () => setZoomLevel((prev) => Math.max(prev - 0.25, 1)),
+    [],
+  );
+  const handleRotate = useCallback(
+    () => setImageRotation((prev) => (prev + 90) % 360),
+    [],
+  );
 
   const handleDownload = useCallback(async () => {
     if (isDownloading) return;
@@ -83,7 +117,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
     const imageName = `${vehicleName.replace(/\s+/g, "_")}_${currentImageIndex + 1}.jpg`;
     try {
       const response = await fetch(imageUrl);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       const blob = await response.blob();
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
@@ -92,7 +127,9 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
-      toast.success("Imagen descargada correctamente", { description: `Se ha descargado ${imageName}` });
+      toast.success("Imagen descargada correctamente", {
+        description: `Se ha descargado ${imageName}`,
+      });
     } catch (error) {
       console.error("Error downloading image:", error);
       toast.error("Error al descargar la imagen");
@@ -103,7 +140,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
 
   const toggleSlideshow = useCallback(() => {
     if (isPlaying) {
-      if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       setIsPlaying(false);
     } else {
       intervalRef.current = setInterval(nextImage, 3000);
@@ -122,21 +162,48 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isFullscreen) return;
       switch (e.key) {
-        case "ArrowLeft": prevImage(); break;
-        case "ArrowRight": nextImage(); break;
-        case "Escape": setIsFullscreen(false); break;
-        case "+": case "=": handleZoomIn(); break;
-        case "-": case "_": handleZoomOut(); break;
-        case "r": handleRotate(); break;
-        case " ": e.preventDefault(); toggleSlideshow(); break;
+        case "ArrowLeft":
+          prevImage();
+          break;
+        case "ArrowRight":
+          nextImage();
+          break;
+        case "Escape":
+          setIsFullscreen(false);
+          break;
+        case "+":
+        case "=":
+          handleZoomIn();
+          break;
+        case "-":
+        case "_":
+          handleZoomOut();
+          break;
+        case "r":
+          handleRotate();
+          break;
+        case " ":
+          e.preventDefault();
+          toggleSlideshow();
+          break;
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isFullscreen, nextImage, prevImage, handleZoomIn, handleZoomOut, handleRotate, toggleSlideshow]);
+  }, [
+    isFullscreen,
+    nextImage,
+    prevImage,
+    handleZoomIn,
+    handleZoomOut,
+    handleRotate,
+    toggleSlideshow,
+  ]);
 
   useEffect(() => {
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, []);
 
   const validImages = images.filter((_, index) => !imageErrors[index]);
@@ -153,8 +220,12 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
           <div className="w-20 h-20 mx-auto mb-4 bg-muted-foreground/10 rounded-full flex items-center justify-center">
             <Car className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h3 className="text-xl font-semibold mb-2 text-gradient-primary">Sin imágenes disponibles</h3>
-          <p className="text-muted-foreground max-w-md mx-auto">Este vehículo no tiene imágenes disponibles.</p>
+          <h3 className="text-xl font-semibold mb-2 text-gradient-primary">
+            Sin imágenes disponibles
+          </h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Este vehículo no tiene imágenes disponibles.
+          </p>
         </div>
       </motion.div>
     );
@@ -186,9 +257,16 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
               initial={{ opacity: 1, x: 0 }}
             >
               <Image
-                src={imageErrors[currentImageIndex] ? "/placeholder.svg?height=400&width=600" : images[currentImageIndex]}
+                src={
+                  imageErrors[currentImageIndex]
+                    ? "/placeholder.svg?height=400&width=600"
+                    : images[currentImageIndex]
+                }
                 alt={`${vehicleName} - Imagen ${currentImageIndex + 1}`}
-                className={cn("w-full h-full object-cover transition-transform duration-500", isDragging ? "cursor-grabbing" : "cursor-grab")}
+                className={cn(
+                  "w-full h-full object-cover transition-transform duration-500",
+                  isDragging ? "cursor-grabbing" : "cursor-grab",
+                )}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
                 onError={() => handleImageError(currentImageIndex)}
@@ -210,13 +288,17 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
                     ✅ AHORA: CSS hover:scale — mismo efecto, 0 JS listeners
                   */}
                   <Button
-                    variant="ghost" size="icon" onClick={prevImage}
+                    variant="ghost"
+                    size="icon"
+                    onClick={prevImage}
                     className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/70 hover:scale-110 active:scale-90 transition-all duration-200 backdrop-blur-sm card-glass"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </Button>
                   <Button
-                    variant="ghost" size="icon" onClick={nextImage}
+                    variant="ghost"
+                    size="icon"
+                    onClick={nextImage}
                     className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-black/70 hover:scale-110 active:scale-90 transition-all duration-200 backdrop-blur-sm card-glass"
                   >
                     <ChevronRight className="w-6 h-6" />
@@ -231,13 +313,21 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="ghost" size="icon" onClick={toggleSlideshow}
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleSlideshow}
                         className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70 hover:scale-110 active:scale-90 transition-all duration-200 backdrop-blur-sm card-glass"
                       >
-                        {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                        {isPlaying ? (
+                          <Pause className="w-5 h-5" />
+                        ) : (
+                          <Play className="w-5 h-5" />
+                        )}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>{isPlaying ? "Pausar" : "Reproducir"} presentación</p></TooltipContent>
+                    <TooltipContent>
+                      <p>{isPlaying ? "Pausar" : "Reproducir"} presentación</p>
+                    </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               )}
@@ -246,13 +336,17 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="ghost" size="icon" onClick={() => setShowImageInfo(!showImageInfo)}
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowImageInfo(!showImageInfo)}
                       className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70 hover:scale-110 active:scale-90 transition-all duration-200 backdrop-blur-sm card-glass"
                     >
                       <Info className="w-5 h-5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent><p>Información de la imagen</p></TooltipContent>
+                  <TooltipContent>
+                    <p>Información de la imagen</p>
+                  </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
 
@@ -260,13 +354,17 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="ghost" size="icon" onClick={() => setIsFullscreen(true)}
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsFullscreen(true)}
                       className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70 hover:scale-110 active:scale-90 transition-all duration-200 backdrop-blur-sm card-glass"
                     >
                       <Maximize2 className="w-5 h-5" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent><p>Pantalla completa</p></TooltipContent>
+                  <TooltipContent>
+                    <p>Pantalla completa</p>
+                  </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
@@ -279,7 +377,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <Badge variant="secondary" className="bg-black/60 text-white border-none backdrop-blur-sm px-3 py-1 text-sm card-glass">
+              <Badge
+                variant="secondary"
+                className="bg-black/60 text-white border-none backdrop-blur-sm px-3 py-1 text-sm card-glass"
+              >
                 {currentImageIndex + 1} / {images.length}
               </Badge>
             </motion.div>
@@ -295,8 +396,12 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
                 transition={{ duration: 0.3 }}
               >
                 <h4 className="font-semibold mb-1">{vehicleName}</h4>
-                <p className="text-sm opacity-90">Imagen {currentImageIndex + 1} de {images.length}</p>
-                <p className="text-xs opacity-75 mt-1">Usa las flechas del teclado para navegar</p>
+                <p className="text-sm opacity-90">
+                  Imagen {currentImageIndex + 1} de {images.length}
+                </p>
+                <p className="text-xs opacity-75 mt-1">
+                  Usa las flechas del teclado para navegar
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -318,11 +423,15 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
                   "relative w-24 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-105 active:scale-95",
                   currentImageIndex === index
                     ? "border-primary shadow-lg scale-105 ring-2 ring-primary/30"
-                    : "border-transparent hover:border-muted-foreground/30"
+                    : "border-transparent hover:border-muted-foreground/30",
                 )}
               >
                 <Image
-                  src={imageErrors[index] ? "/placeholder.svg?height=80&width=96" : image}
+                  src={
+                    imageErrors[index]
+                      ? "/placeholder.svg?height=80&width=96"
+                      : image
+                  }
                   alt={`Miniatura ${index + 1}`}
                   className="w-full h-full object-cover"
                   fill
@@ -361,7 +470,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
               transition={{ duration: 0.5, delay: 0.1 }}
             >
               <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="bg-black/50 text-white border-none">
+                <Badge
+                  variant="secondary"
+                  className="bg-black/50 text-white border-none"
+                >
                   {currentImageIndex + 1} / {images.length}
                 </Badge>
                 <h3 className="text-white font-medium">{vehicleName}</h3>
@@ -371,53 +483,86 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={handleZoomOut}
-                        className="text-white hover:bg-white/20 hover:scale-110 active:scale-90 transition-all duration-150">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleZoomOut}
+                        className="text-white hover:bg-white/20 hover:scale-110 active:scale-90 transition-all duration-150"
+                      >
                         <ZoomOut className="w-5 h-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>Reducir ({Math.round(zoomLevel * 100)}%)</p></TooltipContent>
+                    <TooltipContent>
+                      <p>Reducir ({Math.round(zoomLevel * 100)}%)</p>
+                    </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
 
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={handleZoomIn}
-                        className="text-white hover:bg-white/20 hover:scale-110 active:scale-90 transition-all duration-150">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleZoomIn}
+                        className="text-white hover:bg-white/20 hover:scale-110 active:scale-90 transition-all duration-150"
+                      >
                         <ZoomIn className="w-5 h-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>Ampliar ({Math.round(zoomLevel * 100)}%)</p></TooltipContent>
+                    <TooltipContent>
+                      <p>Ampliar ({Math.round(zoomLevel * 100)}%)</p>
+                    </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
 
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={handleRotate}
-                        className="text-white hover:bg-white/20 hover:scale-110 active:scale-90 transition-all duration-150">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleRotate}
+                        className="text-white hover:bg-white/20 hover:scale-110 active:scale-90 transition-all duration-150"
+                      >
                         <RotateCw className="w-5 h-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>Rotar ({imageRotation}°)</p></TooltipContent>
+                    <TooltipContent>
+                      <p>Rotar ({imageRotation}°)</p>
+                    </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
 
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={handleDownload} disabled={isDownloading}
-                        className="text-white hover:bg-white/20 hover:scale-110 active:scale-90 transition-all duration-150">
-                        {isDownloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleDownload}
+                        disabled={isDownloading}
+                        className="text-white hover:bg-white/20 hover:scale-110 active:scale-90 transition-all duration-150"
+                      >
+                        {isDownloading ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <Download className="w-5 h-5" />
+                        )}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>Descargar imagen</p></TooltipContent>
+                    <TooltipContent>
+                      <p>Descargar imagen</p>
+                    </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
 
-                <Button variant="ghost" size="icon" onClick={() => setIsFullscreen(false)}
-                  className="text-white hover:bg-white/20 hover:scale-110 active:scale-90 transition-all duration-150">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsFullscreen(false)}
+                  className="text-white hover:bg-white/20 hover:scale-110 active:scale-90 transition-all duration-150"
+                >
                   <X className="w-5 h-5" />
                 </Button>
               </div>
@@ -430,9 +575,19 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <div className="relative w-full h-full flex items-center justify-center">
-                <div className="relative w-full h-full" style={{ transform: `scale(${zoomLevel}) rotate(${imageRotation}deg)`, transition: "transform 0.3s ease" }}>
+                <div
+                  className="relative w-full h-full"
+                  style={{
+                    transform: `scale(${zoomLevel}) rotate(${imageRotation}deg)`,
+                    transition: "transform 0.3s ease",
+                  }}
+                >
                   <Image
-                    src={imageErrors[currentImageIndex] ? "/placeholder.svg?height=800&width=1200" : images[currentImageIndex]}
+                    src={
+                      imageErrors[currentImageIndex]
+                        ? "/placeholder.svg?height=800&width=1200"
+                        : images[currentImageIndex]
+                    }
                     alt={`${vehicleName} - Imagen ${currentImageIndex + 1}`}
                     className="object-contain"
                     fill
@@ -443,12 +598,20 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
 
                 {images.length > 1 && (
                   <>
-                    <Button variant="ghost" size="icon" onClick={prevImage}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-black/50 text-white hover:bg-black/70 hover:scale-110 active:scale-90 transition-all duration-200 backdrop-blur-sm card-glass">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={prevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-black/50 text-white hover:bg-black/70 hover:scale-110 active:scale-90 transition-all duration-200 backdrop-blur-sm card-glass"
+                    >
                       <ChevronLeft className="w-7 h-7" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={nextImage}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-black/50 text-white hover:bg-black/70 hover:scale-110 active:scale-90 transition-all duration-200 backdrop-blur-sm card-glass">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-black/50 text-white hover:bg-black/70 hover:scale-110 active:scale-90 transition-all duration-200 backdrop-blur-sm card-glass"
+                    >
                       <ChevronRight className="w-7 h-7" />
                     </Button>
                   </>
@@ -472,11 +635,15 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, vehicleName 
                         "relative w-20 h-16 flex-shrink-0 rounded overflow-hidden border-2 transition-all duration-300 hover:scale-105 active:scale-95",
                         currentImageIndex === index
                           ? "border-white scale-110 shadow-lg ring-2 ring-white/50"
-                          : "border-transparent hover:border-white/50"
+                          : "border-transparent hover:border-white/50",
                       )}
                     >
                       <Image
-                        src={imageErrors[index] ? "/placeholder.svg?height=64&width=80" : image}
+                        src={
+                          imageErrors[index]
+                            ? "/placeholder.svg?height=64&width=80"
+                            : image
+                        }
                         alt={`Miniatura ${index + 1}`}
                         className="w-full h-full object-cover"
                         fill

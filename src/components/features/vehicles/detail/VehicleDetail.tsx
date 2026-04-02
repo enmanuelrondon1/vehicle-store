@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 // ── CARGA INMEDIATA — visible en el fold ─────────────────────────────
 import { VehicleActions } from "./sections/VehicleActions";
 import { VehicleSummary } from "./sections/VehicleSummary";
+import { ImageGallery } from "./sections/ImageGallery";
 import { ContactInfo } from "./sections/ContactInfo";
 
 // ── CARGA LAZY — debajo del fold ─────────────────────────────────────
@@ -27,75 +28,41 @@ const SectionSkeleton = () => (
   <Skeleton className="h-48 w-full rounded-xl animate-pulse" />
 );
 
-// ✅ Agrégalo como lazy junto a los otros:
-const ImageGallery = dynamic(
-  () =>
-    import("./sections/ImageGallery").then((m) => ({
-      default: m.ImageGallery,
-    })),
-  { loading: () => <SectionSkeleton /> },
-);
 const TechnicalSpecifications = dynamic(
-  () =>
-    import("./sections/TechnicalSpecifications").then((m) => ({
-      default: m.TechnicalSpecifications,
-    })),
-  { loading: () => <SectionSkeleton /> },
+  () => import("./sections/TechnicalSpecifications").then(m => ({ default: m.TechnicalSpecifications })),
+  { loading: () => <SectionSkeleton /> }
 );
 const VehicleDocumentation = dynamic(
-  () =>
-    import("./sections/VehicleDocumentation").then((m) => ({
-      default: m.VehicleDocumentation,
-    })),
-  { loading: () => <SectionSkeleton /> },
+  () => import("./sections/VehicleDocumentation").then(m => ({ default: m.VehicleDocumentation })),
+  { loading: () => <SectionSkeleton /> }
 );
 const VehicleFeatures = dynamic(
-  () =>
-    import("./sections/VehicleFeatures").then((m) => ({
-      default: m.VehicleFeatures,
-    })),
-  { loading: () => <SectionSkeleton /> },
+  () => import("./sections/VehicleFeatures").then(m => ({ default: m.VehicleFeatures })),
+  { loading: () => <SectionSkeleton /> }
 );
 const VehicleDescription = dynamic(
-  () =>
-    import("./sections/VehicleDescription").then((m) => ({
-      default: m.VehicleDescription,
-    })),
-  { loading: () => <SectionSkeleton /> },
+  () => import("./sections/VehicleDescription").then(m => ({ default: m.VehicleDescription })),
+  { loading: () => <SectionSkeleton /> }
 );
 const FinancingModal = dynamic(
-  () =>
-    import("./sections/FinancingModal").then((m) => ({
-      default: m.FinancingModal,
-    })),
-  { loading: () => <SectionSkeleton /> },
+  () => import("./sections/FinancingModal").then(m => ({ default: m.FinancingModal })),
+  { loading: () => <SectionSkeleton /> }
 );
 const VehicleAdditionalInfo = dynamic(
-  () =>
-    import("./sections/VehicleAdditionalInfo").then((m) => ({
-      default: m.VehicleAdditionalInfo,
-    })),
-  { loading: () => <SectionSkeleton /> },
+  () => import("./sections/VehicleAdditionalInfo").then(m => ({ default: m.VehicleAdditionalInfo })),
+  { loading: () => <SectionSkeleton /> }
 );
 const VehicleWarranty = dynamic(
-  () =>
-    import("./sections/VehicleWarranty").then((m) => ({
-      default: m.VehicleWarranty,
-    })),
-  { loading: () => <SectionSkeleton /> },
+  () => import("./sections/VehicleWarranty").then(m => ({ default: m.VehicleWarranty })),
+  { loading: () => <SectionSkeleton /> }
 );
 const SimilarVehicles = dynamic(
-  () =>
-    import("./sections/SimilarVehicles").then((m) => ({
-      default: m.SimilarVehicles,
-    })),
-  { loading: () => <Skeleton className="h-64 w-full mt-8 rounded-xl" /> },
+  () => import("./sections/SimilarVehicles").then(m => ({ default: m.SimilarVehicles })),
+  { loading: () => <Skeleton className="h-64 w-full mt-8 rounded-xl" /> }
 );
 
 declare module "next-auth" {
-  interface Session {
-    accessToken?: string;
-  }
+  interface Session { accessToken?: string; }
 }
 
 const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
@@ -104,20 +71,10 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   const {
-    vehicle,
-    isLoading,
-    error,
-    isFavorited,
-    setIsFavorited,
-    similarVehicles,
-    isLoadingSimilar,
-    fetchVehicle,
-    handleShare,
-    translatedCondition,
-    translatedFuelType,
-    translatedTransmission,
-    translatedWarranty,
-    translatedStatus,
+    vehicle, isLoading, error, isFavorited, setIsFavorited,
+    similarVehicles, isLoadingSimilar, fetchVehicle, handleShare,
+    translatedCondition, translatedFuelType, translatedTransmission,
+    translatedWarranty, translatedStatus,
   } = useVehicleData(vehicleId);
 
   useMatchHeight("main-content-column", sidebarRef);
@@ -167,9 +124,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
           <div className="p-8 rounded-2xl backdrop-blur-sm bg-card/30 border border-border shadow-2xl">
             <div className="text-6xl mb-6">😔</div>
             <h2 className="text-3xl font-bold mb-4 text-foreground">
-              {error === "Vehículo no encontrado"
-                ? "Vehículo no encontrado"
-                : "Error al cargar"}
+              {error === "Vehículo no encontrado" ? "Vehículo no encontrado" : "Error al cargar"}
             </h2>
             <p className="mb-8 text-lg text-muted-foreground">
               {error || "No se pudo cargar la información del vehículo"}
@@ -192,6 +147,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
   return (
     <div className="min-h-screen py-8 px-4 bg-background">
       <div className="max-w-7xl mx-auto">
+
         {vehicle?._id && (
           <VehicleActions
             vehicleId={vehicle._id}
@@ -202,6 +158,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-start">
+
           {/* Columna principal */}
           <div id="main-content-column" className="lg:col-span-2 space-y-8">
             <VehicleSummary vehicle={vehicle} />
@@ -223,27 +180,21 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
 
             <TechnicalSpecifications
               specs={[
-                { label: "Marca", value: vehicle.brand },
-                { label: "Modelo", value: vehicle.model },
-                { label: "Año", value: vehicle.year },
-                {
-                  label: "Kilometraje",
-                  value: `${formatMileage(vehicle.mileage)} km`,
-                },
-                { label: "Condición", value: translatedCondition || "" },
-                { label: "Transmisión", value: translatedTransmission || "" },
-                { label: "Combustible", value: translatedFuelType || "" },
-                { label: "Motor", value: vehicle.engine || "N/A" },
-                { label: "Cilindraje", value: vehicle.displacement || "N/A" },
-                { label: "Color", value: vehicle.color },
-                { label: "Puertas", value: vehicle.doors || "N/A" },
-                { label: "Asientos", value: vehicle.seats || "N/A" },
-                {
-                  label: "Tracción",
-                  value: vehicle.driveType?.toUpperCase() || "N/A",
-                },
-                { label: "Garantía", value: translatedWarranty || "" },
-                { label: "VIN", value: vehicle.vin || "N/A" },
+                { label: "Marca",         value: vehicle.brand },
+                { label: "Modelo",        value: vehicle.model },
+                { label: "Año",           value: vehicle.year },
+                { label: "Kilometraje",   value: `${formatMileage(vehicle.mileage)} km` },
+                { label: "Condición",     value: translatedCondition || "" },
+                { label: "Transmisión",   value: translatedTransmission || "" },
+                { label: "Combustible",   value: translatedFuelType || "" },
+                { label: "Motor",         value: vehicle.engine || "N/A" },
+                { label: "Cilindraje",    value: vehicle.displacement || "N/A" },
+                { label: "Color",         value: vehicle.color },
+                { label: "Puertas",       value: vehicle.doors || "N/A" },
+                { label: "Asientos",      value: vehicle.seats || "N/A" },
+                { label: "Tracción",      value: vehicle.driveType?.toUpperCase() || "N/A" },
+                { label: "Garantía",      value: translatedWarranty || "" },
+                { label: "VIN",           value: vehicle.vin || "N/A" },
               ]}
             />
 
@@ -251,7 +202,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
               documentation={(vehicle.documentation || []).map((doc) =>
                 Object.values(Documentation).includes(doc as Documentation)
                   ? DOCUMENTATION_MAP[doc as Documentation]
-                  : doc,
+                  : doc
               )}
             />
 
@@ -260,10 +211,7 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
           </div>
 
           {/* Sidebar — solo desktop */}
-          <div
-            ref={sidebarRef}
-            className="hidden lg:block lg:col-span-1 space-y-6"
-          >
+          <div ref={sidebarRef} className="hidden lg:block lg:col-span-1 space-y-6">
             <ContactInfo
               sellerContact={vehicle.sellerContact}
               vehicleName={`${vehicle.brand} ${vehicle.model} ${vehicle.year}`}
@@ -280,17 +228,12 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
 
             <VehicleAdditionalInfo
               items={[
-                { label: "Categoría", value: vehicle.category },
-                { label: "Subcategoría", value: vehicle.subcategory },
-                { label: "Estado", value: translatedStatus || "" },
-                { label: "Publicado", value: formatDate(vehicle.createdAt) },
-                { label: "Visitas", value: vehicle.views },
-                {
-                  label: "Capacidad de carga",
-                  value: vehicle.loadCapacity
-                    ? `${vehicle.loadCapacity} kg`
-                    : undefined,
-                },
+                { label: "Categoría",         value: vehicle.category },
+                { label: "Subcategoría",       value: vehicle.subcategory },
+                { label: "Estado",             value: translatedStatus || "" },
+                { label: "Publicado",          value: formatDate(vehicle.createdAt) },
+                { label: "Visitas",            value: vehicle.views },
+                { label: "Capacidad de carga", value: vehicle.loadCapacity ? `${vehicle.loadCapacity} kg` : undefined },
               ]}
             />
 
@@ -301,14 +244,13 @@ const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
           </div>
         </div>
 
-        <Suspense
-          fallback={<Skeleton className="h-64 w-full mt-8 rounded-xl" />}
-        >
+        <Suspense fallback={<Skeleton className="h-64 w-full mt-8 rounded-xl" />}>
           <SimilarVehicles
             vehicles={similarVehicles}
             isLoading={isLoadingSimilar}
           />
         </Suspense>
+
       </div>
     </div>
   );
