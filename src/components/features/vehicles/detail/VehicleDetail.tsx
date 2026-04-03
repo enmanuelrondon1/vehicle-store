@@ -20,7 +20,6 @@ import { Button } from "@/components/ui/button";
 // ── CARGA INMEDIATA — visible en el fold ─────────────────────────────
 import { VehicleActions } from "./sections/VehicleActions";
 import { VehicleSummary } from "./sections/VehicleSummary";
-import { ImageGallery } from "./sections/ImageGallery";
 import { ContactInfo } from "./sections/ContactInfo";
 
 // ── CARGA LAZY — debajo del fold ─────────────────────────────────────
@@ -28,41 +27,75 @@ const SectionSkeleton = () => (
   <Skeleton className="h-48 w-full rounded-xl animate-pulse" />
 );
 
+// ✅ Agrégalo como lazy junto a los otros:
+const ImageGallery = dynamic(
+  () =>
+    import("./sections/ImageGallery").then((m) => ({
+      default: m.ImageGallery,
+    })),
+  { loading: () => <SectionSkeleton /> },
+);
 const TechnicalSpecifications = dynamic(
-  () => import("./sections/TechnicalSpecifications").then(m => ({ default: m.TechnicalSpecifications })),
-  { loading: () => <SectionSkeleton /> }
+  () =>
+    import("./sections/TechnicalSpecifications").then((m) => ({
+      default: m.TechnicalSpecifications,
+    })),
+  { loading: () => <SectionSkeleton /> },
 );
 const VehicleDocumentation = dynamic(
-  () => import("./sections/VehicleDocumentation").then(m => ({ default: m.VehicleDocumentation })),
-  { loading: () => <SectionSkeleton /> }
+  () =>
+    import("./sections/VehicleDocumentation").then((m) => ({
+      default: m.VehicleDocumentation,
+    })),
+  { loading: () => <SectionSkeleton /> },
 );
 const VehicleFeatures = dynamic(
-  () => import("./sections/VehicleFeatures").then(m => ({ default: m.VehicleFeatures })),
-  { loading: () => <SectionSkeleton /> }
+  () =>
+    import("./sections/VehicleFeatures").then((m) => ({
+      default: m.VehicleFeatures,
+    })),
+  { loading: () => <SectionSkeleton /> },
 );
 const VehicleDescription = dynamic(
-  () => import("./sections/VehicleDescription").then(m => ({ default: m.VehicleDescription })),
-  { loading: () => <SectionSkeleton /> }
+  () =>
+    import("./sections/VehicleDescription").then((m) => ({
+      default: m.VehicleDescription,
+    })),
+  { loading: () => <SectionSkeleton /> },
 );
 const FinancingModal = dynamic(
-  () => import("./sections/FinancingModal").then(m => ({ default: m.FinancingModal })),
-  { loading: () => <SectionSkeleton /> }
+  () =>
+    import("./sections/FinancingModal").then((m) => ({
+      default: m.FinancingModal,
+    })),
+  { loading: () => <SectionSkeleton /> },
 );
 const VehicleAdditionalInfo = dynamic(
-  () => import("./sections/VehicleAdditionalInfo").then(m => ({ default: m.VehicleAdditionalInfo })),
-  { loading: () => <SectionSkeleton /> }
+  () =>
+    import("./sections/VehicleAdditionalInfo").then((m) => ({
+      default: m.VehicleAdditionalInfo,
+    })),
+  { loading: () => <SectionSkeleton /> },
 );
 const VehicleWarranty = dynamic(
-  () => import("./sections/VehicleWarranty").then(m => ({ default: m.VehicleWarranty })),
-  { loading: () => <SectionSkeleton /> }
+  () =>
+    import("./sections/VehicleWarranty").then((m) => ({
+      default: m.VehicleWarranty,
+    })),
+  { loading: () => <SectionSkeleton /> },
 );
 const SimilarVehicles = dynamic(
-  () => import("./sections/SimilarVehicles").then(m => ({ default: m.SimilarVehicles })),
-  { loading: () => <Skeleton className="h-64 w-full mt-8 rounded-xl" /> }
+  () =>
+    import("./sections/SimilarVehicles").then((m) => ({
+      default: m.SimilarVehicles,
+    })),
+  { loading: () => <Skeleton className="h-64 w-full mt-8 rounded-xl" /> },
 );
 
 declare module "next-auth" {
-  interface Session { accessToken?: string; }
+  interface Session {
+    accessToken?: string;
+  }
 }
 
 const VehicleDetail: React.FC<{ vehicleId: string }> = ({ vehicleId }) => {
