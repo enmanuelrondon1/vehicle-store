@@ -1,5 +1,4 @@
 // src/components/features/vehicles/common/FavoritesList.tsx
-// ✅ OPTIMIZADO: framer-motion lazy, Promise.all en eliminación masiva, CSS animations
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -11,16 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Heart, SortAsc, Search, Download, Share2, Trash2, Car,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Heart, SortAsc, Search, Download, Share2, Trash2, Car, Loader } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 
-// ✅ LAZY: framer-motion solo para las animaciones del grid
-// En el primer render el grid aparece con CSS animation, framer-motion se activa después
+// ✅ framer-motion lazy — solo después del primer paint
 const MotionDiv = dynamic(
   () => import("framer-motion").then((m) => ({ default: m.motion.div })),
   { ssr: false, loading: () => <div className="contents" /> }
@@ -30,95 +25,92 @@ const AnimatePresence = dynamic(
   { ssr: false, loading: () => <></> }
 );
 
+const SORT_LABELS = {
+  price: "Precio",
+  year: "Año",
+  mileage: "Kilometraje",
+  rating: "Valoración",
+} as const;
+type SortKey = keyof typeof SORT_LABELS;
+
 interface FavoritesListProps {
   initialVehicles: Vehicle[];
 }
 
 export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+
   const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles);
-  const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>(initialVehicles);
   const [favoritedIds, setFavoritedIds] = useState<Set<string>>(
     new Set(initialVehicles.map((v) => v._id))
   );
+  const [isLoading, setIsLoading] = useState(initialVehicles.length === 0);
   const [compareList, setCompareList] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<"price" | "year" | "mileage" | "rating">("price");
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedVehicles, setSelectedVehicles] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<SortKey>("price");
+  const [searchTerm, setSearchTerm] = useState("");
   const [motionReady, setMotionReady] = useState(false);
 
-  // ✅ Activar framer-motion después del primer paint
+  // ✅ Activar framer-motion después del primer paint — evita hydration mismatch
   useEffect(() => {
     const id = requestAnimationFrame(() => setMotionReady(true));
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // Filtrar vehículos
+  // ✅ Carga favorites al montar Y al volver a la pestaña
+  // Sin fetch en servidor — mejor rendimiento y Lighthouse
   useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredVehicles(vehicles);
-      return;
-    }
-    const term = searchTerm.toLowerCase();
-    setFilteredVehicles(
-      vehicles.filter(
-        (v) =>
-          v.brand.toLowerCase().includes(term) ||
-          v.model.toLowerCase().includes(term) ||
-          v.year.toString().includes(term)
-      )
-    );
-  }, [searchTerm, vehicles]);
+    if (status !== "authenticated" || !session?.user?.id) return;
 
-  const handleFavoriteToggle = useCallback(async (vehicleId: string) => {
-    const isCurrentlyFavorited = favoritedIds.has(vehicleId);
+    const loadFavorites = async () => {
+      setIsLoading(true);
+      try {
+        const resFavs = await fetch("/api/user/favorites");
+        if (!resFavs.ok) return;
+        const { favorites: ids } = await resFavs.json();
 
-    // ✅ Optimistic update inmediato
+        if (!ids?.length) {
+          setVehicles([]);
+          setFavoritedIds(new Set());
+          return;
+        }
+
+        const resVehicles = await fetch("/api/vehicles/by-ids", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids }),
+        });
+        if (!resVehicles.ok) return;
+
+        const { vehicles: fresh } = await resVehicles.json();
+        setVehicles(fresh ?? []);
+        setFavoritedIds(new Set(fresh?.map((v: Vehicle) => v._id) ?? []));
+      } catch {
+        toast.error("Error al cargar favoritos");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Carga inicial + recarga al volver a la pestaña
+    loadFavorites();
+    window.addEventListener("focus", loadFavorites);
+    return () => window.removeEventListener("focus", loadFavorites);
+  }, [session?.user?.id, status]);
+
+  // ✅ FIX toggle doble: solo actualiza estado local
+  // VehicleCard ya hizo el fetch y el toast
+  const handleFavoriteToggle = useCallback((vehicleId: string, isNowFavorited: boolean) => {
     setFavoritedIds((prev) => {
       const next = new Set(prev);
-      isCurrentlyFavorited ? next.delete(vehicleId) : next.add(vehicleId);
+      isNowFavorited ? next.add(vehicleId) : next.delete(vehicleId);
       return next;
     });
-
-    // Si estaba en favoritos y lo quitamos, removerlo de la lista con delay
-    if (isCurrentlyFavorited) {
-      setTimeout(() => {
-        setVehicles((prev) => prev.filter((v) => v._id !== vehicleId));
-      }, 300);
+    if (!isNowFavorited) {
+      setTimeout(() => setVehicles((prev) => prev.filter((v) => v._id !== vehicleId)), 300);
     }
-
-    if (!session) return;
-
-    try {
-      const response = await fetch("/api/user/favorites", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vehicleId }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        toast.success(data.action === "added" ? "Añadido a favoritos" : "Eliminado de favoritos");
-      } else {
-        // Revert
-        setFavoritedIds((prev) => {
-          const next = new Set(prev);
-          isCurrentlyFavorited ? next.add(vehicleId) : next.delete(vehicleId);
-          return next;
-        });
-        toast.error("No se pudo actualizar favoritos.");
-      }
-    } catch {
-      // Revert
-      setFavoritedIds((prev) => {
-        const next = new Set(prev);
-        isCurrentlyFavorited ? next.add(vehicleId) : next.delete(vehicleId);
-        return next;
-      });
-      toast.error("Error al actualizar favoritos.");
-    }
-  }, [favoritedIds, session]);
+  }, []);
 
   const toggleCompare = useCallback((vehicleId: string) => {
     setCompareList((prev) =>
@@ -136,59 +128,42 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
 
   const selectAll = useCallback(() => {
     setSelectedVehicles((prev) =>
-      prev.size === filteredVehicles.length
-        ? new Set()
-        : new Set(filteredVehicles.map((v) => v._id))
+      prev.size === vehicles.length ? new Set() : new Set(vehicles.map((v) => v._id))
     );
-  }, [filteredVehicles]);
+  }, [vehicles]);
 
   const handleCompareNavigation = useCallback(() => {
-    if (compareList.length > 1) {
-      const params = new URLSearchParams();
-      compareList.forEach((id) => params.append("vehicles", id));
-      router.push(`${siteConfig.paths.compare}?${params.toString()}`);
-    }
+    if (compareList.length < 2) return;
+    const params = new URLSearchParams();
+    compareList.forEach((id) => params.append("vehicles", id));
+    router.push(`${siteConfig.paths.compare}?${params.toString()}`);
   }, [compareList, router]);
 
-  const sortVehicles = useCallback((list: Vehicle[]) => {
-    const sorted = [...list];
-    switch (sortBy) {
-      case "price":   return sorted.sort((a, b) => a.price - b.price);
-      case "year":    return sorted.sort((a, b) => b.year - a.year);
-      case "mileage": return sorted.sort((a, b) => a.mileage - b.mileage);
-      case "rating":  return sorted.sort((a, b) => ((b as any).averageRating || 0) - ((a as any).averageRating || 0));
-      default:        return sorted;
-    }
-  }, [sortBy]);
-
   const handleShareFavorites = useCallback(() => {
-    const shareUrl = `${window.location.origin}/my-favorites`;
+    const url = `${window.location.origin}/my-favorites`;
     if (navigator.share) {
-      navigator.share({ title: "Mis vehículos favoritos", url: shareUrl });
+      navigator.share({ title: "Mis vehículos favoritos", url });
     } else {
-      navigator.clipboard.writeText(shareUrl);
+      navigator.clipboard.writeText(url);
       toast.success("Enlace copiado al portapapeles");
     }
   }, []);
 
-  // ✅ OPTIMIZADO: Promise.all en vez de forEach async sin await
+  // ✅ Eliminación masiva en paralelo con Promise.all
   const handleDeleteSelected = useCallback(async () => {
-    if (selectedVehicles.size === 0) return;
+    if (!selectedVehicles.size) return;
+    const ids = Array.from(selectedVehicles);
 
-    const idsToDelete = Array.from(selectedVehicles);
-
-    // Optimistic: remover de la UI inmediatamente
     setVehicles((prev) => prev.filter((v) => !selectedVehicles.has(v._id)));
     setFavoritedIds((prev) => {
       const next = new Set(prev);
-      idsToDelete.forEach((id) => next.delete(id));
+      ids.forEach((id) => next.delete(id));
       return next;
     });
     setSelectedVehicles(new Set());
 
-    // ✅ Todos los fetches en paralelo
     await Promise.all(
-      idsToDelete.map((vehicleId) =>
+      ids.map((vehicleId) =>
         fetch("/api/user/favorites", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -197,33 +172,44 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
       )
     );
 
-    toast.success(`${idsToDelete.length} vehículo${idsToDelete.length !== 1 ? "s" : ""} eliminado${idsToDelete.length !== 1 ? "s" : ""} de favoritos`);
+    toast.success(
+      `${ids.length} vehículo${ids.length !== 1 ? "s" : ""} eliminado${ids.length !== 1 ? "s" : ""} de favoritos`
+    );
   }, [selectedVehicles]);
 
-  const sortedVehicles = sortVehicles(filteredVehicles);
+  // ─── Filtrado y ordenamiento ───────────────────────────────────────────────
+  const filtered = searchTerm.trim()
+    ? vehicles.filter((v) => {
+        const t = searchTerm.toLowerCase();
+        return (
+          v.brand.toLowerCase().includes(t) ||
+          v.model.toLowerCase().includes(t) ||
+          v.year.toString().includes(t)
+        );
+      })
+    : vehicles;
 
-  if (vehicles.length === 0) {
+  const sorted = [...filtered].sort((a, b) => {
+    switch (sortBy) {
+      case "price":   return a.price - b.price;
+      case "year":    return b.year - a.year;
+      case "mileage": return a.mileage - b.mileage;
+      case "rating":  return ((b as any).averageRating || 0) - ((a as any).averageRating || 0);
+      default:        return 0;
+    }
+  });
+
+  // ─── Loading ───────────────────────────────────────────────────────────────
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pt-8 pb-16 px-4 mt-16 md:mt-16">
+      <div className="min-h-screen bg-background pt-8 pb-16 px-4 mt-16">
         <div className="max-w-4xl mx-auto">
           <Card className="overflow-hidden shadow-lg card-glass">
             <div className="h-2 bg-gradient-to-r from-primary via-accent to-primary" />
-            <CardContent className="p-12">
-              <div className="flex flex-col items-center justify-center text-center">
-                <div className="inline-flex items-center justify-center rounded-full bg-primary/10 p-6 mb-6 shimmer-effect">
-                  <Heart className="w-16 h-16 text-primary" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2 font-heading text-gradient-primary">
-                  Tu lista de favoritos está vacía
-                </h3>
-                <p className="text-muted-foreground mb-8 max-w-md">
-                  Aún no has añadido vehículos. Explora nuestro catálogo y guarda los que te interesen.
-                </p>
-                <Button className="btn-primary" onClick={() => router.push("/vehicleList")}>
-                  <Car className="mr-2 h-4 w-4" />
-                  Explorar vehículos
-                </Button>
-              </div>
+            <CardContent className="p-12 flex flex-col items-center text-center">
+              <Loader className="w-12 h-12 animate-spin text-primary mb-6" />
+              <h3 className="text-xl font-semibold font-heading mb-2">Cargando favoritos</h3>
+              <p className="text-sm text-muted-foreground">Esto solo tomará un momento...</p>
             </CardContent>
           </Card>
         </div>
@@ -231,8 +217,37 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
     );
   }
 
+  // ─── Estado vacío ──────────────────────────────────────────────────────────
+  if (!vehicles.length) {
+    return (
+      <div className="min-h-screen bg-background pt-8 pb-16 px-4 mt-16">
+        <div className="max-w-4xl mx-auto">
+          <Card className="overflow-hidden shadow-lg card-glass">
+            <div className="h-2 bg-gradient-to-r from-primary via-accent to-primary" />
+            <CardContent className="p-12 flex flex-col items-center text-center">
+              <div className="inline-flex items-center justify-center rounded-full bg-primary/10 p-6 mb-6">
+                <Heart className="w-16 h-16 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2 font-heading text-gradient-primary">
+                Tu lista de favoritos está vacía
+              </h3>
+              <p className="text-muted-foreground mb-8 max-w-md">
+                Aún no has añadido vehículos. Explora nuestro catálogo y guarda los que te interesen.
+              </p>
+              <Button className="btn-primary" onClick={() => router.push("/vehicleList")}>
+                <Car className="mr-2 h-4 w-4" />
+                Explorar vehículos
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Render principal ──────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-background pt-4 pb-8 px-4 mt-16 md:mt-16">
+    <div className="min-h-screen bg-background pt-4 pb-8 px-4 mt-16">
       <div className="max-w-7xl mx-auto space-y-6">
 
         {/* Header */}
@@ -241,7 +256,7 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
           <CardHeader className="pb-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="inline-flex items-center justify-center rounded-full bg-primary/10 p-3 shimmer-effect">
+                <div className="inline-flex items-center justify-center rounded-full bg-primary/10 p-3">
                   <Heart className="h-6 w-6 text-primary" />
                 </div>
                 <div>
@@ -254,7 +269,7 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2 items-center">
+              <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleShareFavorites}>
                   <Share2 className="mr-2 h-4 w-4" />Compartir
                 </Button>
@@ -266,9 +281,9 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
           </CardHeader>
         </Card>
 
-        {/* Búsqueda y filtros */}
+        {/* Búsqueda, orden y acciones */}
         <Card className="shadow-sm border-0">
-          <CardContent className="p-4">
+          <CardContent className="p-4 space-y-4">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -285,26 +300,24 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
               </Button>
             </div>
 
-            {/* Ordenamiento */}
-            <div className="flex flex-wrap gap-2 mt-4">
-              {(["price", "year", "mileage", "rating"] as const).map((key) => (
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
                 <Button
                   key={key}
                   variant={sortBy === key ? "default" : "outline"}
                   size="sm"
                   onClick={() => setSortBy(key)}
                 >
-                  {{ price: "Precio", year: "Año", mileage: "Kilometraje", rating: "Valoración" }[key]}
+                  {SORT_LABELS[key]}
                 </Button>
               ))}
             </div>
 
-            {/* Acciones en lote */}
-            {filteredVehicles.length > 0 && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            {filtered.length > 0 && (
+              <div className="flex items-center justify-between pt-4 border-t">
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={selectAll}>
-                    {selectedVehicles.size === filteredVehicles.length ? "Deseleccionar todo" : "Seleccionar todo"}
+                    {selectedVehicles.size === filtered.length ? "Deseleccionar todo" : "Seleccionar todo"}
                   </Button>
                   {selectedVehicles.size > 0 && (
                     <>
@@ -317,19 +330,18 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
                     </>
                   )}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {filteredVehicles.length} de {vehicles.length} vehículos
-                </div>
+                <span className="text-sm text-muted-foreground">
+                  {filtered.length} de {vehicles.length} vehículos
+                </span>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Grid de vehículos */}
-        {/* ✅ Primer render: CSS animation sin framer-motion */}
-        {!motionReady && (
+        {/* Grid — CSS antes del paint, framer-motion después */}
+        {!motionReady ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in duration-300">
-            {sortedVehicles.map((vehicle) => (
+            {sorted.map((vehicle) => (
               <VehicleCard
                 key={vehicle._id}
                 vehicle={vehicle}
@@ -342,13 +354,10 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
               />
             ))}
           </div>
-        )}
-
-        {/* ✅ Después del paint: framer-motion activo para animaciones de entrada/salida */}
-        {motionReady && (
+        ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <AnimatePresence>
-              {sortedVehicles.map((vehicle) => (
+              {sorted.map((vehicle) => (
                 <MotionDiv
                   key={vehicle._id}
                   layout
@@ -372,11 +381,11 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
           </div>
         )}
 
-        {/* Barra de comparación flotante */}
+        {/* Barra comparación flotante */}
         {compareList.length > 0 && (
           <Card className="fixed bottom-4 right-4 z-50 w-auto shadow-lg card-glass">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">
                     {compareList.length} vehículo{compareList.length !== 1 ? "s" : ""}
@@ -385,7 +394,11 @@ export default function FavoritesList({ initialVehicles }: FavoritesListProps) {
                     {compareList.length < 2 ? "Selecciona otro para comparar" : "Listo para comparar"}
                   </p>
                 </div>
-                <Button onClick={handleCompareNavigation} disabled={compareList.length < 2} className="btn-primary">
+                <Button
+                  onClick={handleCompareNavigation}
+                  disabled={compareList.length < 2}
+                  className="btn-primary"
+                >
                   Comparar vehículos
                 </Button>
               </div>

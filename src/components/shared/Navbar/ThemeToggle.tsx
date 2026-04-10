@@ -1,17 +1,31 @@
 // src/components/shared/Navbar/ThemeToggle.tsx
 "use client";
+
+import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === "dark";
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // ✅ Solo renderizar en el cliente — evita hydration mismatch
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    // Placeholder con las mismas dimensiones para evitar layout shift
+    return (
+      <div className="relative p-2.5 rounded-full card-glass w-10 h-10" aria-hidden="true" />
+    );
+  }
+
+  const isDark = resolvedTheme === "dark";
 
   return (
     <button
       className="relative p-2.5 rounded-full card-glass glow-effect hover:scale-110 hover:rotate-12 active:scale-90 transition-all duration-200"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label="Cambiar tema"
+      aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
     >
       {/* Sol */}
       <div
