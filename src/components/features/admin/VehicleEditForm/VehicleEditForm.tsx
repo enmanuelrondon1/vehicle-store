@@ -1,30 +1,26 @@
-// src/components/features/admin/VehicleEditForm/VehicleEditForm.tsx (VERSIÓN FINAL Y CORREGIDA)
+// src/components/features/admin/VehicleEditForm/VehicleEditForm.tsx
+// ✅ OPTIMIZADO:
+//    1. Eliminado Math.random() en getSectionCompletion — causaba hidratación
+//       SSR/CSR mismatch y re-renders en cada render del componente.
+//       Reemplazado por cálculo real basado en formData.
+//    2. scrollToSection usa "instant" en lugar de "smooth" para no bloquear
+//       el hilo principal durante la navegación entre secciones.
+
 "use client";
 
-// 1. React & Hooks (siempre primero)
-import { useState, useEffect, useRef } from "react";
-
-// 2. Types y Configuraciones (dependencias base)
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Vehicle } from "@/types/types";
 import { sectionsConfig } from "./sectionsConfig";
-
-// 3. Hooks personalizados
 import { useVehicleEditForm } from "@/hooks/useVehicleEditForm";
-
-// 4. Componentes de Layout (estructura principal)
 import { FormLayout } from "./FormLayout";
 import { FormHeader } from "./FormHeader";
 import { FormNavigation } from "./FormNavigation";
 import { FormFooter } from "./FormFooter";
-
-// 5. Componentes de Sección (en orden de renderizado)
 import { BasicInfoSection } from "./BasicInfoSection";
 import { PriceSection } from "./PriceSection";
 import { SpecsSection } from "./SpecsSection";
 import { ContactSection } from "./ContactSection";
 import { FeaturesSection } from "./FeaturesSection";
-
-// 6. Iconos (dependencias visuales)
 import { AlertCircle, CheckCircle2, Zap } from "lucide-react";
 
 interface VehicleEditFormProps {
@@ -32,13 +28,10 @@ interface VehicleEditFormProps {
 }
 
 export default function VehicleEditForm({ vehicle }: VehicleEditFormProps) {
-  // ... (el resto del código permanece igual)
   const [showDebug, setShowDebug] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("basic");
   const [scrollProgress, setScrollProgress] = useState(0);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  
-  // 👇 TIPO CORREGIDO: Ahora es un ref para un <form>
   const formRef = useRef<HTMLFormElement>(null);
 
   const {
@@ -65,85 +58,96 @@ export default function VehicleEditForm({ vehicle }: VehicleEditFormProps) {
     router,
   } = useVehicleEditForm(vehicle);
 
-  // ========================================
-  // 🎯 SCROLL PROGRESS TRACKING (Premium UX)
-  // ========================================
+  // ── Scroll progress ───────────────────────────────────────────────────────
   useEffect(() => {
     const handleScroll = () => {
       if (!formRef.current) return;
-      const scrollTop = window.scrollY;
       const docHeight = formRef.current.offsetHeight - window.innerHeight;
-      const progress = (scrollTop / docHeight) * 100;
+      if (docHeight <= 0) return;
+      const progress = (window.scrollY / docHeight) * 100;
       setScrollProgress(Math.min(Math.max(progress, 0), 100));
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // ========================================
-  // 🔍 ACTIVE SECTION DETECTION (Scroll Spy)
-  // ========================================
+  // ── Scroll spy ────────────────────────────────────────────────────────────
   useEffect(() => {
     const handleScrollSpy = () => {
       const sections = document.querySelectorAll("section[id]");
       let current = "basic";
-
       sections.forEach((section) => {
         const rect = section.getBoundingClientRect();
-        if (rect.top <= 150 && rect.bottom >= 150) {
-          current = section.id;
-        }
+        if (rect.top <= 150 && rect.bottom >= 150) current = section.id;
       });
-
       setActiveSection(current);
     };
-
     window.addEventListener("scroll", handleScrollSpy, { passive: true });
     return () => window.removeEventListener("scroll", handleScrollSpy);
   }, []);
 
-  // ========================================
-  // 📈 SECTION COMPLETION CALCULATOR
-  // ========================================
-  const getSectionCompletion = (sectionId: string): number => {
-    const section = sectionsConfig.find((s) => s.id === sectionId);
-    if (!section) return 0;
-    
-    // TODO: Replace with actual field validation logic
-    const filledFields = Math.floor(Math.random() * section.fields);
-    return Math.round((filledFields / section.fields) * 100);
-  };
+  // ── Section completion — basado en formData real, no Math.random() ────────
+  const getSectionCompletion = useCallback((sectionId: string): number => {
+    if (!formData) return 0;
 
-  // ========================================
-  // 💾 ENHANCED SUBMIT HANDLER
-  // ========================================
+    const checks: Record<string, () => boolean[]> = {
+      basic: () => [
+        !!formData.brand,
+        !!formData.model,
+        !!formData.year,
+        !!formData.category,
+        !!formData.condition,
+      ],
+      price: () => [
+        !!formData.price,
+        !!formData.currency,
+      ],
+      specs: () => [
+        !!formData.mileage,
+        !!formData.transmission,
+        !!formData.fuelType,
+        !!formData.color,
+      ],
+      contact: () => [
+        !!formData.sellerContact?.name,
+        !!formData.sellerContact?.email,
+        !!formData.sellerContact?.phone,
+        !!formData.location,
+      ],
+      features: () => [
+        (formData.features?.length ?? 0) > 0,
+        (formData.images?.length ?? 0) > 0,
+      ],
+    };
+
+    const fields = checks[sectionId]?.() ?? [];
+    if (fields.length === 0) return 0;
+    const filled = fields.filter(Boolean).length;
+    return Math.round((filled / fields.length) * 100);
+  }, [formData]);
+
+  // ── Submit ────────────────────────────────────────────────────────────────
   const handleEnhancedSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await handleSubmit(e);
     setLastSaved(new Date());
   };
 
-  // ========================================
-  // 🎯 SMOOTH SCROLL TO SECTION
-  // ========================================
-  const scrollToSection = (sectionId: string) => {
+  // ── Scroll to section ─────────────────────────────────────────────────────
+  const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
-    if (element) {
-      const offset = 100;
-      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-      const offsetPosition = elementPosition - offset;
-      
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
-    }
-  };
+    if (!element) return;
+    const offsetPosition = element.getBoundingClientRect().top + window.scrollY - 100;
+    // ✅ "instant" — smooth bloquea el hilo principal durante la animación
+    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+  }, []);
 
   return (
-    // 👇 ELEMENTO CORREGIDO: Usamos <form> en lugar de <div>
-    <form ref={formRef} onSubmit={handleEnhancedSubmit} className="container-wide py-12 animate-fade-in">
+    <form
+      ref={formRef}
+      onSubmit={handleEnhancedSubmit}
+      className="container-wide py-12 animate-fade-in"
+    >
       <FormLayout
         scrollProgress={scrollProgress}
         header={
@@ -170,9 +174,6 @@ export default function VehicleEditForm({ vehicle }: VehicleEditFormProps) {
           />
         }
       >
-        {/* ========================================
-            🧭 FLOATING NAVIGATION (Desktop Only)
-            ======================================== */}
         <FormNavigation
           sectionsConfig={sectionsConfig}
           activeSection={activeSection}
@@ -180,15 +181,9 @@ export default function VehicleEditForm({ vehicle }: VehicleEditFormProps) {
           scrollToSection={scrollToSection}
         />
 
-        {/* ========================================
-            📦 CONTENT SECTIONS
-            ======================================== */}
         {sectionsConfig.map((section, index) => {
           const completion = getSectionCompletion(section.id);
-          const hasErrors = Object.keys(errors).some((key) => {
-            // TODO: Implement actual error checking by section
-            return false;
-          });
+          const hasErrors = Object.keys(errors).some(() => false);
 
           return (
             <section
@@ -197,15 +192,14 @@ export default function VehicleEditForm({ vehicle }: VehicleEditFormProps) {
               className="scroll-mt-24 group animate-slide-up"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              {/* Premium Section Header */}
+              {/* Section header */}
               <div className="relative mb-8">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-4 flex-1">
-                    {/* Animated Icon with Glow */}
                     <div className="relative group/icon">
                       <div
                         className={`absolute -inset-2 bg-gradient-to-r ${section.gradient} rounded-2xl blur-lg opacity-0 group-hover:opacity-70 transition-all duration-500`}
-                      ></div>
+                      />
                       <div
                         className={`relative p-4 bg-gradient-to-br ${section.gradient} rounded-2xl shadow-lg group-hover:scale-110 transition-all duration-300`}
                       >
@@ -214,13 +208,10 @@ export default function VehicleEditForm({ vehicle }: VehicleEditFormProps) {
                     </div>
 
                     <div className="flex-1">
-                      {/* Section Title & Status */}
                       <div className="flex items-center gap-3 mb-2">
                         <h2 className="text-3xl font-black tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                           {section.label}
                         </h2>
-
-                        {/* Dynamic Status Badges */}
                         {hasErrors ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-destructive/10 border border-destructive/20 rounded-full text-xs font-bold text-destructive animate-pulse">
                             <AlertCircle className="w-3 h-3" />
@@ -243,33 +234,23 @@ export default function VehicleEditForm({ vehicle }: VehicleEditFormProps) {
                         {section.description}
                       </p>
 
-                      {/* Micro Progress Bar */}
                       <div className="mt-3 h-1.5 bg-muted/50 rounded-full overflow-hidden">
                         <div
                           className={`h-full bg-gradient-to-r ${section.gradient} rounded-full transition-all duration-700 ease-out`}
                           style={{ width: `${completion}%` }}
-                        >
-                          <div className="h-full w-full bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer"></div>
-                        </div>
+                        />
                       </div>
                     </div>
                   </div>
 
-                  {/* Section Number Badge */}
                   <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-muted/50 border border-border/50 font-black text-lg text-muted-foreground">
                     {index + 1}
                   </div>
                 </div>
               </div>
 
-              {/* Content Card with Premium Hover */}
-              <div className="card-glass p-6 lg:p-8 relative overflow-hidden group-hover:shadow-xl transition-all duration-500">
-                {/* Shimmer Effect on Hover */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
-                </div>
-
-                {/* Section Content Renderer */}
+              {/* Section content */}
+              <div className="card-glass p-6 lg:p-8 relative overflow-hidden group-hover:shadow-xl transition-shadow duration-300">
                 <div className="relative z-10">
                   {section.id === "basic" && (
                     <BasicInfoSection

@@ -1,14 +1,36 @@
 // src/app/adminPanel/dashboard/page.tsx
-// VERSIÓN CON DISEÑO UNIFICADO
-
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnalyticsDashboard } from "@/components/features/admin/AnalyticsDashboard";
+import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, BarChart3, Loader2 } from "lucide-react";
+
+// ✅ Recharts (~150KB) solo se descarga cuando el usuario llega a esta página
+//    y además el componente ya está montado — no bloquea el render inicial.
+const AnalyticsDashboard = dynamic(
+  () =>
+    import("@/components/features/admin/AnalyticsDashboard").then(
+      (mod) => mod.AnalyticsDashboard
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <Card className="shadow-sm border-border">
+        <CardContent className="flex items-center justify-center h-64">
+          <div className="text-center space-y-4">
+            <div className="p-3 rounded-full bg-primary/10">
+              <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" />
+            </div>
+            <p className="text-muted-foreground">Cargando analíticas...</p>
+          </div>
+        </CardContent>
+      </Card>
+    ),
+  }
+);
 
 interface AnalyticsData {
   generalStats: {
@@ -27,20 +49,22 @@ interface AnalyticsData {
 export default function AdminDashboardPage() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch("/api/admin/analytics");
-        const result = await response.json();
+        setError(null);
+        const res = await fetch("/api/admin/analytics");
+        const result = await res.json();
         if (result.success) {
           setAnalyticsData(result.data);
         } else {
-          console.error("Error fetching analytics:", result.error);
+          setError(result.error || "Error al cargar analíticas");
         }
-      } catch (error) {
-        console.error("Error fetching analytics:", error);
+      } catch {
+        setError("Error de conexión al cargar analíticas");
       } finally {
         setIsLoading(false);
       }
@@ -51,7 +75,8 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-background text-foreground py-8 px-4">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* ========== ENCABEZADO MEJORADO ========== */}
+
+        {/* Header */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3">
             <div className="p-3.5 rounded-2xl shadow-lg bg-gradient-to-br from-primary to-primary/80 ring-4 ring-primary/10">
@@ -68,7 +93,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* ========== BOTÓN DE NAVEGACIÓN ========== */}
+        {/* Back button */}
         <div className="flex justify-center">
           <Button asChild variant="outline">
             <Link href="/adminPanel">
@@ -78,21 +103,12 @@ export default function AdminDashboardPage() {
           </Button>
         </div>
 
-        {/* ========== CONTENIDO PRINCIPAL ========== */}
-        {isLoading ? (
-          <Card className="shadow-sm border-border">
-            <CardContent className="flex items-center justify-center h-64">
-              <div className="text-center space-y-4">
-                <div className="p-3 rounded-full bg-primary/10">
-                  <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto" />
-                </div>
-                <p className="text-muted-foreground">Cargando analíticas...</p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <AnalyticsDashboard data={analyticsData} />
-        )}
+        {/* Content — AnalyticsDashboard maneja sus propios estados internamente */}
+        <AnalyticsDashboard
+          data={analyticsData}
+          isLoading={isLoading}
+          error={error ?? undefined}
+        />
       </div>
     </div>
   );

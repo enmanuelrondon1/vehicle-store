@@ -1,23 +1,22 @@
 // src/components/features/admin/VehicleDetailsDialog.tsx
-// VERSIÓN CON DISEÑO UNIFICADO Y SCROLL OPTIMIZADO
+// ✅ OPTIMIZADO:
+//    1. PdfViewer cargado con dynamic() — mismo fix que VehicleListView.
+//    2. Imágenes de galería con loading="lazy" y sizes correctos.
+//    3. Imagen principal con sizes para evitar descarga oversized.
 
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import {
   FileText,
   Car,
   Settings,
-  Palette,
   DollarSign,
-  Gauge,
-  MapPin,
-  Calendar,
   Users,
   Shield,
   CreditCard,
@@ -25,7 +24,17 @@ import {
   CheckCircle,
 } from "lucide-react";
 import type { VehicleDataFrontend } from "@/types/types";
-import { PdfViewer } from "../payment/pdf-viewer";
+
+// ✅ PdfViewer lazy — solo se descarga si el vehículo tiene comprobante
+const PdfViewer = dynamic(
+  () => import("../payment/pdf-viewer").then((m) => m.PdfViewer),
+  {
+    ssr: false,
+    loading: () => (
+      <p className="text-xs text-muted-foreground animate-pulse">Cargando PDF...</p>
+    ),
+  }
+);
 
 interface VehicleDetailsDialogProps {
   vehicle: VehicleDataFrontend | null;
@@ -33,26 +42,33 @@ interface VehicleDetailsDialogProps {
   onOpenChange: (isOpen: boolean) => void;
 }
 
-export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange }: VehicleDetailsDialogProps) => {
+export const VehicleDetailsDialog = ({
+  vehicle,
+  isOpen,
+  onOpenChange,
+}: VehicleDetailsDialogProps) => {
   if (!vehicle) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col overflow-hidden">
-        {/* Header con imagen principal */}
+
+        {/* ── Imagen principal ── */}
         <div className="relative h-64 md:h-80 bg-muted shrink-0">
           <Image
             src={vehicle.images[0] || "/placeholder.svg?height=400&width=800"}
             alt={`${vehicle.brand} ${vehicle.model}`}
             fill
             className="object-cover"
+            sizes="(max-width: 768px) 100vw, 896px"
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
             <DialogTitle className="text-2xl font-heading text-white">
               {vehicle.brand} {vehicle.model} ({vehicle.year})
             </DialogTitle>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
               <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
                 {vehicle.category}
               </Badge>
@@ -71,10 +87,11 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange }: VehicleD
           </div>
         </div>
 
-        {/* Contenido con scroll */}
+        {/* ── Contenido scrolleable ── */}
         <ScrollArea className="flex-1 overflow-auto">
           <div className="p-6 space-y-6 pb-8">
-            {/* Galería de imágenes */}
+
+            {/* Galería */}
             {vehicle.images.length > 1 && (
               <Card className="shadow-sm border-border">
                 <CardHeader>
@@ -92,6 +109,9 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange }: VehicleD
                           alt={`${vehicle.brand} ${vehicle.model} - ${index + 2}`}
                           fill
                           className="object-cover rounded-lg"
+                          // ✅ lazy en galería — no bloquean el render inicial del dialog
+                          loading="lazy"
+                          sizes="(max-width: 768px) 50vw, 200px"
                         />
                       </div>
                     ))}
@@ -109,24 +129,19 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange }: VehicleD
                     Especificaciones Principales
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Año</p>
-                      <p className="font-medium">{vehicle.year}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Kilometraje</p>
-                      <p className="font-medium">{vehicle.mileage.toLocaleString()} km</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Color</p>
-                      <p className="font-medium">{vehicle.color}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Transmisión</p>
-                      <p className="font-medium">{vehicle.transmission}</p>
-                    </div>
+                    {[
+                      { label: "Año",          value: vehicle.year },
+                      { label: "Kilometraje",  value: `${vehicle.mileage.toLocaleString()} km` },
+                      { label: "Color",        value: vehicle.color },
+                      { label: "Transmisión",  value: vehicle.transmission },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="space-y-1">
+                        <p className="text-xs text-muted-foreground">{label}</p>
+                        <p className="font-medium">{value}</p>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -138,47 +153,42 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange }: VehicleD
                     Detalles Técnicos
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Motor</p>
-                      <p className="font-medium">{vehicle.engine || "N/A"}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Cilindraje</p>
-                      <p className="font-medium">{vehicle.displacement || "N/A"}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Tracción</p>
-                      <p className="font-medium">{vehicle.driveType || "N/A"}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">Combustible</p>
-                      <p className="font-medium">{vehicle.fuelType}</p>
-                    </div>
+                    {[
+                      { label: "Motor",       value: vehicle.engine      || "N/A" },
+                      { label: "Cilindraje",  value: vehicle.displacement || "N/A" },
+                      { label: "Tracción",    value: vehicle.driveType   || "N/A" },
+                      { label: "Combustible", value: vehicle.fuelType },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="space-y-1">
+                        <p className="text-xs text-muted-foreground">{label}</p>
+                        <p className="font-medium">{value}</p>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Características */}
-            <Card className="shadow-sm border-border">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-primary" />
-                  Características
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {vehicle.features.map((feature, index) => (
-                    <Badge key={index} variant="secondary">
-                      {feature}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {vehicle.features.length > 0 && (
+              <Card className="shadow-sm border-border">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Settings className="w-5 h-5 text-primary" />
+                    Características
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {vehicle.features.map((feature, index) => (
+                      <Badge key={index} variant="secondary">{feature}</Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Documentación */}
             <Card className="shadow-sm border-border">
@@ -205,21 +215,23 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange }: VehicleD
             </Card>
 
             {/* Descripción */}
-            <Card className="shadow-sm border-border">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary" />
-                  Descripción
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {vehicle.description}
-                </p>
-              </CardContent>
-            </Card>
+            {vehicle.description && (
+              <Card className="shadow-sm border-border">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-primary" />
+                    Descripción
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {vehicle.description}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Información del vendedor */}
+            {/* Vendedor */}
             <Card className="shadow-sm border-border">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -227,29 +239,24 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange }: VehicleD
                   Información del Vendedor
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Nombre</p>
-                    <p className="font-medium">{vehicle.sellerContact.name}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Email</p>
-                    <p className="font-medium">{vehicle.sellerContact.email}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Teléfono</p>
-                    <p className="font-medium">{vehicle.sellerContact.phone}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Ubicación</p>
-                    <p className="font-medium">{vehicle.location}</p>
-                  </div>
+                  {[
+                    { label: "Nombre",     value: vehicle.sellerContact.name },
+                    { label: "Email",      value: vehicle.sellerContact.email },
+                    { label: "Teléfono",   value: vehicle.sellerContact.phone },
+                    { label: "Ubicación",  value: vehicle.location },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="space-y-1">
+                      <p className="text-xs text-muted-foreground">{label}</p>
+                      <p className="font-medium">{value}</p>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Información de pago */}
+            {/* Pago — solo si existe */}
             {(vehicle.paymentProof || vehicle.referenceNumber) && (
               <Card className="shadow-sm border-border">
                 <CardHeader>
@@ -271,15 +278,13 @@ export const VehicleDetailsDialog = ({ vehicle, isOpen, onOpenChange }: VehicleD
                   {vehicle.paymentProof && (
                     <div>
                       <p className="text-sm font-medium mb-2">Comprobante de Pago:</p>
-                      <PdfViewer
-                        url={vehicle.paymentProof}
-                        vehicleId={vehicle._id!}
-                      />
+                      <PdfViewer url={vehicle.paymentProof} vehicleId={vehicle._id!} />
                     </div>
                   )}
                 </CardContent>
               </Card>
             )}
+
           </div>
         </ScrollArea>
       </DialogContent>
