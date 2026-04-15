@@ -173,6 +173,10 @@ export default async function Home() {
 
   return (
     <>
+
+
+
+
       {/* 🔍 JSON-LD */}
       <script
         type="application/ld+json"

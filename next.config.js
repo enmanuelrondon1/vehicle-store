@@ -1,3 +1,5 @@
+const { withSentryConfig } = require("@sentry/nextjs");
+
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -8,7 +10,7 @@ const nextConfig = {
 
   compiler: {
     removeConsole:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === "production" 
         ? { exclude: ["error", "warn"] }
         : false,
   },
@@ -138,7 +140,7 @@ async headers() {
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: blob: https://res.cloudinary.com https://*.cloudinary.com https://images.unsplash.com https://lh3.googleusercontent.com",
-            "connect-src 'self' https://api.cloudinary.com https://soketi.app wss: ws:",
+            "connect-src 'self' https://api.cloudinary.com https://soketi.app wss: ws: https://*.sentry.io https://*.ingest.sentry.io",
             "media-src 'self' blob: https://res.cloudinary.com",
             "frame-src 'none'",
             "object-src 'none'",
@@ -212,4 +214,12 @@ async headers() {
   }),
 };
 
-module.exports = nextConfig;
+module.exports = withSentryConfig(nextConfig, {
+  org: "1automarket",
+  project: "javascript-nextjs",
+  silent: true,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+  automaticVercelMonitors: false,
+});

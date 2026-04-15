@@ -50,6 +50,7 @@
     "@react-pdf/renderer": "^3.4.4",
     "@react-three/drei": "^9.108.3",
     "@react-three/fiber": "^8.16.8",
+    "@sentry/nextjs": "^10.48.0",
     "@types/next-auth": "^3.13.0",
     "aos": "^2.3.4",
     "autoprefixer": "10.4.19",
